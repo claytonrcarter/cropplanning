@@ -30,12 +30,12 @@ public class CropDB extends CPSCoreModule {
        setModuleType( "Core" );
        setModuleVersion( "0.1" );
      
+       /* TODO this should be abstracted, not hard coded */
        HSQLDB h = new HSQLDB();
        
        ui = new CropDBUI();
        ui.setDataSource( h );
-       if ( ui.verifyVersion( this.getModuleVersion() ) ) { /* Hooray! */ }
-       else { /* Oops */ }
+
     }
 
     public JPanel display () {
