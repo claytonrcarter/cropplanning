@@ -12,7 +12,10 @@ import CPS.Module.CPSDataModel;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import org.hsqldb.*;
+import resultsettablemodel.*;
 
 /**
  *
@@ -140,28 +143,93 @@ public class HSQLDB extends CPSDataModel {
       state = "creating tables";
       HSQLDBCreator.createTables( con );
       state = "tables created";
+      HSQLDBPopulator.populateTables( con );
+      state = "tables populated";
       return 0;
    }
 
-   public synchronized String[] getListOfCropPlans() {
+   public synchronized ArrayList<String> getListOfCropPlans() {
       
       try {
          Statement st = con.createStatement();
-         ResultSet rs = st.executeQuery( "SELECT name from CROP_PLANS" );
+         ResultSet rs = st.executeQuery( "SELECT plan_name FROM CROP_PLANS" );
       
-         ArrayList l = new ArrayList();
+         System.out.println("Executed query: " + "SELECT plan_name FROM CROP_PLANS" );
+         
+         ArrayList<String> l = new ArrayList<String>();
          while ( rs.next() ) {
-            l.add( rs.getObject(1) );
+            System.out.println("Found table entry: " + (String) rs.getObject(1) );
+            l.add( (String) rs.getObject(1) );
          }
       
-         return (String[]) l.toArray();
+         return l;
       } 
       catch ( SQLException e ) { 
          e.printStackTrace();
-         return new String[] {};
+         return new ArrayList<String>();
       }
       
    }
+
+   private String getAbbreviatedColumnNames( boolean varieties ) {
+      return "id, crop_name, " + ( varieties ? "var_name, " : "" ) + "fam_name, ds, tp, maturity";
+   }
+   
+   private String getCropsColumnNames() {
+      return "*";
+   }
+   
+   private String getVarietiesColumnNames() {
+      return getCropsColumnNames();
+   }
+   
+   private synchronized TableModel submitQuery( String table, 
+                                                String columns, 
+                                                String conditional ) {
+      String query = "SELECT " + columns + " FROM " + table;
+      
+      if ( conditional != null && conditional.length() > 0 )
+         query += " WHERE ( " + conditional + " ) ";
+      
+      try {
+         RSTableModelFactory rstmf = new RSTableModelFactory( con );
+         return rstmf.getResultSetTableModel( query );
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         return new DefaultTableModel();
+      }
+   }
+   
+   /* TODO create a method that will take a column list, table name and
+    * conditional statement and will construct and submit a query, returning
+    * a ResultSet
+    * TODO create a wrapper method to turn a ResultSet into a TableModel
+    */
+   public TableModel getAbbreviatedCropList() {
+      return submitQuery( "CROPS_VARIETIES", 
+                          getAbbreviatedColumnNames( false ),
+                          "var_name IS NULL" );
+   }
+   
+   public TableModel getCropList() { 
+      return submitQuery( "CROPS_VARIETIES", getCropsColumnNames(), null );
+   }   
+
+   public TableModel getVarietyList() {
+      return submitQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null );
+   }
+
+   public TableModel getAbbreviatedVarietyList() {
+      return submitQuery( "CROPS_VARIETIES", 
+                          getAbbreviatedColumnNames( true ), 
+                          "var_name IS NOT NULL" ); 
+   }
+
+   public TableModel getCropAndVarietyList() {
+      return submitQuery( "CROPS_VARIETIES", "*", null );
+   }
+
    
    public void createNewCropPlan(String plan_name) {
       HSQLDBCreator.createCropPlan( con, plan_name );
@@ -172,5 +240,9 @@ public class HSQLDB extends CPSDataModel {
 
    public void filterCropPlan(String plan_name, String filter) {
    }
-   
+
+   public TableModel getAbbreviatedCropAndVarietyList() {
+      return submitQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null );
+   }
+
 }
