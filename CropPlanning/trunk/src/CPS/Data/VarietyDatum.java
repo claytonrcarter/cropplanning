@@ -1,6 +1,6 @@
 
 package CPS.Data;
 
-public class VarietyDatum extends CropDatum {
+public abstract class VarietyDatum extends CropDatum {
 
 }

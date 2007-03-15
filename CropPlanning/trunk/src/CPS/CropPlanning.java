@@ -69,7 +69,7 @@ public class CropPlanning {
 
 	} catch (Exception e) {
 	    System.out.println("Error occurred loading demo: " + classname);
-	    System.out.println(e);
+            e.printStackTrace();
 	}
 
 	return (CPSModule) instance;

@@ -10,8 +10,8 @@ public abstract class CPSDatum {
     abstract JComponent toEditableField();
     abstract JComponent toStaticField();
 
-    abstract String toTableHeader();
-    abstract void getTableFormat();
-    abstract void getTableData();
+//    abstract String toTableHeader();
+//    abstract void getTableFormat();
+//    abstract void getTableData();
 
 }

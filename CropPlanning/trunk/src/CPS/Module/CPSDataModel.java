@@ -20,6 +20,7 @@ package CPS.Module;
 
 import java.util.ArrayList;
 import javax.swing.table.TableModel;
+import CPS.Data.*;
 
 /**
  *
@@ -40,5 +41,7 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getAbbreviatedVarietyList();
    public abstract TableModel getCropAndVarietyList();
    public abstract TableModel getAbbreviatedCropAndVarietyList();
+
+   public abstract Crop getCropInfoForRow( int selectedRow );
    
 }

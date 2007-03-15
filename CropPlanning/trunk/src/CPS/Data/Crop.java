@@ -14,8 +14,7 @@ public class Crop {
     private CropDatum<String> cropDescription;
     private List varieties;
     
-    /* A better place for this would be the end of the instance variable
-     * decls */
+
     public List extraCropData;
 
     int maturityDays;
@@ -34,7 +33,7 @@ public class Crop {
     double yieldPerBed;
 
     public Crop () {
-	cropName = cropDescription = new CropDatum();
+//	cropName = cropDescription = new CropDatum();
         flat = "";
 	varieties = null;
 	weeksToTP = inRowSpacing = rowSpacing = rowsPerBed = 0;
