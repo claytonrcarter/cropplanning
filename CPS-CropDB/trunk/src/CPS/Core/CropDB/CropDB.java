@@ -8,7 +8,6 @@
 
 package CPS.Core.CropDB;
 
-import CPS.Core.DB.HSQLDB;
 import CPS.Module.*;
 import javax.swing.JPanel;
 
@@ -30,15 +29,18 @@ public class CropDB extends CPSCoreModule {
        setModuleType( "Core" );
        setModuleVersion( "0.1" );
      
-       /* TODO this should be abstracted, not hard coded */
-       HSQLDB h = new HSQLDB();
-       
        ui = new CropDBUI();
-       ui.setDataSource( h );
 
     }
 
     public JPanel display () {
 	return ui.getUI();
     }
+    
+    /* no special init required; just pass it to the UI and let it
+     * worry about it. */
+    public void setDataSource( CPSDataModel dm ) {
+       ui.setDataSource(dm);
+    }
+
 }
