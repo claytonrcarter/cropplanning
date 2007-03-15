@@ -62,9 +62,9 @@ public class TabbedUI extends CPSUIModule {
      * SwingSet2 Constructors
      */
     public TabbedUI() {	
-
-	frame = createFrame( GraphicsEnvironment.
-			     getLocalGraphicsEnvironment().
+       
+       frame = createFrame( GraphicsEnvironment.
+	                    getLocalGraphicsEnvironment().
 			     getDefaultScreenDevice().
 			     getDefaultConfiguration() );
 	// showTabbedUI();
@@ -125,7 +125,7 @@ public class TabbedUI extends CPSUIModule {
                     screenInsets.top : centerHeight;
 
             f.setLocation(centerWidth, centerHeight);
-	    f.show();
+	    f.setVisible( true );
 	} 
     }
 

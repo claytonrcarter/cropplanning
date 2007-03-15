@@ -42,6 +42,6 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getCropAndVarietyList();
    public abstract TableModel getAbbreviatedCropAndVarietyList();
 
-   public abstract Crop getCropInfoForRow( int selectedRow );
+   public abstract CPSCrop getCropInfoForRow( int selectedRow );
    
 }

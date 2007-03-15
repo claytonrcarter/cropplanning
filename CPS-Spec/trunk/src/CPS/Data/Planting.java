@@ -9,7 +9,7 @@ import java.sql.Date;
 
 public class Planting {
 
-    Crop crop;
+    CPSCrop crop;
     Variety variety;
     
     //FieldLocation location;

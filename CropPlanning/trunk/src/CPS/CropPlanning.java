@@ -1,8 +1,6 @@
 package CPS;
 
-import CPS.Module.CPSCoreModule;
-import CPS.Module.CPSModule;
-import CPS.Module.CPSUIModule;
+import CPS.Module.*;
 import java.util.*;
 import java.lang.*;
 import java.lang.reflect.*;
@@ -30,22 +28,26 @@ public class CropPlanning {
 	 *      modToExtend.registerExtension(EXTENSION)
          */
 
-	CPSUIModule ui = (CPSUIModule) testLoadPlugin( "CPS.Core.UI." + "TabbedUI" );
-	ui.showUI();
+       CPSDataModel dm = (CPSDataModel) testLoadPlugin( "CPS.Core.DB." + "HSQLDB" );
+       
+       CPSUIModule ui = (CPSUIModule) testLoadPlugin( "CPS.Core.UI." + "TabbedUI" );
+       ui.showUI();
 
-	CPSCoreModule cm = (CPSCoreModule) testLoadPlugin( "CPS.Core.CropDB." + "CropDBTest" );
+       // CPSCoreModule cm = (CPSCoreModule) testLoadPlugin( "CPS.Core.CropDB." + "CropDBTest" );
 // 	if ( extensions.existFor( "CropDB" ) ) {
 // 	    cm.registerExtensions();
 // 	}
-	ui.addModule( cm.getModuleName(), cm.display() );
+       // ui.addModule( cm.getModuleName(), cm.display() );
 
-        CPSCoreModule cm2 = (CPSCoreModule) testLoadPlugin( "CPS.Core." + "CropDB.CropDB" );
-        ui.addModule( cm2.getModuleName(), cm2.display() );
+       CPSCoreModule cm2 = (CPSCoreModule) testLoadPlugin( "CPS.Core." + "CropDB.CropDB" );
+       cm2.setDataSource(dm);
+       ui.addModule( cm2.getModuleName(), cm2.display() );
         
-	JLabel l = new JLabel( "Hello World!" );
-	JPanel p = new JPanel();
-	p.add(l);
-	ui.addModule( "CropPlanning Module", p );
+       /* HACK this is just a test */
+       JLabel l = new JLabel( "Hello World!" );
+       JPanel p = new JPanel();
+       p.add(l);
+       ui.addModule( "CropPlanning Module", p );
 
     }
 

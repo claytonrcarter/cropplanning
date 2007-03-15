@@ -6,7 +6,7 @@ package CPS.Data;
  *
  */
 
-public class Variety extends Crop {
+public class Variety extends CPSCrop {
 
     private VarietyDatum varietyName;
     private VarietyDatum varietyDescription;

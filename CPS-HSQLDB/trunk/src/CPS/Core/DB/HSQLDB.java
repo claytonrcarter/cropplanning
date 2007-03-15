@@ -8,7 +8,7 @@
 
 package CPS.Core.DB;
 
-import CPS.Data.Crop;
+import CPS.Data.CPSCrop;
 import CPS.Module.CPSDataModel;
 import java.sql.*;
 import java.util.ArrayList;
@@ -136,16 +136,26 @@ public class HSQLDB extends CPSDataModel {
    }
 
 
-   public Crop getCropInfoForRow( int selectedRow ) {
+   public CPSCrop getCropInfoForRow( int selectedRow ) {
       try {
          rsListCache.absolute( selectedRow );
          int id = rsListCache.getInt( "id" );
          rsInfoCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
          // turn rsInfoCache ResultSet into a Crop or Variety Object
+         System.out.println("Retrieved info, discarding.");
       }
       catch ( SQLException e ) { e.printStackTrace(); }
       
       return null;
    }
 
+   private CPSCrop resultSetAsCrop( ResultSet rs ) {
+      
+      CPSCrop crop = new CPSCrop();
+      
+      
+      
+      return crop;
+   }
+   
 }

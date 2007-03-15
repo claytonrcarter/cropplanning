@@ -7,11 +7,12 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.*;
+import CPS.Module.*;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class CropDBCropInfo {
+public class CropDBCropInfo extends CPSDataModelUser {
    
    private JPanel cropInfoPanel;
    
@@ -34,8 +35,11 @@ public class CropDBCropInfo {
       
    }
    
-   public void updateForCrop( Crop c ) {
+   public void updateForCrop( CPSCrop c ) {
       cropInfoPanel.removeAll();
+      cropInfoPanel.add( CropDBDataTranslata.convertCrop(c) );
+      cropInfoPanel.validate();
+      cropInfoPanel.repaint();
    }
    
    public JPanel getJPanel() {

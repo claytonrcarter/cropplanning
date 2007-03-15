@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+
 public class HSQLConnect {
 
    private static final String fileSep = System.getProperty("file.separator");
@@ -23,7 +24,6 @@ public class HSQLConnect {
 
    public static Connection getConnection( String dir, String dbFilename, String driver ) {
       
-      
       String dbPath = dir + fileSep + dbFilename;
       String dbCon  = dbPrefix + dbPath + dbProperties;
       
@@ -35,7 +35,7 @@ public class HSQLConnect {
       try {
          Class.forName( driver );
       } catch (Exception e) {
-         System.out.println("ERROR: failed to load HSQLDB JDBC driver.");
+         System.out.println("ERROR: failed to load HSQLDB JDBC driver: '" + driver + "'");
          e.printStackTrace();
          System.exit( -1 );
       }
