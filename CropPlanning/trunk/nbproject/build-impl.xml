@@ -234,6 +234,9 @@ is divided into following sections:
     ===================
     -->
     <target name="deps-jar" depends="init" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.CropP-CropDB}/build.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.CropP-SQL}/build.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.CropP-Spec}/build.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.CropPlanning-SwingUI}/build.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.TableUtil}/build.xml"/>
     </target>
@@ -532,6 +535,9 @@ is divided into following sections:
     ===============
     -->
     <target name="deps-clean" depends="init" unless="no.deps">
+        <ant target="clean" inheritall="false" antfile="${project.CropP-CropDB}/build.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.CropP-SQL}/build.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.CropP-Spec}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.CropPlanning-SwingUI}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.TableUtil}/build.xml"/>
     </target>

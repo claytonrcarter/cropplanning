@@ -8,7 +8,7 @@ package CPS.Data;
 
 import java.util.*;
 
-public class Crop {
+public class CPSCrop {
 
     private CropDatum<String> cropName;
     private CropDatum<String> cropDescription;
@@ -32,8 +32,9 @@ public class Crop {
     double yieldPerRow;
     double yieldPerBed;
 
-    public Crop () {
-//	cropName = cropDescription = new CropDatum();
+    public CPSCrop () {
+	cropName = new CropDatum<String>( "Crop name", "" );
+        cropDescription = new CropDatum( "Crop description", "" );
         flat = "";
 	varieties = null;
 	weeksToTP = inRowSpacing = rowSpacing = rowsPerBed = 0;
@@ -41,6 +42,6 @@ public class Crop {
 	yieldPerFoot = yieldPerRow = yieldPerBed = 0.0;
     }
 
-    public void addVariety ( Variety v ) {}
-
+    
+    
 }
