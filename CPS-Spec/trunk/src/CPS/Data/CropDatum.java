@@ -7,32 +7,16 @@ import javax.swing.JTextField;
 
 public class CropDatum<T> extends CPSDatum {
 
-   private String descriptor;
-   private T datum;
    
    public CropDatum( String n, T d ) {
       setDescriptor(n);
       setDatum(d);
    }
-
    
-   
-   public String getDescriptor() {
-      return descriptor;
+   public CropDatum( String n ) {
+      setDescriptor(n);
+      setDatum(null);
    }
-
-   public void setDescriptor( String name ) {
-      this.descriptor = name;
-   }
-
-   public T getDatum() {
-      return datum;
-   }
-
-   public void setDatum( T datum ) {
-      this.datum = datum;
-   }
-   
    
    JLabel toLabel() {
       return new JLabel( getDescriptor() );
