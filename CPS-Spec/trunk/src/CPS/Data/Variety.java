@@ -8,7 +8,7 @@ package CPS.Data;
 
 public class Variety extends CPSCrop {
 
-    private VarietyDatum varietyName;
-    private VarietyDatum varietyDescription;
+    //private VarietyDatum varietyName;
+    //private VarietyDatum varietyDescription;
 
 }
