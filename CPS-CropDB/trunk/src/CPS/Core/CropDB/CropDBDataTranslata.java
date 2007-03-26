@@ -11,8 +11,11 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 
 public class CropDBDataTranslata {
    
@@ -24,81 +27,38 @@ public class CropDBDataTranslata {
       
       JPanel cropPanel = new JPanel();
       
+      cropPanel.setLayout( new GridBagLayout() );
+      GridBagConstraints c = new GridBagConstraints();
+      cropPanel.setAlignmentX( JPanel.LEFT_ALIGNMENT );
+      cropPanel.setAlignmentY( JPanel.TOP_ALIGNMENT );
+
+      Insets il  = new Insets( 0, 0, 0, 5 );
+      Insets ita = new Insets( 0, 2, 2, 5 );
+
+      /* Column One */
+      createLabel(     cropPanel, 0, 0, "Crop Name:" );
+      createTextField( cropPanel, 1, 0, crop.getCropName() );
+
+      createLabel(     cropPanel, 0, 1, "Variety:" );
+      createTextField( cropPanel, 1, 1, crop.getVarietyName() );
+
+      //createLabel(     cropPanel, 0, 2, "Belongs to Groups:" );
+      //createTextArea(  cropPanel, 1, 2, "Greenhouse,\nMesclun" );
+
+
+      /* Column Two */
+      createLabel(     cropPanel, 2, 0, "Family:" );
+      createTextField( cropPanel, 3, 0, crop.getFamName() );
       
-	cropPanel.setLayout( new GridBagLayout() );
-	GridBagConstraints c = new GridBagConstraints();
-	cropPanel.setAlignmentX( JPanel.LEFT_ALIGNMENT );
-	cropPanel.setAlignmentY( JPanel.TOP_ALIGNMENT );
+      createLabel(     cropPanel, 2, 1, "Mat. Days:" );
+      createTextField( cropPanel, 3, 1, "" + crop.getMaturityDays() );
 
-	Insets il  = new Insets( 0, 0, 0, 5 );
-	Insets ita = new Insets( 0, 2, 2, 5 );
+      //createLabel(     cropPanel, 2, 2, "DS?" );
+      createCheckBox(  cropPanel, 3, 2, "DS?", crop.getDS() );
 
-	/* Column One */
-	createLabel(     cropPanel, 0, 0, "Crop Name:" );
-	createTextField( cropPanel, 1, 0, "Arugula" );
+      //createLabel(     cropPanel, 2, 3, "TP?" );
+      createCheckBox(  cropPanel, 3, 3, "TP?", crop.getTP() );
 
-	createLabel(     cropPanel, 0, 1, "Variety:" );
-	createTextField( cropPanel, 1, 1, "EvenStar" );
-
-	createLabel(     cropPanel, 0, 2, "Belongs to Groups:" );
-	createTextArea(  cropPanel, 1, 2, "Greenhouse,\nMesclun" );
-
-
-	/* Column Two */
-	createLabel(     cropPanel, 2, 0, "Family:" );
-	createTextField( cropPanel, 3, 0, "Brassica" );
-
-	createLabel(     cropPanel, 2, 1, "Mat. Days:" );
-	createTextField( cropPanel, 3, 1, "40" );
-
-	createLabel(     cropPanel, 2, 2, "Seeding Method:" );
-	createTextField( cropPanel, 3, 2, "DS, TP" );
-
-	JPanel dsPanel = new JPanel();
-	dsPanel.setBorder( BorderFactory.createTitledBorder( "DS" ));
-	dsPanel.setLayout( new GridBagLayout() );
-	
-	createLabel(     dsPanel, 0, 0, "Rate (seeds/ft):" );
-	createTextField( dsPanel, 1, 0, "12", 5 );
-
-	createLabel(     dsPanel, 0, 1, "Seeder Setting:" );
-	createTextField( dsPanel, 1, 1, "10", 5 );
-
-	addSubPanel(     cropPanel, 2, 3, 2, 3, dsPanel );
-
-	JPanel tpPanel = new JPanel();
-	tpPanel.setBorder( BorderFactory.createTitledBorder( "TP" ));
-	tpPanel.setLayout( new GridBagLayout() );
-	
-	createLabel(     tpPanel, 0, 0, "Weeks to TP:" );
-	createTextField( tpPanel, 1, 0, "3", 5 );
-
-	createLabel(     tpPanel, 0, 1, "Adjust Mat. Days:" );
-	createTextField( tpPanel, 1, 1, "-14", 5 );
-
-	createLabel(     tpPanel, 0, 2, "Flat Size:" );
-	createTextField( tpPanel, 1, 2, "128", 5 );
-
-	createLabel(     tpPanel, 0, 3, "Pot Up?" );
-	createTextField( tpPanel, 1, 3, "No", 5 );
-
-	addSubPanel(     cropPanel, 2, 6, 2, 5, tpPanel );
-
-	/* Column Three */
- 	JPanel yieldPanel = new JPanel();
- 	yieldPanel.setBorder( BorderFactory.createTitledBorder( "Yield (lb)"));
- 	yieldPanel.setLayout( new GridBagLayout() );
-		
- 	createLabel(     yieldPanel, 0, 0, "Per foot:" );
- 	createTextField( yieldPanel, 1, 0, ".33", 5 );
-
- 	createLabel(     yieldPanel, 0, 1, "Per row:" );
- 	createTextField( yieldPanel, 1, 1, "16.33", 5 );
-
- 	createLabel(     yieldPanel, 0, 2, "Per bed:" );
- 	createTextField( yieldPanel, 1, 2, "49", 5 );
-
- 	addSubPanel(     cropPanel, 5, 0, 2, 4, yieldPanel );
 
       
       return cropPanel;
@@ -127,6 +87,18 @@ public class CropDBDataTranslata {
 
    }
 
+   private static void createCheckBox( JPanel p, int x, int y, String s, boolean b ) {
+      Insets i = new Insets( 0, 2, 2, 5 );
+      GridBagConstraints c = new GridBagConstraints();
+      JCheckBox jc = new JCheckBox( s, b );
+      
+      c.gridx = x;
+      c.gridy = y;
+      c.anchor = GridBagConstraints.FIRST_LINE_START;
+      c.insets = i;
+      
+      p.add( jc, c );
+   }
     /**
      * createTextField
      */
@@ -150,6 +122,10 @@ public class CropDBDataTranslata {
 	GridBagConstraints c = new GridBagConstraints();
 	JTextField tf = new JTextField( str, col );
 
+        tf.getKeymap().setDefaultAction( new ColorChangeAction( tf ) );
+        
+        
+        
 	tf.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
 							Color.GRAY,
 							Color.WHITE ));
@@ -221,5 +197,7 @@ public class CropDBDataTranslata {
 
     }
 
+    
    
+    
 }
