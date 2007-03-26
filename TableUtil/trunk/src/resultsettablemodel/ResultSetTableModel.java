@@ -10,9 +10,10 @@ import javax.swing.event.*;
  * contents of the ResultSet.  Note that it requires a scrollable JDBC 2.0 
  * ResultSet.  Also note that it provides read-only access to the results
  **/
-public class ResultSetTableModel implements TableModel {
-    ResultSet results;             // The ResultSet to interpret
-    ResultSetMetaData metadata;    // Additional information about the results
+public class ResultSetTableModel extends AbstractTableModel {
+// public class ResultSetTableModel implements TableModel {
+    protected ResultSet results;             // The ResultSet to interpret
+    protected ResultSetMetaData metadata;    // Additional information about the results
     int numcols, numrows;          // How many rows and columns in the table
 
     /**
@@ -21,8 +22,8 @@ public class ResultSetTableModel implements TableModel {
      * ResultSetTableModelFactory, which is what you should use to obtain a
      * ResultSetTableModel
      **/
-    ResultSetTableModel(ResultSet results) throws SQLException {
-	this.results = results;                 // Save the results
+    protected ResultSetTableModel(ResultSet res) throws SQLException {
+	this.results = res;                     // Save the results
 	metadata = results.getMetaData();       // Get metadata on them
 	numcols = metadata.getColumnCount();    // How many columns?
 	results.last();                         // Move to last row
