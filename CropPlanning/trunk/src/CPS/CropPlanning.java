@@ -7,8 +7,10 @@ import java.lang.reflect.*;
 
 import javax.swing.*;
 
-public class CropPlanning {
+public class CropPlanning implements Runnable {
 
+   private ModuleManager mm;
+   
     public static void main(String[] args) {
 
 	new CropPlanning();
@@ -27,55 +29,27 @@ public class CropPlanning {
 	 *  - for modToExtend in EXTENSION.extendsWhat()
 	 *      modToExtend.registerExtension(EXTENSION)
          */
-
-       CPSDataModel dm = (CPSDataModel) testLoadPlugin( "CPS.Core.DB." + "HSQLDB" );
        
-       CPSUIModule ui = (CPSUIModule) testLoadPlugin( "CPS.Core.UI." + "TabbedUI" );
-       ui.showUI();
+       mm = new ModuleManager();
 
-       // CPSCoreModule cm = (CPSCoreModule) testLoadPlugin( "CPS.Core.CropDB." + "CropDBTest" );
-// 	if ( extensions.existFor( "CropDB" ) ) {
-// 	    cm.registerExtensions();
-// 	}
-       // ui.addModule( cm.getModuleName(), cm.display() );
+       CPSDataModel dm = mm.getDM();
+       CPSUIModule ui = mm.getUI();
 
-       CPSCoreModule cm2 = (CPSCoreModule) testLoadPlugin( "CPS.Core." + "CropDB.CropDB" );
+       CPSCoreModule cm2 = mm.getCoreModule();
        cm2.setDataSource(dm);
        ui.addModule( cm2.getModuleName(), cm2.display() );
-        
-       /* HACK this is just a test */
-       JLabel l = new JLabel( "Hello World!" );
-       JPanel p = new JPanel();
-       p.add(l);
-       ui.addModule( "CropPlanning Module", p );
-
+       
+       Runtime.getRuntime().addShutdownHook( new Thread(this) );
+                   
+       ui.showUI();
+       
     }
 
-    /**
-     * Loads a demo from a classname
-     */
-    CPSModule testLoadPlugin( String classname ) {
-	
-	Object instance = null;
+    
+   public void run() {
+      mm.shutdownModules();
+   }
 
-	try {
-
-	    System.out.println( "Loading class " + classname );
-	    Class c = Class.forName( classname );
-
-	    System.out.println( "Retrieving constructor" );
-	    Constructor cons = c.getConstructor( new Class[]{} );
-
-	    System.out.println( "Creating new instance of " + classname );
-	    instance = cons.newInstance( new Object[]{} );
-
-	} catch (Exception e) {
-	    System.out.println("Error occurred loading demo: " + classname);
-            e.printStackTrace();
-	}
-
-	return (CPSModule) instance;
-    }
-
+    
 }
 
