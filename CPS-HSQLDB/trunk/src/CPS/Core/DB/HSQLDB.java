@@ -67,7 +67,7 @@ public class HSQLDB extends CPSDataModel {
    }
 
    private String getAbbreviatedColumnNames( boolean varieties ) {
-      return "id, crop_name, " + ( varieties ? "var_name, " : "" ) + "fam_name, ds, tp, maturity";
+      return "id, crop_name, " + ( varieties ? "var_name, " : "" ) + "fam_name, maturity";
    }
    
    private String getCropsColumnNames() {
@@ -81,8 +81,9 @@ public class HSQLDB extends CPSDataModel {
    
    /** Method to cache results of a query and then return those results as a table */
    private TableModel cachedListTableQuery( String t, String col, String cond ) {
-      rsListCache = query.submitQuery( t, col, cond );
-      return query.getCachedResultsAsTable();
+      rsListCache = query.storeQuery( t, col, cond );
+      // return query.getCachedResultsAsTable();
+      return query.tableResults( rsListCache );
    }
 
    /*
@@ -125,7 +126,7 @@ public class HSQLDB extends CPSDataModel {
    /*
     * CROP PLAN METHODS
     */
-   public void createNewCropPlan(String plan_name) {
+   public void createNewCropPlan( String plan_name ) {
       HSQLDBCreator.createCropPlan( con, plan_name );
    }
 
@@ -135,27 +136,45 @@ public class HSQLDB extends CPSDataModel {
    public void filterCropPlan(String plan_name, String filter) {
    }
 
-
+   /* we make the assumption that we're zero-based, ResultSets are not */
    public CPSCrop getCropInfoForRow( int selectedRow ) {
       try {
-         rsListCache.absolute( selectedRow );
+         rsListCache.absolute( selectedRow + 1 );
          int id = rsListCache.getInt( "id" );
          rsInfoCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
-         // turn rsInfoCache ResultSet into a Crop or Variety Object
-         System.out.println("Retrieved info, discarding.");
+         return resultSetAsCrop( rsInfoCache );
       }
       catch ( SQLException e ) { e.printStackTrace(); }
       
       return null;
    }
 
-   private CPSCrop resultSetAsCrop( ResultSet rs ) {
+   private CPSCrop resultSetAsCrop( ResultSet rs ) throws SQLException {
       
       CPSCrop crop = new CPSCrop();
       
+      //move to the first (and only) row
+      rs.next();
       
+      crop.setCropName( rs.getString( "crop_name" ));
+      crop.setFamName( rs.getString( "fam_name" ));
+      crop.setVarietyName( rs.getString( "var_name" ));
+//      crop.setDS( rs.getBoolean("ds") );
+//      crop.setTP( rs.getBoolean("tp") );
+      crop.setMaturityDays( rs.getInt( "maturity" ));
       
       return crop;
+   }
+
+   public void shutdown() {
+      try {
+         Statement st = con.createStatement();
+         st.execute("SHUTDOWN");
+         con.close();
+      }
+      catch ( SQLException ex ) {
+         ex.printStackTrace();
+      }
    }
    
 }

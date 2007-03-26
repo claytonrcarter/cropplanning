@@ -7,12 +7,13 @@
 package CPS.Core.DB;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import resultsettablemodel.RSTableModel;
+import CPS.Core.DB.HSQLTableModel;
 
 public class HSQLQuerier {
    
@@ -31,13 +32,20 @@ public class HSQLQuerier {
       return tableResults( getCachedResults() );
    }
    
+   public TableModel tableQuery( String table, String columns, String conditional ) {
+      return tableResults( storeQuery( table, columns, conditional ));
+   }
+      
+   public ResultSet storeQuery( String table, String columns, String conditional ) {
+      return submitQuery( con, table, columns, conditional, true );
+   }
    public ResultSet submitQuery( String table, String columns, String conditional ) {
-      rsCache = submitQuery( con, table, columns, conditional );
-      return getCachedResults();
+      return submitQuery( con, table, columns, conditional, false );
    }
    
-   public TableModel tableQuery( String table, String columns, String conditional ) {
-      return tableResults( submitQuery( table, columns, conditional ));
+   private ResultSet submitQuery( String table, String columns, String conditional, boolean store ) {
+      rsCache = submitQuery( con, table, columns, conditional, store );
+      return getCachedResults();
    }
    
    /*
@@ -46,18 +54,29 @@ public class HSQLQuerier {
    static synchronized ResultSet submitQuery( Connection con,
                                               String table,
                                               String columns, 
-                                              String conditional ) {
+                                              String conditional,
+                                              boolean prepared ) {
       ResultSet rs;
       String query = "SELECT " + columns + " FROM " + table;
       
       if ( conditional != null && conditional.length() > 0 )
          query += " WHERE ( " + conditional + " ) ";
       
+      System.out.println("Submitting query: " + query );
+      
       try {
-         // These parameters are cribbed from ResultSetTableModelFactory
-         Statement s = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE,
-				            ResultSet.CONCUR_READ_ONLY );
-         rs = s.executeQuery( query );
+         if ( prepared ) {
+            PreparedStatement ps = con.prepareStatement( query,
+                                                         ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                                         ResultSet.CONCUR_READ_ONLY );
+            rs = ps.executeQuery();
+         }
+         else {            // These parameters are cribbed from ResultSetTableModelFactory
+            Statement s = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                               ResultSet.CONCUR_READ_ONLY );
+            rs = s.executeQuery( query );
+         }
+            
       }
       catch ( SQLException e ) {
          e.printStackTrace();
@@ -68,7 +87,7 @@ public class HSQLQuerier {
    
    public static TableModel tableResults( ResultSet rs ) {
       try {
-         return new RSTableModel( rs );
+         return new HSQLTableModel( rs );
       }
       catch ( SQLException e ) {
          e.printStackTrace();

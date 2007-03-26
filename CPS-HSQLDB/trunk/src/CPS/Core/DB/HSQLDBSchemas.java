@@ -116,9 +116,9 @@ public class HSQLDBSchemas {
       
       String s = new String();
 
-      s  = "";
-      s += "FOREIGN KEY ( crop_id ) REFERENCES " + "CROPS_VARIETIES" + "( id ), ";
-      s += "method VARCHAR, ";
+      s  = "id      INTEGER IDENTITY PRIMARY KEY, ";
+      s += "crop_id INTEGER, ";
+      s += "method  VARCHAR, ";
       
       s += "mat_adjust INTEGER, ";
       s += "time_to_tp INTEGER, ";
@@ -136,6 +136,8 @@ public class HSQLDBSchemas {
       s += "yield_p_week    FLOAT, ";
       s += "crop_unit       VARCHAR, ";
       s += "crop_unit_value FLOAT, ";
+
+      s += "FOREIGN KEY ( crop_id ) REFERENCES " + "CROPS_VARIETIES" + "( id ), ";
       
       return s;
       

@@ -29,7 +29,8 @@ public class HSQLDBCreator {
       
          st.executeUpdate( createTableCropPlans() );
          st.executeUpdate( createTableCropsAndVarieties() );
-      
+         st.executeUpdate( createTablePlantingMethods() );
+         
          createCropPlan( con, "COMMON_PLANTINGS" );
       }
       catch ( SQLException e ) { e.printStackTrace(); }
@@ -65,6 +66,10 @@ public class HSQLDBCreator {
    
    private static String createTableCropsAndVarieties() {    
       return statementCreateTable( "CROPS_VARIETIES", HSQLDBSchemas.cropAndVarietySchema() );
+   }
+   
+   private static String createTablePlantingMethods() {
+      return statementCreateTable( "PLANTING_METHODS", HSQLDBSchemas.plantingDataSchema() );
    }
    
    private static String statementCreateTable( String name, String table_def ) {
