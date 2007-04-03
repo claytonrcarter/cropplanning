@@ -78,7 +78,8 @@ public class ResultSetTableModel extends AbstractTableModel {
     public boolean isCellEditable(int row, int column) { return false; } 
 
     // Since its not editable, we don't need to implement these methods
-    public void setValueAt(Object value, int row, int column) {}
-    public void addTableModelListener(TableModelListener l) {}
-    public void removeTableModelListener(TableModelListener l) {}
+    // commented out 4/3/07 so that we can override this class to be editable
+//    public void setValueAt(Object value, int row, int column) {}
+//    public void addTableModelListener(TableModelListener l) {}
+//    public void removeTableModelListener(TableModelListener l) {}
 }
