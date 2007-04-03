@@ -148,6 +148,8 @@ public class HSQLDB extends CPSDataModel {
       
       return null;
    }
+   
+   
 
    private CPSCrop resultSetAsCrop( ResultSet rs ) throws SQLException {
       
@@ -156,6 +158,7 @@ public class HSQLDB extends CPSDataModel {
       //move to the first (and only) row
       rs.next();
       
+      crop.setID( rs.getInt( "ID" ));
       crop.setCropName( rs.getString( "crop_name" ));
       crop.setFamName( rs.getString( "fam_name" ));
       crop.setVarietyName( rs.getString( "var_name" ));
@@ -175,6 +178,30 @@ public class HSQLDB extends CPSDataModel {
       catch ( SQLException ex ) {
          ex.printStackTrace();
       }
+   }
+
+   public void updateCrop( CPSCrop crop ) {
+      
+      try {
+         
+         String sql = "UPDATE " + "CROPS_VARIETIES" + " SET ";
+         
+         sql += "crop_name = " + HSQLDBCreator.escapeString( crop.getCropName() ) + ", ";
+         sql += "var_name = " + HSQLDBCreator.escapeString( crop.getVarietyName() ) + ", ";
+         sql += "fam_name = " + HSQLDBCreator.escapeString( crop.getFamName() ) + ", ";
+         
+         sql += "maturity = " + crop.getMaturityDays() + " ";
+         
+         sql += "WHERE id = " + crop.getID();
+         
+         System.out.println("Attempting to execute: " + sql );
+
+         
+         Statement st = con.createStatement();
+         st.executeUpdate( sql );
+         // Update JTable?
+      }
+      catch ( SQLException ex ) { ex.printStackTrace(); }
    }
    
 }

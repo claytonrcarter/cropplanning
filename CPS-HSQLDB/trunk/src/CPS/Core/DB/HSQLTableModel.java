@@ -16,7 +16,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import resultsettablemodel.*;
 
-public class HSQLTableModel extends ResultSetTableModel implements TableModelListener {
+public class HSQLTableModel extends ResultSetTableModel {
    
    public HSQLTableModel( ResultSet resSet ) throws SQLException {
       super(resSet);
@@ -26,20 +26,6 @@ public class HSQLTableModel extends ResultSetTableModel implements TableModelLis
          throw new SQLException( "RSTableModel only accepts ResultSets of CONCUR_READ_ONLY" );
    }
 
-   
-   
-   public void tableChanged( TableModelEvent e ) {
-      
-      int row = e.getFirstRow();
-      int column = e.getColumn();
-      TableModel model = (TableModel) e.getSource();
-      String columnName = model.getColumnName(column);
-      Object data = model.getValueAt(row, column);
-      
-      System.out.println("Column " + columnName + " changed to " + data.toString() );
-      
-   }
-   
     public boolean isCellEditable(int row, int column) { return true; } 
 
     // Since its not editable, we don't need to implement these methods
@@ -50,10 +36,13 @@ public class HSQLTableModel extends ResultSetTableModel implements TableModelLis
       
        try {
          
-          if ( metadata.getColumnType(column+1) == java.sql.Types.VARCHAR ||
-               metadata.getColumnType(column+1) == java.sql.Types.CHAR    ||
-               metadata.getColumnType(column+1) == java.sql.Types.LONGVARCHAR )
+          if      ( val.equals( "" ))
+             val = "NULL";
+          else if ( metadata.getColumnType(column+1) == java.sql.Types.VARCHAR ||
+                    metadata.getColumnType(column+1) == java.sql.Types.CHAR    ||
+                    metadata.getColumnType(column+1) == java.sql.Types.LONGVARCHAR )
              val = HSQLDBCreator.escapeString( val );
+ 
           
           results.absolute(row+1);
           String sql = "UPDATE " + metadata.getTableName(1) + " ";
@@ -61,12 +50,14 @@ public class HSQLTableModel extends ResultSetTableModel implements TableModelLis
           sql += "WHERE id = " + results.getInt( "id" );
           // sql += "WHERE " + metadata.getColumnName(1) + " = " + results.getInt(1);
       
-          System.out.println("Attempting to execute: " + sql );
+          System.out.println( "Attempting to execute: " + sql );
 
           // HACK!
+          // this makes the change to the DB
           results.getStatement().getConnection().createStatement().executeUpdate( sql );
-          // results.refreshRow();
+          // this refreshes our copy of the data from the query stored by PreparedStatement
           results = ((PreparedStatement) results.getStatement()).executeQuery();
+          
           fireTableDataChanged();
          
        }
@@ -74,7 +65,4 @@ public class HSQLTableModel extends ResultSetTableModel implements TableModelLis
          
     }
     
-    public void addTableModelListener(TableModelListener l) {}
-    public void removeTableModelListener(TableModelListener l) {}
-   
 }
