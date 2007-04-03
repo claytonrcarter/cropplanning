@@ -21,76 +21,37 @@ public class CropDBDataTranslata {
    
    public CropDBDataTranslata() {}
 
-   public static JPanel convertCrop( CPSCrop crop ) {
-      
-      System.out.println("Converting crop");
-      
-      JPanel cropPanel = new JPanel();
-      
-      cropPanel.setLayout( new GridBagLayout() );
-      GridBagConstraints c = new GridBagConstraints();
-      cropPanel.setAlignmentX( JPanel.LEFT_ALIGNMENT );
-      cropPanel.setAlignmentY( JPanel.TOP_ALIGNMENT );
-
-      Insets il  = new Insets( 0, 0, 0, 5 );
-      Insets ita = new Insets( 0, 2, 2, 5 );
-
-      /* Column One */
-      createLabel(     cropPanel, 0, 0, "Crop Name:" );
-      createTextField( cropPanel, 1, 0, crop.getCropName() );
-
-      createLabel(     cropPanel, 0, 1, "Variety:" );
-      createTextField( cropPanel, 1, 1, crop.getVarietyName() );
-
-      //createLabel(     cropPanel, 0, 2, "Belongs to Groups:" );
-      //createTextArea(  cropPanel, 1, 2, "Greenhouse,\nMesclun" );
-
-
-      /* Column Two */
-      createLabel(     cropPanel, 2, 0, "Family:" );
-      createTextField( cropPanel, 3, 0, crop.getFamName() );
-      
-      createLabel(     cropPanel, 2, 1, "Mat. Days:" );
-      createTextField( cropPanel, 3, 1, "" + crop.getMaturityDays() );
-
-      //createLabel(     cropPanel, 2, 2, "DS?" );
-      createCheckBox(  cropPanel, 3, 2, "DS?", crop.getDS() );
-
-      //createLabel(     cropPanel, 2, 3, "TP?" );
-      createCheckBox(  cropPanel, 3, 3, "TP?", crop.getTP() );
-
-
-      
-      return cropPanel;
-      
-   }
-   
-   
    /*
     * CREATION UTILITY METHODS
     */
    /**
     * createLabel
     */
-   private static void createLabel( JPanel p, int x, int y, String str ) {
-
+   public static void createLabel( JPanel p, int x, int y, String str ) {
+      addLabel( p, x, y, new JLabel( str ));
+   }
+   
+   public static void addLabel( JPanel p, int x, int y, JLabel jl ) {
+      
       Insets i  = new Insets( 0, 0, 0, 5 );
       GridBagConstraints c = new GridBagConstraints();
-      JLabel l = new JLabel( str );
 
       c.gridx = x;
       c.gridy = y;
       c.anchor = GridBagConstraints.FIRST_LINE_END;
       c.insets = i;
 	
-      p.add( l, c );
+      p.add( jl, c );
 
    }
 
    private static void createCheckBox( JPanel p, int x, int y, String s, boolean b ) {
+      addCheckBox( p, x, y, new JCheckBox( s, b ));
+   }
+   
+   public static void addCheckBox( JPanel p, int x, int y, JCheckBox jc ) {
       Insets i = new Insets( 0, 2, 2, 5 );
       GridBagConstraints c = new GridBagConstraints();
-      JCheckBox jc = new JCheckBox( s, b );
       
       c.gridx = x;
       c.gridy = y;
@@ -99,6 +60,8 @@ public class CropDBDataTranslata {
       
       p.add( jc, c );
    }
+   
+   
     /**
      * createTextField
      */
@@ -114,13 +77,18 @@ public class CropDBDataTranslata {
       createTextField( p, x, y, "", col );
    }
 
-    private static void createTextField( JPanel p, 
-				  int x, int y, 
-				  String str, int col ) {
+   private static void createTextField( JPanel p,
+				        int x, int y, 
+				        String str, int col ) {
+      addTextField( p, x, y, new JTextField( str, col ));
+   }
+   
+   public static void addTextField( JPanel p, 
+                                     int x, int y,
+				     JTextField tf ) {
 
 	Insets i  = new Insets( 0, 2, 2, 5 );
 	GridBagConstraints c = new GridBagConstraints();
-	JTextField tf = new JTextField( str, col );
 
         tf.getKeymap().setDefaultAction( new ColorChangeAction( tf ) );
         

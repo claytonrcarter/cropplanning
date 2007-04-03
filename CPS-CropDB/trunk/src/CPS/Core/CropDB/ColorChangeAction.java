@@ -9,10 +9,12 @@ import javax.swing.text.Keymap;
 
 public class ColorChangeAction extends AbstractAction {
    Action defAction;
+   
    public ColorChangeAction(JTextComponent jt) {
       super("Color Change Action");
       defAction = findDefaultAction(jt);
    }
+   
    public void actionPerformed(ActionEvent e) {
 
       JTextComponent jt = (JTextComponent) e.getSource();

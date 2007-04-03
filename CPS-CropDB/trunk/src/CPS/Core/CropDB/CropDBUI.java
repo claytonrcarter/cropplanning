@@ -5,6 +5,7 @@ package CPS.Core.CropDB;
  * This class will handle all of the UI for the CropDB.
  */
 
+import CPS.Data.CPSCrop;
 import CPS.Module.*;
 import java.util.ArrayList;
 import javax.swing.*;
@@ -25,8 +26,8 @@ class CropDBUI extends CPSDataModelUser {
 
     protected CropDBUI () {
 
-       cropInfo = new CropDBCropInfo();
-       cropList = new CropDBCropList( cropInfo );
+       cropInfo = new CropDBCropInfo( this );
+       cropList = new CropDBCropList( this );
        
        buildUI();
 
@@ -58,8 +59,12 @@ class CropDBUI extends CPSDataModelUser {
     
     public JPanel getUI () { return cropDBPanel; }    
     public void setDataSource( CPSDataModel dm ) {
+       // set the data source for this object
        super.setDataSource(dm);
+       
+       // set the data source for these panels
        cropList.setDataSource(dm);
+       cropInfo.setDataSource(dm);
     }
     
 //    protected void updateCropPlanListPane() {
@@ -72,5 +77,13 @@ class CropDBUI extends CPSDataModelUser {
 //       for ( int i = 0; i < l.size(); i++ )
 //          cropListPanel.add( new JLabel( l.get(i) ));
 //    }
+
+   void displayCropInfo( CPSCrop crop ) {
+      cropInfo.displayCrop( crop );
+   }
+
+   void refreshCropList() {
+      cropList.updateCropList();
+   }
 
 }

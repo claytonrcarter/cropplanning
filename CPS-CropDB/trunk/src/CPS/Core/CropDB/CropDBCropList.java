@@ -12,22 +12,28 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
 
 // package access
-class CropDBCropList extends CPSDataModelUser implements ItemListener {
+class CropDBCropList extends CPSDataModelUser implements ItemListener, 
+                                                         TableModelListener, 
+                                                         ListSelectionListener {
    
     private JPanel cropListPanel;
     private JTable cropListTable;
     private JRadioButton radioAll, radioCrops, radioVar;
     
-    private CropDBCropInfo cropInfo;
+    private CropDBUI uiManager;
+    // private CropDBCropInfo cropInfo;
+    private int cropInfoRow = -1;
     
-   
-   CropDBCropList( CropDBCropInfo ci ) {
-      cropInfo = ci;
-      buildCropListPane();
-   }
+    
+    CropDBCropList( CropDBUI ui ) {
+       uiManager = ui;
+       buildCropListPane();
+    }
    
     private void buildCropListPane() {
        
@@ -58,25 +64,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener {
        cropListTable.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
        
        //Ask to be notified of selection changes.
-       ListSelectionModel rowSM = cropListTable.getSelectionModel();
-       rowSM.addListSelectionListener(
-        new ListSelectionListener() {
-          public void valueChanged(ListSelectionEvent e) {
-             //Ignore extra messages.
-             if (e.getValueIsAdjusting()) return;
-
-             ListSelectionModel lsm =
-              (ListSelectionModel)e.getSource();
-             if ( ! lsm.isSelectionEmpty() ) {
-                int selectedRow = lsm.getMinSelectionIndex();
-                System.out.println( "Selected row: " + selectedRow + 
-                                    " (id: " + cropListTable.getValueAt( selectedRow, 0 ) + " )" );
-                cropInfo.updateForCrop( dataModel.getCropInfoForRow( selectedRow ) );
-             }
-          }
-       });
-       
-       
+       cropListTable.getSelectionModel().addListSelectionListener( this );
        
        JScrollPane scrollPane = new JScrollPane( cropListTable );
 	
@@ -84,6 +72,16 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener {
         
        updateCropList(); 
        
+    }
+    
+    protected void updateCropInfoForRow( int i ) {
+       cropInfoRow = i;
+       updateCropInfo();
+    }
+    
+    protected void updateCropInfo() {
+       if ( cropInfoRow != -1 )
+          uiManager.displayCropInfo( dataModel.getCropInfoForRow( cropInfoRow ));
     }
     
     protected void updateCropList() {
@@ -106,27 +104,50 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener {
     }
     
     protected void updateCropListTable( TableModel tm ) {
+       System.out.println("Adding table model listener");
+       tm.addTableModelListener( this );
        cropListTable.setModel(tm);
+       // cropListTable.getModel().addTableModelListener( this );
     }
     
     public JPanel getJPanel() {
        return cropListPanel;
     }
     
-   public void itemStateChanged( ItemEvent itemEvent ) {
+    // Pertinent method for ItemListener
+    public void itemStateChanged( ItemEvent itemEvent ) {
       
-      Object source = itemEvent.getItemSelectable();
+       Object source = itemEvent.getItemSelectable();
 
-      if ( source == radioAll || source == radioCrops || source == radioVar ) {
-         updateBySelectedButton();
-      }
-      
-   }
+       if ( source == radioAll || source == radioCrops || source == radioVar ) {
+          updateBySelectedButton();
+       } 
+    }
     
-   public void setDataSource( CPSDataModel dm ) {
-      super.setDataSource(dm);
-      updateCropList();
-   }
+    public void setDataSource( CPSDataModel dm ) {
+       super.setDataSource(dm);
+       updateCropList();
+    }
    
-   
+    // Pertinent method for ListSelectionListener
+    // gets selected row and sends that data to the cropInfo pane
+    public void valueChanged( ListSelectionEvent e ) {
+       //Ignore extra messages.
+       if ( e.getValueIsAdjusting() ) return;
+
+       ListSelectionModel lsm = ( ListSelectionModel ) e.getSource();
+       if ( ! lsm.isSelectionEmpty() ) {
+          int selectedRow = lsm.getMinSelectionIndex();
+          System.out.println( "Selected row: " + selectedRow +
+                      " (id: " + cropListTable.getValueAt( selectedRow, 0 ) + " )" );
+          updateCropInfoForRow( selectedRow );
+       }
+    }
+
+    // Pertinent method for TableModelListener
+    public void tableChanged( TableModelEvent e ) {
+       updateCropInfo();
+    }
+      
 }
+
