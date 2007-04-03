@@ -10,6 +10,8 @@ import java.util.*;
 
 public class CPSCrop {
 
+   private CropDatum<Integer> cropID;
+   
     private CropDatum<String> cropName;
     private CropDatum<String> cropDescription;
     
@@ -29,6 +31,8 @@ public class CPSCrop {
 
 
     public CPSCrop () {
+       
+       cropID = new CropDatum<Integer>("Unique ID");
        
 	cropName = new CropDatum<String>("Crop name");
         cropDescription = new CropDatum<String>("Crop description");
@@ -142,6 +146,10 @@ public class CPSCrop {
    public void setRowsPerBed(CropDatum<Integer> rowsPerBed) {
       this.rowsPerBed = rowsPerBed;
    }
-   
+
+   public int getID() { return cropID.getDatumAsInt(); }
+   public void setID( int i ) {
+      cropID.setDatum( new Integer( i ));
+   } 
     
 }

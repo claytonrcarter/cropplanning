@@ -45,4 +45,7 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract CPSCrop getCropInfoForRow( int selectedRow );
    
    public abstract void shutdown();
+
+   public abstract void updateCrop( CPSCrop crop);
+
 }
