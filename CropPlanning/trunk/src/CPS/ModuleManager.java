@@ -43,20 +43,28 @@ public class ModuleManager {
      * Loads a demo from a classname
      */
     private CPSModule loadPlugin( String classname ) {
-	
+       return loadPlugin( classname, null );
+    }
+    
+    private CPSModule loadPlugin( String classname, String arg ) {
+       
 	Object instance = null;
 
 	try {
 
-	    System.out.println( "Loading class " + classname );
-	    Class c = Class.forName( classname );
+//	    Class c = Class.forName( classname );
+//	    Constructor cons = c.getConstructor( new Class[] { String.class } );
+//	    instance = cons.newInstance( new Object[]{} );
 
-	    System.out.println( "Retrieving constructor" );
-	    Constructor cons = c.getConstructor( new Class[]{} );
-
-	    System.out.println( "Creating new instance of " + classname );
-	    instance = cons.newInstance( new Object[]{} );
-
+           if ( arg == null )
+              instance = Class.forName( classname )
+                              .getConstructor( new Class[] {} )
+                              .newInstance( new Object[]{} );
+           else
+              instance = Class.forName( classname )
+                              .getConstructor( new Class[] { String.class } )
+                              .newInstance( new Object[]{ arg } );
+            
 	} catch (Exception e) {
 	    System.out.println("Error occurred loading demo: " + classname);
             e.printStackTrace();
