@@ -90,6 +90,7 @@ public class HSQLDBSchemas {
       s   = "id                 INTEGER IDENTITY PRIMARY KEY, ";
       s  += "crop_name          VARCHAR(256), ";
       s  += "var_name           VARCHAR, ";
+      s  += "similar_to         VARCHAR, ";
       s  += "bot_name           VARCHAR, ";
       s  += "fam_name           VARCHAR, ";
       s  += "groups             VARCHAR, ";

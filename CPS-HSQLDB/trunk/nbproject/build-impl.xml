@@ -234,6 +234,7 @@ is divided into following sections:
     ===================
     -->
     <target name="deps-jar" depends="init" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.CPS-CSV}/build.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.CropP-Spec}/build.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.TableUtil}/build.xml"/>
     </target>
@@ -532,6 +533,7 @@ is divided into following sections:
     ===============
     -->
     <target name="deps-clean" depends="init" unless="no.deps">
+        <ant target="clean" inheritall="false" antfile="${project.CPS-CSV}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.CropP-Spec}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.TableUtil}/build.xml"/>
     </target>

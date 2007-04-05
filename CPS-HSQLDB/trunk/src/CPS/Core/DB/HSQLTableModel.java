@@ -18,18 +18,46 @@ import resultsettablemodel.*;
 
 public class HSQLTableModel extends ResultSetTableModel {
    
+   private boolean idInResults = false;
+   
    public HSQLTableModel( ResultSet resSet ) throws SQLException {
       super(resSet);
       if ( results.getType() == ResultSet.TYPE_FORWARD_ONLY )
          throw new SQLException( "RSTableModel does not accept ResultSets of TYPE_FORWARD_ONLY" );
       if ( results.getConcurrency() != ResultSet.CONCUR_READ_ONLY )
          throw new SQLException( "RSTableModel only accepts ResultSets of CONCUR_READ_ONLY" );
+      
+      if ( metadata.getColumnLabel( 1 ).equalsIgnoreCase( "id" ) )
+         idInResults = true;
+      
    }
 
     public boolean isCellEditable(int row, int column) { return true; } 
-
+    public int getColumnCount() {
+       int cols = super.getColumnCount();
+       if ( idInResults )
+          return cols - 1;
+       else
+          return cols;
+    }
+    
+    public String getColumnName( int column ) {
+       if ( idInResults )
+          column++;
+       return super.getColumnName( column );
+    }
+    
+    public Object getValueAt( int r, int c ) {
+       if ( idInResults )
+          c++;
+       return super.getValueAt( r, c );
+    }
+    
     // Since its not editable, we don't need to implement these methods
     public void setValueAt(Object value, int row, int column) {
+    
+       if ( idInResults )
+          column++;
        
        String val = value.toString();
        System.out.println( "Setting column " + column + ", row " + row + ": to " + value.toString() );

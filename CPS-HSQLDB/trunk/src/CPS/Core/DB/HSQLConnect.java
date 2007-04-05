@@ -6,6 +6,7 @@
 
 package CPS.Core.DB;
 
+import CPS.Module.CPSDataModel;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -23,12 +24,17 @@ public class HSQLConnect {
    private HSQLConnect() {}
 
    public static Connection getConnection( String dir, String dbFilename, String driver ) {
-      
-      String dbPath = dir + fileSep + dbFilename;
-      String dbCon  = dbPrefix + dbPath + dbProperties;
-      
       loadDriver( driver );
-      return establishConnection( dbCon );
+      return establishConnection( buildDBConnectionString( dir, dbFilename ));
+   }
+   
+   public static Connection createDB( String dir, String dbFilename ) {
+      Connection con = connectToNew( buildDBConnectionString( dir, dbFilename ));
+      return con;
+   }
+   
+   private static String buildDBConnectionString( String dir, String dbFilename ) {
+      return dbPrefix + dir + fileSep + dbFilename + dbProperties;
    }
    
    private static void loadDriver( String driver ) {
@@ -49,9 +55,9 @@ public class HSQLConnect {
       
       con = connectToExisting( dbCon );
 
-      if ( con == null ) {  
-         con = connectToNew( dbCon );
-      }
+//      if ( con == null ) {  
+//         con = connectToNew( dbCon );
+//      }
 
       return con;
    }
@@ -88,7 +94,7 @@ public class HSQLConnect {
          return con;
       
       HSQLDBCreator.createTables( con );
-      HSQLDBPopulator.populateTables( con );
+//      HSQLDBPopulator.populateTables( con );
       
       return con;
    }

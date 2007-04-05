@@ -8,10 +8,14 @@
 
 package CPS.Core.DB;
 
+import CPS.CSV;
+import CPS.Data.CPSCrop;
+import CPS.Module.CPSDataModel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -26,8 +30,15 @@ public class HSQLDBPopulator {
       populateCropsAndVarieties( con );
    }
    
-   static void populateCropsAndVarieties( Connection con ) {
+   static void importCropsAndVarieties( Connection con ) {
       
+      // 
+      
+      
+      
+   }
+      
+   static void populateCropsAndVarieties( Connection con ) {
       Object[][] o = new Object[][] 
        {{ new String("Argula"),  null,                       new String("Brassica"), new Integer( 40 ) },
         { new String("Argula"),  new String("Sylvetta"),     new String("Brassica"), new Integer( 40 ) },
@@ -68,4 +79,9 @@ public class HSQLDBPopulator {
          e.printStackTrace();
       }
    } 
+
+   public static CPSDataModel loadDefaultCropList( String dir ) {
+      
+      return new CSV( dir + System.getProperty("file.separator") + "CropVarList.csv");
+   }
 }
