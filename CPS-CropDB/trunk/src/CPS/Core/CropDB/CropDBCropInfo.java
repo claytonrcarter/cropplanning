@@ -103,12 +103,12 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
          noItemSelected = false;
       }
       
-      chkDS.setSelected( displayedCrop.getDS() );
-      chkTP.setSelected( displayedCrop.getTP() ); 
+      // chkDS.setSelected( displayedCrop.getDS() );
+      // chkTP.setSelected( displayedCrop.getTP() ); 
       
       tfldCropName.setText( displayedCrop.getCropName() );
       tfldVarName.setText( displayedCrop.getVarietyName() );
-      tfldFamName.setText( displayedCrop.getFamName() );
+      tfldFamName.setText( displayedCrop.getFamilyName() );
       tfldMatDays.setText( "" + displayedCrop.getMaturityDays() );
       
    }
@@ -119,12 +119,12 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       crop.setID( displayedCrop.getID() );
       
-      crop.setDS( chkDS.isSelected() );
-      crop.setTP( chkTP.isSelected() );
+      // crop.setDS( chkDS.isSelected() );
+      // crop.setTP( chkTP.isSelected() );
       
       crop.setCropName( tfldCropName.getText() );
       crop.setVarietyName( tfldVarName.getText() );
-      crop.setFamName( tfldFamName.getText() );
+      crop.setFamilyName( tfldFamName.getText() );
       crop.setMaturityDays( Integer.parseInt( tfldMatDays.getText() ));
       
       return crop;
@@ -135,8 +135,8 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       CPSCrop diff = new CPSCrop();
       
-      if ( chkDS.isSelected() != that.getDS() )
-         diff.setDS( chkDS.isSelected() );
+      //if ( chkDS.isSelected() != that.getDS() )
+        // diff.setDS( chkDS.isSelected() );
       
       // and so on ...
       
