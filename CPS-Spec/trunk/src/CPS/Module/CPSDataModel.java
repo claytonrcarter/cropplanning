@@ -42,10 +42,25 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getCropAndVarietyList();
    public abstract TableModel getAbbreviatedCropAndVarietyList();
 
-   public abstract CPSCrop getCropInfoForRow( int selectedRow );
+   public abstract CPSCrop getCropInfo( String cropName );
+   public abstract CPSCrop getCropInfoForRow( int row );
    
    public abstract void shutdown();
 
-   public abstract void updateCrop( CPSCrop crop);
+   public abstract void createCrop( CPSCrop crop );
+   public abstract void updateCrop( CPSCrop crop );
+   
 
+   public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
+      for ( int i = 0; i < crops.size(); i ++ ) {
+         System.out.println("Importing data for crop: " + crops.get(i).getCropName() );
+         if ( getCropInfo( crops.get(i).getCropName() ) != null )
+            System.err.println("Crop already exists: " + crops.get(i).getCropName() );
+         else
+            createCrop( crops.get(i) );
+      }
+   }
+      
+   public abstract ArrayList<CPSCrop> exportCropsAndVarieties();
+   
 }
