@@ -15,14 +15,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
+import javax.swing.table.TableModel;
 
 public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    
@@ -30,13 +24,15 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    
    private JPanel buttonPanel;
    private JLabel lblChanges;
-   private JButton btnSaveChanges, btnDiscardChanges, btnDelete;
+   private JButton btnSaveChanges, btnDiscardChanges, btnDelete, btnNew;
    
    private boolean noItemSelected = true;
    
-   private JCheckBox chkDS, chkTP;
-   private JTextField tfldCropName, tfldVarName, tfldFamName;
+   private JCheckBox chkDS, chkTP, chkSucc;
+   private JTextField tfldCropName, tfldVarName, tfldFamName, tfldDesc;
    private JTextField tfldMatDays;
+   private JTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
+   private JComboBox cmbxSimilar;
    
    private CPSCrop displayedCrop;
    
@@ -108,8 +104,19 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       tfldCropName.setText( displayedCrop.getCropName() );
       tfldVarName.setText( displayedCrop.getVarietyName() );
+      if ( ! displayedCrop.getSimilarCrop().getCropName().equals("") )
+         cmbxSimilar.setSelectedItem( displayedCrop.getSimilarCrop().getCropName() );
+      else
+         cmbxSimilar.setSelectedItem( "None" );
       tfldFamName.setText( displayedCrop.getFamilyName() );
+      tfldDesc.setText( displayedCrop.getCropDescription() );
+      
       tfldMatDays.setText( "" + displayedCrop.getMaturityDays() );
+      chkSucc.setSelected( displayedCrop.getSuccessions() );
+      tareGroups.setText( displayedCrop.getGroups() );
+      tareOtherReq.setText( displayedCrop.getOtherRequirments() );
+      tareKeywords.setText( displayedCrop.getKeywords() );
+      tareNotes.setText( displayedCrop.getNotes() );
       
    }
    
@@ -149,10 +156,20 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       chkDS = new JCheckBox("DS?");
       chkTP = new JCheckBox("TP?");
+      chkSucc = new JCheckBox("By succession?");
       tfldCropName = new JTextField(10);
       tfldVarName = new JTextField(10);
       tfldFamName = new JTextField(10);
+      tfldDesc = new JTextField(10);
+      
       tfldMatDays = new JTextField(5);
+
+      tareGroups = new JTextArea( 3, 10 );
+      tareKeywords = new JTextArea( 3, 10 );
+      tareOtherReq = new JTextArea( 3, 10 );
+      tareNotes = new JTextArea( 5, 20 );
+      
+      cmbxSimilar = new JComboBox( new String[] {"None"} );
       
       cropInfoPanel.setLayout( new GridBagLayout() );
       GridBagConstraints c = new GridBagConstraints();
@@ -162,34 +179,64 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       Insets il  = new Insets( 0, 0, 0, 5 );
       Insets ita = new Insets( 0, 2, 2, 5 );
 
-      /* Column One */
+      
+      /* the format for these calls is: panel, column, row, component */
+      
       CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 0, "Crop Name:" );
       CropDBDataTranslata.addTextField( cropInfoPanel, 1, 0, tfldCropName );
 
+      // TODO maybe: if ( isVariety )
       CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 1, "Variety:" );
       CropDBDataTranslata.addTextField( cropInfoPanel, 1, 1, tfldVarName );
 
-      //createLabel(     cropInfoPanel, 0, 2, "Belongs to Groups:" );
-      //createTextArea(  cropInfoPanel, 1, 2, "Greenhouse,\nMesclun" );
-
-
-      /* Column Two */
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 0, "Family:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 3, 0, tfldFamName );
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 0, "Similar to:" );
+      CropDBDataTranslata.addComboBox(  cropInfoPanel, 3, 0, cmbxSimilar );
       
-      CropDBDataTranslata.createLabel(     cropInfoPanel, 2, 1, "Mat. Days:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 3, 1, tfldMatDays );
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 1, "Family:" );
+      CropDBDataTranslata.addTextField( cropInfoPanel, 3, 1, tfldFamName );
+      
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 2, "Description:" );
+      CropDBDataTranslata.addTextField( cropInfoPanel, 1, 2, tfldDesc );
+      
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 3, "Mat. Days:" );
+      CropDBDataTranslata.addTextField( cropInfoPanel, 1, 3, tfldMatDays );
+      
+      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 0, 4, chkDS );
+      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 1, 4, chkTP );
+      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 2, 4, chkSucc );
 
-      //CropDBDataTranslata.createLabel(     cropInfoPanel, 2, 2, "DS?" );
-      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 3, 2, chkDS );
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 3, "Belongs to Groups:" );
+      CropDBDataTranslata.addTextArea(  cropInfoPanel, 3, 3, tareGroups );
 
-      //CropDBDataTranslata.createLabel(     cropInfoPanel, 2, 3, "TP?" );
-      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 3, 3, chkTP );
-
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 5, "Other Requirements:" );
+      CropDBDataTranslata.addTextArea(  cropInfoPanel, 1, 5, tareOtherReq );
+      
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 5, "Keywords:" );
+      CropDBDataTranslata.addTextArea(  cropInfoPanel, 3, 5, tareKeywords );
+      
+      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 6, "Notes:" );
+      CropDBDataTranslata.addTextArea(  cropInfoPanel, 1, 6, tareNotes );
+      
       return cropInfoPanel;
       
    }
 
+   public void setDataSource( CPSDataModel dm ) {
+      super.setDataSource(dm);
+      
+      // now fill in the SimilarTo combobox
+      TableModel tm = dataModel.getCropList( "crop_name" );
+      int nameCol = 0;
+      // find the column storing the crop names
+      while ( ! tm.getColumnName( nameCol ).equalsIgnoreCase("crop_name") && 
+              nameCol < tm.getColumnCount() ) {
+         nameCol++;
+      }
+      // add the crop names to the combo box
+      for ( int i = 0; i < tm.getRowCount(); i++ )
+         cmbxSimilar.addItem( tm.getValueAt( i, nameCol ) );
+      
+   }
    
    public void actionPerformed(ActionEvent actionEvent) {
       String action = actionEvent.getActionCommand();

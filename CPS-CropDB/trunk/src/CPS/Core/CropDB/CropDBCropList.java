@@ -19,10 +19,12 @@ import javax.swing.table.*;
 // package access
 class CropDBCropList extends CPSDataModelUser implements ItemListener, 
                                                          TableModelListener, 
-                                                         ListSelectionListener {
+                                                         ListSelectionListener,
+                                                         MouseListener {
    
     private JPanel cropListPanel;
     private JTable cropListTable;
+    private String sortColumn;
     private JRadioButton radioAll, radioCrops, radioVar;
     
     private CropDBUI uiManager;
@@ -32,6 +34,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     
     CropDBCropList( CropDBUI ui ) {
        uiManager = ui;
+       sortColumn = null;
        buildCropListPane();
     }
    
@@ -62,6 +65,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        cropListTable = new JTable();
        cropListTable.setPreferredScrollableViewportSize( new Dimension( 500, cropListTable.getRowHeight() * 10 ) );
        cropListTable.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+       cropListTable.getTableHeader().addMouseListener( this );
        
        //Ask to be notified of selection changes.
        cropListTable.getSelectionModel().addListSelectionListener( this );
@@ -80,8 +84,17 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     }
     
     protected void updateCropInfo() {
-       if ( cropInfoRow != -1 )
-          uiManager.displayCropInfo( dataModel.getCropInfoForRow( cropInfoRow ));
+       if ( cropInfoRow == -1 )
+          return;
+       
+       int colNum = 0;
+       while ( ! cropListTable.getColumnName( colNum ).equalsIgnoreCase("crop_name") &&
+               colNum < cropListTable.getColumnCount() ) {
+          colNum++;
+       }
+       
+       uiManager.displayCropInfo( dataModel.getCropInfo( 
+                   cropListTable.getValueAt( cropInfoRow, colNum ).toString() ));
     }
     
     protected void updateCropList() {
@@ -94,20 +107,18 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
           return;
        
        if      ( radioAll.isSelected() )
-          updateCropListTable( dataModel.getAbbreviatedCropAndVarietyList() );
+          updateCropListTable( dataModel.getAbbreviatedCropAndVarietyList( sortColumn ) );
        else if ( radioCrops.isSelected() )
-          updateCropListTable( dataModel.getAbbreviatedCropList() );
+          updateCropListTable( dataModel.getAbbreviatedCropList( sortColumn ) );
        else if ( radioVar.isSelected() )
-          updateCropListTable( dataModel.getAbbreviatedVarietyList() );
+          updateCropListTable( dataModel.getAbbreviatedVarietyList( sortColumn ) );
        else // nothing selected (not useful)
           updateCropListTable( new DefaultTableModel() );
     }
     
     protected void updateCropListTable( TableModel tm ) {
-       System.out.println("Adding table model listener");
        tm.addTableModelListener( this );
        cropListTable.setModel(tm);
-       // cropListTable.getModel().addTableModelListener( this );
     }
     
     public JPanel getJPanel() {
@@ -148,6 +159,64 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     public void tableChanged( TableModelEvent e ) {
        updateCropInfo();
     }
+
+   public void mouseClicked( MouseEvent evt ) {
+      
+      JTable table = ((JTableHeader)evt.getSource()).getTable();
+      TableColumnModel colModel = table.getColumnModel();
+    
+      // TODO implement multiple column sorting
+      // this will help figure out if CTRL was pressed
+      // evt.getModifiersEx();
+                  
+      // The index of the column whose header was clicked
+      int vColIndex = colModel.getColumnIndexAtX( evt.getX() );
+      int mColIndex = table.convertColumnIndexToModel( vColIndex );
+    
+      // Return if not clicked on any column header
+      if (vColIndex == -1) {
+         return;
+      }
+    
+      // Determine if mouse was clicked between column heads
+      Rectangle headerRect = table.getTableHeader().getHeaderRect(vColIndex);
+      if (vColIndex == 0) {
+         headerRect.width -= 3;    // Hard-coded constant
+      } else {
+         headerRect.grow(-3, 0);   // Hard-coded constant
+      }
+      if (!headerRect.contains(evt.getX(), evt.getY())) {
+         // Mouse was clicked between column heads
+         // vColIndex is the column head closest to the click
+
+         // vLeftColIndex is the column head to the left of the click
+         int vLeftColIndex = vColIndex;
+         if (evt.getX() < headerRect.x) {
+            vLeftColIndex--;
+         }
+      }
+      
+      // TODO: modify the column header to show which column is being sorted
+      // table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
+      // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
+      
+      if ( sortColumn != null && sortColumn.indexOf( table.getColumnName(vColIndex) ) != -1 ) {
+         if      ( sortColumn.indexOf( "DESC" ) != -1 )
+            sortColumn = table.getColumnName(vColIndex) + " ASC";
+         else 
+            sortColumn = table.getColumnName(vColIndex) + " DESC";
+      }
+      else
+         sortColumn = table.getColumnName(vColIndex);
+      
+      updateBySelectedButton();
+      
+   }
+
+   public void mousePressed(MouseEvent mouseEvent) {}
+   public void mouseReleased(MouseEvent mouseEvent) {}
+   public void mouseEntered(MouseEvent mouseEvent) {}
+   public void mouseExited(MouseEvent mouseEvent) {}
       
 }
 

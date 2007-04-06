@@ -111,26 +111,24 @@ public class CropDBDataTranslata {
      * createTextArea
      */
     private static void createTextArea( JPanel p, int x, int y ) {
-	createTextArea( p, x, y, "", 3, 10 );
+	addTextArea( p, x, y, new JTextArea( "", 3, 10 ));
     }
 
     private static void createTextArea( JPanel p, int x, int y, String str ) {
-	createTextArea( p, x, y, str, 3, 10 );
+	addTextArea( p, x, y, new JTextArea( str, 3, 10 ));
     }
 
     private static void createTextArea( JPanel p,
 				 int x, int y, int row, int col ) {
-	createTextArea( p, x, y, "", row, col );
+	addTextArea( p, x, y, new JTextArea( "", row, col ));
     }
     
-    private static void createTextArea( JPanel p, 
-				 int x, int y, 
-				 String str,
-				 int rows, int cols ) {
+    public static void addTextArea( JPanel p, 
+			  	    int x, int y, 
+				    JTextArea ta ) {
 
 	Insets i  = new Insets( 0, 2, 2, 5 );
 	GridBagConstraints c = new GridBagConstraints();
-	JTextArea ta = new JTextArea( str, rows, cols );
 
 	ta.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
 							Color.GRAY,
@@ -138,7 +136,7 @@ public class CropDBDataTranslata {
 
 	c.gridx = x;
 	c.gridy = y;
-	c.gridheight = rows - 1;
+	c.gridheight = ta.getHeight() - 1;
 	c.anchor = GridBagConstraints.FIRST_LINE_START;
 	c.insets = i;
 	
@@ -146,6 +144,24 @@ public class CropDBDataTranslata {
 
     }
 
+    public static void addComboBox( JPanel p, int x, int y, JComboBox cb ) {
+      
+       Insets i  = new Insets( 0, 2, 2, 5 );
+       GridBagConstraints c = new GridBagConstraints();
+
+       cb.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
+							Color.GRAY,
+							Color.WHITE ));
+
+       c.gridx = x;
+       c.gridy = y;
+       c.anchor = GridBagConstraints.FIRST_LINE_START;
+       c.insets = i;
+	
+       p.add( cb, c );
+
+    }
+    
     private static void addSubPanel( JPanel p, 
 			      int x, int y, int xspan, int yspan,
 			      JPanel newP ) {
