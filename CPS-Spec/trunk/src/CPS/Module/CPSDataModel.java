@@ -52,13 +52,35 @@ public abstract class CPSDataModel extends CPSModule {
    
 
    public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
+      ArrayList<CPSCrop> withSimilar = new ArrayList<CPSCrop>();
+      CPSCrop temp;
       for ( int i = 0; i < crops.size(); i ++ ) {
-         System.out.println("Importing data for crop: " + crops.get(i).getCropName() );
-         if ( getCropInfo( crops.get(i).getCropName() ) != null )
-            System.err.println("Crop already exists: " + crops.get(i).getCropName() );
+         if      ( getCropInfo( crops.get(i).getCropName() ) != null ) {
+            System.err.println( "Crop already exists: " + crops.get(i).getCropName() );
+            crops.remove( i-- ); // remove the preexisting crop
+         }
          else
-            createCrop( crops.get(i) );
+            /* if this crop doesn't have a similar crop entry,
+             * or it does and that similar crop exists
+             * then we add it and remove it from the list
+             * else we just skip it
+             */
+            if ( crops.get(i).getSimilarCrop() == null ||
+                 crops.get(i).getSimilarCrop() != null &&
+                 getCropInfo( crops.get(i).getSimilarCrop().getCropName() ) != null ) {
+               // create the current crop, but decrement i because the ArrayList
+               // will shift all indices when we call remove
+               System.out.println("Importing data for crop: " + crops.get(i).getCropName() );
+               createCrop( crops.remove(i--) );
+            }
+            // else leave the crop in the list to be dealt with later
       }
+      
+      System.out.println("There are " + crops.size() + " remaining crops.");
+      
+      // now make another pass for crops w/ similar crops that weren't preexisting
+      if ( crops.size() > 0 )
+         importCropsAndVarieties( crops );
    }
       
    public abstract ArrayList<CPSCrop> exportCropsAndVarieties();
