@@ -42,6 +42,9 @@ public class HSQLQuerier {
    public ResultSet submitQuery( String table, String columns, String conditional ) {
       return submitQuery( con, table, columns, conditional, false );
    }
+   public ResultSet submitQuery( Connection c, String table, String columns, String conditional ) {
+      return submitQuery( c, table, columns, conditional, false );
+   }
    
    private ResultSet submitQuery( String table, String columns, String conditional, boolean store ) {
       rsCache = submitQuery( con, table, columns, conditional, store );

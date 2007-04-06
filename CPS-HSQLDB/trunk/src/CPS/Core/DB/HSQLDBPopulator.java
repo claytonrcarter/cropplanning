@@ -73,6 +73,7 @@ public class HSQLDBPopulator {
             st.executeUpdate( s );
          }
       
+         st.close();
          
       }
       catch ( SQLException e ) {

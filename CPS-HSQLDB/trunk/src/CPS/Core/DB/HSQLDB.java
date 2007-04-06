@@ -31,7 +31,7 @@ public class HSQLDB extends CPSDataModel {
    private final String dbFile = "CPSdb";
    
    private ResultSet rsListCache = null;
-   private ResultSet rsInfoCache = null;
+   private ResultSet rsCropCache = null;
    public String state = null;
    
    private HSQLQuerier query;
@@ -47,7 +47,7 @@ public class HSQLDB extends CPSDataModel {
       }
          
       query = new HSQLQuerier( con );
-      
+
       if ( newDB ) {
          this.importCropsAndVarieties( HSQLDBPopulator.loadDefaultCropList( dbDir )
                                                       .exportCropsAndVarieties() );
@@ -152,13 +152,18 @@ public class HSQLDB extends CPSDataModel {
    /* we make the assumption that we're zero-based, ResultSets are not */
    public CPSCrop getCropInfoForRow( int selectedRow ) {
       try {
-         rsListCache.absolute( selectedRow + 1 );
-         int id = rsListCache.getInt( "id" );
-         rsInfoCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
-         return resultSetAsCrop( rsInfoCache );
+         int id;
+         if ( rsListCache != null ) {
+            rsListCache.absolute( selectedRow + 1 );
+            id = rsListCache.getInt( "id" );
+         } else {
+            id = selectedRow;
+         }
+         rsCropCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
+         return resultSetAsCrop( rsCropCache );
       }
       catch ( SQLException e ) { e.printStackTrace(); }
-      
+
       return null;
    }
    
@@ -205,11 +210,18 @@ public class HSQLDB extends CPSDataModel {
          
          String sql = "UPDATE " + "CROPS_VARIETIES" + " SET ";
          
-         sql += "crop_name = " + HSQLDBCreator.escapeString( crop.getCropName() ) + ", ";
-         sql += "var_name = " + HSQLDBCreator.escapeString( crop.getVarietyName() ) + ", ";
-         sql += "fam_name = " + HSQLDBCreator.escapeString( crop.getFamilyName() ) + ", ";
+         Iterator<CropDatum> i = crop.iterator();
+         CropDatum c;
          
-         sql += "maturity = " + crop.getMaturityDays() + " ";
+         while ( i.hasNext() ) {
+            c = i.next();
+            if ( c != null && c.getDatum() != null ) {
+               // System.out.println(" Processing datum: " + c.getColumnName() );
+               sql += c.getColumnName() + " = " + escapeValue( c.getDatum() ) + ", ";
+            }
+         }
+         
+         sql = sql.substring( 0, sql.lastIndexOf( ", " ));
          
          sql += "WHERE id = " + crop.getID();
          
@@ -218,6 +230,7 @@ public class HSQLDB extends CPSDataModel {
          
          Statement st = con.createStatement();
          st.executeUpdate( sql );
+         st.close();
          
       }
       catch ( SQLException ex ) { ex.printStackTrace(); }
@@ -235,21 +248,9 @@ public class HSQLDB extends CPSDataModel {
          while ( i.hasNext() ) {
             c = i.next();
             if ( c != null && c.getDatum() != null ) {
-               System.out.println(" Processing datum: " + c.getColumnName() );
+               // System.out.println(" Processing datum: " + c.getColumnName() );
                cols += c.getColumnName() + ", ";
-               
-               if      ( c.getDatum() == null )
-                  vals += "NULL, ";
-               else if ( c.getDatum() instanceof String )
-                  if ( c.getDatum().equals("") )
-                     vals += "NULL, ";
-                  else
-                     vals += HSQLDBCreator.escapeString( (String) c.getDatum() ) + ", ";
-               else if ( c.getDatum() instanceof Integer && 
-                         ((Integer) c.getDatum()).intValue() == -1 )
-                     vals += "NULL, ";
-               else
-                  vals += c.getDatum() + ", ";
+               vals += escapeValue( c.getDatum() ) + ", ";
             }
          }
          
@@ -262,62 +263,18 @@ public class HSQLDB extends CPSDataModel {
             vals = vals.substring( 0, vals.lastIndexOf( ", " ));
          }
          
-//         if ( crop.getCropName() != null ) {
-//            cols += "crop_name, ";
-//            vals += HSQLDBCreator.escapeString( crop.getCropName() ) + ", ";
-//         }
-//         if ( crop.getVarietyName() != null ) {
-//            cols += "var_name, ";
-//            vals += HSQLDBCreator.escapeString( crop.getVarietyName() ) + ", ";
-//         }
-//         if ( crop.getFamilyName() != null ) {
-//            cols += "fam_name, ";
-//            vals += HSQLDBCreator.escapeString( crop.getFamilyName() ) + ", ";
-//         }
-//         if ( crop.getBotanicalName() != null ) {
-//            cols += "bot_name, ";
-//            vals += HSQLDBCreator.escapeString( crop.getFamilyName() ) + ", ";
-//         }
-//         if ( crop.getCropDescription() != null ) {
-//            cols += "description, ";
-//            vals += HSQLDBCreator.escapeString( crop.getCropDescription() ) + ", ";
-//         }
-//         if ( crop.getGroups() != null ) {
-//            cols += "groups, ";
-//            vals += HSQLDBCreator.escapeString( crop.getGroups() ) + ", ";
-//         }
-//         
-//         cols += "successions, ";
-//         vals += crop.getSuccessions() + ", ";
-//         
-//         if ( crop.getKeywords() != null ) {
-//            cols += "keywords, ";
-//            vals += HSQLDBCreator.escapeString( crop.getKeywords() ) + ", ";
-//         }
-//         if ( crop.getOtherRequirments() != null ) {
-//            cols += "other_req, ";
-//            vals += HSQLDBCreator.escapeString( crop.getOtherRequirments() ) + ", ";
-//         }
-//         if ( crop.getNotes() != null ) {
-//            cols += "notes, ";
-//            vals += HSQLDBCreator.escapeString( crop.getNotes() ) + ", ";
-//         }
-//         if ( crop.getMaturityDays() != -1 ) {
-//            cols += "maturity, ";
-//            vals += crop.getMaturityDays() + ", ";
-//         }
-//         
          //"similar_to","Fudge","mat_adjust","misc_adjust","seeds_sources","seeds_item_codes","seeds_unit_size"
          
          
          String sql = "INSERT INTO CROPS_VARIETIES ( " + cols + " ) VALUES ( " + vals + " )";
          
-         
          System.out.println("Attempting to execute: " + sql );
-
          
          Statement st = con.createStatement();
-         st.executeUpdate( sql );
+         if ( st.executeUpdate( sql ) == -1 )
+            System.err.println( "Error creating crop " + crop.getCropName() );
+         
+         st.close();
          
       }
       catch ( SQLException ex ) { ex.printStackTrace(); }
@@ -332,11 +289,29 @@ public class HSQLDB extends CPSDataModel {
                                                     "*", 
                                                     "crop_name = " + 
                                                     HSQLDBCreator.escapeString( cropName ) + " AND " +
-                                                    "var_name = NULL " ));
+                                                    "var_name IS NULL " ));
       }
       catch ( SQLException e ) { e.printStackTrace(); }
       
       return null;
    }
 
+   private String escapeValue( Object o ) {
+      // if the datum doesn't exist, use NULL
+      if      ( o == null )
+         return "NULL";
+      // if the datum is a string and is only "", use NULL, else escape it
+      else if ( o instanceof String )
+         if ( o.equals("") )
+            return "NULL";
+         else
+            return HSQLDBCreator.escapeString( (String) o );
+      // if the datum is an int whose value is -1, use NULL
+      else if ( o instanceof Integer &&
+                  ((Integer) o).intValue() == -1 )
+         return "NULL";
+      else
+         return o.toString();
+   }
+   
 }

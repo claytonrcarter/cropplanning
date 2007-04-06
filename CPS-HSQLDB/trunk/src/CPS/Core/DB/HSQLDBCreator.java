@@ -31,6 +31,8 @@ public class HSQLDBCreator {
          st.executeUpdate( createTableCropsAndVarieties() );
          st.executeUpdate( createTablePlantingMethods() );
          
+         st.close();
+         
          createCropPlan( con, "COMMON_PLANTINGS" );
       }
       catch ( SQLException e ) { e.printStackTrace(); }
@@ -50,6 +52,7 @@ public class HSQLDBCreator {
       
          System.out.println("Executing update: " + s );
          st.executeUpdate( s );
+         st.close();
       }
       catch ( SQLException e ) { e.printStackTrace(); }
          
