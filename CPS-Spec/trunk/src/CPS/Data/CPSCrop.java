@@ -135,13 +135,18 @@ public class CPSCrop {
     public int getID() { return cropID.getDatumAsInt(); }
     public void setID( int i ) { cropID.setDatum( new Integer( i )); }
         
-    public String getCropName() { return get( cropName, null ); }
+    public String getCropName() { return get( cropName, "" ); }
     public void setCropName( String s ) { cropName.setDatum( s ); }
 
     public String getCropDescription() { return get( cropDescription, "" ); }
     public void setCropDescription( String s ) { cropDescription.setDatum( s ); }
 
-    public CPSCrop getSimilarCrop() { return similar; }
+    public CPSCrop getSimilarCrop() { 
+       if ( similar == null )
+          return new CPSCrop();
+       else
+          return similar;
+    }
     public void setSimilarCrop( CPSCrop c ) { similar = c; }
     
     public String getVarietyName() { return get( varName, "" ); }

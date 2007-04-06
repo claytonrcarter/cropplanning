@@ -42,6 +42,13 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getCropAndVarietyList();
    public abstract TableModel getAbbreviatedCropAndVarietyList();
 
+   public abstract TableModel getCropList( String sortCol );
+   public abstract TableModel getAbbreviatedCropList( String sortCol );
+   public abstract TableModel getVarietyList( String sortCol );
+   public abstract TableModel getAbbreviatedVarietyList( String sortCol );
+   public abstract TableModel getCropAndVarietyList( String sortCol );
+   public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol );
+   
    public abstract CPSCrop getCropInfo( String cropName );
    public abstract CPSCrop getCropInfoForRow( int row );
    
@@ -55,9 +62,10 @@ public abstract class CPSDataModel extends CPSModule {
       ArrayList<CPSCrop> withSimilar = new ArrayList<CPSCrop>();
       CPSCrop temp;
       for ( int i = 0; i < crops.size(); i ++ ) {
-         if      ( getCropInfo( crops.get(i).getCropName() ) != null ) {
+         // if this crop already exists, remove it from the list and keep going
+         if ( ! getCropInfo( crops.get(i).getCropName() ).getCropName().equals("") ) {
             System.err.println( "Crop already exists: " + crops.get(i).getCropName() );
-            crops.remove( i-- ); // remove the preexisting crop
+            crops.remove( i-- );
          }
          else
             /* if this crop doesn't have a similar crop entry,
@@ -65,12 +73,12 @@ public abstract class CPSDataModel extends CPSModule {
              * then we add it and remove it from the list
              * else we just skip it
              */
-            if ( crops.get(i).getSimilarCrop() == null ||
-                 crops.get(i).getSimilarCrop() != null &&
-                 getCropInfo( crops.get(i).getSimilarCrop().getCropName() ) != null ) {
+            if ( crops.get(i).getSimilarCrop().getCropName().equals("") ||
+                 ! getCropInfo( crops.get(i).getSimilarCrop().getCropName() ).getCropName().equals("") ) {
                // create the current crop, but decrement i because the ArrayList
                // will shift all indices when we call remove
-               System.out.println("Importing data for crop: " + crops.get(i).getCropName() );
+               System.out.println("Importing data for crop: " + crops.get(i).getCropName() +
+                                  " similar to: " + crops.get(i).getSimilarCrop().getCropName() );
                createCrop( crops.remove(i--) );
             }
             // else leave the crop in the list to be dealt with later
