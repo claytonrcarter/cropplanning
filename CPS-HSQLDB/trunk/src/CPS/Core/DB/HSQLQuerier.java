@@ -36,20 +36,30 @@ public class HSQLQuerier {
       return tableResults( storeQuery( table, columns, conditional ));
    }
       
+   public ResultSet storeQuery( String table, String columns ) {
+      return storeQuery( table, columns, null, null );
+   }
    public ResultSet storeQuery( String table, String columns, String conditional ) {
-      return submitQuery( con, table, columns, conditional, true );
+      return storeQuery( table, columns, conditional, null );
    }
-   public ResultSet submitQuery( String table, String columns, String conditional ) {
-      return submitQuery( con, table, columns, conditional, false );
-   }
-   public ResultSet submitQuery( Connection c, String table, String columns, String conditional ) {
-      return submitQuery( c, table, columns, conditional, false );
+   public ResultSet storeQuery( String table, String columns, String conditional, String sort ) {
+      return submitQuery( con, table, columns, conditional, sort, true );
    }
    
-   private ResultSet submitQuery( String table, String columns, String conditional, boolean store ) {
-      rsCache = submitQuery( con, table, columns, conditional, store );
-      return getCachedResults();
+   public ResultSet submitQuery( String table, String columns ) {
+      return submitQuery( table, columns, null, null );
    }
+   public ResultSet submitQuery( String table, String columns, String conditional ) {
+      return submitQuery( table, columns, conditional, null );
+   }
+   public ResultSet submitQuery( String table, String columns, String conditional, String sort ) {
+      return submitQuery( con, table, columns, conditional, sort,  false );
+   }
+//   
+//   private ResultSet submitQuery( String table, String columns, String conditional, boolean store ) {
+//      rsCache = submitQuery( con, table, columns, conditional, null, store );
+//      return getCachedResults();
+//   }
    
    /*
     * Static Methods
@@ -58,12 +68,20 @@ public class HSQLQuerier {
                                               String table,
                                               String columns, 
                                               String conditional,
+                                              String sort,
                                               boolean prepared ) {
       ResultSet rs;
       String query = "SELECT " + columns + " FROM " + table;
       
       if ( conditional != null && conditional.length() > 0 )
          query += " WHERE ( " + conditional + " ) ";
+      
+      /* TODO: if sort != crop_name, then make crop_name secondary sort
+       * if sort == crop_name, then make var_name secondary sort
+       * unless already includes secondary sort 
+       */
+      if ( sort != null && sort.length() > 0 )
+         query += " ORDER BY " + sort;
       
       System.out.println("Submitting query: " + query );
       

@@ -79,8 +79,12 @@ public class HSQLDB extends CPSDataModel {
       
    }
 
+   private String getMandatoryColumnNames() {
+      return "id, crop_name";
+   }
    private String getAbbreviatedColumnNames( boolean varieties ) {
-      return "id, crop_name, " + ( varieties ? "var_name, " : "" ) + "fam_name, maturity";
+      return getMandatoryColumnNames() + ", " +
+             ( varieties ? "var_name, " : "" ) + "fam_name, maturity";
    }
    
    private String getCropsColumnNames() {
@@ -93,8 +97,8 @@ public class HSQLDB extends CPSDataModel {
    
    
    /** Method to cache results of a query and then return those results as a table */
-   private TableModel cachedListTableQuery( String t, String col, String cond ) {
-      rsListCache = query.storeQuery( t, col, cond );
+   private TableModel cachedListTableQuery( String t, String col, String cond, String sort ) {
+      rsListCache = query.storeQuery( t, col, cond, sort );
       // return query.getCachedResultsAsTable();
       return query.tableResults( rsListCache );
    }
@@ -102,38 +106,61 @@ public class HSQLDB extends CPSDataModel {
    /*
     * CROP LIST METHODS
     */
-   
-   /* TODO create a method that will take a column list, table name and
-    * conditional statement and will construct and submit a query, returning
-    * a ResultSet
-    * TODO create a wrapper method to turn a ResultSet into a TableModel
-    */   
+      
    public TableModel getAbbreviatedCropList() {
       return cachedListTableQuery( "CROPS_VARIETIES", 
                                    getAbbreviatedColumnNames( false ),
-                                   "var_name IS NULL" );
+                                   "var_name IS NULL",
+                                   null );
+   }
+   public TableModel getAbbreviatedCropList( String sortCol ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", 
+                                   getAbbreviatedColumnNames( false ),
+                                   "var_name IS NULL",
+                                   sortCol );
    }
    
    public TableModel getCropList() { 
-      return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null );
+      return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null, null );
+   }
+   
+   public TableModel getCropList( String sortCol ) { 
+      return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null, sortCol );
    }   
 
    public TableModel getVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null );
+      return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null, null );
+   }
+   
+   public TableModel getVarietyList( String sortCol ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null, sortCol );
    }
 
    public TableModel getAbbreviatedVarietyList() {
       return cachedListTableQuery( "CROPS_VARIETIES", 
                                    getAbbreviatedColumnNames( true ),
-                                   "var_name IS NOT NULL" ); 
+                                   "var_name IS NOT NULL",
+                                   null ); 
    }
-
+   public TableModel getAbbreviatedVarietyList( String sortCol ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", 
+                                   getAbbreviatedColumnNames( true ),
+                                   "var_name IS NOT NULL",
+                                   sortCol ); 
+   }
+   
    public TableModel getCropAndVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", "*", null );
+      return cachedListTableQuery( "CROPS_VARIETIES", "*", null, null );
+   }
+   public TableModel getCropAndVarietyList( String sortCol ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", "*", null, sortCol );
    }
    
    public TableModel getAbbreviatedCropAndVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null );
+      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null, null );
+   }
+   public TableModel getAbbreviatedCropAndVarietyList( String sortCol ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null, sortCol );
    }
 
    /*
@@ -153,7 +180,9 @@ public class HSQLDB extends CPSDataModel {
    public CPSCrop getCropInfoForRow( int selectedRow ) {
       try {
          int id;
-         if ( rsListCache != null ) {
+         // TODO figure out better way to handle result caching
+         // we could just make this a string based query (ie getCropInfoForRow
+         if ( false && rsListCache != null ) {
             rsListCache.absolute( selectedRow + 1 );
             id = rsListCache.getInt( "id" );
          } else {
@@ -176,20 +205,31 @@ public class HSQLDB extends CPSDataModel {
       // move to the first (and only) row
       // if there are no rows, return null
       // TODO return the empty crop; they can deal with it
-      if ( ! rs.next() )
-         return null;
-      
-      try {
-         crop.setID( rs.getInt( "ID" ));
-         crop.setCropName( rs.getString( "crop_name" ));
-         crop.setFamilyName( rs.getString( "fam_name" ));
-         crop.setVarietyName( rs.getString( "var_name" ));
-//      crop.setDS( rs.getBoolean("ds") );
-//      crop.setTP( rs.getBoolean("tp") );
-         crop.setMaturityDays( rs.getInt( "maturity" ));
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }
+      if ( rs.next() ) {
+         try {
+            crop.setID( rs.getInt( "ID" ));
+            crop.setCropName( rs.getString( "crop_name" ));
+            crop.setVarietyName( rs.getString( "var_name" ));
+
+            String sim = rs.getString("similar_to");
+            System.out.println("Retrieving crop info for similar crop: " + sim );
+            crop.setSimilarCrop( this.getCropInfo( sim ));
          
+            crop.setFamilyName( rs.getString( "fam_name" ));
+         
+            crop.setCropDescription( rs.getString("description") );
+         
+            crop.setMaturityDays( rs.getInt( "maturity" ));
+            crop.setSuccessions( rs.getBoolean("successions") );
+            crop.setGroups( rs.getString( "groups" ));
+         
+            crop.setOtherRequirements( rs.getString( "other_req" ));
+            crop.setKeywords( rs.getString( "keywords" ));
+            crop.setNotes( rs.getString( "notes" ));
+         
+         }  catch ( SQLException e ) { e.printStackTrace(); }
+      }
+      
       return crop;
    }
 
@@ -254,17 +294,13 @@ public class HSQLDB extends CPSDataModel {
             }
          }
          
-         if ( crop.getSimilarCrop() != null ) {
-            cols += "similar_to";
-            vals += HSQLDBCreator.escapeString( crop.getSimilarCrop().getCropName() );
-         }
-         else {
-            cols = cols.substring( 0, cols.lastIndexOf( ", " ));
-            vals = vals.substring( 0, vals.lastIndexOf( ", " ));
-         }
+         cols += "similar_to";
+         vals += HSQLDBCreator.escapeString( crop.getSimilarCrop().getCropName() );
          
-         //"similar_to","Fudge","mat_adjust","misc_adjust","seeds_sources","seeds_item_codes","seeds_unit_size"
+         // cols = cols.substring( 0, cols.lastIndexOf( ", " ));
+         // vals = vals.substring( 0, vals.lastIndexOf( ", " ));
          
+         //"Fudge","mat_adjust","misc_adjust","seeds_sources","seeds_item_codes","seeds_unit_size"         
          
          String sql = "INSERT INTO CROPS_VARIETIES ( " + cols + " ) VALUES ( " + vals + " )";
          
@@ -284,16 +320,18 @@ public class HSQLDB extends CPSDataModel {
    public ArrayList<CPSCrop> exportCropsAndVarieties() { return null; }
 
    public CPSCrop getCropInfo(String cropName) {
-      try {
-         return resultSetAsCrop( query.submitQuery( "CROPS_VARIETIES", 
-                                                    "*", 
-                                                    "crop_name = " + 
-                                                    HSQLDBCreator.escapeString( cropName ) + " AND " +
-                                                    "var_name IS NULL " ));
+      if ( ! cropName.equalsIgnoreCase("null") || 
+           ! cropName.equals("") ) {
+         try {
+            return resultSetAsCrop( query.submitQuery( "CROPS_VARIETIES",
+                                                       "*", 
+                                                       "crop_name = " + 
+                                                       HSQLDBCreator.escapeString( cropName ) + " AND " +
+                                                       "var_name IS NULL " ));
+         } catch ( SQLException e ) { e.printStackTrace(); }
       }
-      catch ( SQLException e ) { e.printStackTrace(); }
       
-      return null;
+      return new CPSCrop();
    }
 
    private String escapeValue( Object o ) {
@@ -302,7 +340,7 @@ public class HSQLDB extends CPSDataModel {
          return "NULL";
       // if the datum is a string and is only "", use NULL, else escape it
       else if ( o instanceof String )
-         if ( o.equals("") )
+         if ( o.equals("") || ((String) o).equalsIgnoreCase( "null" ) )
             return "NULL";
          else
             return HSQLDBCreator.escapeString( (String) o );
