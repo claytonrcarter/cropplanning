@@ -42,7 +42,8 @@ public class CSV extends CPSDataModel {
          //"Maturity","mat_adjust","misc_adjust",
          //"seeds_sources","seeds_item_codes","seeds_unit_size"
          
-         // temp.setID( (int) ( Math.random() * 10000 ) );
+         //temp.setID( (int) ( Math.random() * 10000 ) );
+         temp.setID( selectedRow );
          int col = 0;
          temp.setCropName( ctm.getStringAt( selectedRow, col++ ) );
          temp.setVarietyName( ctm.getStringAt( selectedRow, col++ ));
@@ -66,6 +67,9 @@ public class CSV extends CPSDataModel {
    
    public CPSCrop getCropInfo( String cropName ) {
    
+      if ( cropName.equals("") )
+         return null;
+      
       /*
        * String[] s = cropName.split( "::" );
        * then s[0] == cropname and s[1] == varname
@@ -73,6 +77,7 @@ public class CSV extends CPSDataModel {
       CPSCrop temp = null;
       
       for ( int i = 0; i < ctm.getRowCount(); i ++ ) {
+         // match crop_name ==  cropName and var_name == ""
          if ( ctm.getStringAt( i, 0 ).equalsIgnoreCase( cropName ) && 
               ctm.getStringAt( i, 1 ).equalsIgnoreCase( "" ) ) { 
             temp = getCropInfoForRow( i );
