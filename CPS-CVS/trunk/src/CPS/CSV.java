@@ -62,7 +62,10 @@ public class CSV extends CPSDataModel {
       temp.setOtherRequirements( ctm.getStringAt( selectedRow, col++ ));
       temp.setNotes( ctm.getStringAt( selectedRow, col++ ));
          
-      temp.setMaturityDays( ctm.getIntAt( selectedRow, col++ ));
+      int i = ctm.getIntAt( selectedRow, col++ );
+      if ( i <= 0 )
+         i = -1;
+      temp.setMaturityDays( i );
       
       return temp;
 
@@ -98,7 +101,7 @@ public class CSV extends CPSDataModel {
    public void shutdown() {}
    
    public void updateCrop(CPSCrop crop) {}
-   public void createCrop(CPSCrop crop) {}
+   public CPSCrop createCrop(CPSCrop crop) { return null; }
 
    public TableModel getCropList(String sortCol) { return null; }
    public TableModel getAbbreviatedCropList(String sortCol) { return null; }
@@ -106,5 +109,14 @@ public class CSV extends CPSDataModel {
    public TableModel getAbbreviatedVarietyList(String sortCol) { return null; }
    public TableModel getCropAndVarietyList(String sortCol) { return null; }
    public TableModel getAbbreviatedCropAndVarietyList(String sortCol) { return null; }
+   public TableModel getCropList(String sortCol, String filter) { return null; }
+   public TableModel getAbbreviatedCropList(String sortCol, String filter) { return null; }
+   public TableModel getVarietyList(String sortCol, String filter) { return null; }
+   public TableModel getAbbreviatedVarietyList(String sortCol, String filter) { return null; }
+   public TableModel getCropAndVarietyList(String sortCol, String filter) { return null; }
+   public TableModel getAbbreviatedCropAndVarietyList(String sortCol, String filter) { return null; }
+
+   public CPSCrop getVarietyInfo(String cropName, String varName) { return null; }
+   public CPSCrop getCropInfo(int CropID) { return null; }
    
 }
