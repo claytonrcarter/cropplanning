@@ -69,7 +69,7 @@ public class HSQLTableModel extends ResultSetTableModel {
           else if ( metadata.getColumnType(column+1) == java.sql.Types.VARCHAR ||
                     metadata.getColumnType(column+1) == java.sql.Types.CHAR    ||
                     metadata.getColumnType(column+1) == java.sql.Types.LONGVARCHAR )
-             val = HSQLDBCreator.escapeString( val );
+             val = HSQLDB.escapeValue( val );
  
           
           results.absolute(row+1);

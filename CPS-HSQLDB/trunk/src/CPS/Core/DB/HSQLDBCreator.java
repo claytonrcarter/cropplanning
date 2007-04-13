@@ -8,9 +8,13 @@
 
 package CPS.Core.DB;
 
+import CPS.Data.CPSCrop;
+import CPS.Data.CropDatum;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 
 /**
  *
@@ -48,7 +52,7 @@ public class HSQLDBCreator {
       
          st.executeUpdate( createTableCropPlan( name ) );
       
-         String s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + escapeString( name ) + " );";
+         String s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + HSQLDB.escapeValue( name ) + " );";
       
          System.out.println("Executing update: " + s );
          st.executeUpdate( s );
@@ -85,8 +89,89 @@ public class HSQLDBCreator {
       return "CREATE TABLE " + name + " ( " + table_def + " ) ";
    }
    
-   public static String escapeString( String s ) {
-      return "'" + s + "'";
+   public static int insertCrop( Connection con, CPSCrop crop ) {
+   
+      try {
+         
+         String cols = "";
+         String vals = "";
+         
+         Iterator<CropDatum> i = crop.iterator();
+         CropDatum c;
+         
+         while ( i.hasNext() ) {
+            c = i.next();
+            if ( c.isValid() ) {
+               // System.out.println(" Processing datum: " + c.getColumnName() );
+               cols += c.getColumnName() + ", ";
+               vals += HSQLDB.escapeValue( c.getDatum() ) + ", ";
+            }
+         }
+         
+//         cols += "similar_to";
+//         vals += HSQLDB.escapeValue( crop.getSimilarCrop().getCropName() );
+         
+         cols = cols.substring( 0, cols.lastIndexOf( ", " ));
+         vals = vals.substring( 0, vals.lastIndexOf( ", " ));
+         
+         //"Fudge","mat_adjust","misc_adjust","seeds_sources","seeds_item_codes","seeds_unit_size"         
+         
+         String sql = "INSERT INTO CROPS_VARIETIES ( " + cols + " ) VALUES ( " + vals + " )";
+         
+         System.out.println( "Attempting to execute: " + sql );
+         
+         Statement st = con.createStatement();
+         if ( st.executeUpdate( sql ) == -1 )
+            System.err.println( "Error creating crop " + crop.getCropName() );
+         
+         ResultSet rs = st.executeQuery( "CALL IDENTITY()" );
+         rs.next();
+         int newID = rs.getInt(1);
+         rs.close();
+         st.close();
+         
+         System.out.println( "Inserted " + crop.getCropName() + " with id " + newID );
+         
+         return newID;
+         
+      }
+      catch ( SQLException ex ) { 
+         ex.printStackTrace(); 
+         return -1;
+      }
    }
+   
+   public static void updateCrop( Connection con, CPSCrop crop ) {
+      
+      try {
+         
+         String sql = "UPDATE " + "CROPS_VARIETIES" + " SET ";
+         
+         Iterator<CropDatum> i = crop.iterator();
+         CropDatum c;
+         
+         while ( i.hasNext() ) {
+            c = i.next();
+            if ( c.isValid() )
+               sql += c.getColumnName() + " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
+         }
+         
+         sql = sql.substring( 0, sql.lastIndexOf( ", " ));
+         //sql += "similar_to = " + HSQLDB.escapeValue( crop.getSimilarCrop().getCropName() );
+         
+         // this space is crucial
+         sql += " " + "WHERE id = " + crop.getID();
+         
+         System.out.println("Attempting to execute: " + sql );
+
+         
+         Statement st = con.createStatement();
+         st.executeUpdate( sql );
+         st.close();
+         
+      }
+      catch ( SQLException ex ) { ex.printStackTrace(); }
+   }
+   
    
 }

@@ -43,17 +43,25 @@ public class HSQLQuerier {
       return storeQuery( table, columns, conditional, null );
    }
    public ResultSet storeQuery( String table, String columns, String conditional, String sort ) {
-      return submitQuery( con, table, columns, conditional, sort, true );
+      return storeQuery( table, columns, conditional, sort, null );
+   }
+   public ResultSet storeQuery( String table, String columns, 
+                                String conditional, String sort, String filter ) {
+      return submitQuery( con, table, columns, conditional, sort, filter, true );
    }
    
    public ResultSet submitQuery( String table, String columns ) {
-      return submitQuery( table, columns, null, null );
+      return submitQuery( table, columns, null, null, null );
    }
    public ResultSet submitQuery( String table, String columns, String conditional ) {
-      return submitQuery( table, columns, conditional, null );
+      return submitQuery( table, columns, conditional, null, null );
    }
    public ResultSet submitQuery( String table, String columns, String conditional, String sort ) {
-      return submitQuery( con, table, columns, conditional, sort,  false );
+      return submitQuery( table, columns, conditional, sort, null);
+   }
+   public ResultSet submitQuery( String table, String columns, 
+                                 String conditional, String sort, String filter ) {
+      return submitQuery( con, table, columns, conditional, sort, filter, false );
    }
 //   
 //   private ResultSet submitQuery( String table, String columns, String conditional, boolean store ) {
@@ -69,12 +77,27 @@ public class HSQLQuerier {
                                               String columns, 
                                               String conditional,
                                               String sort,
+                                              String filter,
                                               boolean prepared ) {
       ResultSet rs;
       String query = "SELECT " + columns + " FROM " + table;
       
-      if ( conditional != null && conditional.length() > 0 )
-         query += " WHERE ( " + conditional + " ) ";
+      boolean cond = conditional != null && conditional.length() > 0;
+      boolean filt = filter != null      && filter.length() > 0;
+      
+      if ( cond || filt ) {
+         query += " WHERE ( ";
+         if ( cond )
+            query += conditional;
+         
+         if ( filt ) {
+            if ( cond )
+               query += " AND ";
+            query += filter;
+         }
+         
+         query += " ) ";
+      }
       
       /* TODO: if sort != crop_name, then make crop_name secondary sort
        * if sort == crop_name, then make var_name secondary sort

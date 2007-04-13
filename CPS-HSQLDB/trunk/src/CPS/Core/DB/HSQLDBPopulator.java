@@ -61,7 +61,7 @@ public class HSQLDBPopulator {
                if      ( o[i][j] == null )
                   s += "NULL";
                else if ( o[i][j] instanceof String )
-                  s += HSQLDBCreator.escapeString( o[i][j].toString() );
+                  s += HSQLDB.escapeValue( o[i][j].toString() );
                else 
                   s += o[i][j].toString();
                

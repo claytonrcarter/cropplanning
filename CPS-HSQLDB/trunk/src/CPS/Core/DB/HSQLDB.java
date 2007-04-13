@@ -86,6 +86,9 @@ public class HSQLDB extends CPSDataModel {
       return getMandatoryColumnNames() + ", " +
              ( varieties ? "var_name, " : "" ) + "fam_name, maturity";
    }
+   private String getFilterColumnNames() {
+      return getAbbreviatedColumnNames( true ) + ", keywords, groups";
+   }
    
    private String getCropsColumnNames() {
       return "*";
@@ -97,8 +100,9 @@ public class HSQLDB extends CPSDataModel {
    
    
    /** Method to cache results of a query and then return those results as a table */
-   private TableModel cachedListTableQuery( String t, String col, String cond, String sort ) {
-      rsListCache = query.storeQuery( t, col, cond, sort );
+   private TableModel cachedListTableQuery( String t, String col, 
+                                            String cond, String sort, String filter ) {
+      rsListCache = query.storeQuery( t, col, cond, sort, filter );
       // return query.getCachedResultsAsTable();
       return query.tableResults( rsListCache );
    }
@@ -107,60 +111,77 @@ public class HSQLDB extends CPSDataModel {
     * CROP LIST METHODS
     */
       
+   // TODO all of these non sorting methods can be folded into the sorting methods (ie get() => get(null) )
    public TableModel getAbbreviatedCropList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", 
-                                   getAbbreviatedColumnNames( false ),
-                                   "var_name IS NULL",
-                                   null );
+      return getAbbreviatedCropList( null );
    }
    public TableModel getAbbreviatedCropList( String sortCol ) {
+      return getAbbreviatedCropList( sortCol, null );
+   }
+   public TableModel getAbbreviatedCropList( String sortCol, String filterString ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
                                    getAbbreviatedColumnNames( false ),
                                    "var_name IS NULL",
-                                   sortCol );
+                                   sortCol,
+                                   buildFilterExpression( getFilterColumnNames(), filterString ));
    }
    
    public TableModel getCropList() { 
-      return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null, null );
+      return getCropList( null, null );
    }
-   
    public TableModel getCropList( String sortCol ) { 
-      return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null, sortCol );
+      return getCropList( sortCol, null );
    }   
-
-   public TableModel getVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null, null );
+   public TableModel getCropList( String sortCol, String filterString ) { 
+      return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null, sortCol,
+                                   buildFilterExpression( getFilterColumnNames(), filterString ));
    }
    
+   public TableModel getVarietyList() {
+      return getVarietyList( null, null );
+   }
    public TableModel getVarietyList( String sortCol ) {
-      return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null, sortCol );
+      return getVarietyList( sortCol, null );
+   }
+   public TableModel getVarietyList( String sortCol, String filterString ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null, sortCol,
+                                   buildFilterExpression( getFilterColumnNames(), filterString ));
    }
 
    public TableModel getAbbreviatedVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", 
-                                   getAbbreviatedColumnNames( true ),
-                                   "var_name IS NOT NULL",
-                                   null ); 
+      return getAbbreviatedVarietyList( null, null ); 
    }
    public TableModel getAbbreviatedVarietyList( String sortCol ) {
+      return getAbbreviatedVarietyList( sortCol, null ); 
+   }
+   public TableModel getAbbreviatedVarietyList( String sortCol, String filterString ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
                                    getAbbreviatedColumnNames( true ),
                                    "var_name IS NOT NULL",
-                                   sortCol ); 
+                                   sortCol,
+                                   buildFilterExpression( getFilterColumnNames(), filterString )); 
    }
    
    public TableModel getCropAndVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", "*", null, null );
+      return getCropAndVarietyList( null, null );
    }
    public TableModel getCropAndVarietyList( String sortCol ) {
-      return cachedListTableQuery( "CROPS_VARIETIES", "*", null, sortCol );
+      return getCropAndVarietyList( sortCol, null );
+   }
+   public TableModel getCropAndVarietyList( String sortCol, String filterString ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", "*", null, sortCol,
+                                   buildFilterExpression( getFilterColumnNames(), filterString ));
    }
    
    public TableModel getAbbreviatedCropAndVarietyList() {
-      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null, null );
+      return getAbbreviatedCropAndVarietyList( null, null );
    }
    public TableModel getAbbreviatedCropAndVarietyList( String sortCol ) {
-      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null, sortCol );
+      return getAbbreviatedCropAndVarietyList( sortCol, null );
+   }
+   public TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString ) {
+      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null, sortCol,
+                                   buildFilterExpression( getFilterColumnNames(), filterString ) );
    }
 
    /*
@@ -177,17 +198,15 @@ public class HSQLDB extends CPSDataModel {
    }
 
    /* we make the assumption that we're zero-based, ResultSets are not */
-   public CPSCrop getCropInfoForRow( int selectedRow ) {
+   public CPSCrop getCropInfo( int id ) {
       try {
-         int id;
          // TODO figure out better way to handle result caching
          // we could just make this a string based query (ie getCropInfoForRow
+         // disabling this makes it a simple query on an ID
          if ( false && rsListCache != null ) {
-            rsListCache.absolute( selectedRow + 1 );
+            rsListCache.absolute( id + 1 );
             id = rsListCache.getInt( "id" );
-         } else {
-            id = selectedRow;
-         }
+         } 
          rsCropCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
          return resultSetAsCrop( rsCropCache );
       }
@@ -197,36 +216,89 @@ public class HSQLDB extends CPSDataModel {
    }
    
    
-
+   public CPSCrop getVarietyInfo( String cropName, String varName ) {
+      
+      if ( cropName == null || cropName.equalsIgnoreCase("null") || cropName.equals("") )
+         return new CPSCrop();
+      
+      String condExp = "crop_name = " + escapeValue( cropName );
+      
+      varName = escapeValue( varName );
+      
+      if ( varName == null || varName.equalsIgnoreCase( "null" ) || varName.equals("") )
+         condExp += " AND var_name IS NULL";
+      else
+         condExp += " AND var_name = " + varName;
+      
+      try {
+         return resultSetAsCrop( query.submitQuery( "CROPS_VARIETIES", "*", condExp ));
+      } catch ( SQLException e ) { 
+         e.printStackTrace(); 
+         return new CPSCrop();
+      }
+   }
+   
+   // TODO this is where we can implement crop dependencies
+   // if a value is blank, leave it blank
+   // if a value is null, we can request that info from
+   //    for crops: the similar crop (var_name == null)
+   //    for varieties: the crop
    private CPSCrop resultSetAsCrop( ResultSet rs ) throws SQLException {
       
       CPSCrop crop = new CPSCrop();
       
       // move to the first (and only) row
-      // if there are no rows, return null
-      // TODO return the empty crop; they can deal with it
       if ( rs.next() ) {
          try {
+            
+            // TODO, define a null value in the crop.setXX methods
+            // and invalidate
+            
             crop.setID( rs.getInt( "ID" ));
-            crop.setCropName( rs.getString( "crop_name" ));
-            crop.setVarietyName( rs.getString( "var_name" ));
+            crop.setCropName( captureString( rs.getString( "crop_name" ) ));
+            
+            crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
 
-            String sim = rs.getString("similar_to");
-            System.out.println("Retrieving crop info for similar crop: " + sim );
-            crop.setSimilarCrop( this.getCropInfo( sim ));
-         
-            crop.setFamilyName( rs.getString( "fam_name" ));
-         
-            crop.setCropDescription( rs.getString("description") );
-         
-            crop.setMaturityDays( rs.getInt( "maturity" ));
+            crop.setSimilarCrop( getCropInfo( rs.getString("similar_to") ));
+
+            crop.setFamilyName( captureString( rs.getString( "fam_name" ) ));
+            crop.setCropDescription( captureString( rs.getString("description") ));
+
+            int i = rs.getInt( "maturity" );
+            if ( i <= 0 )
+               i = -1;
+            crop.setMaturityDays( i );
+            
             crop.setSuccessions( rs.getBoolean("successions") );
-            crop.setGroups( rs.getString( "groups" ));
-         
-            crop.setOtherRequirements( rs.getString( "other_req" ));
-            crop.setKeywords( rs.getString( "keywords" ));
-            crop.setNotes( rs.getString( "notes" ));
-         
+            
+            crop.setGroups( captureString( rs.getString( "groups" ) ));
+            crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
+            crop.setKeywords( captureString( rs.getString( "keywords" ) ));
+            crop.setNotes( captureString( rs.getString( "notes" ) ));
+
+            /* Now handle the data chain.
+             */
+            Iterator<CropDatum> thisCrop = crop.iterator();
+            Iterator<CropDatum> superCrop;
+            Iterator<CropDatum> similarCrop = crop.getSimilarCrop().iterator();
+      
+            if ( crop.isVariety() )
+               superCrop = getCropInfo( crop.getCropName() ).iterator();
+            else
+               superCrop = crop.iterator();
+            
+            CropDatum t, d, s;
+            while ( thisCrop.hasNext() && superCrop.hasNext() && similarCrop.hasNext() ) {
+               t = thisCrop.next();
+               d = superCrop.next();
+               s = similarCrop.next();
+               if ( ! t.isValid() && t.shouldBeChained() )
+                  if ( crop.isVariety() )
+                     t.setDatum( d.getDatum() );
+                  else
+                     t.setDatum( s.getDatum() );
+            }
+            
          }  catch ( SQLException e ) { e.printStackTrace(); }
       }
       
@@ -245,96 +317,32 @@ public class HSQLDB extends CPSDataModel {
    }
 
    public void updateCrop( CPSCrop crop ) {
-      
-      try {
-         
-         String sql = "UPDATE " + "CROPS_VARIETIES" + " SET ";
-         
-         Iterator<CropDatum> i = crop.iterator();
-         CropDatum c;
-         
-         while ( i.hasNext() ) {
-            c = i.next();
-            if ( c != null && c.getDatum() != null ) {
-               // System.out.println(" Processing datum: " + c.getColumnName() );
-               sql += c.getColumnName() + " = " + escapeValue( c.getDatum() ) + ", ";
-            }
-         }
-         
-         sql = sql.substring( 0, sql.lastIndexOf( ", " ));
-         
-         sql += "WHERE id = " + crop.getID();
-         
-         System.out.println("Attempting to execute: " + sql );
-
-         
-         Statement st = con.createStatement();
-         st.executeUpdate( sql );
-         st.close();
-         
-      }
-      catch ( SQLException ex ) { ex.printStackTrace(); }
+      HSQLDBCreator.updateCrop( con, crop );
    }
 
-   public void createCrop(CPSCrop crop) {
-      try {
-         
-         String cols = "";
-         String vals = "";
-         
-         Iterator<CropDatum> i = crop.iterator();
-         CropDatum c;
-         
-         while ( i.hasNext() ) {
-            c = i.next();
-            if ( c != null && c.getDatum() != null ) {
-               // System.out.println(" Processing datum: " + c.getColumnName() );
-               cols += c.getColumnName() + ", ";
-               vals += escapeValue( c.getDatum() ) + ", ";
-            }
-         }
-         
-         cols += "similar_to";
-         vals += HSQLDBCreator.escapeString( crop.getSimilarCrop().getCropName() );
-         
-         // cols = cols.substring( 0, cols.lastIndexOf( ", " ));
-         // vals = vals.substring( 0, vals.lastIndexOf( ", " ));
-         
-         //"Fudge","mat_adjust","misc_adjust","seeds_sources","seeds_item_codes","seeds_unit_size"         
-         
-         String sql = "INSERT INTO CROPS_VARIETIES ( " + cols + " ) VALUES ( " + vals + " )";
-         
-         System.out.println("Attempting to execute: " + sql );
-         
-         Statement st = con.createStatement();
-         if ( st.executeUpdate( sql ) == -1 )
-            System.err.println( "Error creating crop " + crop.getCropName() );
-         
-         st.close();
-         
-      }
-      catch ( SQLException ex ) { ex.printStackTrace(); }
+   public CPSCrop createCrop(CPSCrop crop) {
+      int newID = HSQLDBCreator.insertCrop( con, crop );
+      if ( newID == -1 )
+         return new CPSCrop();
+      else
+         return getCropInfo( newID );
    }
    
    
    public ArrayList<CPSCrop> exportCropsAndVarieties() { return null; }
-
-   public CPSCrop getCropInfo(String cropName) {
-      if ( ! cropName.equalsIgnoreCase("null") || 
-           ! cropName.equals("") ) {
-         try {
-            return resultSetAsCrop( query.submitQuery( "CROPS_VARIETIES",
-                                                       "*", 
-                                                       "crop_name = " + 
-                                                       HSQLDBCreator.escapeString( cropName ) + " AND " +
-                                                       "var_name IS NULL " ));
-         } catch ( SQLException e ) { e.printStackTrace(); }
-      }
-      
-      return new CPSCrop();
+   
+   /** Opposite of escapeValue.
+    *  Takes an SQL value and converts it to the correct "default" or "null"
+    *  value for our program.
+    */
+   public static String captureString( String s ) {
+      if ( s == null || s.equalsIgnoreCase("null") || s.equals("") )
+         return null;
+      else
+         return s;
    }
-
-   private String escapeValue( Object o ) {
+   
+   public static String escapeValue( Object o ) {
       // if the datum doesn't exist, use NULL
       if      ( o == null )
          return "NULL";
@@ -343,13 +351,33 @@ public class HSQLDB extends CPSDataModel {
          if ( o.equals("") || ((String) o).equalsIgnoreCase( "null" ) )
             return "NULL";
          else
-            return HSQLDBCreator.escapeString( (String) o );
+            return "'" + o.toString() + "'";
       // if the datum is an int whose value is -1, use NULL
       else if ( o instanceof Integer &&
                   ((Integer) o).intValue() == -1 )
          return "NULL";
+      else if ( o instanceof CPSCrop )
+         return escapeValue( ((CPSCrop) o).getCropName() );
       else
          return o.toString();
    }
+
+   private String buildFilterExpression( String colList, String filterString ) {
+      if ( filterString == null )
+         return null;
+      
+      // TODO: if filterString not all lower, then omit LOWER below
+      filterString = filterString.toLowerCase();
+      
+      String exp = "";
+      // loop over the list of column names (seperated by commas)
+      for( String col : colList.split(",") ) {
+         exp += "LOWER( " + col + " ) LIKE " + 
+                escapeValue( "%" + filterString + "%" ) + " OR ";
+      }
+      // strip off the final " OR "
+      return exp.substring( 0, exp.lastIndexOf( " OR " ));
+   }
+   
    
 }
