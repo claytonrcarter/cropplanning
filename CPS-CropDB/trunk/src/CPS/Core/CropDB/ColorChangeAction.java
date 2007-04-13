@@ -26,7 +26,7 @@ public class ColorChangeAction extends AbstractAction {
       }
    }
        
-   private Action findDefaultAction( JTextComponent c ) {
+   public static Action findDefaultAction( JTextComponent c ) {
       // Look for default action
       // Check local keymap
       Keymap kmap = c.getKeymap();

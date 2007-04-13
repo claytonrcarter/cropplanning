@@ -10,6 +10,8 @@ import CPS.Module.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -26,6 +28,8 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     private JTable cropListTable;
     private String sortColumn;
     private JRadioButton radioAll, radioCrops, radioVar;
+    private JTextField tfldFilter;
+    private String filterString;
     
     private CropDBUI uiManager;
     // private CropDBCropInfo cropInfo;
@@ -34,6 +38,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     
     CropDBCropList( CropDBUI ui ) {
        uiManager = ui;
+       filterString = "";
        sortColumn = null;
        buildCropListPane();
     }
@@ -54,13 +59,27 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        bg.add(radioCrops);
        bg.add(radioVar);
        
-       JPanel jp1 = new JPanel();
-       jp1.setLayout( new BoxLayout( jp1, BoxLayout.LINE_AXIS ));
-       jp1.add( new JLabel( "Display:" ) );
-       jp1.add( radioAll );
-       jp1.add( radioCrops );
-       jp1.add( radioVar );
-       cropListPanel.add( jp1, BorderLayout.PAGE_START ); 
+       tfldFilter = new JTextField( 10 );
+       tfldFilter.setMaximumSize( tfldFilter.getPreferredSize() );
+       // HACK! TODO, improve this; possibly by implementing a delay?
+       // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
+       tfldFilter.getDocument().addDocumentListener( new DocumentListener() {
+          public void insertUpdate(DocumentEvent e) { 
+             filterString = tfldFilter.getText(); updateBySelectedButton(); }
+          public void removeUpdate(DocumentEvent e) {
+             filterString = tfldFilter.getText(); updateBySelectedButton(); }
+          public void changedUpdate(DocumentEvent evt) {}
+       });
+       
+       JPanel jplAboveList = new JPanel();
+       jplAboveList.setLayout( new BoxLayout( jplAboveList, BoxLayout.LINE_AXIS ));
+       jplAboveList.add( new JLabel( "Display:" ) );
+       jplAboveList.add( radioAll );
+       jplAboveList.add( radioCrops );
+       jplAboveList.add( radioVar );
+       jplAboveList.add( Box.createHorizontalGlue() );
+       jplAboveList.add( tfldFilter );
+       cropListPanel.add( jplAboveList, BorderLayout.PAGE_START ); 
        
        cropListTable = new JTable();
        cropListTable.setPreferredScrollableViewportSize( new Dimension( 500, cropListTable.getRowHeight() * 10 ) );
@@ -80,21 +99,38 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     
     protected void updateCropInfoForRow( int i ) {
        cropInfoRow = i;
-       updateCropInfo();
+       refreshCropInfo();
     }
     
-    protected void updateCropInfo() {
+    protected void refreshCropInfo() {
        if ( cropInfoRow == -1 )
           return;
        
-       int colNum = 0;
-       while ( ! cropListTable.getColumnName( colNum ).equalsIgnoreCase("crop_name") &&
-               colNum < cropListTable.getColumnCount() ) {
-          colNum++;
+       int nameCol = -1;
+       int varCol = -1;
+       // TODO this is fucked; maybe find these values once and cache them?
+       for ( int i = 0; i < cropListTable.getColumnCount(); i++ ) {
+          // locate column "crop_name"
+          if ( cropListTable.getColumnName( i ).equalsIgnoreCase("crop_name") ) nameCol = i;
+          // locate column "var_name"
+          if ( cropListTable.getColumnName( i ).equalsIgnoreCase("var_name") ) varCol = i;
+          // only break when we've found them both (otherwise, they might still be out there)
+          if ( nameCol != -1 && varCol != -1 ) break;
        }
        
-       uiManager.displayCropInfo( dataModel.getCropInfo( 
-                   cropListTable.getValueAt( cropInfoRow, colNum ).toString() ));
+       Object varName = cropListTable.getValueAt( cropInfoRow, varCol );
+       
+       if ( varCol == -1 || varName == null )
+          if ( cropListTable.getValueAt( cropInfoRow, nameCol ).toString().equals("") )
+             // this is iffy at best
+             uiManager.displayCropInfo( dataModel.getCropInfo( cropInfoRow ));
+          else
+             uiManager.displayCropInfo( dataModel.getCropInfo(
+                         cropListTable.getValueAt( cropInfoRow, nameCol ).toString() ));
+       else
+          uiManager.displayCropInfo( dataModel.getVarietyInfo(
+                      cropListTable.getValueAt( cropInfoRow, nameCol ).toString(),
+                      varName.toString() ));
     }
     
     protected void updateCropList() {
@@ -107,11 +143,11 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
           return;
        
        if      ( radioAll.isSelected() )
-          updateCropListTable( dataModel.getAbbreviatedCropAndVarietyList( sortColumn ) );
+          updateCropListTable( dataModel.getAbbreviatedCropAndVarietyList( sortColumn, filterString ) );
        else if ( radioCrops.isSelected() )
-          updateCropListTable( dataModel.getAbbreviatedCropList( sortColumn ) );
+          updateCropListTable( dataModel.getAbbreviatedCropList( sortColumn, filterString ) );
        else if ( radioVar.isSelected() )
-          updateCropListTable( dataModel.getAbbreviatedVarietyList( sortColumn ) );
+          updateCropListTable( dataModel.getAbbreviatedVarietyList( sortColumn, filterString ) );
        else // nothing selected (not useful)
           updateCropListTable( new DefaultTableModel() );
     }
@@ -127,7 +163,6 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     
     // Pertinent method for ItemListener
     public void itemStateChanged( ItemEvent itemEvent ) {
-      
        Object source = itemEvent.getItemSelectable();
 
        if ( source == radioAll || source == radioCrops || source == radioVar ) {
@@ -157,12 +192,13 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
 
     // Pertinent method for TableModelListener
     public void tableChanged( TableModelEvent e ) {
-       updateCropInfo();
+       // TODO this is a potential problem; in case table changes in the middle of an edit
+       refreshCropInfo();
     }
 
    public void mouseClicked( MouseEvent evt ) {
       
-      JTable table = ((JTableHeader)evt.getSource()).getTable();
+      JTable table = ((JTableHeader) evt.getSource() ).getTable();
       TableColumnModel colModel = table.getColumnModel();
     
       // TODO implement multiple column sorting
@@ -171,31 +207,10 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
                   
       // The index of the column whose header was clicked
       int vColIndex = colModel.getColumnIndexAtX( evt.getX() );
-      int mColIndex = table.convertColumnIndexToModel( vColIndex );
     
       // Return if not clicked on any column header
-      if (vColIndex == -1) {
-         return;
-      }
+      if (vColIndex == -1) return;
     
-      // Determine if mouse was clicked between column heads
-      Rectangle headerRect = table.getTableHeader().getHeaderRect(vColIndex);
-      if (vColIndex == 0) {
-         headerRect.width -= 3;    // Hard-coded constant
-      } else {
-         headerRect.grow(-3, 0);   // Hard-coded constant
-      }
-      if (!headerRect.contains(evt.getX(), evt.getY())) {
-         // Mouse was clicked between column heads
-         // vColIndex is the column head closest to the click
-
-         // vLeftColIndex is the column head to the left of the click
-         int vLeftColIndex = vColIndex;
-         if (evt.getX() < headerRect.x) {
-            vLeftColIndex--;
-         }
-      }
-      
       // TODO: modify the column header to show which column is being sorted
       // table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
       // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html

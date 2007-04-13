@@ -10,6 +10,7 @@ import CPS.Data.*;
 import CPS.Module.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -32,6 +33,7 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    private JTextField tfldCropName, tfldVarName, tfldFamName, tfldDesc;
    private JTextField tfldMatDays;
    private JTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
+   private JLabel lblSimilar;
    private JComboBox cmbxSimilar;
    
    private CPSCrop displayedCrop;
@@ -61,6 +63,12 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    
    private void buildButtonPanel() {
       
+      
+      btnNew = new JButton( "New" );
+      btnDelete = new JButton( "Delete");
+      btnNew.addActionListener( this );
+      btnDelete.addActionListener( this );
+      
       lblChanges = new JLabel( "Changes: " ); 
       btnSaveChanges = new JButton( "Save" );
       btnDiscardChanges = new JButton( "Discard" );
@@ -70,6 +78,8 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       buttonPanel = new JPanel();
       buttonPanel.setLayout( new BoxLayout( buttonPanel, BoxLayout.LINE_AXIS ) );
       
+      buttonPanel.add( btnNew );
+      buttonPanel.add( btnDelete );
       buttonPanel.add( Box.createHorizontalGlue() );
       buttonPanel.add( lblChanges );
       buttonPanel.add( btnSaveChanges );
@@ -90,6 +100,7 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       return mainPanel;
    }
 
+   // add new crop data here
    public void displayCrop( CPSCrop crop ) {
       
       displayedCrop = crop;
@@ -104,14 +115,30 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       tfldCropName.setText( displayedCrop.getCropName() );
       tfldVarName.setText( displayedCrop.getVarietyName() );
-      if ( ! displayedCrop.getSimilarCrop().getCropName().equals("") )
-         cmbxSimilar.setSelectedItem( displayedCrop.getSimilarCrop().getCropName() );
-      else
-         cmbxSimilar.setSelectedItem( "None" );
+      
+      if ( displayedCrop.isCrop() ) {
+
+         lblSimilar.setVisible( true );
+         cmbxSimilar.setVisible( true );
+         
+         if ( displayedCrop.getSimilarCrop().getID() != -1 )
+            cmbxSimilar.setSelectedItem( displayedCrop.getSimilarCrop().getCropName() );
+         else
+            cmbxSimilar.setSelectedItem( "None" );
+      } 
+      else {
+         lblSimilar.setVisible( false );
+         cmbxSimilar.setVisible( false ); 
+      }
+      
       tfldFamName.setText( displayedCrop.getFamilyName() );
       tfldDesc.setText( displayedCrop.getCropDescription() );
       
-      tfldMatDays.setText( "" + displayedCrop.getMaturityDays() );
+      if ( displayedCrop.getMaturityDays() > 0 )
+         tfldMatDays.setText( "" + displayedCrop.getMaturityDays() );
+      else
+         tfldMatDays.setText("");
+      
       chkSucc.setSelected( displayedCrop.getSuccessions() );
       tareGroups.setText( displayedCrop.getGroups() );
       tareOtherReq.setText( displayedCrop.getOtherRequirments() );
@@ -120,36 +147,37 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
    }
    
+   // add new crop data here
    public CPSCrop asCrop() {
       
       CPSCrop crop = new CPSCrop();
       
       crop.setID( displayedCrop.getID() );
       
-      // crop.setDS( chkDS.isSelected() );
-      // crop.setTP( chkTP.isSelected() );
-      
       crop.setCropName( tfldCropName.getText() );
       crop.setVarietyName( tfldVarName.getText() );
       crop.setFamilyName( tfldFamName.getText() );
-      crop.setMaturityDays( Integer.parseInt( tfldMatDays.getText() ));
+      
+      if ( ! tfldMatDays.getText().equals("") )
+         crop.setMaturityDays( Integer.parseInt( tfldMatDays.getText() ));
+     
+      if ( ! cmbxSimilar.getSelectedItem().toString().equalsIgnoreCase("None") )
+         crop.setSimilarCrop( dataModel.getCropInfo( cmbxSimilar.getSelectedItem().toString() ));
+      
+      crop.setCropDescription( tfldDesc.getText() );
+      
+      crop.setSuccessions( chkSucc.isSelected() );
+      
+      crop.setGroups( tareGroups.getText() );
+      crop.setOtherRequirements( tareOtherReq.getText() );
+      crop.setKeywords( tareKeywords.getText() );
+      crop.setNotes( tareNotes.getText() );
       
       return crop;
       
    }
    
-   public CPSCrop diffCrop( CPSCrop that ) {
-      
-      CPSCrop diff = new CPSCrop();
-      
-      //if ( chkDS.isSelected() != that.getDS() )
-        // diff.setDS( chkDS.isSelected() );
-      
-      // and so on ...
-      
-      return diff;
-   }
-   
+   // add new crop data here
    public JPanel buildCropInfoPanel() {
       
       cropInfoPanel = new JPanel();
@@ -189,7 +217,8 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 1, "Variety:" );
       CropDBDataTranslata.addTextField( cropInfoPanel, 1, 1, tfldVarName );
 
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 0, "Similar to:" );
+      lblSimilar = new JLabel( "Similar to:" );
+      CropDBDataTranslata.addLabel(     cropInfoPanel, 2, 0, lblSimilar );
       CropDBDataTranslata.addComboBox(  cropInfoPanel, 3, 0, cmbxSimilar );
       
       CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 1, "Family:" );
@@ -201,6 +230,7 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 3, "Mat. Days:" );
       CropDBDataTranslata.addTextField( cropInfoPanel, 1, 3, tfldMatDays );
       
+      // TODO add these to a subpanel, then add subpanel
       CropDBDataTranslata.addCheckBox(  cropInfoPanel, 0, 4, chkDS );
       CropDBDataTranslata.addCheckBox(  cropInfoPanel, 1, 4, chkTP );
       CropDBDataTranslata.addCheckBox(  cropInfoPanel, 2, 4, chkSucc );
@@ -242,24 +272,40 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       String action = actionEvent.getActionCommand();
       
       if      ( action.equalsIgnoreCase( btnSaveChanges.getText() ) ) {
-         if ( isDataAvailable() )
-            dataModel.updateCrop( this.asCrop() );
+         System.out.println("SAVE");
+         if ( isDataAvailable() ) {
+            // update only the differences between the originally displayed crop
+            // and what is currently displayed
+            System.out.println("Calculating crop difference.");
+            CPSCrop diff = displayedCrop.diff( this.asCrop() );
+            if ( diff.getID() != -1 ) {
+               System.out.println("Updating crop " + displayedCrop.getCropName() );
+               dataModel.updateCrop( diff );
+            }
+         }
          uiManager.refreshCropList();
-         // how to fireTableDataChanged()
       } 
       else if ( action.equalsIgnoreCase( btnDiscardChanges.getText() )) {
          displayCrop( displayedCrop );
          // reset the "this had changed" bit on all components
       }
+      else if ( action.equalsIgnoreCase( btnNew.getText() )) {
+         if ( isDataAvailable() )
+            displayCrop( dataModel.createCrop( new CPSCrop() ));
+         uiManager.refreshCropList();
+      }
+      else if ( action.equalsIgnoreCase( btnDelete.getText() )) {
+         System.err.println("Function not supported.");
+      }
       
-      resetColorsCHANGETHISNAME();
+      // resetColorsCHANGETHISNAME();
    }
    
    public void resetColorsCHANGETHISNAME() {
-      tfldCropName.setBackground( Color.WHITE );
-      tfldVarName.setBackground( Color.WHITE );
-      tfldFamName.setBackground( Color.WHITE );
-      tfldMatDays.setBackground( Color.WHITE );
+      Component[] allComponents = cropInfoPanel.getComponents();
+      
+      for ( Component c : allComponents )
+         c.setBackground( Color.WHITE );
    }
    
 }

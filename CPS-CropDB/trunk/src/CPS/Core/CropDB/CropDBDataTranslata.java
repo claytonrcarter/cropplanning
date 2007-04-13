@@ -90,14 +90,12 @@ public class CropDBDataTranslata {
 	Insets i  = new Insets( 0, 2, 2, 5 );
 	GridBagConstraints c = new GridBagConstraints();
 
-        tf.getKeymap().setDefaultAction( new ColorChangeAction( tf ) );
-        
-        
+        // TODO this needs to affect individual components, not all components
+        // tf.getKeymap().setDefaultAction( new ColorChangeAction( tf ) );        
         
 	tf.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
 							Color.GRAY,
 							Color.WHITE ));
-
 	c.gridx = x;
 	c.gridy = y;
 	c.anchor = GridBagConstraints.FIRST_LINE_START;
