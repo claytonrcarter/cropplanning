@@ -49,12 +49,21 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getCropAndVarietyList( String sortCol );
    public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol );
    
-   public abstract CPSCrop getCropInfo( String cropName );
-   public abstract CPSCrop getCropInfoForRow( int row );
+   public abstract TableModel getCropList( String sortCol, String filterString );
+   public abstract TableModel getAbbreviatedCropList( String sortCol, String filterString );
+   public abstract TableModel getVarietyList( String sortCol, String filterString );
+   public abstract TableModel getAbbreviatedVarietyList( String sortCol, String filterString );
+   public abstract TableModel getCropAndVarietyList( String sortCol, String filterString );
+   public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString );
+   
+   public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
+   public abstract CPSCrop getVarietyInfo( String cropName, String varName );
+   public abstract CPSCrop getCropInfo( int CropID );
    
    public abstract void shutdown();
 
-   public abstract void createCrop( CPSCrop crop );
+   // public abstract void createCrop( CPSCrop crop );
+   public abstract CPSCrop createCrop( CPSCrop crop );
    public abstract void updateCrop( CPSCrop crop );
    
 

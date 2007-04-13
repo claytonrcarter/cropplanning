@@ -30,7 +30,7 @@ public abstract class CPSDatum<T> {
       return datum;
    }
 
-   public void setDatum( T datum ) {
+   public void setDatumTo( T datum ) {
       this.datum = datum;
    }
    
