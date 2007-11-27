@@ -35,9 +35,12 @@ public class CropPlanning implements Runnable {
        CPSDataModel dm = mm.getDM();
        CPSUIModule ui = mm.getUI();
 
-       CPSCoreModule cm2 = mm.getCoreModule();
-       cm2.setDataSource(dm);
-       ui.addModule( cm2.getModuleName(), cm2.display() );
+       mm.loadCoreModules();
+       for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {
+          CPSCoreModule cm2 = mm.getCoreModule(i);
+          cm2.setDataSource(dm);
+          ui.addModule( cm2.getModuleName(), cm2.display() );
+       }
        
        Runtime.getRuntime().addShutdownHook( new Thread(this) );
                    

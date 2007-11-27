@@ -33,9 +33,21 @@ public class ModuleManager {
       return dmMods.get(0);
    }
    
-   public CPSCoreModule getCoreModule() {
+   /* Perhaps we should do more error checking here?  What about unfound core modules? */
+   public void loadCoreModules() {
+      coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
       coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
-      return coreMods.get(0);
+   }
+   
+   public int getNumCoreModules() {
+      return coreMods.size();
+   }
+   
+   public CPSCoreModule getCoreModule( int i ) {
+      if ( i < 0 || i > getNumCoreModules() )
+         return null; // ERROR
+      else
+         return coreMods.get(i);
    }
    
    
