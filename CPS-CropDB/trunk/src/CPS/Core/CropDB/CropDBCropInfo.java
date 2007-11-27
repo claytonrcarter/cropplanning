@@ -25,7 +25,7 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    
    private JPanel buttonPanel;
    private JLabel lblChanges;
-   private JButton btnSaveChanges, btnDiscardChanges, btnDelete, btnNew;
+   private JButton btnSaveChanges, btnDiscardChanges, btnDelete, btnNew, btnDupe;
    
    private boolean noItemSelected = true;
    
@@ -63,22 +63,31 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    
    private void buildButtonPanel() {
       
+      Insets small = new Insets( 1, 1, 1, 1 );
       
       btnNew = new JButton( "New" );
-      btnDelete = new JButton( "Delete");
+      btnDupe = new JButton( "Duplicate" );
+      btnDelete = new JButton( "Delete" );
       btnNew.addActionListener( this );
+      btnDupe.addActionListener( this );
       btnDelete.addActionListener( this );
+      btnNew.setMargin( small );
+      btnDupe.setMargin( small );
+      btnDelete.setMargin( small );
       
       lblChanges = new JLabel( "Changes: " ); 
       btnSaveChanges = new JButton( "Save" );
       btnDiscardChanges = new JButton( "Discard" );
       btnSaveChanges.addActionListener( this );
       btnDiscardChanges.addActionListener( this );
+      btnSaveChanges.setMargin( small );
+      btnDiscardChanges.setMargin( small );
       
       buttonPanel = new JPanel();
       buttonPanel.setLayout( new BoxLayout( buttonPanel, BoxLayout.LINE_AXIS ) );
       
       buttonPanel.add( btnNew );
+      buttonPanel.add( btnDupe );
       buttonPanel.add( btnDelete );
       buttonPanel.add( Box.createHorizontalGlue() );
       buttonPanel.add( lblChanges );
@@ -272,16 +281,12 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       String action = actionEvent.getActionCommand();
       
       if      ( action.equalsIgnoreCase( btnSaveChanges.getText() ) ) {
-         System.out.println("SAVE");
          if ( isDataAvailable() ) {
             // update only the differences between the originally displayed crop
             // and what is currently displayed
-            System.out.println("Calculating crop difference.");
             CPSCrop diff = displayedCrop.diff( this.asCrop() );
-            if ( diff.getID() != -1 ) {
-               System.out.println("Updating crop " + displayedCrop.getCropName() );
+            if ( diff.getID() != -1 )
                dataModel.updateCrop( diff );
-            }
          }
          uiManager.refreshCropList();
       } 
@@ -292,6 +297,11 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       else if ( action.equalsIgnoreCase( btnNew.getText() )) {
          if ( isDataAvailable() )
             displayCrop( dataModel.createCrop( new CPSCrop() ));
+         uiManager.refreshCropList();
+      }
+      else if ( action.equalsIgnoreCase( btnDupe.getText() )) {
+         if ( isDataAvailable() )
+            displayCrop( dataModel.createCrop( displayedCrop ));
          uiManager.refreshCropList();
       }
       else if ( action.equalsIgnoreCase( btnDelete.getText() )) {

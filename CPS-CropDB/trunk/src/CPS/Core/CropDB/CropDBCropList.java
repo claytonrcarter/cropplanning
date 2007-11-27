@@ -22,13 +22,15 @@ import javax.swing.table.*;
 class CropDBCropList extends CPSDataModelUser implements ItemListener, 
                                                          TableModelListener, 
                                                          ListSelectionListener,
-                                                         MouseListener {
+                                                         MouseListener,
+                                                         ActionListener {
    
     private JPanel cropListPanel;
     private JTable cropListTable;
     private String sortColumn;
     private JRadioButton radioAll, radioCrops, radioVar;
     private JTextField tfldFilter;
+    private JButton btnFilterClear;
     private String filterString;
     
     private CropDBUI uiManager;
@@ -71,6 +73,13 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
           public void changedUpdate(DocumentEvent evt) {}
        });
        
+       btnFilterClear = new JButton( "X" );
+       btnFilterClear.setMargin( new Insets( 0, 0, 0, 0 ));
+       btnFilterClear.setContentAreaFilled(false);
+       btnFilterClear.setFocusPainted(false);
+       btnFilterClear.setBorderPainted(false);
+       btnFilterClear.addActionListener(this);
+       
        JPanel jplAboveList = new JPanel();
        jplAboveList.setLayout( new BoxLayout( jplAboveList, BoxLayout.LINE_AXIS ));
        jplAboveList.add( new JLabel( "Display:" ) );
@@ -79,6 +88,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        jplAboveList.add( radioVar );
        jplAboveList.add( Box.createHorizontalGlue() );
        jplAboveList.add( tfldFilter );
+       jplAboveList.add( btnFilterClear );
        cropListPanel.add( jplAboveList, BorderLayout.PAGE_START ); 
        
        cropListTable = new JTable();
@@ -232,6 +242,14 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
    public void mouseReleased(MouseEvent mouseEvent) {}
    public void mouseEntered(MouseEvent mouseEvent) {}
    public void mouseExited(MouseEvent mouseEvent) {}
+
+   public void actionPerformed(ActionEvent actionEvent) {   
+      String action = actionEvent.getActionCommand();
       
+      if      ( action.equalsIgnoreCase( btnFilterClear.getText() ) ) {
+         tfldFilter.setText("");
+      }
+   }
+   
 }
 
