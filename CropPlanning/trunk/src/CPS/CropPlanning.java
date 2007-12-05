@@ -38,6 +38,7 @@ public class CropPlanning implements Runnable {
        mm.loadCoreModules();
        for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {
           CPSCoreModule cm2 = mm.getCoreModule(i);
+          System.out.println("DRIVER: Initializing module: " + cm2.getModuleName() );
           cm2.setDataSource(dm);
           ui.addModule( cm2.getModuleName(), cm2.display() );
        }
