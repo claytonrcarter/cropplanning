@@ -118,5 +118,11 @@ public class CSV extends CPSDataModel {
 
    public CPSCrop getVarietyInfo(String cropName, String varName) { return null; }
    public CPSCrop getCropInfo(int CropID) { return null; }
+
+   public void createCropPlan(String plan_name) {}
+   public void updateCropPlan(String plan_name) {}
+   public void getCropPlan(String plan_name) {}
+   public void getCropPlan(String plan_name, String sortCol) {}
+   public void getCropPlan(String plan_name, String sortCol, String filterString) {}
    
 }
