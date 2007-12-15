@@ -35,8 +35,8 @@ public class HSQLDBTest extends TestCase {
       
       // theoretically, this will only call the constructor once
       // in cases where a test has multiple dependencies
-      if ( h == null )
-         h = new HSQLDB(true);
+      //if ( h == null )
+      //    h = new HSQLDB(true);
    }
 
    public void testBuildPaths() throws Exception {
