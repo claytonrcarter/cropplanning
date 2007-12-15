@@ -7,7 +7,6 @@ package CPS.Core.CropDB;
 
 import CPS.Data.CPSCrop;
 import CPS.Module.*;
-import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -58,6 +57,7 @@ class CropDBUI extends CPSDataModelUser {
     }
     
     public JPanel getUI () { return cropDBPanel; }    
+   @Override
     public void setDataSource( CPSDataModel dm ) {
        // set the data source for this object
        super.setDataSource(dm);
@@ -85,5 +85,7 @@ class CropDBUI extends CPSDataModelUser {
    void refreshCropList() {
       cropList.updateCropList();
    }
+   
+   void revalidate() { cropDBPanel.revalidate(); }
 
 }
