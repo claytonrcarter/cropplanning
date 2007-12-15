@@ -6,7 +6,7 @@
 
 package CPS;
 
-import CPS.Data.CPSCrop;
+import CPS.Data.*;
 import CPS.Module.CPSDataModel;
 import java.util.ArrayList;
 import javax.swing.table.TableModel;
@@ -121,8 +121,11 @@ public class CSV extends CPSDataModel {
 
    public void createCropPlan(String plan_name) {}
    public void updateCropPlan(String plan_name) {}
-   public void getCropPlan(String plan_name) {}
-   public void getCropPlan(String plan_name, String sortCol) {}
-   public void getCropPlan(String plan_name, String sortCol, String filterString) {}
+   public TableModel getCropPlan(String plan_name) { return null; }
+   public TableModel getCropPlan(String plan_name, String sortCol) { return null; }
+   public TableModel getCropPlan(String plan_name, String sortCol, String filterString) { return null; }
    
+   public CPSPlanting createPlanting( String plan_name, CPSPlanting planting ) { return null; };
+   public CPSPlanting getPlanting(String planName, int PlantingID) { return null; }
+   public void updatePlanting(String planName, CPSPlanting planting) {}
 }
