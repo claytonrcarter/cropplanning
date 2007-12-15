@@ -7,6 +7,7 @@
 package CPS.Core.CropDB;
 
 import CPS.Module.*;
+import CPS.Data.CPSCrop;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -33,15 +34,22 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     private JButton btnFilterClear;
     private String filterString;
     
+    private JPanel buttonPanel;
+    private JButton btnDelete, btnNew, btnDupe;
+    
     private CropDBUI uiManager;
     // private CropDBCropInfo cropInfo;
-    private int cropInfoRow = -1;
+    private int selectedRow = -1, cropInfoRow = -1;
     
     
     CropDBCropList( CropDBUI ui ) {
        uiManager = ui;
        filterString = "";
        sortColumn = null;
+       
+       /* We must build the button panel first so that it can be added
+        * to the crop list panel during following call */
+       buildButtonPanel(); 
        buildCropListPane();
     }
    
@@ -89,7 +97,6 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        jplAboveList.add( Box.createHorizontalGlue() );
        jplAboveList.add( tfldFilter );
        jplAboveList.add( btnFilterClear );
-       cropListPanel.add( jplAboveList, BorderLayout.PAGE_START ); 
        
        cropListTable = new JTable();
        cropListTable.setPreferredScrollableViewportSize( new Dimension( 500, cropListTable.getRowHeight() * 10 ) );
@@ -101,11 +108,38 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        
        JScrollPane scrollPane = new JScrollPane( cropListTable );
 	
+       cropListPanel.add( jplAboveList, BorderLayout.PAGE_START ); 
        cropListPanel.add( scrollPane, BorderLayout.CENTER );
-        
+       cropListPanel.add( buttonPanel, BorderLayout.PAGE_END ); 
+       
        updateCropList(); 
        
     }
+    
+    private void buildButtonPanel() {
+      
+      Insets small = new Insets( 1, 1, 1, 1 );
+      
+      btnNew = new JButton( "New" );
+      btnDupe = new JButton( "Duplicate" );
+      btnDelete = new JButton( "Delete" );
+      btnNew.addActionListener( this );
+      btnDupe.addActionListener( this );
+      btnDelete.addActionListener( this );
+      btnNew.setMargin( small );
+      btnDupe.setMargin( small );
+      btnDelete.setMargin( small );
+        
+      buttonPanel = new JPanel();
+      buttonPanel.setLayout( new BoxLayout( buttonPanel, BoxLayout.LINE_AXIS ) );
+      
+      buttonPanel.add( btnNew );
+      buttonPanel.add( btnDupe );
+      buttonPanel.add( btnDelete );
+      buttonPanel.add( Box.createHorizontalGlue() );
+      
+   }
+
     
     protected void updateCropInfoForRow( int i ) {
        cropInfoRow = i;
@@ -193,7 +227,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
 
        ListSelectionModel lsm = ( ListSelectionModel ) e.getSource();
        if ( ! lsm.isSelectionEmpty() ) {
-          int selectedRow = lsm.getMinSelectionIndex();
+          selectedRow = lsm.getMinSelectionIndex();
           System.out.println( "Selected row: " + selectedRow +
                       " (id: " + cropListTable.getValueAt( selectedRow, 0 ) + " )" );
           updateCropInfoForRow( selectedRow );
@@ -201,11 +235,13 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     }
 
     // Pertinent method for TableModelListener
+    // What does this do?
     public void tableChanged( TableModelEvent e ) {
        // TODO this is a potential problem; in case table changes in the middle of an edit
        refreshCropInfo();
     }
 
+    // This method is used to handle column sorting.
    public void mouseClicked( MouseEvent evt ) {
       
       JTable table = ((JTableHeader) evt.getSource() ).getTable();
@@ -246,9 +282,29 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
    public void actionPerformed(ActionEvent actionEvent) {   
       String action = actionEvent.getActionCommand();
       
+      /* Button FILTER CLEAR */
       if      ( action.equalsIgnoreCase( btnFilterClear.getText() ) ) {
          tfldFilter.setText("");
       }
+      /* Button NEW entry */
+      else if (action.equalsIgnoreCase(btnNew.getText())) {
+         if ( isDataAvailable() )
+            dataModel.createCrop( new CPSCrop() );
+         uiManager.refreshCropList();
+      }
+      /* Button DUPLICATE entry */
+      else if ( action.equalsIgnoreCase( btnDupe.getText() )) {
+          // TODO this should also check cropInfoPane for changes made 
+          // but not saved to the selected crop.
+         if ( isDataAvailable() )
+            dataModel.createCrop( dataModel.getCropInfo( selectedRow ));
+         uiManager.refreshCropList();
+      }
+      /* Button DELETE entry */
+      else if ( action.equalsIgnoreCase( btnDelete.getText() )) {
+         System.err.println("Function not supported.");
+      }
+
    }
    
 }

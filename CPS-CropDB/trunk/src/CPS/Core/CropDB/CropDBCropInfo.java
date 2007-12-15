@@ -26,7 +26,7 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
    
    private JPanel buttonPanel;
    private JLabel lblChanges;
-   private JButton btnSaveChanges, btnDiscardChanges, btnDelete, btnNew, btnDupe;
+   private JButton btnSaveChanges, btnDiscardChanges;
    
    private boolean noItemSelected = true;
    
@@ -66,16 +66,6 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       Insets small = new Insets( 1, 1, 1, 1 );
       
-      btnNew = new JButton( "New" );
-      btnDupe = new JButton( "Duplicate" );
-      btnDelete = new JButton( "Delete" );
-      btnNew.addActionListener( this );
-      btnDupe.addActionListener( this );
-      btnDelete.addActionListener( this );
-      btnNew.setMargin( small );
-      btnDupe.setMargin( small );
-      btnDelete.setMargin( small );
-      
       lblChanges = new JLabel( "Changes: " ); 
       btnSaveChanges = new JButton( "Save" );
       btnDiscardChanges = new JButton( "Discard" );
@@ -87,9 +77,6 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       buttonPanel = new JPanel();
       buttonPanel.setLayout( new BoxLayout( buttonPanel, BoxLayout.LINE_AXIS ) );
       
-      buttonPanel.add( btnNew );
-      buttonPanel.add( btnDupe );
-      buttonPanel.add( btnDelete );
       buttonPanel.add( Box.createHorizontalGlue() );
       buttonPanel.add( lblChanges );
       buttonPanel.add( btnSaveChanges );
@@ -295,19 +282,6 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       else if ( action.equalsIgnoreCase( btnDiscardChanges.getText() )) {
          displayCrop( displayedCrop );
          // reset the "this had changed" bit on all components
-      }
-      else if ( action.equalsIgnoreCase( btnNew.getText() )) {
-         if ( isDataAvailable() )
-            displayCrop( dataModel.createCrop( new CPSCrop() ));
-         uiManager.refreshCropList();
-      }
-      else if ( action.equalsIgnoreCase( btnDupe.getText() )) {
-         if ( isDataAvailable() )
-            displayCrop( dataModel.createCrop( displayedCrop ));
-         uiManager.refreshCropList();
-      }
-      else if ( action.equalsIgnoreCase( btnDelete.getText() )) {
-         System.err.println("Function not supported.");
       }
       
       // resetColorsCHANGETHISNAME();
