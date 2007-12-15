@@ -11,6 +11,7 @@ package CPS.Core.DB;
 import CPS.Data.*;
 import CPS.Module.CPSDataModel;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +33,7 @@ public class HSQLDB extends CPSDataModel {
    
    private ResultSet rsListCache = null;
    private ResultSet rsCropCache = null;
+   private ResultSet rsPlantCache = null;
    public String state = null;
    
    private HSQLQuerier query;
@@ -82,12 +84,12 @@ public class HSQLDB extends CPSDataModel {
    private String getMandatoryColumnNames() {
       return "id, crop_name";
    }
-   private String getAbbreviatedColumnNames( boolean varieties ) {
+   private String getAbbreviatedCropVarColumnNames( boolean varieties ) {
       return getMandatoryColumnNames() + ", " +
              ( varieties ? "var_name, " : "" ) + "fam_name, maturity";
    }
-   private String getFilterColumnNames() {
-      return getAbbreviatedColumnNames( true ) + ", keywords, groups";
+   private String getCropVarFilterColumnNames() {
+      return getAbbreviatedCropVarColumnNames( true ) + ", keywords, groups";
    }
    
    private String getCropsColumnNames() {
@@ -98,8 +100,22 @@ public class HSQLDB extends CPSDataModel {
       return getCropsColumnNames();
    }
    
+   private String getAbbreviatedCropPlanColumnNames() {
+      return getMandatoryColumnNames() + ", " + "var_name, maturity, location, completed, " + 
+                  "date_plant, rows_p_bed";
+   }
+   private String getCropPlanFilterColumnNames() {
+      return getAbbreviatedCropPlanColumnNames() + ", keywords, groups";
+   }
    
-   /** Method to cache results of a query and then return those results as a table */
+
+   /** Method to cache results of a query and then return those results as a table
+    *  @param t Table name
+    *  @param col list of columns to select
+    *  @param cond conditional statement
+    *  @param sort sort statement
+    *  @param filter filter statement
+    */
    private TableModel cachedListTableQuery( String t, String col, 
                                             String cond, String sort, String filter ) {
       rsListCache = query.storeQuery( t, col, cond, sort, filter );
@@ -120,10 +136,10 @@ public class HSQLDB extends CPSDataModel {
    }
    public TableModel getAbbreviatedCropList( String sortCol, String filterString ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
-                                   getAbbreviatedColumnNames( false ),
+                                   getAbbreviatedCropVarColumnNames( false ),
                                    "var_name IS NULL",
                                    sortCol,
-                                   buildFilterExpression( getFilterColumnNames(), filterString ));
+                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
    }
    
    public TableModel getCropList() { 
@@ -134,7 +150,7 @@ public class HSQLDB extends CPSDataModel {
    }   
    public TableModel getCropList( String sortCol, String filterString ) { 
       return cachedListTableQuery( "CROPS_VARIETIES", getCropsColumnNames(), null, sortCol,
-                                   buildFilterExpression( getFilterColumnNames(), filterString ));
+                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
    }
    
    public TableModel getVarietyList() {
@@ -145,7 +161,7 @@ public class HSQLDB extends CPSDataModel {
    }
    public TableModel getVarietyList( String sortCol, String filterString ) {
       return cachedListTableQuery( "CROPS_VARIETIES", getVarietiesColumnNames(), null, sortCol,
-                                   buildFilterExpression( getFilterColumnNames(), filterString ));
+                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
    }
 
    public TableModel getAbbreviatedVarietyList() {
@@ -156,10 +172,10 @@ public class HSQLDB extends CPSDataModel {
    }
    public TableModel getAbbreviatedVarietyList( String sortCol, String filterString ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
-                                   getAbbreviatedColumnNames( true ),
+                                   getAbbreviatedCropVarColumnNames( true ),
                                    "var_name IS NOT NULL",
                                    sortCol,
-                                   buildFilterExpression( getFilterColumnNames(), filterString )); 
+                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString )); 
    }
    
    public TableModel getCropAndVarietyList() {
@@ -170,7 +186,7 @@ public class HSQLDB extends CPSDataModel {
    }
    public TableModel getCropAndVarietyList( String sortCol, String filterString ) {
       return cachedListTableQuery( "CROPS_VARIETIES", "*", null, sortCol,
-                                   buildFilterExpression( getFilterColumnNames(), filterString ));
+                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
    }
    
    public TableModel getAbbreviatedCropAndVarietyList() {
@@ -180,23 +196,40 @@ public class HSQLDB extends CPSDataModel {
       return getAbbreviatedCropAndVarietyList( sortCol, null );
    }
    public TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString ) {
-      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedColumnNames( true ), null, sortCol,
-                                   buildFilterExpression( getFilterColumnNames(), filterString ) );
+      return cachedListTableQuery( "CROPS_VARIETIES", getAbbreviatedCropVarColumnNames( true ), null, sortCol,
+                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ) );
    }
 
    /*
     * CROP PLAN METHODS
     */
-   public void createNewCropPlan( String plan_name ) {
+   public void createCropPlan( String plan_name ) {
       HSQLDBCreator.createCropPlan( con, plan_name );
    }
-
-   public void retrieveCropPlan(String plan_name) {
+   
+   // TODO implement updateCropPlan
+   public void updateCropPlan( String plan_name ) {
+   }
+   
+   public TableModel getCropPlan(String plan_name) {
+      return getCropPlan( plan_name, null, null );
+   }
+   
+   public TableModel getCropPlan( String plan_name, String sortCol ) {
+      return getCropPlan( plan_name, sortCol, null );
    }
 
-   public void filterCropPlan(String plan_name, String filter) {
+   public TableModel getCropPlan( String plan_name, String sortCol, String filterString ) {
+      return cachedListTableQuery( plan_name, getAbbreviatedCropPlanColumnNames(), 
+                                   null, sortCol, 
+                                   buildFilterExpression( this.getCropPlanFilterColumnNames(), filterString ));
    }
 
+   
+   /*
+    * CROP AND VARIETY METHODS
+    */
+   
    /* we make the assumption that we're zero-based, ResultSets are not */
    public CPSCrop getCropInfo( int id ) {
       try {
@@ -279,41 +312,36 @@ public class HSQLDB extends CPSDataModel {
             /* Now handle the data chain.
              */
             Iterator<CropDatum> thisCrop = crop.iterator();
-            Iterator<CropDatum> superCrop;
+            // Iterator<CropDatum> superCrop;
             Iterator<CropDatum> similarCrop = crop.getSimilarCrop().iterator();
       
             if ( crop.isVariety() )
-               superCrop = getCropInfo( crop.getCropName() ).iterator();
+               // superCrop = getCropInfo( crop.getCropName() ).iterator();
+               similarCrop = getCropInfo( crop.getCropName() ).iterator();
             else
-               superCrop = crop.iterator();
+               // superCrop = crop.iterator();
+               similarCrop = crop.getSimilarCrop().iterator();
             
             CropDatum t, d, s;
-            while ( thisCrop.hasNext() && superCrop.hasNext() && similarCrop.hasNext() ) {
+            // while ( thisCrop.hasNext() && superCrop.hasNext() && similarCrop.hasNext() ) {
+            while ( thisCrop.hasNext() && similarCrop.hasNext() ) {
                t = thisCrop.next();
-               d = superCrop.next();
+               // d = superCrop.next();
                s = similarCrop.next();
-               if ( ! t.isValid() && t.shouldBeChained() )
-                  if ( crop.isVariety() )
-                     t.setDatum( d.getDatum() );
-                  else
-                     t.setDatum( s.getDatum() );
+               if ( ! t.isValid() && t.shouldBeInherited() ) {
+//                  if ( crop.isVariety() )
+//                     t.setDatum( d.getDatum() );
+//                  else
+//                     t.setDatum( s.getDatum() );
+                  t.setDatum( s.getDatum() );
+                  t.setIsInherited(true); // mark this datum as having been inherited
+               }
             }
             
          }  catch ( SQLException e ) { e.printStackTrace(); }
       }
       
       return crop;
-   }
-
-   public void shutdown() {
-      try {
-         Statement st = con.createStatement();
-         st.execute("SHUTDOWN");
-         con.close();
-      }
-      catch ( SQLException ex ) {
-         ex.printStackTrace();
-      }
    }
 
    public void updateCrop( CPSCrop crop ) {
@@ -328,8 +356,104 @@ public class HSQLDB extends CPSDataModel {
          return getCropInfo( newID );
    }
    
+   public CPSPlanting createPlanting( String planName, CPSPlanting planting ) {
+      int newID = HSQLDBCreator.insertPlanting( con, planName, planting );
+      if ( newID == -1 )
+         return new CPSPlanting();
+      else
+         return getPlanting( planName, newID );
+   }
+
+   
+   /* we make the assumption that we're zero-based, ResultSets are not */
+   public CPSPlanting getPlanting( String planName, int id ) {
+      try {
+         // TODO figure out better way to handle result caching
+         // we could just make this a string based query (ie getCropInfoForRow
+         // disabling this makes it a simple query on an ID
+         if ( false && rsListCache != null ) {
+            rsListCache.absolute( id + 1 );
+            id = rsListCache.getInt( "id" );
+         } 
+         rsPlantCache = query.submitQuery( planName, "*", "id = " + id );
+         return resultSetAsPlanting( rsPlantCache );
+      }
+      catch ( SQLException e ) { e.printStackTrace(); }
+
+      return null;
+   }
+
+   public void updatePlanting( String planName, CPSPlanting planting ) {
+      HSQLDBCreator.updatePlanting( con, planName, planting );
+   }
+   
+   // TODO this is where we can implement crop dependencies
+   // if a value is blank, leave it blank
+   // if a value is null, we can request that info from
+   //    for crops: the similar crop (var_name == null)
+   //    for varieties: the crop
+   private CPSPlanting resultSetAsPlanting( ResultSet rs ) throws SQLException {
+      
+      CPSPlanting p = new CPSPlanting();
+      
+      // move to the first (and only) row
+      if ( rs.next() ) {
+         try {
+            
+            // TODO, define a null value in the crop.setXX methods
+            // and invalidate
+            
+            p.setID( rs.getInt( "ID" ));
+            p.setCropName( captureString( rs.getString( "crop_name" ) ));            
+            p.setVarietyName( captureString( rs.getString( "var_name" ) ));
+
+            p.setLocation( captureString( rs.getString( "location" )));
+
+            // not yet implemented
+//          case PROP_STATUS:        return status;
+//          case PROP_COMPLETED:     return completed;
+           
+            SimpleDateFormat sdf = new SimpleDateFormat( "DD MM yyyy" );
+            p.setDateToPlant( sdf.format( captureDate( rs.getDate( "date_plant" ))));
+            p.setDateToTP( sdf.format( captureDate( rs.getDate( "date_tp" ))));
+            p.setDateToHarvest( sdf.format( captureDate( rs.getDate( "date_harvest" ))));
+
+            p.setBedsToPlant( captureInt( rs.getInt( "beds_to_plant") ));
+            p.setPlantsNeeded( captureInt( rs.getInt( "plants_needed") ));
+            p.setPlantsToStart( captureInt( rs.getInt( "plants_to_start") ));
+            p.setRowFtToPlant( captureInt( rs.getInt( "rowft_to_plant") ));
+            p.setFlatsNeeded( captureInt( rs.getInt( "flats_needed") ));
+            
+            p.setMaturityDays( captureInt( rs.getInt("maturity") ));
+            
+            p.setGroups( captureString( rs.getString( "groups" ) ));
+            p.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
+            p.setKeywords( captureString( rs.getString( "keywords" ) ));
+            p.setNotes( captureString( rs.getString( "notes" ) ));
+            
+         }  catch ( SQLException e ) { e.printStackTrace(); }
+      }
+      
+      return p;
+   }
+
    
    public ArrayList<CPSCrop> exportCropsAndVarieties() { return null; }
+   
+   public static Date captureDate( Date d ) {
+      if ( d == null )
+         // PENDING this is totally bogus and needs to have a sane "default" date
+         return new Date( 0 );
+      else
+         return d;
+   }
+   
+   public static int captureInt( int i ) {
+      if ( i <= 0 )
+         return -1;
+      else
+         return i;
+   }
    
    /** Opposite of escapeValue.
     *  Takes an SQL value and converts it to the correct "default" or "null"
@@ -342,6 +466,14 @@ public class HSQLDB extends CPSDataModel {
          return s;
    }
    
+   /** Method escapeValue is meant to capture our default "Null" values
+    * and format them properly so that we might detect proper null values
+    * upon read.  We use this to distinguish between null values and just
+    * data with no entry.
+    * @param o The object to test and format.
+    * @return A string representing the SQL value of Object o.
+    */
+   /* Currently handles: null, String, Integer, CPSCrop, CPSPlanting */
    public static String escapeValue( Object o ) {
       // if the datum doesn't exist, use NULL
       if      ( o == null )
@@ -356,15 +488,26 @@ public class HSQLDB extends CPSDataModel {
       else if ( o instanceof Integer &&
                   ((Integer) o).intValue() == -1 )
          return "NULL";
+      // else if ( o instanceof Date )
       else if ( o instanceof CPSCrop )
          return escapeValue( ((CPSCrop) o).getCropName() );
+      else if ( o instanceof CPSPlanting )
+         return escapeValue( ((CPSPlanting) o).getCropName() );
       else
          return o.toString();
    }
 
    private String buildFilterExpression( String colList, String filterString ) {
-      if ( filterString == null )
+      if ( filterString == null || filterString.length() == 0 )
          return null;
+      
+      /* error if trying to filter all columns, that's bad SQL */
+      if ( colList.equalsIgnoreCase( "*" )) {
+         String err = "ERROR: cannot filter columns " + colList + "; ";
+         colList = getMandatoryColumnNames();
+         err += "Filtering only columns: " + colList;
+         System.err.println( err );
+      }
       
       // TODO: if filterString not all lower, then omit LOWER below
       filterString = filterString.toLowerCase();
@@ -379,5 +522,15 @@ public class HSQLDB extends CPSDataModel {
       return exp.substring( 0, exp.lastIndexOf( " OR " ));
    }
    
-   
+   public void shutdown() {
+      try {
+//         Statement st = con.createStatement();
+//         st.execute("SHUTDOWN");
+         con.close();
+      }
+      catch ( SQLException ex ) {
+         ex.printStackTrace();
+      }
+   }
+
 }
