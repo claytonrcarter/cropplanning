@@ -92,8 +92,10 @@ public class HSQLQuerier {
          
          if ( filt ) {
             if ( cond )
-               query += " AND ";
-            query += filter;
+               query += " AND ( " + filter + " )";
+            else
+               query += filter;
+            
          }
          
          query += " ) ";
