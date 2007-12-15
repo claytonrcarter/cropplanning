@@ -28,13 +28,32 @@ import CPS.Data.*;
  */
 public abstract class CPSDataModel extends CPSModule {
    
+   /* Crop Plan methods */
+   /* retrieval */
    public abstract ArrayList<String> getListOfCropPlans();
+   public abstract TableModel getCropPlan( String plan_name );
+   public abstract TableModel getCropPlan( String plan_name, String sortCol );
+   public abstract TableModel getCropPlan( String plan_name, String sortCol, String filterString );
+   /* create and update */ 
+   public abstract void createCropPlan(String plan_name);
+   public abstract void updateCropPlan( String plan_name );
    
-   public abstract void createNewCropPlan( String plan_name );
+   /* Planting methods */
+   /* retrieval */
+   public abstract CPSPlanting getPlanting( String planName, int PlantingID );
+   /* create and update */
+   public abstract CPSPlanting createPlanting( String planName, CPSPlanting planting );
+   public abstract void updatePlanting( String planName, CPSPlanting planting );
    
-   public abstract void retrieveCropPlan( String plan_name );
-   public abstract void filterCropPlan( String plan_name, String filter );
-
+   /* Crop and Variety methods */
+   /* retrieval */
+   public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
+   public abstract CPSCrop getVarietyInfo( String cropName, String varName );
+   public abstract CPSCrop getCropInfo( int CropID );   
+   /* create and update */
+   public abstract CPSCrop createCrop(CPSCrop crop);
+   public abstract void updateCrop( CPSCrop crop );
+   
    public abstract TableModel getCropList();
    public abstract TableModel getAbbreviatedCropList();
    public abstract TableModel getVarietyList();
@@ -56,15 +75,7 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getCropAndVarietyList( String sortCol, String filterString );
    public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString );
    
-   public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
-   public abstract CPSCrop getVarietyInfo( String cropName, String varName );
-   public abstract CPSCrop getCropInfo( int CropID );
-   
    public abstract void shutdown();
-
-   // public abstract void createCrop( CPSCrop crop );
-   public abstract CPSCrop createCrop( CPSCrop crop );
-   public abstract void updateCrop( CPSCrop crop );
    
 
    public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
