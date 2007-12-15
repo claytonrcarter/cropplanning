@@ -1,6 +1,5 @@
 package CPS.Data;
 
-
 /**
  * Crop - data structure to hold information about a crop
  *        NOT for a planting of a crop, but just for the crop
@@ -8,7 +7,7 @@ package CPS.Data;
 
 import java.util.*;
 
-public class CPSCrop {
+public class CPSCrop extends CPSRecord {
 
    // Fields from schema that are as-of-yet unimplemented:
    // "Fudge", "mat_adjust", "misc_adjust", 
@@ -27,7 +26,8 @@ public class CPSCrop {
    public final int PROP_OTHER_REQ = 10;
    public final int PROP_NOTES = 11;
    public final int PROP_SIMILAR = 12;
-   
+   protected int lastValidProperty() { return PROP_SIMILAR; }
+    
    private CropDatum<Integer> cropID;
    // private CPSCrop similar;
    private CropDatum<CPSCrop> similar;
@@ -94,30 +94,27 @@ public class CPSCrop {
      * @param def Default value, returned if no others found
      * @param chain If property of this object is not valid, should we check "up the chain"?
      */
+   @Override
     public <T> T get( int prop, T def ) {
 
-       CropDatum d = getCropDatum( prop );
+       CropDatum d = getDatum( prop );
        
-       if      ( d == null )
-          return (T) def;
-       else if ( d.isValid() )
-          return (T) d.getDatum();
-       // else if ( isVariety() && ) ... handle variety based data chaining
-       // otherwise query the similar crop (unless we asked for the similar crop)
-       else if ( isCrop() && d.shouldBeChained() && similar.isValid() && prop != PROP_SIMILAR ) {
+       /* these are the first two conditions from the supermethod
+        * these MUST fail before we do our special calls */
+       // TODO this is crude but works for now; need a more elegant solution
+       if ( d != null && ! d.isValid() &&
+            isCrop() && d.shouldBeInherited() && similar.isValid() && prop != PROP_SIMILAR ) {
           // get the similar crop and call it's getProperty routine
           CPSCrop sim = (CPSCrop) similar.getDatum();
           return sim.get( prop , def );
        }
        else {
-          if ( def == null )
-             System.err.println( "Error, datum undefined: " + d.getDescriptor() );
-          return (T) def;
+          return super.get( prop, def );
        }
        
     }
     
-    protected CropDatum getCropDatum( int prop ) {
+    protected CropDatum getDatum( int prop ) {
        
        /* very ugly, but this allows us to use the hierarchy of Crop properties */
        switch ( prop ) {
@@ -139,21 +136,6 @@ public class CPSCrop {
 
     }
     
-    /** Method to abstract datum setting.  Captures "null" values for crop datums.
-     */
-    public <T> void set( CropDatum<T> d, T v ) { set( d, v, false ); }
-    private <T> void set( CropDatum<T> d, T v, boolean override ) {
-    
-       if ( v == null ||
-//            ! override && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
-            ! override && ( v instanceof String && ((String) v).equalsIgnoreCase("null") ) ||
-            ! override && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) )
-          d.setDatum(null);
-       else
-          d.setDatum(v);
-       
-    }
-
     public int getID() { return cropID.getDatumAsInt(); }
     public void setID( int i ) { set( cropID, new Integer( i )); }
         
@@ -213,73 +195,18 @@ public class CPSCrop {
     private void setTP( boolean b ) { tp.setDatum( new Boolean( b ) ); }
    
     
-    public CPSCrop diff( CPSCrop thatCrop ) {
-       
-       System.out.println( "Calculating difference between:\n" +
-                           this.toString() + "\n" +
-                           thatCrop.toString() );
-       
-       CPSCrop d = new CPSCrop();
-       boolean diffsExists = false;
-       
-       Iterator<CropDatum> thisIt = this.iterator();
-       Iterator<CropDatum> thatIt = thatCrop.iterator();
-       Iterator<CropDatum> deltIt = d.iterator();
-       
-       CropDatum thi, that, delta;
-       while ( thisIt.hasNext() && thatIt.hasNext() && deltIt.hasNext() ) {
-          thi = thisIt.next();
-          that = thatIt.next();
-          delta = deltIt.next();
-          
-          /*
-           * if this IS NOT valid AND that IS valid OR
-           * if this IS     valid AND that IS valid AND
-           * if this IS NOT equal to that,
-           * then record the difference
-           * if the recorded difference is NOT valid,
-           * then record the difference as the default value
-           */
-          if (( ! thi.isValid() && that.isValid() ) ||
-              (   thi.isValid() && that.isValid() ) &&
-                ! thi.getDatum().equals( that.getDatum() )) {
-             d.set( delta, that.getDatum() );
-             if ( ! delta.isValid() )
-                d.set( delta, that.getDefaultValue(), true );
-             diffsExists = true;
-          }
-       }
-       
-       // by default, a cropID of -1 means no differences.
-       if ( diffsExists ) {
-          System.out.println("Differences EXIST");
-          d.setID( this.getID() );
-       }
-       
-       return d;
+    public CPSRecord diff( CPSRecord thatCrop ) {
+       return super.diff( thatCrop, new CPSCrop() );
     }
     
     /* Iterator */
     public CropIterator iterator() { return new CropIterator(); }
     
-    public class CropIterator implements Iterator {
+    public class CropIterator extends CPSRecordIterator {
        
-       private int currentProp;
-       
-       public CropIterator() { currentProp = -1; }
-       
-       public boolean hasNext() { return currentProp < PROP_SIMILAR; }
-
-       public CropDatum next() {
-
-          switch ( ++currentProp ) {
-             case PROP_ID: currentProp++; // increment and fall through; could just return next()
-             default: 
-                return getCropDatum( currentProp );
-          }
+       public  boolean ignoreThisProperty( int prop ) {
+          return prop == PROP_ID;
        }
-
-       public void remove() {}
        
     }
     
@@ -287,7 +214,7 @@ public class CPSCrop {
        String s = "";
        
        CropIterator i = this.iterator();
-       CropDatum c;
+       CPSDatum c;
        while ( i.hasNext() ) {
           c = i.next();
           if ( c.isValid() )
@@ -298,10 +225,6 @@ public class CPSCrop {
        }
        
        return s;
-    }
-    
-    public boolean equals( Object o ) {
-       return ( o instanceof CPSCrop && this.diff( (CPSCrop) o ).getID() == -1 );
     }
     
     /** Returns true if this CPSCrop object represents a "crop".

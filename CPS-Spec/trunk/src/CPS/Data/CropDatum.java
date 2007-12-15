@@ -1,3 +1,7 @@
+/**
+ * CPSDatum - This is an abstraction data structure that stores, processes and deals
+ * with data and metadata.  Used primarity in the CPSCrop and CPSPlanting classes.
+ */
 
 package CPS.Data;
 
@@ -7,20 +11,12 @@ import javax.swing.JTextField;
 
 public class CropDatum<T> extends CPSDatum {
 
-   private int property;
-   private String columnName;
-   private boolean valid;
-   private boolean chain;
-   private T defaultValue;
+   private boolean shouldInherit, isInherited;
    
    public CropDatum() {
       invalidate();
-      setShouldBeChained(true);
-   }
-   
-   private CropDatum( String n, T d ) {
-      setDescriptor(n);
-      setDatum(d);
+      setShouldBeInherited(true);
+      setIsInherited( false );
    }
    
    public CropDatum( String n, int p, String c, T def ) {
@@ -28,47 +24,19 @@ public class CropDatum<T> extends CPSDatum {
    }
    
    public CropDatum( String n, int p, String c, T def, boolean chain ) {
-      setDescriptor(n);
-      setDefaultValue(def);
-      setDatum( getDefaultValue() );
-      setProperty(p);
-      setColumnName(c);
-      setShouldBeChained( chain );
+      super( n, p, c, def );
+      setShouldBeInherited( chain );
       invalidate();
    }
-   
+
    // TODO this is a dummy; should be removed; only for compatibility
    public CropDatum( String n ) {}
+  
+   private void setShouldBeInherited( boolean c ) { shouldInherit = c; }
+   public boolean shouldBeInherited() { return shouldInherit; }
    
-   public void setDatum( T datum ) {
-      if ( datum != null ) {
-         super.setDatumTo( datum );
-         validate();
-      }
-      else
-         invalidate();
-   }
+   public void setIsInherited( boolean i ) { isInherited = i; }
+   public boolean isInherited() { return isInherited; }
    
-   
-   private void setColumnName( String c ) { columnName = c; }
-   public String getColumnName() { return columnName; }
-   
-   private void setProperty( int p ) { property = p; }
-   public int getPropertyNum() { return property; }
-   
-   public void validate() { valid = true; }
-   public void invalidate() { valid = false; }
-   public boolean isValid() { return valid; }
-   
-   private void setShouldBeChained( boolean c ) { chain = c; }
-   public boolean shouldBeChained() { return chain; }
-   
-   private void setDefaultValue( T v ) { defaultValue = v; }
-   public T getDefaultValue() { return defaultValue; }
-   
-   JLabel toLabel() { return new JLabel( getDescriptor() ); }
-   JComponent toEditableField() { return new JTextField( getDatum().toString() ); }
-   JComponent toStaticField() { return new JLabel( getDatum().toString() ); }
-
    
 }
