@@ -6,7 +6,6 @@
 
 package CPS.Core.DB;
 
-import CPS.Module.CPSDataModel;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -34,7 +33,8 @@ public class HSQLConnect {
    }
    
    private static String buildDBConnectionString( String dir, String dbFilename ) {
-      return dbPrefix + dir + fileSep + dbFilename + dbProperties;
+//      return dbPrefix + dir + fileSep + dbFilename + dbProperties;
+       return "jdbc:hsqldb:hsql://localhost/xdb";
    }
    
    private static void loadDriver( String driver ) {
