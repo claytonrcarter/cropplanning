@@ -6,6 +6,7 @@
 
 package CPS.Core.CropDB;
 
+import CPS.Core.UI.LayoutAssist;
 import CPS.Data.*;
 import CPS.Module.*;
 import java.awt.BorderLayout;
@@ -101,8 +102,8 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       mainPanel.removeAll();
       mainPanel.add( cropInfoPanel, BorderLayout.CENTER );
       mainPanel.add( buttonPanel, BorderLayout.PAGE_END );
-      mainPanel.validate();
-      // mainPanel.repaint();
+      mainPanel.revalidate();
+      uiManager.revalidate();
    }
    
    public JPanel getJPanel() {
@@ -219,47 +220,48 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
       
       /* the format for these calls is: panel, column, row, component */
       
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 0, "Crop Name:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 1, 0, tfldCropName );
+      LayoutAssist.createLabel(  cropInfoPanel, 0, 0, "Crop Name:" );
+      LayoutAssist.addTextField( cropInfoPanel, 1, 0, tfldCropName );
 
       // TODO maybe: if ( isVariety )
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 1, "Variety:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 1, 1, tfldVarName );
+      LayoutAssist.createLabel(  cropInfoPanel, 0, 1, "Variety:" );
+      LayoutAssist.addTextField( cropInfoPanel, 1, 1, tfldVarName );
 
       lblSimilar = new JLabel( "Similar to:" );
-      CropDBDataTranslata.addLabel(     cropInfoPanel, 2, 0, lblSimilar );
-      CropDBDataTranslata.addComboBox(  cropInfoPanel, 3, 0, cmbxSimilar );
+      LayoutAssist.addLabel(     cropInfoPanel, 2, 0, lblSimilar );
+      LayoutAssist.addComboBox(  cropInfoPanel, 3, 0, cmbxSimilar );
       
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 1, "Family:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 3, 1, tfldFamName );
+      LayoutAssist.createLabel(  cropInfoPanel, 2, 1, "Family:" );
+      LayoutAssist.addTextField( cropInfoPanel, 3, 1, tfldFamName );
       
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 2, "Description:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 1, 2, tfldDesc );
+      LayoutAssist.createLabel(  cropInfoPanel, 0, 2, "Description:" );
+      LayoutAssist.addTextField( cropInfoPanel, 1, 2, tfldDesc );
       
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 3, "Mat. Days:" );
-      CropDBDataTranslata.addTextField( cropInfoPanel, 1, 3, tfldMatDays );
+      LayoutAssist.createLabel(  cropInfoPanel, 0, 3, "Mat. Days:" );
+      LayoutAssist.addTextField( cropInfoPanel, 1, 3, tfldMatDays );
       
       // TODO add these to a subpanel, then add subpanel
-      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 0, 4, chkDS );
-      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 1, 4, chkTP );
-      CropDBDataTranslata.addCheckBox(  cropInfoPanel, 2, 4, chkSucc );
+      LayoutAssist.addCheckBox(  cropInfoPanel, 0, 4, chkDS );
+      LayoutAssist.addCheckBox(  cropInfoPanel, 1, 4, chkTP );
+      LayoutAssist.addCheckBox(  cropInfoPanel, 2, 4, chkSucc );
 
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 3, "Belongs to Groups:" );
-      CropDBDataTranslata.addTextArea(  cropInfoPanel, 3, 3, tareGroups );
+      LayoutAssist.createLabel(  cropInfoPanel, 2, 3, "Belongs to Groups:" );
+      LayoutAssist.addTextArea(  cropInfoPanel, 3, 3, tareGroups );
 
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 5, "Other Requirements:" );
-      CropDBDataTranslata.addTextArea(  cropInfoPanel, 1, 5, tareOtherReq );
+      LayoutAssist.createLabel(  cropInfoPanel, 0, 5, "Other Requirements:" );
+      LayoutAssist.addTextArea(  cropInfoPanel, 1, 5, tareOtherReq );
       
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 2, 5, "Keywords:" );
-      CropDBDataTranslata.addTextArea(  cropInfoPanel, 3, 5, tareKeywords );
+      LayoutAssist.createLabel(  cropInfoPanel, 2, 5, "Keywords:" );
+      LayoutAssist.addTextArea(  cropInfoPanel, 3, 5, tareKeywords );
       
-      CropDBDataTranslata.createLabel(  cropInfoPanel, 0, 6, "Notes:" );
-      CropDBDataTranslata.addTextArea(  cropInfoPanel, 1, 6, tareNotes );
+      LayoutAssist.createLabel(  cropInfoPanel, 0, 6, "Notes:" );
+      LayoutAssist.addTextArea(  cropInfoPanel, 1, 6, tareNotes );
       
       return cropInfoPanel;
       
    }
 
+   @Override
    public void setDataSource( CPSDataModel dm ) {
       super.setDataSource(dm);
       
@@ -284,7 +286,7 @@ public class CropDBCropInfo extends CPSDataModelUser implements ActionListener {
          if ( isDataAvailable() ) {
             // update only the differences between the originally displayed crop
             // and what is currently displayed
-            CPSCrop diff = displayedCrop.diff( this.asCrop() );
+            CPSCrop diff = (CPSCrop) displayedCrop.diff( this.asCrop() );
             if ( diff.getID() != -1 )
                dataModel.updateCrop( diff );
          }
