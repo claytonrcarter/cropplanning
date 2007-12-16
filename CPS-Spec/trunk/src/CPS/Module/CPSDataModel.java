@@ -44,6 +44,7 @@ public abstract class CPSDataModel extends CPSModule {
    /* create and update */
    public abstract CPSPlanting createPlanting( String planName, CPSPlanting planting );
    public abstract void updatePlanting( String planName, CPSPlanting planting );
+   public abstract void deletePlanting( String planting, int plantingID );
    
    /* Crop and Variety methods */
    /* retrieval */
@@ -53,6 +54,7 @@ public abstract class CPSDataModel extends CPSModule {
    /* create and update */
    public abstract CPSCrop createCrop(CPSCrop crop);
    public abstract void updateCrop( CPSCrop crop );
+   public abstract void deleteCrop( int cropID );
    
    public abstract TableModel getCropList();
    public abstract TableModel getAbbreviatedCropList();

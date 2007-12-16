@@ -7,6 +7,7 @@ package CPS.Data;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class CPSPlanting extends CPSRecord {
@@ -70,12 +71,9 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<String> other_req;
    private CPSDatum<String> notes;
    private CPSDatum<Integer> maturity;
-   private CPSDatum<String> date_plant;
-   private CPSDatum<String> date_tp;
-   private CPSDatum<String> date_harvest;
-//   private CPSDatum<Calendar> date_plant;
-//   private CPSDatum<Calendar> date_tp;
-//   private CPSDatum<Calendar> date_harvest;
+   private CPSDatum<Date> date_plant;
+   private CPSDatum<Date> date_tp;
+   private CPSDatum<Date> date_harvest;
    private CPSDatum<Integer> beds_to_plant;
    private CPSDatum<Integer> plants_needed;
    private CPSDatum<Integer> rowft_to_plant;
@@ -102,9 +100,9 @@ public class CPSPlanting extends CPSRecord {
 //      date_plant = new CPSDatum<Calendar>( "Planting Date", PROP_DATE_PLANT, "date_plant", new GregorianCalendar() );
 //      date_tp = new CPSDatum<Calendar>( "Transplant Date", PROP_DATE_TP, "date_tp", new GregorianCalendar() );
 //      date_harvest = new CPSDatum<Calendar>( "Harvest Date", PROP_DATE_HARVEST, "date_harvest", new GregorianCalendar() );
-      date_plant = new CPSDatum<String>( "Planting Date", PROP_DATE_PLANT, "date_plant", "" );
-      date_tp = new CPSDatum<String>( "Transplant Date", PROP_DATE_TP, "date_tp", "" );
-      date_harvest = new CPSDatum<String>( "Harvest Date", PROP_DATE_HARVEST, "date_harvest", "" );
+      date_plant = new CPSDatum<Date>( "Planting Date", PROP_DATE_PLANT, "date_plant", new Date(0) );
+      date_tp = new CPSDatum<Date>( "Transplant Date", PROP_DATE_TP, "date_tp", new Date(0) );
+      date_harvest = new CPSDatum<Date>( "Harvest Date", PROP_DATE_HARVEST, "date_harvest", new Date(0) );
       beds_to_plant = new CPSDatum<Integer>( "Num. Beds to Plants", PROP_BEDS_PLANT, "beds_to_plant", new Integer(-1) );
       plants_needed = new CPSDatum<Integer>( "Num. Plants Needed", PROP_PLANTS_NEEDED, "plants_needed", new Integer(-1) );
       rowft_to_plant = new CPSDatum<Integer>( "Row Feet To Plant", PROP_ROWFT_PLANT, "rowft_to_plant", new Integer(-1) );
@@ -174,19 +172,53 @@ public class CPSPlanting extends CPSRecord {
 
    public int getMaturityDays() { return get( PROP_MATURITY, new Integer( -1 )).intValue(); }
    public void setMaturityDays( int i ) { set( maturity, new Integer( i )); }
-
+   public void setMaturityDays(String s) { 
+        if ( s == null || s.equalsIgnoreCase("null") || s.equals("") )
+            set( maturity, new Integer( -1 ));
+        else
+            set( maturity, new Integer( s ));
+    }
+   
 //          case PROP_DATE_PLANT:    return date_plant;
-   public String getDateToPlant() { return get( PROP_DATE_PLANT, "" ); }
-   public void setDateToPlant( String d ) { set( date_plant, d ); }
+   public Date getDateToPlant() { return get( PROP_DATE_PLANT, new Date() ); }
+   public String getDateToPlantString() { return formatDate( getDateToPlant() ); }
+   public void setDateToPlant( Date d ) { set( date_plant, d ); }
+   public void setDateToPlant( String d ) { setDateToPlant( parseDate(d)); }
    
 //          case PROP_DATE_TP:       return date_tp;
-   public String getDateToTP() { return get( PROP_DATE_TP, "" ); }
-   public void setDateToTP( String d ) { set( date_tp, d ); }
-
-//          case PROP_DATE_HARVEST:  return date_harvest;
-   public String getDateToHarvest() { return get( PROP_DATE_HARVEST, "" ); }
-   public void setDateToHarvest( String d ) { set( date_harvest, d ); }
-
+   public Date getDateToTP() { return get( PROP_DATE_TP, new Date() ); }
+   public String getDateToTPString() { return formatDate( getDateToTP() ); }
+   public void setDateToTP( Date d ) { set( date_tp, d ); }
+   public void setDateToTP( String d ) { setDateToTP( parseDate( d )); }
+   
+   public Date getDateToHarvest() {
+       CPSDatum h = getDatum( PROP_DATE_HARVEST );
+       CPSDatum p = getDatum(PROP_DATE_PLANT);
+       CPSDatum m = getDatum(PROP_MATURITY);
+       
+       /* Only calculate the harvest date if:
+        * DATE_HARVEST is *NOT* valid AND
+        * DATE_PLANTING AND MATURITY *ARE* valid 
+        * otherwise just return the harvest date or a default */
+       if ( ! h.isValid() && 
+              p.isValid() && m.isValid() ) {
+           GregorianCalendar c = new GregorianCalendar();
+           c.setTime( getDateToPlant() );
+           c.add( GregorianCalendar.DAY_OF_YEAR, getMaturityDays() );
+           return c.getTime();
+       }
+       else
+           return get(PROP_DATE_HARVEST, new Date());
+   }
+   public String getDateToHarvestString() { return formatDate( getDateToHarvest() ); }
+   public void setDateToHarvest( Date d ) { 
+       if ( changedProps.contains( PROP_DATE_HARVEST ) )
+           set( date_harvest, d, true );
+       else
+           set( date_harvest, d );
+   }
+   public void setDateToHarvest( String d ) { setDateToHarvest( parseDate( d )); }
+   
    public int getBedsToPlant() { return get( PROP_BEDS_PLANT, new Integer( -1 )).intValue(); }
    public void setBedsToPlant( int i ) { set( beds_to_plant, new Integer( i )); }
 
@@ -218,7 +250,37 @@ public class CPSPlanting extends CPSRecord {
        
    }
 
+   public String toString() { 
+       String s = "";
+       
+       PlantingIterator i = this.iterator();
+       CPSDatum c;
+       while ( i.hasNext() ) {
+          c = i.next();
+          if ( c.isValid() )
+              s += c.getDescriptor() + " = '" + c.getDatum() + "', ";
+       }
+       
+       return s;
+    }
 
-   public String toString() { return null; }
 
+   public static Date parseDate( String s ) {
+       if ( s == null || s.equals("") )
+           return new Date(0);
+       
+       SimpleDateFormat sdf = new SimpleDateFormat( "dd MM yyyy" );
+       try {
+           return sdf.parse(s);
+       } catch ( Exception ignore ) {
+           System.err.println( "ERROR parsing date: " + s );
+           return null;
+       }
+   }
+   
+   public static String formatDate( Date d ) {
+       SimpleDateFormat sdf = new SimpleDateFormat( "dd MM yyyy" );
+       return sdf.format(d);
+   }
+   
 }

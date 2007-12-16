@@ -66,6 +66,19 @@ public class HSQLDBCreator {
          
    }
    
+   public static void deleteRecord( Connection con, String table, int row ) {
+      
+       try {
+           String s = "DELETE FROM " + table + " WHERE id = " + row;
+      
+           System.out.println("Executing update: " + s);
+           Statement st = con.createStatement();
+           st.executeUpdate(s);
+           st.close();
+      }
+      catch ( SQLException e ) { e.printStackTrace(); }
+       
+   }
    
    private static String createTableCropPlans() {
       return statementCreateTable( "CROP_PLANS", HSQLDBSchemas.cropPlansListSchema() );

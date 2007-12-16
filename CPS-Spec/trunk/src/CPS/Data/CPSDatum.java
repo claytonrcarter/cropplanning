@@ -51,8 +51,17 @@ public class CPSDatum<T> {
     * Get and Set Datum methods 
     */
    public T getDatum() { return datum; }
-   public void setDatum( T datum ) {
-      if ( datum != null ) {
+   public void setDatum( T datum ) { setDatum( datum, false ); }
+   /** setDatum - records changes to this datum
+    * 
+    * @param datum - value to record
+    * @param overrideValidation - if true, the value is set and the datum is
+    * validated regardless of whether the datum is null; if false, the datum is 
+    * recorded and validated only if the new datum is not null.  If the new
+    * datum is null, this datum is invalidated.
+    */
+   public void setDatum( T datum, boolean overrideValidation ) {
+      if ( overrideValidation || datum != null ) {
          this.datum = datum;
          validate();
       }

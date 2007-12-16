@@ -14,8 +14,6 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.hsqldb.*;
 import resultsettablemodel.*;
@@ -356,6 +354,14 @@ public class HSQLDB extends CPSDataModel {
          return getCropInfo( newID );
    }
    
+   public void deleteCrop( int cropID ) {
+       HSQLDBCreator.deleteRecord(con, "CROPS_VARIETIES", cropID);   
+   }
+   
+   public void deletePlanting( String planName, int plantingID ) {
+       HSQLDBCreator.deleteRecord( con, planName, plantingID );
+   }
+   
    public CPSPlanting createPlanting( String planName, CPSPlanting planting ) {
       int newID = HSQLDBCreator.insertPlanting( con, planName, planting );
       if ( newID == -1 )
@@ -413,10 +419,9 @@ public class HSQLDB extends CPSDataModel {
 //          case PROP_STATUS:        return status;
 //          case PROP_COMPLETED:     return completed;
            
-            SimpleDateFormat sdf = new SimpleDateFormat( "DD MM yyyy" );
-            p.setDateToPlant( sdf.format( captureDate( rs.getDate( "date_plant" ))));
-            p.setDateToTP( sdf.format( captureDate( rs.getDate( "date_tp" ))));
-            p.setDateToHarvest( sdf.format( captureDate( rs.getDate( "date_harvest" ))));
+            p.setDateToPlant( captureDate( rs.getDate( "date_plant" )));
+            p.setDateToTP( captureDate( rs.getDate( "date_tp" )));
+            p.setDateToHarvest( captureDate( rs.getDate( "date_harvest" )));
 
             p.setBedsToPlant( captureInt( rs.getInt( "beds_to_plant") ));
             p.setPlantsNeeded( captureInt( rs.getInt( "plants_needed") ));
@@ -440,6 +445,68 @@ public class HSQLDB extends CPSDataModel {
    
    public ArrayList<CPSCrop> exportCropsAndVarieties() { return null; }
    
+   /** 
+    * SQL distinguishes between values that are NULL and those that are just
+    * blank.  This method is meant to capture our default values
+    * and format them properly so that we might detect proper null values
+    * upon read.  We use this to distinguish between null values and just
+    * data with no entry.
+    * 
+    * OK, so what constitutes a null value, blank value, and one that is
+    * just a default value?  Let's try to answer that for different data types:
+    *   Object: only 'null' objects are SQL NULL
+    *   String: a string "null" is read as SQL NULL
+    *           anything else is considered a valid entry
+    *           Therefore we must decide when to pass back "null" vs "" when
+    *             strings w/o entries are encountered.
+    *  Integer: a value of -1 is an SQL NULL
+    *           anything else is valid
+    *  Date:    a millisecond date of 0 is an SQL NULL
+    *           anything else is valid
+    * 
+    * @param o The object to test and format.
+    * @return A string representing the SQL value of Object o.
+    */
+   /* Currently handles: null, String, Integer, CPSCrop, CPSPlanting */
+   public static String escapeValue( Object o ) {
+      // if the datum doesn't exist, use NULL
+      if      ( o == null )
+         return "NULL";
+      // if the datum is a string and is only "", use NULL, else escape it
+      else if ( o instanceof String )
+         if ( ((String) o).equalsIgnoreCase( "null" ) )
+            return "NULL";
+         else
+            return "'" + o.toString() + "'";
+      // if the datum is an int whose value is -1, use NULL
+      else if ( o instanceof Integer && ((Integer) o).intValue() == -1 )
+         return "NULL";
+      else if ( o instanceof java.util.Date || o instanceof java.sql.Date ) {
+          // cast to util.Date to cover all of our bases, sql.Date is in scope
+          // here, so we must use fully qualified name
+          if ( ((java.util.Date) o).getTime() == 0 )
+              return "NULL";
+          else {
+              // TODO figure how to make the date format more flexible
+              SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+              return "'" + sdf.format((java.util.Date) o) + "'";
+          }
+      }
+      /* Not entirely sure what these are here for.  Actually, the CPSCrop
+       * case is probably for data cascading.  Planting case might not be 
+       * appropriate */
+      else if ( o instanceof CPSCrop )
+         return escapeValue( ((CPSCrop) o).getCropName() );
+      else if ( o instanceof CPSPlanting )
+         return escapeValue( ((CPSPlanting) o).getCropName() );
+      else
+         return o.toString();
+   }
+
+   /** captureValue methods are opposite of escapeValue method.
+    *  Takes an SQL value and converts it to the correct "default" or "null"
+    *  value for our program.
+    */
    public static Date captureDate( Date d ) {
       if ( d == null )
          // PENDING this is totally bogus and needs to have a sane "default" date
@@ -455,10 +522,6 @@ public class HSQLDB extends CPSDataModel {
          return i;
    }
    
-   /** Opposite of escapeValue.
-    *  Takes an SQL value and converts it to the correct "default" or "null"
-    *  value for our program.
-    */
    public static String captureString( String s ) {
       if ( s == null || s.equalsIgnoreCase("null") || s.equals("") )
          return null;
@@ -466,37 +529,8 @@ public class HSQLDB extends CPSDataModel {
          return s;
    }
    
-   /** Method escapeValue is meant to capture our default "Null" values
-    * and format them properly so that we might detect proper null values
-    * upon read.  We use this to distinguish between null values and just
-    * data with no entry.
-    * @param o The object to test and format.
-    * @return A string representing the SQL value of Object o.
-    */
-   /* Currently handles: null, String, Integer, CPSCrop, CPSPlanting */
-   public static String escapeValue( Object o ) {
-      // if the datum doesn't exist, use NULL
-      if      ( o == null )
-         return "NULL";
-      // if the datum is a string and is only "", use NULL, else escape it
-      else if ( o instanceof String )
-         if ( o.equals("") || ((String) o).equalsIgnoreCase( "null" ) )
-            return "NULL";
-         else
-            return "'" + o.toString() + "'";
-      // if the datum is an int whose value is -1, use NULL
-      else if ( o instanceof Integer &&
-                  ((Integer) o).intValue() == -1 )
-         return "NULL";
-      // else if ( o instanceof Date )
-      else if ( o instanceof CPSCrop )
-         return escapeValue( ((CPSCrop) o).getCropName() );
-      else if ( o instanceof CPSPlanting )
-         return escapeValue( ((CPSPlanting) o).getCropName() );
-      else
-         return o.toString();
-   }
-
+   
+   
    private String buildFilterExpression( String colList, String filterString ) {
       if ( filterString == null || filterString.length() == 0 )
          return null;

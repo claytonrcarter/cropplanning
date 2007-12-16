@@ -7,13 +7,10 @@
 
 package CPS.Core.DB;
 
-import com.sun.crypto.provider.RSACipher;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
+import java.text.SimpleDateFormat;
 import resultsettablemodel.*;
 
 public class HSQLTableModel extends ResultSetTableModel {
@@ -59,18 +56,27 @@ public class HSQLTableModel extends ResultSetTableModel {
        if ( idInResults )
           column++;
        
-       String val = value.toString();
-       System.out.println( "Setting column " + column + ", row " + row + ": to " + value.toString() );
-      
+       
        try {
-         
+      
+           String val = value.toString();
+           System.out.println("Setting column " + metadata.getCatalogName(column) +
+                              " (num: " + column +
+                              ", type: " + metadata.getColumnTypeName( column ) +
+                              "), row " + row + ": to " + value.toString());
+        
           if      ( val.equals( "" ))
              val = "NULL";
           else if ( metadata.getColumnType(column+1) == java.sql.Types.VARCHAR ||
                     metadata.getColumnType(column+1) == java.sql.Types.CHAR    ||
-                    metadata.getColumnType(column+1) == java.sql.Types.LONGVARCHAR )
+                    metadata.getColumnType(column+1) == java.sql.Types.LONGVARCHAR ) 
              val = HSQLDB.escapeValue( val );
+          else if ( metadata.getColumnType(column+1) == java.sql.Types.DATE ) {
+              SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd");
+              val = HSQLDB.escapeValue(sdf.parse((String) val));
+          }
  
+          System.out.println( "Value escaped for SQL as: \"" + val + "\"" );
           
           results.absolute(row+1);
           String sql = "UPDATE " + metadata.getTableName(1) + " ";
@@ -89,7 +95,7 @@ public class HSQLTableModel extends ResultSetTableModel {
           fireTableDataChanged();
          
        }
-       catch ( SQLException ex ) { ex.printStackTrace(); }
+       catch ( Exception ex ) { ex.printStackTrace(); }
          
     }
     

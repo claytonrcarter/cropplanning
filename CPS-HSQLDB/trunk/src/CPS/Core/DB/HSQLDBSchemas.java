@@ -56,6 +56,7 @@ public class HSQLDBSchemas {
       s += "season_adjust   INTEGER, ";
       s += "time_to_tp      INTEGER, ";
       s += "misc_adjust     INTEGER, ";
+      
       s += "date_plant      DATE, ";
       s += "date_tp         DATE, ";
       s += "date_harvest    DATE, ";

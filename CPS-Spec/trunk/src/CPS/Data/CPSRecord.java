@@ -10,11 +10,14 @@
 
 package CPS.Data;
 
+import java.util.Date;
 import java.util.Iterator;
+import java.util.ArrayList;
 
 public abstract class CPSRecord {
    
    protected abstract int lastValidProperty();
+   protected ArrayList<Integer> changedProps = new ArrayList<Integer>();
    
    protected abstract CPSDatum getDatum( int prop );
    public abstract String toString(); 
@@ -65,9 +68,9 @@ public abstract class CPSRecord {
           delta = deltIt.next();
           
           /*
-           * if this IS NOT valid AND that IS valid OR
+           * if this IS NOT valid AND that IS valid OR   (means: new info added)
            * if this IS     valid AND that IS valid AND
-           * if this IS NOT equal to that,
+           * if this IS NOT equal to that,               (means: info changed)
            * then record the difference
            * if the recorded difference is NOT valid,
            * then record the difference as the default value
@@ -84,7 +87,7 @@ public abstract class CPSRecord {
        
        // by default, a cropID of -1 means no differences.
        if ( diffsExists ) {
-          System.out.println("Differences EXIST");
+          System.out.println("Differences EXIST: " + diffs.toString() );
           diffs.setID( this.getID() );
        }
        
@@ -96,19 +99,27 @@ public abstract class CPSRecord {
    }
    
    /** Method to abstract datum setting.  Captures "null" values for crop datums.
+    * @param override - used to force the setting of datum to value v w/o testing
+    *  to see if it is a NULL type value.
     */
    public <T> void set( CPSDatum<T> d, T v ) { set( d, v, false ); }
    protected <T> void set( CPSDatum<T> d, T v, boolean override ) {
     
       if ( v == null ||
 //            ! override && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
-            ! override && ( v instanceof String && ((String) v).equalsIgnoreCase("null") ) ||
-            ! override && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) )
+           ! override && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
+           ! override && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) ||
+           ! override && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
          d.setDatum(null);
       else
-         d.setDatum(v);
+          // if override is true, then we could pass it along to make sure that
+          // things are forced through
+           d.setDatum(v, override);
    }
 
+   public void addChangedProperty( int prop ) {
+       changedProps.add( prop );
+   }
    
    public abstract Iterator iterator();
    public abstract class CPSRecordIterator implements Iterator {
