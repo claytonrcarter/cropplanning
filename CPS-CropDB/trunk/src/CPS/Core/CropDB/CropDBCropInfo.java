@@ -6,7 +6,7 @@
 
 package CPS.Core.CropDB;
 
-import CPS.Core.UI.LayoutAssist;
+import CPS.UI.Swing.LayoutAssist;
 import CPS.Data.*;
 import CPS.Module.*;
 import java.awt.BorderLayout;
