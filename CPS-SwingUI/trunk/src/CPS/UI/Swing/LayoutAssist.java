@@ -4,7 +4,7 @@
  * Created on March 15, 2007, 12:50 PM by Clayton
  */
 
-package CPS.Core.UI;
+package CPS.UI.Swing;
 
 import java.awt.Color;
 import java.awt.GridBagConstraints;
