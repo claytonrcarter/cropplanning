@@ -40,7 +40,8 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
     private CropDBUI uiManager;
     // private CropDBCropInfo cropInfo;
     private int selectedRow = -1, cropInfoRow = -1;
-    
+    // ID (as opposed to row num) of the currently selected record
+    private int selectedID = -1;
     
     CropDBCropList( CropDBUI ui ) {
        uiManager = ui;
@@ -164,22 +165,24 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        
        Object varName = cropListTable.getValueAt( cropInfoRow, varCol );
        
-       if ( varCol == -1 || varName == null )
-          if ( cropListTable.getValueAt( cropInfoRow, nameCol ).toString().equals("") )
+       Object oName = cropListTable.getValueAt( cropInfoRow, nameCol );
+       if ( varCol == -1 || varName == null ) {
+          if ( oName == null || oName.toString().equals("") )
              // this is iffy at best
              uiManager.displayCropInfo( dataModel.getCropInfo( cropInfoRow ));
           else
-             uiManager.displayCropInfo( dataModel.getCropInfo(
-                         cropListTable.getValueAt( cropInfoRow, nameCol ).toString() ));
+             uiManager.displayCropInfo( dataModel.getCropInfo( oName.toString() ));
+       }
        else
-          uiManager.displayCropInfo( dataModel.getVarietyInfo(
-                      cropListTable.getValueAt( cropInfoRow, nameCol ).toString(),
-                      varName.toString() ));
+          uiManager.displayCropInfo( dataModel.getVarietyInfo( oName.toString(),
+                                                               varName.toString() ));
     }
     
     protected void updateCropList() {
-       if ( isDataAvailable() )
+       if ( isDataAvailable() ) {
           updateBySelectedButton();
+          refreshCropInfo();
+       }
     }
    
     protected void updateBySelectedButton() {
@@ -214,6 +217,7 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        } 
     }
     
+    @Override
     public void setDataSource( CPSDataModel dm ) {
        super.setDataSource(dm);
        updateCropList();
@@ -228,9 +232,10 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
        ListSelectionModel lsm = ( ListSelectionModel ) e.getSource();
        if ( ! lsm.isSelectionEmpty() ) {
           selectedRow = lsm.getMinSelectionIndex();
+          selectedID = Integer.parseInt( cropListTable.getValueAt( selectedRow, -1 ).toString() );
           System.out.println( "Selected row: " + selectedRow +
-                      " (id: " + cropListTable.getValueAt( selectedRow, 0 ) + " )" );
-          updateCropInfoForRow( selectedRow );
+                      " (name: " + cropListTable.getValueAt( selectedRow, 0 ) + " )" );
+          updateCropInfoForRow( selectedID );
        }
     }
 
@@ -288,21 +293,40 @@ class CropDBCropList extends CPSDataModelUser implements ItemListener,
       }
       /* Button NEW entry */
       else if (action.equalsIgnoreCase(btnNew.getText())) {
-         if ( isDataAvailable() )
-            dataModel.createCrop( new CPSCrop() );
-         uiManager.refreshCropList();
+          if (!isDataAvailable()) {
+              System.err.println("ERROR: cannon create new crop, data unavailable");
+              return;
+          }
+          int newCropID = dataModel.createCrop(new CPSCrop()).getID();
+          updateCropList();
+          // Select the new entry
+          // TODO figure out how to make this work.
+//          cropListTable.changeSelection( newCropID, cropListTable.getSelectedColumn(),
+//                                         false, false);
       }
       /* Button DUPLICATE entry */
       else if ( action.equalsIgnoreCase( btnDupe.getText() )) {
           // TODO this should also check cropInfoPane for changes made 
           // but not saved to the selected crop.
-         if ( isDataAvailable() )
-            dataModel.createCrop( dataModel.getCropInfo( selectedRow ));
-         uiManager.refreshCropList();
+          if ( ! isDataAvailable() ) {
+              System.err.println("ERROR: cannot duplicate crop, data unavailable");
+              return;
+          }
+          int newCropID = dataModel.createCrop( dataModel.getCropInfo(selectedID) ).getID();
+          updateCropList();
+          // Select the new entry
+          // TODO figure out how to make this work.
+//          cropListTable.changeSelection( newCropID, cropListTable.getSelectedColumn(), 
+//                                         false, false);
       }
       /* Button DELETE entry */
       else if ( action.equalsIgnoreCase( btnDelete.getText() )) {
-         System.err.println("Function not supported.");
+          if ( ! isDataAvailable() ) {
+              System.err.println("ERROR: cannon delete entry, data unavailable");
+              return;
+          }
+          dataModel.deleteCrop( selectedID );
+          updateCropList();
       }
 
    }
