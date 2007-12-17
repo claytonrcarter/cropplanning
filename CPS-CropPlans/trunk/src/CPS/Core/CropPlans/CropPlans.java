@@ -6,7 +6,6 @@
 
 package CPS.Core.CropPlans;
 
-import CPS.Core.CropPlans.*;
 import CPS.Module.*;
 import javax.swing.JPanel;
 
@@ -30,6 +29,7 @@ public class CropPlans extends CPSCoreModule {
 	return ui.getUI();
    }
 
+    @Override
    public void setDataSource(CPSDataModel dm) {
       ui.setDataSource(dm);
    }
