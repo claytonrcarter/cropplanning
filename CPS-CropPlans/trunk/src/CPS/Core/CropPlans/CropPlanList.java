@@ -14,12 +14,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
 
 // package access
@@ -40,15 +34,6 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         return dataModel.getPlanting( getDisplayedTableName(), id );
     }
 
-    // ??
-    protected void updatePlanList() {
-       if ( isDataAvailable() ) {
-          updateListOfPlans(); // TODO, this is way inefficient, remove it to elsewhere
-          refreshView();
-       }
-    }
-   
-    
     protected void updateListOfPlans() {
        if ( ! isDataAvailable() )
           return;
@@ -62,6 +47,8 @@ class CropPlanList extends CPSMasterView implements ActionListener {
              continue;
           cmbxPlanList.addItem(s);
        }
+       
+       refreshView();
     }
     
     @Override
@@ -84,12 +71,6 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     String getSelectedPlanName() { return (String) cmbxPlanList.getSelectedItem(); }
    
     @Override
-    public void setDataSource(CPSDataModel dm) {
-        super.setDataSource(dm);
-        updatePlanList();
-    }
-
-    @Override
     protected void buildAboveListPanel() {
         initAboveListPanel();
                 
@@ -102,6 +83,10 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         cmbxPlanList.setEditable( true );
         cmbxPlanList.addActionListener( this );
        
+        jplAboveList.add( lblPlanName );
+        jplAboveList.add( cmbxPlanList );
+        jplAboveList.add( btnNewPlan );
+        
         // false ==> do not initialize panel
         super.buildAboveListPanel(false);
     }
@@ -121,7 +106,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
             if (isDataAvailable()) {
                 System.out.println("DEBUG attempting to create new plan: " + getSelectedPlanName());
                 dataModel.createCropPlan(getSelectedPlanName());
-                updatePlanList();
+                updateListOfPlans();
             }
         }
         else
@@ -139,16 +124,12 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     public CPSRecord duplicateRecord( int id ) {
         return dataModel.createPlanting( getSelectedPlanName(),
                                          dataModel.getPlanting( getSelectedPlanName(),
-                                                                id ) );
-          
+                                                                id ) );     
     }
     
     @Override
     public void deleteRecord( int id ) {
         dataModel.deletePlanting( getSelectedPlanName(), id );
     }
-        
-    
-    
     
 }

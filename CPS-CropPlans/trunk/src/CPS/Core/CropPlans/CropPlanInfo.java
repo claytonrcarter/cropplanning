@@ -17,7 +17,6 @@ import javax.swing.*;
 
 public class CropPlanInfo extends CPSDetailView {
    
-   
    private CPSTextField tfldCropName, tfldVarName;
    private CPSTextField tfldDatePlant, tfldDateTP, tfldDateHarvest;
    private CPSTextField tfldMatDays;
@@ -35,17 +34,14 @@ public class CropPlanInfo extends CPSDetailView {
       super( ui, "Planting Info" );
    }
    
-   @Override
-    public void displayRecord( CPSRecord r ) {
-        displayRecord( (CPSPlanting) r );
-    }
-   
     @Override
     public CPSRecord getDisplayedRecord() {
         return displayedPlanting;
     }
    
-   public void displayRecord( CPSPlanting p ) {
+    @Override
+    public void displayRecord( CPSRecord r ) { displayRecord( (CPSPlanting) r ); }
+    public void displayRecord( CPSPlanting p ) {
 
         displayedPlanting = p;
 

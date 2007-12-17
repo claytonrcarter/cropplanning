@@ -7,12 +7,6 @@ package CPS.Core.CropPlans;
 
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.Module.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.*;
 
 class CropPlanUI extends CPSMasterDetailModule {
     
