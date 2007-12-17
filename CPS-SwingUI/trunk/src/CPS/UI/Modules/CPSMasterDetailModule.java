@@ -31,7 +31,7 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     protected void setMasterView( CPSMasterView mv ) { master = mv; }
     protected void setDetailView( CPSDetailView dv ) { detail = dv; }
     
-    void displayDetail( CPSRecord r ) {
+    protected void displayDetail( CPSRecord r ) {
         detail.displayRecord(r);
     }
     
@@ -55,18 +55,18 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
         mainPanel.add(splitPane);
     }
 
-    void refreshBothViews() {
+    protected void refreshBothViews() {
         master.refreshView();
         detail.refreshView();
     }
-    void refreshMasterView() {
+    protected void refreshMasterView() {
         master.updateMasterList();
     }
-    void refreshDetailView() {
+    protected void refreshDetailView() {
         detail.refreshView();
     }
 
-    void revalidate() {
+    protected void revalidate() {
         mainPanel.revalidate();
     }
     @Override

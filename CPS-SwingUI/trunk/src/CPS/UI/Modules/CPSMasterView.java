@@ -6,6 +6,7 @@
 package CPS.UI.Modules;
 
 import CPS.Data.CPSRecord;
+import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -44,12 +45,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
                                                TableModelListener {
 
     private JPanel masterListPanel = null;
-    private JPanel jplAboveList = null;
+    protected JPanel jplAboveList = null;
     private JPanel jplList = null;
     private JPanel jplFilter = null;
     private JPanel jplBelowList  = null;
     
-    private JTable masterTable;
+    protected JTable masterTable;
     private String sortColumn;
     private JTextField tfldFilter;
     private String filterString;
@@ -239,7 +240,16 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     
     
+    // This might happen at any time.  So we need to update our view of the data
+    // whenever it happens.
+    public void setDataSource( CPSDataModel dm ) {
+        super.setDataSource(dm);
+        refreshView();
+    }
+    
     // Reset the table to display new data, encapsulated in a new TableModel
+    // We should consider renaming this as the name is rather ambiguous.  
+    // Perhaps updateMasterTable or updateMasterListTable?
     private void updateListTable( TableModel tm ) {
         tm.addTableModelListener(this);
         masterTable.setModel(tm);
