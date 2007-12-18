@@ -70,6 +70,11 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     protected String getDisplayedTableName() { return getSelectedPlanName(); }
     String getSelectedPlanName() { return (String) cmbxPlanList.getSelectedItem(); }
    
+    public void setDataSource( CPSDataModel dm ) {
+        super.setDataSource(dm);
+        updateListOfPlans();
+    }
+    
     @Override
     protected void buildAboveListPanel() {
         initAboveListPanel();
