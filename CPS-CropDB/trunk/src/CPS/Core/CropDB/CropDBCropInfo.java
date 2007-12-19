@@ -10,14 +10,16 @@ import CPS.UI.Swing.LayoutAssist;
 import CPS.Data.*;
 import CPS.Module.*;
 import CPS.UI.Modules.CPSDetailView;
+import CPS.UI.Swing.CPSTextArea;
+import CPS.UI.Swing.CPSTextField;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
 public class CropDBCropInfo extends CPSDetailView {
    
-   private JTextField tfldCropName, tfldVarName, tfldFamName, tfldDesc;
-   private JTextField tfldMatDays;
-   private JTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
+   private CPSTextField tfldCropName, tfldVarName, tfldFamName, tfldDesc;
+   private CPSTextField tfldMatDays;
+   private CPSTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private JLabel lblSimilar;
    private JComboBox cmbxSimilar = null;
    
@@ -86,22 +88,22 @@ public class CropDBCropInfo extends CPSDetailView {
       
       crop.setID( displayedCrop.getID() );
       
-      crop.setCropName( tfldCropName.getText() );
-      crop.setVarietyName( tfldVarName.getText() );
-      crop.setFamilyName( tfldFamName.getText() );
+      crop.setCropName( tfldCropName.getText(), tfldCropName.hasChanged() );
+      crop.setVarietyName( tfldVarName.getText(), tfldVarName.hasChanged() );
+      crop.setFamilyName( tfldFamName.getText(), tfldFamName.hasChanged() );
       
       if ( ! tfldMatDays.getText().equals("") )
-         crop.setMaturityDays( Integer.parseInt( tfldMatDays.getText() ));
+         crop.setMaturityDays( Integer.parseInt( tfldMatDays.getText() ), tfldMatDays.hasChanged() );
      
       if ( ! cmbxSimilar.getSelectedItem().toString().equalsIgnoreCase("None") )
-         crop.setSimilarCrop( dataModel.getCropInfo( cmbxSimilar.getSelectedItem().toString() ));
+         crop.setSimilarCrop( dataModel.getCropInfo( cmbxSimilar.getSelectedItem().toString() ) );
       
-      crop.setCropDescription( tfldDesc.getText() );
+      crop.setCropDescription( tfldDesc.getText(), tfldDesc.hasChanged() );
       
-      crop.setGroups( tareGroups.getText() );
-      crop.setOtherRequirements( tareOtherReq.getText() );
-      crop.setKeywords( tareKeywords.getText() );
-      crop.setNotes( tareNotes.getText() );
+      crop.setGroups( tareGroups.getText(), tareGroups.hasChanged() );
+      crop.setOtherRequirements( tareOtherReq.getText(), tareOtherReq.hasChanged() );
+      crop.setKeywords( tareKeywords.getText(), tareKeywords.hasChanged() );
+      crop.setNotes( tareNotes.getText(), tareNotes.hasChanged() );
       
       return crop;
       
@@ -109,17 +111,17 @@ public class CropDBCropInfo extends CPSDetailView {
    
    protected void buildDetailsPanel() {
        
-      tfldCropName = new JTextField(10);
-      tfldVarName = new JTextField(10);
-      tfldFamName = new JTextField(10);
-      tfldDesc = new JTextField(10);
+      tfldCropName = new CPSTextField(10);
+      tfldVarName = new CPSTextField(10);
+      tfldFamName = new CPSTextField(10);
+      tfldDesc = new CPSTextField(10);
       
-      tfldMatDays = new JTextField(5);
+      tfldMatDays = new CPSTextField(5);
 
-      tareGroups = new JTextArea( 3, 10 );
-      tareKeywords = new JTextArea( 3, 10 );
-      tareOtherReq = new JTextArea( 3, 10 );
-      tareNotes = new JTextArea( 5, 20 );
+      tareGroups = new CPSTextArea( 3, 10 );
+      tareKeywords = new CPSTextArea( 3, 10 );
+      tareOtherReq = new CPSTextArea( 3, 10 );
+      tareNotes = new CPSTextArea( 5, 20 );
       
       cmbxSimilar = new JComboBox( new String[] {"None"} );
       updateSimilarCropsList();
