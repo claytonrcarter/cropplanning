@@ -6,7 +6,6 @@ package CPS.Data;
  */
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -144,52 +143,86 @@ public class CPSPlanting extends CPSRecord {
    public void setID(int i) { set( plantingID, new Integer( i )); }
 
    public String getCropName() { return get(PROP_CROP_NAME, ""); }
-   public void setCropName(String s) { set(crop_name, s); }
+   public void setCropName(String s) { setCropName( s, false ); }
+   public void setCropName( String s, boolean force ) { set( crop_name, s, force ); }
 
    public String getVarietyName() { return get( PROP_VAR_NAME, "" ); }
-   public void setVarietyName( String s ) { set( var_name, s ); }
+   public void setVarietyName( String s ) { setVarietyName( s, false ); }
+   public void setVarietyName( String s, boolean force ) { set( var_name, s, force ); }
 
    public String getGroups() { return get( PROP_GROUPS, "" ); }
-   public void setGroups( String e) { set( groups, e ); }
+   public void setGroups( String e) { setGroups( e, false ); }
+   public void setGroups( String e, boolean force ) { set( groups, e, force ); }
 
    public String getLocation() { return get(  PROP_LOCATION, "" ); }
-   public void setLocation( String s ) { set( location, s ); }
+   public void setLocation( String s ) { setLocation( s, false ); }
+   public void setLocation( String s, boolean force ) { set( location, s, force ); }
 
    public String getKeywords() { return get( PROP_KEYWORDS, "" ); }
-   public void setKeywords( String e) { set( keywords, e ); }
+   public void setKeywords( String e) { setKeywords( e, false ); }
+   public void setKeywords( String e, boolean force ) { set( keywords, e, force ); }
 
    public String getStatus() { return get( PROP_STATUS, "" ); }
-   public void setStatus( String e) { set( status, e ); }
+   public void setStatus( String e) { setStatus( e, false ); }
+   public void setStatus( String e, boolean force ) { set( status, e, force ); }
 
    public Boolean getCompleted() { return get( PROP_COMPLETED, new Boolean( false )).booleanValue(); }
-   public void setCompleted( Boolean b ) { set( completed, b ); }
+   public void setCompleted( Boolean b ) { setCompleted( b, false ); }
+   public void setCompleted( Boolean b, boolean force ) { set( completed, b, force ); }
 
    public String getOtherRequirments() { return get( PROP_OTHER_REQ, "" ); }
-   public void setOtherRequirements( String e) { set( other_req, e ); }
+   public void setOtherRequirements( String e) { setOtherRequirements( e, false ); }
+   public void setOtherRequirements( String e, boolean force ) { set( other_req, e, force ); }
 
    public String getNotes() { return get( PROP_NOTES, "" ); }
-   public void setNotes( String e) { set( notes, e ); }
+   public void setNotes( String e) { setNotes( e, false ); }
+   public void setNotes( String e, boolean force ) { set( notes, e, force ); }
 
    public int getMaturityDays() { return get( PROP_MATURITY, new Integer( -1 )).intValue(); }
-   public void setMaturityDays( int i ) { set( maturity, new Integer( i )); }
-   public void setMaturityDays(String s) { 
+   public void setMaturityDays( int i ) { setMaturityDays( i, false ); }
+   public void setMaturityDays( int i, boolean force ) { set( maturity, new Integer( i ), force ); }
+   public void setMaturityDays( String s ) { setMaturityDays( s, false ); }
+   public void setMaturityDays( String s, boolean force ) {
         if ( s == null || s.equalsIgnoreCase("null") || s.equals("") )
-            set( maturity, new Integer( -1 ));
+            setMaturityDays( -1, force );
         else
-            set( maturity, new Integer( s ));
+            set( maturity, new Integer( s ), force );
     }
    
 //          case PROP_DATE_PLANT:    return date_plant;
-   public Date getDateToPlant() { return get( PROP_DATE_PLANT, new Date() ); }
+   public Date getDateToPlant() {
+       CPSDatum p = getDatum( PROP_DATE_PLANT );
+       CPSDatum m = getDatum( PROP_MATURITY );
+       CPSDatum h = getDatum( PROP_DATE_HARVEST );
+       
+       /* Only calculate the planting date if:
+        * DATE_PLANT is *NOT* valid AND
+        * DATE_HARVEST AND MATURITY *ARE* valid 
+        * otherwise just return the planting date or a default */
+       if ( ! p.isValid() && 
+              h.isValid() && m.isValid() ) {
+           GregorianCalendar c = new GregorianCalendar();
+           c.setTime( getDateToHarvest() );
+           // -1 ==> subtract
+           c.add( GregorianCalendar.DAY_OF_YEAR, -1 * getMaturityDays() );
+           return c.getTime();
+       }
+       else
+           return get( PROP_DATE_PLANT, new Date() ); 
+   }
    public String getDateToPlantString() { return formatDate( getDateToPlant() ); }
-   public void setDateToPlant( Date d ) { set( date_plant, d ); }
-   public void setDateToPlant( String d ) { setDateToPlant( parseDate(d)); }
+   public void setDateToPlant( Date d ) { setDateToPlant( d, false ); }
+   public void setDateToPlant( String d ) { setDateToPlant( parseDate(d), false ); }
+   public void setDateToPlant( Date d, boolean force ) { set( date_plant, d, force ); }
+   public void setDateToPlant( String d, boolean force ) { setDateToPlant( parseDate(d), force ); }
    
 //          case PROP_DATE_TP:       return date_tp;
    public Date getDateToTP() { return get( PROP_DATE_TP, new Date() ); }
    public String getDateToTPString() { return formatDate( getDateToTP() ); }
-   public void setDateToTP( Date d ) { set( date_tp, d ); }
-   public void setDateToTP( String d ) { setDateToTP( parseDate( d )); }
+   public void setDateToTP( Date d ) { setDateToTP( d, false ); }
+   public void setDateToTP( String d ) { setDateToTP( parseDate( d ), false ); }
+   public void setDateToTP( Date d, boolean force ) { set( date_tp, d, force ); }
+   public void setDateToTP( String d, boolean force ) { setDateToTP( parseDate( d ), force ); }
    
    public Date getDateToHarvest() {
        CPSDatum h = getDatum( PROP_DATE_HARVEST );
@@ -211,28 +244,30 @@ public class CPSPlanting extends CPSRecord {
            return get(PROP_DATE_HARVEST, new Date());
    }
    public String getDateToHarvestString() { return formatDate( getDateToHarvest() ); }
-   public void setDateToHarvest( Date d ) { 
-       if ( changedProps.contains( PROP_DATE_HARVEST ) )
-           set( date_harvest, d, true );
-       else
-           set( date_harvest, d );
-   }
-   public void setDateToHarvest( String d ) { setDateToHarvest( parseDate( d )); }
+   public void setDateToHarvest( Date d ) { setDateToHarvest( d, false ); }
+   public void setDateToHarvest( Date d, boolean force ) { set( date_harvest, d, force ); }
+   public void setDateToHarvest( String d ) { setDateToHarvest( parseDate( d ), false ); }
+   public void setDateToHarvest( String d, boolean force ) { setDateToHarvest( parseDate( d ), force ); }
    
    public int getBedsToPlant() { return get( PROP_BEDS_PLANT, new Integer( -1 )).intValue(); }
-   public void setBedsToPlant( int i ) { set( beds_to_plant, new Integer( i )); }
+   public void setBedsToPlant( int i ) { setBedsToPlant( i, false ); }
+   public void setBedsToPlant( int i, boolean force ) { set( beds_to_plant, new Integer( i ), force ); }
 
    public int getPlantsNeeded() { return get( PROP_PLANTS_NEEDED, new Integer( -1 )).intValue(); }
-   public void setPlantsNeeded( int i ) { set( plants_needed, new Integer( i )); }
+   public void setPlantsNeeded( int i ) { setPlantsNeeded( i, false ); }
+   public void setPlantsNeeded( int i, boolean force ) { set( plants_needed, new Integer( i ), force ); }
 
    public int getRowFtToPlant() { return get( PROP_ROWFT_PLANT, new Integer( -1 )).intValue(); }
-   public void setRowFtToPlant( int i ) { set( rowft_to_plant, new Integer( i )); }
+   public void setRowFtToPlant( int i ) { setRowFtToPlant( i, false ); }
+   public void setRowFtToPlant( int i, boolean force ) { set( rowft_to_plant, new Integer( i ), force ); }
 
    public int getPlantsToStart() { return get( PROP_PLANTS_START, new Integer( -1 )).intValue(); }
-   public void setPlantsToStart( int i ) { set( plants_to_start, new Integer( i )); }
+   public void setPlantsToStart( int i ) { setPlantsToStart( i, false ); }
+   public void setPlantsToStart( int i, boolean force ) { set( plants_to_start, new Integer( i ), force ); }
 
    public int getFlatsNeeded() { return get( PROP_FLATS_NEEDED, new Integer( -1 )).intValue(); }
-   public void setFlatsNeeded( int i ) { set( flats_needed, new Integer( i )); }
+   public void setFlatsNeeded( int i ) { setFlatsNeeded( i, false ); }
+   public void setFlatsNeeded( int i, boolean force ) { set( flats_needed, new Integer( i ), force ); }
 
    
    

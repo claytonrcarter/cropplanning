@@ -98,23 +98,37 @@ public abstract class CPSRecord {
       return ( o instanceof CPSRecord && this.diff( (CPSRecord) o ).getID() == -1 );
    }
    
-   /** Method to abstract datum setting.  Captures "null" values for crop datums.
-    * @param override - used to force the setting of datum to value v w/o testing
-    *  to see if it is a NULL type value.
+   /** Method to abstract datum setting.  Captures "null" values for crop datums.  Values captured:
+    * 
+    * For Strings: "" and "null" are considered NULL
+    * For Integers: -1 is considered NULL
+    * For Dates: a millisecond value of 0 is considered null
+    * 
+    * These can be ignored if the "force" bit is set.
+    * 
+    * @param d datum to be set
+    * @param v value to which the datum should be set
+    * @param force used to force the setting of datum to value v w/o testing
+    *              to see if it is a NULL type value.  Not to be used lightly: it's important that
+    *              the calling method understands what they are doing
     */
    public <T> void set( CPSDatum<T> d, T v ) { set( d, v, false ); }
-   protected <T> void set( CPSDatum<T> d, T v, boolean override ) {
+   /** @see set(CPSDatum<T>,T) */
+   protected <T> void set( CPSDatum<T> d, T v, boolean force  ) {
     
       if ( v == null ||
-//            ! override && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
-           ! override && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
-           ! override && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) ||
-           ! override && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
-         d.setDatum(null);
+              // the follow two lines represent a debate as to whether the empty string '""' should
+              // be considered a null value.  Current thinking is that blank values, or empty strings
+              // can be considered null as long as the "force" param is not set.
+            ! force && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
+//           ! force   && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
+           ! force   && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) ||
+           ! force   && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
+         d.setDatum( null );
       else
-          // if override is true, then we could pass it along to make sure that
-          // things are forced through
-           d.setDatum(v, override);
+         // if force is true, then we could pass it along to make sure that
+         // things are forced through
+         d.setDatum( v, force );
    }
 
    public void addChangedProperty( int prop ) {

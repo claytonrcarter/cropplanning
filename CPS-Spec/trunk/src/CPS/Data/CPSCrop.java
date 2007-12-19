@@ -140,10 +140,12 @@ public class CPSCrop extends CPSRecord {
     public void setID( int i ) { set( cropID, new Integer( i )); }
         
     public String getCropName() { return get( PROP_CROP_NAME, "" ); }
-    public void setCropName( String s ) { set( cropName, s ); }
+    public void setCropName( String s ) { setCropName( s, false ); }
+    public void setCropName( String s, boolean force  ) { set( cropName, s, force ); }
 
     public String getCropDescription() { return get( PROP_CROP_DESC, "" ); }
-    public void setCropDescription( String s ) { set( cropDescription, s ); }
+    public void setCropDescription( String s ) { setCropDescription( s, false ); }
+    public void setCropDescription( String s, boolean force  ) { set( cropDescription, s, force ); }
 
     public CPSCrop getSimilarCrop() {
        if ( isCrop() )
@@ -151,49 +153,54 @@ public class CPSCrop extends CPSRecord {
        else
           return new CPSCrop();
     }
-    public void setSimilarCrop( CPSCrop c ) { 
+    public void setSimilarCrop( CPSCrop c ) { setSimilarCrop( c, false); }
+    public void setSimilarCrop( CPSCrop c, boolean force  ) { 
        if ( isCrop() )
-          set( similar, c ); 
+          set( similar, c, force ); 
        else
           System.err.println("Similar crops are not supported for entries other than crops.");
     }
     
     public String getVarietyName() { return get( PROP_VAR_NAME, "" ); }
-    public void setVarietyName( String s ) { set( varName, s ); }
+    public void setVarietyName( String s ) { setVarietyName( s, false ); }
+    public void setVarietyName( String s, boolean force ) { set( varName, s, force ); }
    
     public String getFamilyName() { return get( PROP_FAM_NAME, "" ); }
-    public void setFamilyName( String e) { set( familyName, e ); }
+    public void setFamilyName( String e) { setFamilyName( e, false ); }
+    public void setFamilyName( String e, boolean force ) { set( familyName, e, force ); }
 
     public String getBotanicalName() { return get( PROP_BOT_NAME, "" ); }
-    public void setBotanicalName( String e) { set( botanicalName, e ); }
+    public void setBotanicalName( String e) { setBotanicalName( e, false ); }
+    public void setBotanicalName( String e, boolean force ) { set( botanicalName, e, force ); }
 
     public boolean getSuccessions() { return get( PROP_SUCCESSIONS, 
                                                   new Boolean( false ) ).booleanValue(); }
     public void setSuccessions( boolean b ) { set( ds, new Boolean(b) ); }
     
     public int getMaturityDays() { return get( PROP_MATURITY, new Integer( -1 )).intValue(); }
-    public void setMaturityDays( int i ) { set( maturityDays, new Integer( i )); }
+    public void setMaturityDays( int i ) { setMaturityDays( i, false ); }
+   public void setMaturityDays( int i, boolean force ) {
+      set( maturityDays, new Integer( i ), force );
+   }
 
     public String getGroups() { return get( PROP_GROUPS, "" ); }
-    public void setGroups( String e) { set( groups, e ); }
+    public void setGroups( String e) { setGroups( e, false ); }
+    public void setGroups( String e, boolean force ) { set( groups, e, force ); }
     
     public String getKeywords() { return get( PROP_KEYWORDS, "" ); }
-    public void setKeywords( String e) { set( keywords, e ); }
+    public void setKeywords( String e) { setKeywords( e, false ); }
+    public void setKeywords( String e, boolean force ) { set( keywords, e, force ); }
 
     public String getNotes() { return get( PROP_NOTES, "" ); }
-    public void setNotes( String e) { set( notes, e ); }
+    public void setNotes( String e) { setNotes( e, false ); }
+    public void setNotes( String e, boolean force ) { set( notes, e, force ); }
 
     public String getOtherRequirments() { return get( PROP_OTHER_REQ, "" ); }
-    public void setOtherRequirements( String e) { set( otherRequirements, e ); }
-    
-    
-    /* private ==> hidden */
-    private boolean getDS() { return ds.getDatumAsBoolean(); }
-    private void setDS( boolean b ) { ds.setDatum( new Boolean(b) );}
-   
-    private boolean getTP() { return tp.getDatumAsBoolean(); }
-    private void setTP( boolean b ) { tp.setDatum( new Boolean( b ) ); }
-   
+    public void setOtherRequirements( String e) { setOtherRequirements( e, false ); }
+   public void setOtherRequirements( String e, boolean force ) {
+      set( otherRequirements, e, force );
+   }
+      
     
     public CPSRecord diff( CPSRecord thatCrop ) {
        return super.diff( thatCrop, new CPSCrop() );
