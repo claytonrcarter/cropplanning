@@ -128,4 +128,7 @@ public class CSV extends CPSDataModel {
    public CPSPlanting createPlanting( String plan_name, CPSPlanting planting ) { return null; };
    public CPSPlanting getPlanting(String planName, int PlantingID) { return null; }
    public void updatePlanting(String planName, CPSPlanting planting) {}
+   
+   public void deletePlanting( String planting, int plantingID ) {}
+   public void deleteCrop( int cropID ) {}
 }
