@@ -56,14 +56,16 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     }
 
     protected void refreshBothViews() {
-        master.refreshView();
-        detail.refreshView();
+        refreshMasterView();
+        refreshDetailView();
     }
     protected void refreshMasterView() {
-        master.updateMasterList();
+        master.refreshView();
     }
     protected void refreshDetailView() {
-        detail.refreshView();
+       // force detail view to redisplay the record
+       displayDetail( master.getRecordToDisplay() );
+       // detail.refreshView();
     }
 
     protected void revalidate() {

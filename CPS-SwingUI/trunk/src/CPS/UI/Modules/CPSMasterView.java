@@ -76,9 +76,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     
     protected abstract String getDisplayedTableName();
-    
-    
     protected abstract CPSRecord getDetailsForID( int id );
+    protected CPSRecord getRecordToDisplay() {
+       if ( selectedID == -1 )
+          System.err.println("ERROR displaying record: no item selected from list");
+       return getDetailsForID( selectedID );
+    }
+    
     protected void refreshDetailView() {
         if ( selectedID == -1 )
             return;
