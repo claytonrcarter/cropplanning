@@ -38,6 +38,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        if ( ! isDataAvailable() )
           return;
        
+       String selected = getSelectedPlanName();
        listOfValidCropPlans = dataModel.getListOfCropPlans();
        cmbxPlanList.removeAllItems();
        for ( String s : listOfValidCropPlans ) {
@@ -47,6 +48,8 @@ class CropPlanList extends CPSMasterView implements ActionListener {
              continue;
           cmbxPlanList.addItem(s);
        }
+        if ( selected != null && ! selected.equals( "" ) )
+            cmbxPlanList.setSelectedItem(selected);
        
        refreshView();
     }
@@ -59,7 +62,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         String selectedPlan = getSelectedPlanName();
         System.out.println( "Selected plan is: " + selectedPlan );
        
-        if ( selectedPlan != null )
+        if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
             return dataModel.getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
        else
           // TODO error checking fall through to following call when invalid plan is selected
@@ -102,23 +105,31 @@ class CropPlanList extends CPSMasterView implements ActionListener {
 
         System.out.println("DEBUG Action performed in CropPlanList: " + action);
 
-        if (action.equalsIgnoreCase("comboBoxChanged")) {
+        if ( action.equalsIgnoreCase( "comboBoxEdited" )) {
+            // What do we do here? create a new plan?
+        }
+        else if ( action.equalsIgnoreCase( "comboBoxChanged" ) ) {
             updateMasterList();
         }
         else if (action.equalsIgnoreCase(btnNewPlan.getActionCommand())) {
-            if (getSelectedPlanName().equalsIgnoreCase(""))
-                System.err.println("Cannot create crop plan with no name");
-            if (isDataAvailable()) {
-                System.out.println("DEBUG attempting to create new plan: " + getSelectedPlanName());
-                dataModel.createCropPlan(getSelectedPlanName());
-                updateListOfPlans();
+            if ( ! isDataAvailable() ) {
+                System.err.println("ERROR: cannot create new plan, no data available" );
+                return;
             }
+            createNewCropPlan( getSelectedPlanName() );
         }
         else
             super.actionPerformed( actionEvent );    
         
     }
     
+    
+    public void createNewCropPlan( String newPlanName ) {
+        if ( newPlanName.equalsIgnoreCase( "" ) )
+            System.err.println( "Cannot create crop plan with no name" );
+        dataModel.createCropPlan( newPlanName );
+        updateListOfPlans();
+    }
     
     @Override
     public CPSPlanting createNewRecord() {

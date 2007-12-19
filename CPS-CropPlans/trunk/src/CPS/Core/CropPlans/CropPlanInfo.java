@@ -33,13 +33,13 @@ public class CropPlanInfo extends CPSDetailView {
    CropPlanInfo( CropPlanUI ui ) {
       super( ui, "Planting Info" );
    }
-   
-    @Override
+
     public CPSRecord getDisplayedRecord() {
-        return displayedPlanting;
+       // TODO we should do some double checking in case the displayed info has changed but
+       // has not been saved
+       return displayedPlanting;
     }
    
-    @Override
     public void displayRecord( CPSRecord r ) { displayRecord( (CPSPlanting) r ); }
     public void displayRecord( CPSPlanting p ) {
 
@@ -75,31 +75,31 @@ public class CropPlanInfo extends CPSDetailView {
             dataModel.updatePlanting( selectedPlan, diff );
     }
 
-   // add new crop data here
-   public CPSPlanting asPlanting() {
+   /** asPlanting - create a planting data struct to represent this detail view
+    * 
+    * @return a CPSPlanting object populated to represent the planting which is
+    * currently displayed
+    */
+    public CPSPlanting asPlanting() {
       
-      CPSPlanting p = new CPSPlanting();
+       CPSPlanting p = new CPSPlanting();
       
-      p.setID( displayedPlanting.getID() );
+       p.setID( displayedPlanting.getID() );
       
-      p.setCropName( tfldCropName.getText() );
-      p.setVarietyName( tfldVarName.getText() );
+       p.setCropName( tfldCropName.getText(), tfldCropName.hasChanged() );
+       p.setVarietyName( tfldVarName.getText(), tfldVarName.hasChanged() );
       
-      p.setMaturityDays( tfldMatDays.getText() );
+       p.setMaturityDays( tfldMatDays.getText(), tfldMatDays.hasChanged() );
      
-      p.setDateToPlant( tfldDatePlant.getText() );
-      if ( tfldDateHarvest.hasChanged() ) {
-          System.out.println("Harvest date has changed to: '" + tfldDateHarvest.getText() + "'" );
-          p.addChangedProperty( p.PROP_DATE_HARVEST );
-          p.setDateToHarvest(tfldDateHarvest.getText());
-      }
+       p.setDateToPlant( tfldDatePlant.getText(), tfldDatePlant.hasChanged() );
+       p.setDateToHarvest( tfldDateHarvest.getText(), tfldDateHarvest.hasChanged() );
  
-      p.setGroups( tareGroups.getText() );
-      p.setOtherRequirements( tareOtherReq.getText() );
-      p.setKeywords( tareKeywords.getText() );
-      p.setNotes( tareNotes.getText() );
+       p.setGroups( tareGroups.getText(), tareGroups.hasChanged() );
+       p.setOtherRequirements( tareOtherReq.getText(), tareOtherReq.hasChanged() );
+       p.setKeywords( tareKeywords.getText(), tareKeywords.hasChanged() );
+       p.setNotes( tareNotes.getText(), tareNotes.hasChanged() );
       
-      return p;
+       return p;
       
    }
    
