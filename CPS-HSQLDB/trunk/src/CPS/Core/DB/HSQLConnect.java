@@ -9,6 +9,7 @@ package CPS.Core.DB;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 
 public class HSQLConnect {
@@ -18,7 +19,6 @@ public class HSQLConnect {
    private static final String dbProperties = "";
    private static final String dbOpenOnly = ";" + "ifexists=true";
    private static final String dbPrefix = "jdbc:hsqldb:file:";
-   
    
    private HSQLConnect() {}
 
@@ -31,6 +31,26 @@ public class HSQLConnect {
       Connection con = connectToNew( buildDBConnectionString( dir, dbFilename ));
       return con;
    }
+
+   /** This is sketchy and is only needed when we're using a server based db */
+   public static boolean dbIsEmpty( Connection con ) {
+    
+      try {
+         Statement st = con.createStatement();
+    
+         String tableName = "COMMON_PLANTINGS";
+         String query = "select * from  " + tableName + " where 1=0";
+         st = con.createStatement();
+         st.executeQuery( query );
+         return false;
+      }
+      catch ( Exception e ) {
+         // table does not exist or some other problem
+         return true;
+      }
+    
+   }
+   
    
    private static String buildDBConnectionString( String dir, String dbFilename ) {
 //      return dbPrefix + dir + fileSep + dbFilename + dbProperties;

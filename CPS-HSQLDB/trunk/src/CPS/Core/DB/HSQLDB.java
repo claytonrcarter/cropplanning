@@ -45,6 +45,11 @@ public class HSQLDB extends CPSDataModel {
          con = HSQLConnect.createDB( dbDir, dbFile );
          newDB = true;
       }
+      /* only needed when we're using a server mode db */
+      else if ( HSQLConnect.dbIsEmpty( con ) ) {
+         HSQLDBCreator.createTables( con );
+         newDB = true;
+      }
          
       query = new HSQLQuerier( con );
 
@@ -100,7 +105,7 @@ public class HSQLDB extends CPSDataModel {
    
    private String getAbbreviatedCropPlanColumnNames() {
       return getMandatoryColumnNames() + ", " + "var_name, maturity, location, completed, " + 
-                  "date_plant, rows_p_bed";
+                  "date_plant, date_harvest, rows_p_bed";
    }
    private String getCropPlanFilterColumnNames() {
       return getAbbreviatedCropPlanColumnNames() + ", keywords, groups";
@@ -269,6 +274,11 @@ public class HSQLDB extends CPSDataModel {
       }
    }
    
+   /* Another TODO: we could totally automate this with an iterator:
+    *  if ( datum instanceof String )
+    *     datum.setDatum( captureString( rs.getString( datum.getColumnName() ))
+    *  and so on...
+    */  
    // TODO this is where we can implement crop dependencies
    // if a value is blank, leave it blank
    // if a value is null, we can request that info from
@@ -282,23 +292,16 @@ public class HSQLDB extends CPSDataModel {
       if ( rs.next() ) {
          try {
             
-            // TODO, define a null value in the crop.setXX methods
-            // and invalidate
-            
             crop.setID( rs.getInt( "ID" ));
-            crop.setCropName( captureString( rs.getString( "crop_name" ) ));
-            
+            crop.setCropName( captureString( rs.getString( "crop_name" ) ));            
             crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
 
             crop.setSimilarCrop( getCropInfo( rs.getString("similar_to") ));
 
             crop.setFamilyName( captureString( rs.getString( "fam_name" ) ));
             crop.setCropDescription( captureString( rs.getString("description") ));
-
-            int i = rs.getInt( "maturity" );
-            if ( i <= 0 )
-               i = -1;
-            crop.setMaturityDays( i );
+            
+            crop.setMaturityDays( rs.getInt( "maturity" ) );
             
             crop.setSuccessions( rs.getBoolean("successions") );
             
@@ -307,6 +310,19 @@ public class HSQLDB extends CPSDataModel {
             crop.setKeywords( captureString( rs.getString( "keywords" ) ));
             crop.setNotes( captureString( rs.getString( "notes" ) ));
 
+            crop.setTimeToTP( rs.getInt( "time_to_tp" ));
+            crop.setRowsPerBed( rs.getInt( "rows_p_bed" ));
+            crop.setSpaceInRow( rs.getInt( "space_inrow" ));
+            crop.setSpaceBetweenRow( rs.getInt( "space_betrow" ));
+            crop.setFlatSize( captureString( rs.getString( "flat_size" )));
+            crop.setPlanter( captureString( rs.getString( "planter" )));
+            crop.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
+            crop.setYieldPerFoot( rs.getFloat( "yield_p_foot" ));
+            crop.setYieldNumWeeks( rs.getInt( "yield_num_weeks" ));
+            crop.setYieldPerWeek( rs.getInt( "yield_p_week" ));
+            crop.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
+            crop.setCropUnitValue( rs.getFloat( "crop_unit_value" ));
+            
             /* Now handle the data chain.
              */
             Iterator<CropDatum> thisCrop = crop.iterator();
@@ -461,6 +477,7 @@ public class HSQLDB extends CPSDataModel {
     *             strings w/o entries are encountered.
     *  Integer: a value of -1 is an SQL NULL
     *           anything else is valid
+    *  Float:   a value of -1.0 is an SQL NULL, all else valid
     *  Date:    a millisecond date of 0 is an SQL NULL
     *           anything else is valid
     * 
@@ -480,6 +497,8 @@ public class HSQLDB extends CPSDataModel {
             return "'" + o.toString() + "'";
       // if the datum is an int whose value is -1, use NULL
       else if ( o instanceof Integer && ((Integer) o).intValue() == -1 )
+         return "NULL";
+      else if ( o instanceof Float && ((Float) o).floatValue() == -1.0 )
          return "NULL";
       else if ( o instanceof java.util.Date || o instanceof java.sql.Date ) {
           // cast to util.Date to cover all of our bases, sql.Date is in scope

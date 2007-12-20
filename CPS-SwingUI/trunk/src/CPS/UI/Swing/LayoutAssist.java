@@ -13,16 +13,37 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 public class LayoutAssist {
-   
+
    public LayoutAssist() {}
 
    /*
     * CREATION UTILITY METHODS
     */
+   public static void addSeparator( JPanel p, int colStart, int row, int colSpan ) {
+      
+      JSeparator js = new JSeparator( JSeparator.HORIZONTAL );
+      
+      Insets i = new Insets( 1, 1, 3, 1 );
+      GridBagConstraints c = new GridBagConstraints();
+      
+      c.gridx = colStart;
+      c.gridy = row;
+      c.gridwidth = colSpan;
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.anchor = GridBagConstraints.CENTER;
+      c.insets = i;  
+      
+      p.add( js, c );
+      
+   }
+   
+   
    /**
     * createLabel
     */
    public static void createLabel( JPanel p, int x, int y, String str ) {
+      if ( ! str.endsWith(":") )
+         str += ":";
       addLabel( p, x, y, new JLabel( str ));
    }
    
@@ -116,10 +137,14 @@ public class LayoutAssist {
 	addTextArea( p, x, y, new JTextArea( "", row, col ));
     }
     
-    public static void addTextArea( JPanel p, 
-			  	    int x, int y, 
-				    JTextArea ta ) {
-
+    public static void addTextArea( JPanel p, int x, int y, JTextArea ta ) {
+       addTextArea( p, x, y, 1, ta.getHeight(), ta );
+    }
+    public static void addTextArea( JPanel p, int colStart, int rowStart, int colSpan, JTextArea ta ) {
+       addTextArea( p, colStart, rowStart, colSpan, ta.getHeight(), ta );
+    }
+    public static void addTextArea( JPanel p, int colStart, int rowStart, int colSpan, int rowSpan, JTextArea ta ) {
+ 
 	Insets i  = new Insets( 0, 2, 2, 5 );
 	GridBagConstraints c = new GridBagConstraints();
 
@@ -127,9 +152,10 @@ public class LayoutAssist {
 							Color.GRAY,
 							Color.WHITE ));
 
-	c.gridx = x;
-	c.gridy = y;
-	c.gridheight = ta.getHeight() - 1;
+	c.gridx = colStart;
+	c.gridy = rowStart;
+        c.gridwidth = colSpan;
+	c.gridheight = rowSpan;
 	c.anchor = GridBagConstraints.FIRST_LINE_START;
 	c.insets = i;
 	
@@ -155,17 +181,17 @@ public class LayoutAssist {
 
     }
     
-    private static void addSubPanel( JPanel p, 
-			      int x, int y, int xspan, int yspan,
-			      JPanel newP ) {
+    public static void addSubPanel( JPanel p, 
+                                    int colStart, int rowStart, int colSpan, int rowSpan,
+                                    JPanel newP ) {
 
 	Insets i = new Insets( 0, 2, 2, 5 );
 	GridBagConstraints c = new GridBagConstraints();
 
-	c.gridx = x;
-	c.gridy = y;
-	c.gridwidth  = xspan;
-	c.gridheight = yspan;
+	c.gridx = colStart;
+	c.gridy = rowStart;
+	c.gridwidth  = colSpan;
+	c.gridheight = rowSpan;
 	c.anchor = GridBagConstraints.FIRST_LINE_START;
 	c.fill = GridBagConstraints.BOTH;
 	c.insets = i;

@@ -25,6 +25,24 @@ public abstract class CPSRecord {
    public abstract int getID();
    public abstract void setID( int i );
    
+   
+   public int getInt( int prop ) {
+      Integer i = get( prop );
+      return i.intValue();
+   }
+   public boolean getBoolean( int prop ) {
+      Boolean b = get( prop );
+      return b.booleanValue();
+   }
+   public float getFloat( int prop ) {
+      Float f = get( prop );
+      return f.floatValue();
+   }
+   
+   public <T> T get( int prop ) {
+      CPSDatum d = getDatum( prop );
+      return get( prop, (T) d.getDefaultValue() );
+   }
    /** Property retrieval abstraction method.
      *
      * @param prop Property to retrieve
@@ -106,6 +124,7 @@ public abstract class CPSRecord {
     * 
     * These can be ignored if the "force" bit is set.
     * 
+    * @see HSQLDB method escapeValue
     * @param d datum to be set
     * @param v value to which the datum should be set
     * @param force used to force the setting of datum to value v w/o testing
@@ -120,9 +139,10 @@ public abstract class CPSRecord {
               // the follow two lines represent a debate as to whether the empty string '""' should
               // be considered a null value.  Current thinking is that blank values, or empty strings
               // can be considered null as long as the "force" param is not set.
-            ! force && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
+           ! force && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
 //           ! force   && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
-           ! force   && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) ||
+           ! force   && ( v instanceof Integer && ((Integer) v).intValue() <= -1 ) ||
+           ! force   && ( v instanceof Float   && ((Float) v).floatValue() <= -1.0 ) ||
            ! force   && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
          d.setDatum( null );
       else

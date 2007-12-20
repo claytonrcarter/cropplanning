@@ -137,14 +137,17 @@ public abstract class CPSDetailView extends CPSDataModelUser
         if ( jplDetails == null ) { buildDetailsPanel(); }
         return jplDetails;       
     }
-    protected void initDetailsPanel() {
-        jplDetails = new JPanel();
-        jplDetails.setLayout( new GridBagLayout() );
-        jplDetails.setAlignmentX( JPanel.LEFT_ALIGNMENT );
-        jplDetails.setAlignmentY( JPanel.TOP_ALIGNMENT );
-    }
     protected abstract void buildDetailsPanel();
-    
+    protected void initDetailsPanel() {
+       jplDetails = initPanelWithGridBagLayout();
+    }
+    protected JPanel initPanelWithGridBagLayout() {
+       JPanel p  = new JPanel();
+       p.setLayout( new GridBagLayout() );
+       p.setAlignmentX( JPanel.LEFT_ALIGNMENT );
+       p.setAlignmentY( JPanel.TOP_ALIGNMENT );
+       return p;
+    }
             
     public void refreshView() {
         displayRecord( getDisplayedRecord() );

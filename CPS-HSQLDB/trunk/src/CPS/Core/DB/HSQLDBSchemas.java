@@ -106,6 +106,26 @@ public class HSQLDBSchemas {
       s  += "maturity           INTEGER, ";
       s  += "mat_adjust         INTEGER, ";
       s  += "misc_adjust        INTEGER, ";
+ 
+      // ==[ PASTE ]==
+      // The following columns are copied from plantingDataSchema()
+      // presumably just for testing; think we'll move these back at some point?
+      s += "time_to_tp INTEGER, ";
+      
+      s += "rows_p_bed  INTEGER, ";
+      s += "space_inrow INTEGER, ";
+      s += "space_betrow   INTEGER, ";
+      
+      s += "flat_size       VARCHAR, ";
+      s += "planter         VARCHAR, ";
+      s += "planter_setting VARCHAR, ";
+
+      s += "yield_p_foot    FLOAT, ";
+      s += "yield_num_weeks INTEGER, ";
+      s += "yield_p_week    FLOAT, ";
+      s += "crop_unit       VARCHAR, ";
+      s += "crop_unit_value FLOAT, ";
+      // ==[ DONE ]==
       
       s  += "seeds_sources      VARCHAR, ";
       s  += "seeds_item_code    VARCHAR, ";
@@ -125,9 +145,9 @@ public class HSQLDBSchemas {
       s += "mat_adjust INTEGER, ";
       s += "time_to_tp INTEGER, ";
       
-      s += "rows_p_bed  INTEGER, ";
-      s += "inrow_space INTEGER, ";
-      s += "row_space   INTEGER, ";
+      s += "rows_p_bed   INTEGER, ";
+      s += "space_inrow  INTEGER, ";
+      s += "space_betrow INTEGER, ";
       
       s += "flat_size       VARCHAR, ";
       s += "planter         VARCHAR, ";
