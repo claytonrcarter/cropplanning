@@ -17,12 +17,14 @@ public class CropPlans extends CPSCoreModule {
 
    private CropPlanUI ui;
 
-   public CropPlans() {
+   public CropPlans( CPSUIModule uim ) {
+      super(uim);
+      
       setModuleName( "CropPlans" );
       setModuleType( "Core" );
       setModuleVersion( "0.1" );
      
-      ui = new CropPlanUI();
+      ui = new CropPlanUI( uim );
    }
 
    public JPanel display() {

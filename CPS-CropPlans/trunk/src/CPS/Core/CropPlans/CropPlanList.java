@@ -10,6 +10,7 @@ import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSMasterView;
 import CPS.Module.*;
 import CPS.Data.CPSPlanting;
+import CPS.UI.Swing.autocomplete.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -20,10 +21,10 @@ import javax.swing.table.*;
 class CropPlanList extends CPSMasterView implements ActionListener {
    
     private JLabel lblPlanName;
-    private JComboBox cmbxPlanList;
+    private JComboBox cmbxPlanList, cmbxCropList;
     private JButton btnNewPlan;
     
-    private ArrayList<String> listOfValidCropPlans;
+    private ArrayList<String> listOfValidCropPlans, listOfValidCrops;
     
     public CropPlanList( CropPlanUI ui ) {
         super(ui);
@@ -34,6 +35,18 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         return dataModel.getPlanting( getDisplayedTableName(), id );
     }
 
+    protected void updateListOfCrops() {
+       if ( ! isDataAvailable() )
+          return;
+       
+       listOfValidCrops = dataModel.getListOfCrops();
+       cmbxCropList.removeAllItems();
+       cmbxCropList.addItem("");
+       for ( String s : listOfValidCrops )
+          cmbxCropList.addItem(s);
+       
+    }
+    
     protected void updateListOfPlans() {
        if ( ! isDataAvailable() )
           return;
@@ -54,11 +67,23 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        refreshView();
     }
     
-    @Override
+    protected void updateMasterList() {
+       super.updateMasterList();
+
+       for ( int i = 0 ; i < masterTable.getColumnModel().getColumnCount() ; i++ )
+          if ( masterTable.getColumnName(i).equalsIgnoreCase("crop_name") )
+             break;
+       // TODO: continue { (crop_name never found) i = -1 }
+       int cropColNum = 0;
+       if ( masterTable.getRowCount() > 0 ) // TODO && i != -1
+          masterTable.getColumnModel().getColumn(cropColNum)
+                     .setCellEditor( new ComboBoxCellEditor( cmbxCropList ) );
+        
+    }
     protected TableModel getMasterListData() {
         if ( !isDataAvailable() )
             return new DefaultTableModel();
-
+         
         String selectedPlan = getSelectedPlanName();
         System.out.println( "Selected plan is: " + selectedPlan );
        
@@ -76,9 +101,9 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     public void setDataSource( CPSDataModel dm ) {
         super.setDataSource(dm);
         updateListOfPlans();
+        updateListOfCrops();
     }
     
-    @Override
     protected void buildAboveListPanel() {
         initAboveListPanel();
                 
@@ -86,7 +111,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         btnNewPlan = new JButton( "New" );
         btnNewPlan.setActionCommand( "NewPlan" );
         btnNewPlan.setMargin( new Insets( 1, 1, 1, 1 ) );
-        btnNewPlan.addActionListener( this );
+        btnNewPlan.addActionListener( new CropPlanBoxActionListener() );
         cmbxPlanList = new JComboBox();
         cmbxPlanList.setEditable( true );
         cmbxPlanList.addActionListener( this );
@@ -99,19 +124,21 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         super.buildAboveListPanel(false);
     }
     
-    @Override
+    protected void buildListPanel() {
+       super.buildListPanel();
+       
+       cmbxCropList = new JComboBox();
+       cmbxCropList.addActionListener( new CropBoxInTableActionListener() );
+       AutoCompleteDecorator.decorate( cmbxCropList );
+       
+    }
+    
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
 
         System.out.println("DEBUG Action performed in CropPlanList: " + action);
 
-        if ( action.equalsIgnoreCase( "comboBoxEdited" )) {
-            // What do we do here? create a new plan?
-        }
-        else if ( action.equalsIgnoreCase( "comboBoxChanged" ) ) {
-            updateMasterList();
-        }
-        else if (action.equalsIgnoreCase(btnNewPlan.getActionCommand())) {
+       if ( action.equalsIgnoreCase( btnNewPlan.getActionCommand() ) ) {
             if ( ! isDataAvailable() ) {
                 System.err.println("ERROR: cannot create new plan, no data available" );
                 return;
@@ -123,6 +150,35 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         
     }
     
+    public class CropPlanBoxActionListener implements ActionListener {
+      public void actionPerformed( ActionEvent actionEvent ) {
+         String action = actionEvent.getActionCommand();
+
+         System.out.println( "DEBUG Action performed in CropPlanList: " + action );
+
+         if ( action.equalsIgnoreCase( "comboBoxEdited" ) ) {
+         // What do we do here? create a new plan?
+         }
+         else if ( action.equalsIgnoreCase( "comboBoxChanged" ) ) {
+            updateMasterList();
+         }
+       }   
+    }
+    public class CropBoxInTableActionListener implements ActionListener {
+      public void actionPerformed( ActionEvent actionEvent ) {
+         String action = actionEvent.getActionCommand();
+
+         System.out.println( "DEBUG Action registered in CropBoxInTable: " + action );
+
+         if ( action.equalsIgnoreCase( "comboBoxEdited" ) ) {
+         // What do we do here? create a new crop?
+         }
+         else if ( action.equalsIgnoreCase( "comboBoxChanged" ) ) {
+            // update mesh this planting w/ the crop selected, but for now ...
+            System.out.println( "Crop name: selected " + cmbxCropList.getSelectedItem() );
+         }
+       }   
+    }
     
     public void createNewCropPlan( String newPlanName ) {
         if ( newPlanName.equalsIgnoreCase( "" ) )
@@ -133,7 +189,11 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     
     @Override
     public CPSPlanting createNewRecord() {
-        return dataModel.createPlanting( getSelectedPlanName(), new CPSPlanting() );
+       if ( getSelectedPlanName().equals("") ) {
+          System.err.println("ERROR cannot create record unless a crop plan is selected");
+          return null;
+       }
+       return dataModel.createPlanting( getSelectedPlanName(), new CPSPlanting() );
     }
     
     @Override
