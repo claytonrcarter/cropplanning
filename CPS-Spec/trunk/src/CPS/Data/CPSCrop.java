@@ -28,17 +28,18 @@ public class CPSCrop extends CPSRecord {
    public final int PROP_SIMILAR = 12;
 
    public final int PROP_TIME_TP = 13;
-   public final int PROP_ROWS_BED = 14;
-   public final int PROP_SPACE_INROW = 15;
-   public final int PROP_SPACE_BETROW = 16;
-   public final int PROP_FLAT_SIZE = 17;
-   public final int PROP_PLANTER = 18;
-   public final int PROP_PLANTER_SETTING = 19;
-   public final int PROP_YIELD_FOOT = 20;
-   public final int PROP_YIELD_WEEKS = 21;
-   public final int PROP_YIELD_PER_WEEK = 22;
-   public final int PROP_CROP_UNIT = 23;
-   public final int PROP_CROP_UNIT_VALUE = 24;
+   public final int PROP_MAT_ADJUST = 14;
+   public final int PROP_ROWS_BED = 15;
+   public final int PROP_SPACE_INROW = 16;
+   public final int PROP_SPACE_BETROW = 17;
+   public final int PROP_FLAT_SIZE = 18;
+   public final int PROP_PLANTER = 19;
+   public final int PROP_PLANTER_SETTING = 20;
+   public final int PROP_YIELD_FOOT = 21;
+   public final int PROP_YIELD_WEEKS = 22;
+   public final int PROP_YIELD_PER_WEEK = 23;
+   public final int PROP_CROP_UNIT = 24;
+   public final int PROP_CROP_UNIT_VALUE = 25;
    
    protected int lastValidProperty() { return PROP_CROP_UNIT_VALUE; }
     
@@ -61,6 +62,7 @@ public class CPSCrop extends CPSRecord {
    private CropDatum<String> notes;
    
    private CropDatum<Integer> timeToTP;
+   private CropDatum<Integer> maturityAdjust;
    private CropDatum<Integer> rowsPerBed;
    private CropDatum<Integer> spaceInRow;
    private CropDatum<Integer> spaceBetweenRow;
@@ -96,6 +98,7 @@ public class CPSCrop extends CPSRecord {
        notes = new CropDatum<String>( "Notes", PROP_NOTES, "notes", "" );
         
        timeToTP = new CropDatum<Integer>( "Time to TP", PROP_TIME_TP, "time_to_tp", new Integer(-1) );
+       maturityAdjust = new CropDatum<Integer>( "Adjust Mat.", PROP_MAT_ADJUST, "mat_adjust", new Integer(-1));
        rowsPerBed = new CropDatum<Integer>( "Rows/Bed", PROP_ROWS_BED, "rows_p_bed", new Integer(-1) );
        spaceInRow = new CropDatum<Integer>( "In-Row Spacing", PROP_SPACE_INROW, "space_inrow", new Integer(-1) );
        spaceBetweenRow = new CropDatum<Integer>( "Row Spacing", PROP_SPACE_BETROW, "space_betrow", new Integer(-1));
@@ -153,6 +156,7 @@ public class CPSCrop extends CPSRecord {
           case PROP_OTHER_REQ:       return otherRequirements;
           case PROP_SIMILAR:         return similar;
           case PROP_TIME_TP:         return timeToTP;
+          case PROP_MAT_ADJUST:      return maturityAdjust;
           case PROP_ROWS_BED:        return rowsPerBed;
           case PROP_SPACE_INROW:     return spaceInRow;
           case PROP_SPACE_BETROW:    return spaceBetweenRow;
@@ -244,6 +248,12 @@ public class CPSCrop extends CPSRecord {
    public void setTimeToTP( String s ) { setTimeToTP( s, false ); }
    public void setTimeToTP( String s, boolean force ) { setTimeToTP( Integer.parseInt(s), force ); }
    public void setTimeToTP( int i, boolean force ) { set( timeToTP, i, force ); }
+   
+   public int getMaturityAdjust() { return getInt( PROP_MAT_ADJUST ); }
+   public void setMaturityAdjust( int i ) { setMaturityAdjust( i, false ); }
+   public void setMaturityAdjust( String s ) { setMaturityAdjust( s, false ); }
+   public void setMaturityAdjust( String s, boolean force ) { setMaturityAdjust( Integer.parseInt(s), force ); }
+   public void setMaturityAdjust( int i, boolean force ) { set( maturityAdjust, i, force ); }
    
    public int getRowsPerBed() { return getInt( PROP_ROWS_BED ); }
    public void setRowsPerBed( int i ) { setRowsPerBed( i, false ); }

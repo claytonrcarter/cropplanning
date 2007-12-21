@@ -48,6 +48,7 @@ public abstract class CPSDataModel extends CPSModule {
    
    /* Crop and Variety methods */
    /* retrieval */
+   public abstract ArrayList<String> getListOfCrops();
    public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
    public abstract CPSCrop getVarietyInfo( String cropName, String varName );
    public abstract CPSCrop getCropInfo( int CropID );   
