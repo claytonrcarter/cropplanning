@@ -8,6 +8,7 @@ package CPS.UI.Modules;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
+import CPS.Module.CPSUIModule;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
@@ -22,7 +23,11 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     private CPSDetailView detail;
     private CPSMasterView master;
 
-    public CPSMasterDetailModule() {}
+    private CPSUIModule mainUI;
+    
+    public CPSMasterDetailModule( CPSUIModule uim ) {
+       mainUI = uim;
+   }
     
     protected String getMasterTableName() {
         return master.getDisplayedTableName();
@@ -58,6 +63,7 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     protected void refreshBothViews() {
         refreshMasterView();
         refreshDetailView();
+        mainUI.revalidate();
     }
     protected void refreshMasterView() {
         master.refreshView();

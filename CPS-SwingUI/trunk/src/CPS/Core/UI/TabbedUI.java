@@ -35,7 +35,7 @@ public class TabbedUI extends CPSUIModule {
     // A place to hold on to the visible demo
     // private JPanel contentPane = null;
     JTabbedPane tabbedpane;
-    FrameManger fm;
+    FrameManager fm;
     
     private ArrayList<ModuleListElement> moduleList;
     private boolean modulesUpdated;
@@ -50,7 +50,7 @@ public class TabbedUI extends CPSUIModule {
      */
     public TabbedUI() {	
        
-       fm = new FrameManger();
+       fm = new FrameManager();
        moduleList = new ArrayList<ModuleListElement>();
        setModulesUpdated( false );
        
@@ -165,6 +165,10 @@ public class TabbedUI extends CPSUIModule {
 
    public void setModulesUpdated( boolean modulesUpdated ) {
       this.modulesUpdated = modulesUpdated;
+   }
+   
+   public void revalidate() {
+      fm.revalidate();   
    }
 }
 

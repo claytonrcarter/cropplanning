@@ -11,12 +11,12 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-public class FrameManger {
+public class FrameManager {
    
    private JFrame frame;
    private JPanel contentPane;
    
-   public FrameManger() {
+   public FrameManager() {
       
       frame = createFrame( GraphicsEnvironment.getLocalGraphicsEnvironment().
                            getDefaultScreenDevice().getDefaultConfiguration() );
@@ -79,6 +79,11 @@ public class FrameManger {
      */
     public JFrame getFrame() {
 	return frame;
+    }
+    
+    public void revalidate() {
+       frame.validate();
+       frame.pack();
     }
 
 }
