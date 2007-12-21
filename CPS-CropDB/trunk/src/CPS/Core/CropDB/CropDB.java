@@ -23,13 +23,14 @@ public class CropDB extends CPSCoreModule {
 
     private CropDBUI ui;
 
-    public CropDB () {
+    public CropDB ( CPSUIModule uim ) {
+       super(uim);
        
        setModuleName( "CropDB" );
        setModuleType( "Core" );
        setModuleVersion( "0.1" );
      
-       ui = new CropDBUI();
+       ui = new CropDBUI( uim );
 
     }
 
