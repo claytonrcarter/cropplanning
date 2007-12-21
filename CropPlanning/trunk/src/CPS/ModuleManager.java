@@ -7,7 +7,6 @@
 package CPS;
 
 import CPS.Module.*;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
 
@@ -35,8 +34,15 @@ public class ModuleManager {
    
    /* Perhaps we should do more error checking here?  What about unfound core modules? */
    public void loadCoreModules() {
-      coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
-      coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
+      CPSUIModule uim = uiMods.get(0);
+      if ( uim == null ) {
+         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
+         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
+      }
+      else {
+         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans", uim ));
+         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB", uim ));
+      }
    }
    
    public int getNumCoreModules() {
@@ -55,7 +61,30 @@ public class ModuleManager {
      * Loads a demo from a classname
      */
     private CPSModule loadPlugin( String classname ) {
-       return loadPlugin( classname, null );
+       return loadPlugin( classname, (String) null );
+    }
+    
+    private CPSModule loadPlugin( String classname, CPSUIModule uim ) {
+       
+       Object instance = null;
+
+	try {
+
+           if ( uim == null )
+              instance = Class.forName( classname )
+                              .getConstructor( new Class[] {} )
+                              .newInstance( new Object[]{} );
+           else
+              instance = Class.forName( classname )
+                              .getConstructor( new Class[] { CPSUIModule.class } )
+                              .newInstance( new Object[]{ uim } );
+            
+	} catch (Exception e) {
+	    System.out.println("Error occurred loading demo w/ UI Module: " + classname);
+            e.printStackTrace();
+	}
+
+	return (CPSModule) instance;
     }
     
     private CPSModule loadPlugin( String classname, String arg ) {
