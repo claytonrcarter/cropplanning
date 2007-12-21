@@ -230,8 +230,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void buildListPanel() {
        
        masterTable = new JTable();
-       masterTable.setPreferredScrollableViewportSize( new Dimension( 500,
-                                                       masterTable.getRowHeight() * 10 ) );
+       Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
+       masterTable.setPreferredScrollableViewportSize( d );
+       masterTable.setMaximumSize( d );
        masterTable.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
        masterTable.getTableHeader().addMouseListener( this );
        
