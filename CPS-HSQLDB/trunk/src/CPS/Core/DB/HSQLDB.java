@@ -60,6 +60,28 @@ public class HSQLDB extends CPSDataModel {
       
    }
    
+   public synchronized ArrayList<String> getListOfCrops() {
+      
+      try {
+         Statement st = con.createStatement();
+         ResultSet rs = st.executeQuery( "SELECT crop_name FROM CROPS_VARIETIES" );
+      
+         System.out.println("Executed query: " + "SELECT crop_name FROM CROPS_VARIETIES" );
+         
+         ArrayList<String> l = new ArrayList<String>();
+         while ( rs.next() ) {
+            // System.out.println("Found table entry: " + (String) rs.getObject(1) );
+            l.add( (String) rs.getObject(1) );
+         }
+      
+         return l;
+      } 
+      catch ( SQLException e ) { 
+         e.printStackTrace();
+         return new ArrayList<String>();
+      }
+      
+   }
    
    public synchronized ArrayList<String> getListOfCropPlans() {
       
