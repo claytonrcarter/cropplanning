@@ -38,6 +38,13 @@ public abstract class CPSRecord {
       Float f = get( prop );
       return f.floatValue();
    }
+   public String getAsString( int prop ) {
+      CPSDatum d = getDatum( prop );
+      if ( isNull( d ))
+         return "";
+      else
+         return get( prop ).toString();
+   }
    
    public <T> T get( int prop ) {
       CPSDatum d = getDatum( prop );
@@ -53,7 +60,7 @@ public abstract class CPSRecord {
       
       CPSDatum d = getDatum( prop );
        
-      if      ( d == null )
+      if ( isNull( d ))
          return (T) def;
       else if ( d.isValid() )
          return (T) d.getDatum();
@@ -65,6 +72,23 @@ public abstract class CPSRecord {
        
    }
    
+   private boolean isNull( CPSDatum d ) {
+      boolean b = false;
+      b |= d == null;
+      b |= isObjectNull(d.getDatum());
+      return b;
+   }
+   
+   private boolean isObjectNull( Object o ) {
+      boolean b = false;
+      b |= o == null;
+      b |= o instanceof String && ((String) o).equalsIgnoreCase( "null" );
+      b |= o instanceof Integer && ((Integer) o).intValue() == -1;
+      b |= o instanceof Float && ((Float) o).floatValue() == -1.0;
+      b |= ( o instanceof java.util.Date || o instanceof java.sql.Date ) && 
+           ((java.util.Date) o).getTime() == 0;
+      return b;
+   }
    
    public abstract CPSRecord diff( CPSRecord comparedTo );
    public CPSRecord diff( CPSRecord thatRecord, CPSRecord diffs ) {
@@ -96,9 +120,9 @@ public abstract class CPSRecord {
           if (( ! thi.isValid() && that.isValid() ) ||
               (   thi.isValid() && that.isValid() ) &&
                 ! thi.getDatum().equals( that.getDatum() )) {
-             diffs.set( delta, that.getDatum() );
+             diffs.set( delta.getPropertyNum(), that.getDatum() );
              if ( ! delta.isValid() )
-                diffs.set( delta, that.getDefaultValue(), true );
+                diffs.set( delta.getPropertyNum(), that.getDefaultValue(), true );
              diffsExists = true;
           }
        }
@@ -111,9 +135,64 @@ public abstract class CPSRecord {
        
        return diffs;
     }
+
+   
+   public abstract ArrayList<Integer> getListOfInheritableProperties();
+   public CPSRecord inheritFrom( CPSRecord thatRecord ) {
+
+       if ( ! this.getClass().getName().equalsIgnoreCase( thatRecord.getClass().getName() ) ) {
+          System.err.println( "ERROR: cannot inherit data from dissimilar record type" );
+          return this;
+       }
+       
+       CPSDatum thisDat, thatDat;
+       
+       for ( Integer i : getListOfInheritableProperties() ) {
+          
+          int prop = i.intValue();
+          thisDat = this.getDatum( prop );
+          thatDat = thatRecord.getDatum( prop );
+          
+          /* 
+           * IF: this IS NOT valid AND that IS valid
+           * THEN: this datum will be inherited
+           * 
+           * IF: this IS valid
+           * THEN: ignore this datum, no inheritance needed 
+           */
+          if ( thisDat.isValid() )
+             continue;
+          else if ( ! thisDat.isValid() && thatDat.isValid() ) 
+             this.inherit( prop, thatDat.getDatum() );
+       }
+       
+       return this;
+    }
+   
+   
    
    public boolean equals( Object o ) {
       return ( o instanceof CPSRecord && this.diff( (CPSRecord) o ).getID() == -1 );
+   }
+   
+   public int parseInt ( String s ) {
+      if ( isObjectNull(s) || s.equals("") )
+         return -1;
+      else
+         return Integer.parseInt( s );
+   }
+   public float parseFloat ( String s ) {
+      if ( isObjectNull(s) || s.equals("") )
+         return -1;
+      else
+         return Float.parseFloat( s );
+   }
+   
+   public <T> void set( int prop, T value ) { set( prop, value, false ); }
+   public <T> void set( int prop, T value, boolean force ) { set( getDatum( prop ), value, force ); }
+   public <T> void inherit( int prop, T value ) {
+      set( prop, value );
+      getDatum( prop ).setInherited( true );
    }
    
    /** Method to abstract datum setting.  Captures "null" values for crop datums.  Values captured:
@@ -131,9 +210,9 @@ public abstract class CPSRecord {
     *              to see if it is a NULL type value.  Not to be used lightly: it's important that
     *              the calling method understands what they are doing
     */
-   public <T> void set( CPSDatum<T> d, T v ) { set( d, v, false ); }
+   public static <T> void set( CPSDatum<T> d, T v ) { set( d, v, false ); }
    /** @see set(CPSDatum<T>,T) */
-   protected <T> void set( CPSDatum<T> d, T v, boolean force  ) {
+   protected static <T> void set( CPSDatum<T> d, T v, boolean force  ) {
     
       if ( v == null ||
               // the follow two lines represent a debate as to whether the empty string '""' should
@@ -141,9 +220,9 @@ public abstract class CPSRecord {
               // can be considered null as long as the "force" param is not set.
            ! force && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
 //           ! force   && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
-           ! force   && ( v instanceof Integer && ((Integer) v).intValue() <= -1 ) ||
-           ! force   && ( v instanceof Float   && ((Float) v).floatValue() <= -1.0 ) ||
-           ! force   && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
+           ! force && ( v instanceof Integer && ((Integer) v).intValue() <= -1 ) ||
+           ! force && ( v instanceof Float   && ((Float) v).floatValue() <= -1.0 ) ||
+           ! force && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
          d.setDatum( null );
       else
          // if force is true, then we could pass it along to make sure that
@@ -158,7 +237,7 @@ public abstract class CPSRecord {
    public abstract Iterator iterator();
    public abstract class CPSRecordIterator implements Iterator {
        
-       private int currentProp;
+       protected int currentProp;
        
        public CPSRecordIterator() { currentProp = -1; }
        
@@ -167,14 +246,15 @@ public abstract class CPSRecord {
        public CPSDatum next() {
 
           currentProp++;
-          if ( ignoreThisProperty( currentProp ))
+          if ( hasNext() &&
+               ( ignoreThisProperty() || getDatum( currentProp ) == null ))
              return next();
           else
              return getDatum( currentProp );
           
        }
 
-       public abstract boolean ignoreThisProperty( int prop );
+       public abstract boolean ignoreThisProperty();
        
        public void remove() {}
        

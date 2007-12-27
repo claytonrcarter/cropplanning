@@ -12,10 +12,13 @@ public class CPSDatum<T> {
    
    private int property;
    private String columnName;
-   private boolean valid;
+   private boolean stateValid, stateInherited;
    private T defaultValue;
 
-   public CPSDatum() { invalidate(); }
+   public CPSDatum() { 
+      setInherited(false);
+      invalidate();
+   }
    
    private CPSDatum( String n, T d ) {
       setDescriptor(n);
@@ -28,6 +31,7 @@ public class CPSDatum<T> {
       setDatum( getDefaultValue() );
       setProperty(p);
       setColumnName(c);
+      setInherited(false);
       invalidate();
    }
    
@@ -40,9 +44,12 @@ public class CPSDatum<T> {
    protected void setProperty( int p ) { property = p; }
    public int getPropertyNum() { return property; }
    
-   public void validate() { valid = true; }
-   public void invalidate() { valid = false; }
-   public boolean isValid() { return valid; }
+   public void validate() { stateValid = true; }
+   public void invalidate() { stateValid = false; }
+   public boolean isValid() { return stateValid; }
+
+   public void setInherited( boolean b ) { stateInherited = b; }
+   public boolean isInherited() { return stateInherited; }
 
    protected void setDefaultValue( T v ) { defaultValue = v; }
    public T getDefaultValue() { return defaultValue; }
@@ -64,6 +71,7 @@ public class CPSDatum<T> {
       if ( overrideValidation || datum != null ) {
          this.datum = datum;
          validate();
+         setInherited( false );
       }
       else
          invalidate();
