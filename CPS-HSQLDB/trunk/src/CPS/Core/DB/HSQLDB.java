@@ -317,62 +317,66 @@ public class HSQLDB extends CPSDataModel {
             crop.setID( rs.getInt( "ID" ));
             crop.setCropName( captureString( rs.getString( "crop_name" ) ));            
             crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
-
-            crop.setSimilarCrop( getCropInfo( rs.getString("similar_to") ));
-
+            crop.setBotanicalName( captureString( rs.getString( "bot_name" ) ) );
             crop.setFamilyName( captureString( rs.getString( "fam_name" ) ));
             crop.setCropDescription( captureString( rs.getString("description") ));
             
-            crop.setMaturityDays( rs.getInt( "maturity" ) );
-            
-            crop.setSuccessions( rs.getBoolean("successions") );
+            crop.setMaturityDays( captureInt( rs.getInt( "maturity" )));
+            crop.setMaturityAdjust( captureInt( rs.getInt( "mat_adjust" )));
+//            crop.setSuccessions( rs.getBoolean("successions") );
             
             crop.setGroups( captureString( rs.getString( "groups" ) ));
             crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
             crop.setKeywords( captureString( rs.getString( "keywords" ) ));
             crop.setNotes( captureString( rs.getString( "notes" ) ));
 
-            crop.setTimeToTP( rs.getInt( "time_to_tp" ));
-            crop.setRowsPerBed( rs.getInt( "rows_p_bed" ));
-            crop.setSpaceInRow( rs.getInt( "space_inrow" ));
-            crop.setSpaceBetweenRow( rs.getInt( "space_betrow" ));
+            crop.setTimeToTP( captureInt( rs.getInt( "time_to_tp" )));
+            crop.setRowsPerBed( captureInt( rs.getInt( "rows_p_bed" )));
+            crop.setSpaceInRow( captureInt( rs.getInt( "space_inrow" )));
+            crop.setSpaceBetweenRow( captureInt( rs.getInt( "space_betrow" )));
             crop.setFlatSize( captureString( rs.getString( "flat_size" )));
             crop.setPlanter( captureString( rs.getString( "planter" )));
             crop.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
-            crop.setYieldPerFoot( rs.getFloat( "yield_p_foot" ));
-            crop.setYieldNumWeeks( rs.getInt( "yield_num_weeks" ));
-            crop.setYieldPerWeek( rs.getInt( "yield_p_week" ));
+            crop.setYieldPerFoot( captureFloat( rs.getFloat( "yield_p_foot" )));
+            crop.setYieldNumWeeks( captureInt( rs.getInt( "yield_num_weeks" )));
+            crop.setYieldPerWeek( captureInt( rs.getInt( "yield_p_week" )));
             crop.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
-            crop.setCropUnitValue( rs.getFloat( "crop_unit_value" ));
+            crop.setCropUnitValue( captureFloat( rs.getFloat( "crop_unit_value" )));
+
             
-            /* Now handle the data chain.
-             */
-            Iterator<CropDatum> thisCrop = crop.iterator();
-            // Iterator<CropDatum> superCrop;
-            Iterator<CropDatum> similarCrop = crop.getSimilarCrop().iterator();
-      
-            if ( crop.isVariety() )
-               // superCrop = getCropInfo( crop.getCropName() ).iterator();
-               similarCrop = getCropInfo( crop.getCropName() ).iterator();
-            else
-               // superCrop = crop.iterator();
-               similarCrop = crop.getSimilarCrop().iterator();
+            /* Now handle the data inheritance */
+            crop.setSimilarCrop( captureString( rs.getString("similar_to") ));
+   
+            CPSCrop similarCrop = getCropInfo( crop.getSimilarCrop() );
             
-            CropDatum t, d, s;
-            // while ( thisCrop.hasNext() && superCrop.hasNext() && similarCrop.hasNext() ) {
-            while ( thisCrop.hasNext() && similarCrop.hasNext() ) {
-               t = thisCrop.next();
-               // d = superCrop.next();
-               s = similarCrop.next();
-               if ( ! t.isValid() && t.shouldBeInherited() ) {
-//                  if ( crop.isVariety() )
-//                     t.setDatum( d.getDatum() );
-//                  else
-//                     t.setDatum( s.getDatum() );
-                  t.setDatum( s.getDatum() );
-                  t.setIsInherited(true); // mark this datum as having been inherited
-               }
-            }
+            crop.inheritFrom( similarCrop );
+            
+//            Iterator<CropDatum> thisCrop = crop.iterator();
+//            // Iterator<CropDatum> superCrop;
+//            Iterator<CropDatum> similarCrop = crop.getSimilarCrop().iterator();
+//      
+//            if ( crop.isVariety() )
+//               // superCrop = getCropInfo( crop.getCropName() ).iterator();
+//               similarCrop = getCropInfo( crop.getCropName() ).iterator();
+//            else
+//               // superCrop = crop.iterator();
+//               similarCrop = crop.getSimilarCrop().iterator();
+//            
+//            CropDatum t, d, s;
+//            // while ( thisCrop.hasNext() && superCrop.hasNext() && similarCrop.hasNext() ) {
+//            while ( thisCrop.hasNext() && similarCrop.hasNext() ) {
+//               t = thisCrop.next();
+//               // d = superCrop.next();
+//               s = similarCrop.next();
+//               if ( ! t.isValid() && t.shouldBeInherited() ) {
+////                  if ( crop.isVariety() )
+////                     t.setDatum( d.getDatum() );
+////                  else
+////                     t.setDatum( s.getDatum() );
+//                  t.setDatum( s.getDatum() );
+//                  t.setIsInherited(true); // mark this datum as having been inherited
+//               }
+//            }
             
          }  catch ( SQLException e ) { e.printStackTrace(); }
       }
@@ -431,11 +435,6 @@ public class HSQLDB extends CPSDataModel {
       HSQLDBCreator.updatePlanting( con, planName, planting );
    }
    
-   // TODO this is where we can implement crop dependencies
-   // if a value is blank, leave it blank
-   // if a value is null, we can request that info from
-   //    for crops: the similar crop (var_name == null)
-   //    for varieties: the crop
    private CPSPlanting resultSetAsPlanting( ResultSet rs ) throws SQLException {
       
       CPSPlanting p = new CPSPlanting();
@@ -443,19 +442,15 @@ public class HSQLDB extends CPSDataModel {
       // move to the first (and only) row
       if ( rs.next() ) {
          try {
-            
-            // TODO, define a null value in the crop.setXX methods
-            // and invalidate
-            
+
+            // Not yet implemented:
+            // PROP_CROP_ID, PROP_STATUS, PROP_COMPLETED     
+
             p.setID( rs.getInt( "ID" ));
             p.setCropName( captureString( rs.getString( "crop_name" ) ));            
             p.setVarietyName( captureString( rs.getString( "var_name" ) ));
 
             p.setLocation( captureString( rs.getString( "location" )));
-
-            // not yet implemented
-//          case PROP_STATUS:        return status;
-//          case PROP_COMPLETED:     return completed;
            
             p.setDateToPlant( captureDate( rs.getDate( "date_plant" )));
             p.setDateToTP( captureDate( rs.getDate( "date_tp" )));
@@ -473,6 +468,29 @@ public class HSQLDB extends CPSDataModel {
             p.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
             p.setKeywords( captureString( rs.getString( "keywords" ) ));
             p.setNotes( captureString( rs.getString( "notes" ) ));
+            
+            p.setMatAdjust( captureInt( rs.getInt( "mat_adjust" )));
+            p.setPlantingAdjust( captureInt( rs.getInt( "planting_adjust" )));
+            p.setMiscAdjust( captureInt( rs.getInt( "misc_adjust" ) ) );
+ 
+            p.setTimeToTP( captureInt( rs.getInt( "time_to_tp" )));
+            p.setRowsPerBed( captureInt( rs.getInt( "rows_p_bed" )));
+            p.setInRowSpacing( captureInt( rs.getInt( "inrow_space" ) ) );
+            p.setRowSpacing( captureInt( rs.getInt( "row_space" )));
+            
+            p.setFlatSize( captureString( rs.getString( "flat_size" )));
+            p.setPlanter( captureString( rs.getString( "planter" )));
+            p.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
+
+            p.setYieldPerFoot( captureFloat( rs.getFloat( "yield_p_foot" ) ) );
+            p.setTotalYield( captureFloat( rs.getFloat( "total_yield" )));
+            p.setYieldNumWeeks( captureInt( rs.getInt( "yield_num_weeks" )));
+            p.setYieldPerWeek( captureFloat( rs.getFloat( "yield_p_week" )));
+            p.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
+            p.setCropYieldUnitValue( captureFloat( rs.getFloat( "crop_unit_value" )));
+
+            /* handle data inheritance */
+            p.inheritFrom( getCropInfo( p.getCropName() ));
             
          }  catch ( SQLException e ) { e.printStackTrace(); }
       }
@@ -554,6 +572,13 @@ public class HSQLDB extends CPSDataModel {
          return new Date( 0 );
       else
          return d;
+   }
+   
+   public static float captureFloat( float f ) {
+      if ( f <= 0 )
+         return (float) -1.0;
+      else
+         return f;
    }
    
    public static int captureInt( int i ) {
