@@ -53,18 +53,15 @@ public class CropPlanInfo extends CPSDetailView {
         tfldCropName.setInitialText(displayedPlanting.getCropName());
         tfldVarName.setInitialText(displayedPlanting.getVarietyName());
 
-        if (displayedPlanting.getMaturityDays() > 0)
-            tfldMatDays.setInitialText("" + displayedPlanting.getMaturityDays());
-        else
-            tfldMatDays.setInitialText("");
+        tfldMatDays.setInitialText( "" + displayedPlanting.getMaturityDaysString() );
 
         tfldDatePlant.setInitialText(displayedPlanting.getDateToPlantString());
         tfldDateHarvest.setInitialText(displayedPlanting.getDateToHarvestString());
 
-        tareGroups.setText(displayedPlanting.getGroups());
-        tareOtherReq.setText(displayedPlanting.getOtherRequirments());
-        tareKeywords.setText(displayedPlanting.getKeywords());
-        tareNotes.setText(displayedPlanting.getNotes());
+        tareGroups.setInitialText(displayedPlanting.getGroups());
+        tareOtherReq.setInitialText(displayedPlanting.getOtherRequirments());
+        tareKeywords.setInitialText(displayedPlanting.getKeywords());
+        tareNotes.setInitialText(displayedPlanting.getNotes());
     }
    
    

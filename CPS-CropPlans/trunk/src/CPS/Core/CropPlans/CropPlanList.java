@@ -6,6 +6,7 @@
 
 package CPS.Core.CropPlans;
 
+import CPS.Data.CPSCrop;
 import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSMasterView;
 import CPS.Module.*;
@@ -32,7 +33,10 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     
     // Retrieve the details (as a Planting) for a given ID
     protected CPSPlanting getDetailsForID( int id ) {
-        return dataModel.getPlanting( getDisplayedTableName(), id );
+//       CPSPlanting p = dataModel.getPlanting( getDisplayedTableName(), id );
+//       CPSCrop c = dataModel.getCropInfo( p.getCropName() );
+//       return (CPSPlanting) p.inheritFrom( c );
+       return dataModel.getPlanting( getDisplayedTableName(), id );
     }
 
     protected void updateListOfCrops() {
@@ -174,8 +178,17 @@ class CropPlanList extends CPSMasterView implements ActionListener {
          // What do we do here? create a new crop?
          }
          else if ( action.equalsIgnoreCase( "comboBoxChanged" ) ) {
-            // update mesh this planting w/ the crop selected, but for now ...
-            System.out.println( "Crop name: selected " + cmbxCropList.getSelectedItem() );
+            String s = (String) cmbxCropList.getSelectedItem();
+            // update mesh this planting w/ the crop selected, but for now just ...
+            System.out.println( "Crop name: selected " + s );
+            if ( listOfValidCrops.contains( s ) ) {
+               CPSCrop crop = dataModel.getCropInfo( (String) cmbxCropList.getSelectedItem() );
+               System.out.println( "Retrieved info for crop " + crop.getCropName() );
+            }
+            else {
+               // TODO handle selection of non-existing crop
+               System.err.println("ERROR: Selected non existent crop, what to do?  Create?  For now, nothing." );
+            }
          }
        }   
     }

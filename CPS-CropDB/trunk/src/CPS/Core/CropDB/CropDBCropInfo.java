@@ -42,16 +42,16 @@ public class CropDBCropInfo extends CPSDetailView {
          rebuildMainPanel();
       }
       
-      tfldCropName.setText( displayedCrop.getCropName() );
-      tfldVarName.setText( displayedCrop.getVarietyName() );
+      tfldCropName.setInitialText( displayedCrop.getCropName() );
+      tfldVarName.setInitialText( displayedCrop.getVarietyName() );
       
       if ( displayedCrop.isCrop() ) {
 
          lblSimilar.setVisible( true );
          cmbxSimilar.setVisible( true );
          
-         if ( displayedCrop.getSimilarCrop().getID() != -1 )
-            cmbxSimilar.setSelectedItem( displayedCrop.getSimilarCrop().getCropName() );
+         if ( ! displayedCrop.getSimilarCrop().equalsIgnoreCase("") )
+            cmbxSimilar.setSelectedItem( displayedCrop.getSimilarCrop() );
          else
             cmbxSimilar.setSelectedItem( "None" );
       } 
@@ -60,35 +60,32 @@ public class CropDBCropInfo extends CPSDetailView {
          cmbxSimilar.setVisible( false ); 
       }
       
-      tfldFamName.setText( displayedCrop.getFamilyName() );
-      tareDesc.setText( displayedCrop.getCropDescription() );
+      tfldFamName.setInitialText( displayedCrop.getFamilyName() );
+      tareDesc.setInitialText( displayedCrop.getCropDescription() );
       
-      if ( displayedCrop.getMaturityDays() > 0 )
-         tfldMatDays.setText( "" + displayedCrop.getMaturityDays() );
-      else
-         tfldMatDays.setText("");
+      tfldMatDays.setInitialText( displayedCrop.getMaturityDaysString() );
       
-      tareGroups.setText( displayedCrop.getGroups() );
-      tareOtherReq.setText( displayedCrop.getOtherRequirments() );
-      tareKeywords.setText( displayedCrop.getKeywords() );
-      tareNotes.setText( displayedCrop.getNotes() );
+      tareGroups.setInitialText( displayedCrop.getGroups() );
+      tareOtherReq.setInitialText( displayedCrop.getOtherRequirments() );
+      tareKeywords.setInitialText( displayedCrop.getKeywords() );
+      tareNotes.setInitialText( displayedCrop.getNotes() );
       
-      tfldRowsPerBed.setText( "" + displayedCrop.getRowsPerBed() );
-      tfldSpaceInRow.setText( "" + displayedCrop.getSpaceInRow() );
-      tfldSpaceBetRows.setText( "" + displayedCrop.getSpaceBetweenRow() );
+      tfldRowsPerBed.setInitialText( displayedCrop.getRowsPerBedString() );
+      tfldSpaceInRow.setInitialText( displayedCrop.getSpaceInRowString() );
+      tfldSpaceBetRows.setInitialText(  displayedCrop.getSpaceBetweenRowString() );
 
-      tfldPlanter.setText( displayedCrop.getPlanter() );
-      tfldPlanterSetting.setText( displayedCrop.getPlanterSetting() );
+      tfldPlanter.setInitialText( displayedCrop.getPlanter() );
+      tfldPlanterSetting.setInitialText( displayedCrop.getPlanterSetting() );
       
-      tfldFlatSize.setText( displayedCrop.getFlatSize() );
-      tfldWeeksToTP.setText( "" + displayedCrop.getTimeToTP() );
-      tfldMatAdjust.setText( "" + displayedCrop.getMaturityAdjust() );
+      tfldFlatSize.setInitialText( displayedCrop.getFlatSize() );
+      tfldWeeksToTP.setInitialText( displayedCrop.getTimeToTPString() );
+      tfldMatAdjust.setInitialText( displayedCrop.getMaturityAdjustString() );
       
-      tfldYieldPerWeek.setText( "" + displayedCrop.getYieldPerWeek() );
-      tfldYieldWeeks.setText( "" + displayedCrop.getYieldNumWeeks() );
-      tfldYieldPerFoot.setText( "" + displayedCrop.getYieldPerFoot() );
-      tfldYieldUnits.setText( displayedCrop.getCropYieldUnit() );
-      tfldYieldUnitValue.setText( "" + displayedCrop.getCropUnitValue() );
+      tfldYieldPerWeek.setInitialText( displayedCrop.getYieldPerWeekString() );
+      tfldYieldWeeks.setInitialText( displayedCrop.getYieldNumWeeksString() );
+      tfldYieldPerFoot.setInitialText( displayedCrop.getYieldPerFootString() );
+      tfldYieldUnits.setInitialText( displayedCrop.getCropYieldUnit() );
+      tfldYieldUnitValue.setInitialText( displayedCrop.getCropUnitValueString() );
       
       
    }
@@ -107,7 +104,7 @@ public class CropDBCropInfo extends CPSDetailView {
          crop.setMaturityDays( Integer.parseInt( tfldMatDays.getText() ), tfldMatDays.hasChanged() );
      
       if ( ! cmbxSimilar.getSelectedItem().toString().equalsIgnoreCase("None") )
-         crop.setSimilarCrop( dataModel.getCropInfo( cmbxSimilar.getSelectedItem().toString() ) );
+         crop.setSimilarCrop( cmbxSimilar.getSelectedItem().toString() );
       
       crop.setCropDescription( tareDesc.getText(), tareDesc.hasChanged() );
       
