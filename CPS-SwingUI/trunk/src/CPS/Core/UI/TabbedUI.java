@@ -168,6 +168,7 @@ public class TabbedUI extends CPSUIModule {
    }
    
    public void revalidate() {
+      tabbedpane.setPreferredSize( tabbedpane.getSize() );
       fm.revalidate();   
    }
 }

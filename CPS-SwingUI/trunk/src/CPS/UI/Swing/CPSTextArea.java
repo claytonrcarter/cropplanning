@@ -19,17 +19,7 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
         super( rows, cols );
         this.getDocument().addDocumentListener( new CPSDocumentListener(this) );
     }
-    
-//    @Override
-//    public String getText() {
-//        String s = super.getText();
-//        
-//        if ( hasChanged() )
-//            return s;
-//        else
-//            return null;
-//    }
-    
+         
     public void setInitialText( String s ) {
         setText(s);
         setHasChanged( false );
