@@ -49,13 +49,14 @@ public class CSV extends CPSDataModel {
       temp.setCropName( ctm.getStringAt( selectedRow, col++ ) );
       temp.setVarietyName( ctm.getStringAt( selectedRow, col++ ));
 
-      temp.setSimilarCrop( this.getCropInfo( ctm.getStringAt( selectedRow, col++ ) ));
+      temp.setSimilarCrop( ctm.getStringAt( selectedRow, col++ ) );
       
       temp.setBotanicalName( ctm.getStringAt( selectedRow, col++ ));
       temp.setFamilyName( ctm.getStringAt( selectedRow, col++ ));
 
       temp.setGroups( ctm.getStringAt( selectedRow, col++ ));
-      temp.setSuccessions( Boolean.parseBoolean( ctm.getStringAt( selectedRow, col++ )));
+      // temp.setSuccessions( Boolean.parseBoolean( ctm.getStringAt( selectedRow, col++ )));
+      col++; // skip the successions column
       temp.setCropDescription( ctm.getStringAt( selectedRow, col++ ));
       temp.setKeywords( ctm.getStringAt( selectedRow, col++ ));
       col++; // fudge
@@ -89,7 +90,10 @@ public class CSV extends CPSDataModel {
    }
    
    public TableModel getCropAndVarietyList() { return null; }
+   
    public ArrayList<String> getListOfCropPlans() { return null; }
+   public ArrayList<String> getCropNames() { return null; }
+   
    public void createNewCropPlan(String plan_name) {}
    public void retrieveCropPlan(String plan_name) {}
    public void filterCropPlan(String plan_name, String filter) {}
@@ -131,4 +135,28 @@ public class CSV extends CPSDataModel {
    
    public void deletePlanting( String planting, int plantingID ) {}
    public void deleteCrop( int cropID ) {}
+   
+   public CPSCrop getCommonInfoForCrops( ArrayList<Integer> cropIDs ) { return null; }
+   @Override
+   public CPSPlanting getCommonInfoForPlantings( String planName,
+                                                 ArrayList<Integer> plantingIDs ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+   @Override
+   public ArrayList<String> getVarietyNames( String crop_name ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+   @Override
+   public ArrayList<String> getFamilyNames() {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+   @Override
+   public void updateCrops( CPSCrop changes,
+                            ArrayList<Integer> cropIDs ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+   @Override
+   protected void updateDataListeners() {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
 }
