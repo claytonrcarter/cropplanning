@@ -11,11 +11,11 @@ package CPS.Core.DB;
 import CPS.Data.CPSCrop;
 import CPS.Data.CPSDatum;
 import CPS.Data.CPSPlanting;
-import CPS.Data.CropDatum;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -113,8 +113,8 @@ public class HSQLDBCreator {
          String cols = "";
          String vals = "";
          
-         Iterator<CropDatum> i = crop.iterator();
-         CropDatum c;
+         Iterator<CPSDatum> i = crop.iterator();
+         CPSDatum c;
          boolean isEmpty = crop.getID() == -1;
          
          while ( i.hasNext() ) {
@@ -165,13 +165,20 @@ public class HSQLDBCreator {
    }
    
    public static void updateCrop( Connection con, CPSCrop crop ) {
-      
+      ArrayList<Integer> id = new ArrayList<Integer>( 1 );
+      id.add( new Integer( crop.getID() ));
+      updateCrops( con, crop, id );
+   }
+   
+   public static void updateCrops( Connection con, CPSCrop changes, ArrayList<Integer> ids ) { 
       try {
+         
+         String idString = HSQLDB.intListToIDString(ids);
          
          String sql = "UPDATE " + "CROPS_VARIETIES" + " SET ";
          
-         Iterator<CropDatum> i = crop.iterator();
-         CropDatum c;
+         Iterator<CPSDatum> i = changes.iterator();
+         CPSDatum c;
          
          while ( i.hasNext() ) {
             c = i.next();
@@ -183,7 +190,8 @@ public class HSQLDBCreator {
          //sql += "similar_to = " + HSQLDB.escapeValue( crop.getSimilarCrop().getCropName() );
          
          // this space is crucial
-         sql += " " + "WHERE id = " + crop.getID();
+//         sql += " " + "WHERE id = " + crop.getID();
+         sql += " " + "WHERE id IN ( " + idString + " ) ";
          
          System.out.println("Attempting to execute: " + sql );
 
@@ -258,7 +266,7 @@ public class HSQLDBCreator {
          
          String sql = "UPDATE " + planName + " SET ";
          
-         Iterator<CropDatum> i = p.iterator();
+         Iterator<CPSDatum> i = p.iterator();
          CPSDatum c;
          
          while ( i.hasNext() ) {

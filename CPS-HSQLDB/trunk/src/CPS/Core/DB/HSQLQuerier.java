@@ -13,8 +13,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import CPS.Core.DB.HSQLTableModel;
+import java.util.ArrayList;
 
+/**
+ * A class to handle the nitty-gritty queries of the database.
+ * @author Clayton
+ */
 public class HSQLQuerier {
    
    Connection con;
@@ -63,15 +67,13 @@ public class HSQLQuerier {
                                  String conditional, String sort, String filter ) {
       return submitQuery( con, table, columns, conditional, sort, filter, false );
    }
-//   
-//   private ResultSet submitQuery( String table, String columns, String conditional, boolean store ) {
-//      rsCache = submitQuery( con, table, columns, conditional, null, store );
-//      return getCachedResults();
-//   }
+
    
-   /*
-    * Static Methods
-    */
+   /* ****************
+    * Static Methods *
+    * ****************/
+   
+   
    static synchronized ResultSet submitQuery( Connection con,
                                               String table,
                                               String columns, 
@@ -108,7 +110,7 @@ public class HSQLQuerier {
       if ( sort != null && sort.length() > 0 )
          query += " ORDER BY " + sort;
       
-      System.out.println("Submitting query: " + query );
+      System.out.println("DEBUG Submitting query: " + query );
       
       try {
          if ( prepared ) {
@@ -131,6 +133,64 @@ public class HSQLQuerier {
       return rs;
    }
    
+   
+   /**
+    * A method to create and submit queries which conflate the results and return a
+    * single row ResultSet whose column values are not null only if EVERY row queried 
+    * contains identical values.  If any row in the selection contains a different value,
+    * then the value for that column in the ResultSet is NULL.
+    * 
+    * @param table Name of the table to query.
+    * @param columns ArrayList<String> of all columns to query.
+    * @param ids ArrayList<Integer> of all row indices (actually, records with column id == id)
+    * @return A ResultSet with only one row whose column values are either NULL (for heterogeneous
+    *         column values data) or the value which is homogeneous across all queried rows.
+    */
+   public synchronized ResultSet submitCommonInfoQuery( String table,
+                                                         ArrayList<String> columns,
+                                                         ArrayList<Integer> ids ) {
+       ResultSet rs = null;
+      
+      String idString = HSQLDB.intListToIDString(ids);
+      
+      /* start the query string */
+      String query = "";
+      query += "SELECT ";
+      
+      
+      for ( String col : columns ) {
+         query += "MIN( SELECT ";
+         query += "( CASE WHEN count(*)=1 ";
+         query += "THEN MIN( " + col + " ) ELSE null END ) ";
+         query += "FROM( SELECT DISTINCT " + col + " FROM " + table + " ";
+         query += "WHERE id IN ( " + idString + " ) ) ) AS " + col + ", "; 
+      }
+      query = query.substring( 0, query. lastIndexOf( ", " ));
+      
+      query += " FROM " + table;
+      
+      System.out.println("DEBUG Submitting query: " + query );
+      
+      try {
+         Statement s = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                            ResultSet.CONCUR_READ_ONLY );
+         rs = s.executeQuery( query );
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         rs = null;
+      }
+      
+      return rs;
+   }
+   
+   
+   /**
+    * Creates a new HSQLTableModel for the given ResultSet.
+    * 
+    * @param rs ResultSet to embed in the new HSQLTableModel
+    * @return A new HSQLTableModel wrapped around the given ResultSet
+    */
    public static TableModel tableResults( ResultSet rs ) {
       try {
          return new HSQLTableModel( rs );
