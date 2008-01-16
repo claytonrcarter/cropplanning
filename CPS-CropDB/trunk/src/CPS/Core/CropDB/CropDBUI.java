@@ -10,7 +10,7 @@ import CPS.UI.Modules.CPSMasterDetailModule;
 
 class CropDBUI extends CPSMasterDetailModule {
     
-    public CropDBUI( CPSUIModule uim ) {
+    public CropDBUI( CPSUI uim ) {
        super( uim );
        
        setMasterView( new CropDBCropList( this ) );

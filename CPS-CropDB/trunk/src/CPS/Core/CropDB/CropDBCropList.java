@@ -12,6 +12,7 @@ import CPS.Data.CPSCrop;
 import CPS.UI.Modules.CPSMasterView;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -22,6 +23,7 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
     CropDBCropList( CropDBUI ui ) {
        super(ui);
+       setSortColumn("crop_name");
     }
     
     @Override
@@ -50,20 +52,31 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
        
     }
     
+    /**
+     * Retrieves the data record for a particular crop id.
+     * @param id The integer id of the crop record to retrieve.
+     * @return A new CPSCrop object populated to represent the return record.
+     */
     protected CPSCrop getDetailsForID( int id ) {
-        return dataModel.getCropInfo( id );
+        return getDataSource().getCropInfo( id );
     }
+    
+    
+    protected CPSRecord getDetailsForIDs( ArrayList<Integer> ids ) {
+       return getDataSource().getCommonInfoForCrops( ids );
+    }
+    
    
     protected TableModel getMasterListData() {
        if ( ! isDataAvailable() )
           return new DefaultTableModel();
        
        if      ( radioAll.isSelected() )
-          return dataModel.getAbbreviatedCropAndVarietyList( getSortColumn(), getFilterString() );
+          return getDataSource().getAbbreviatedCropAndVarietyList( getSortColumn(), getFilterString() );
        else if ( radioCrops.isSelected() )
-          return dataModel.getAbbreviatedCropList( getSortColumn(), getFilterString() );
+          return getDataSource().getAbbreviatedCropList( getSortColumn(), getFilterString() );
        else if ( radioVar.isSelected() )
-          return dataModel.getAbbreviatedVarietyList( getSortColumn(), getFilterString() );
+          return getDataSource().getAbbreviatedVarietyList( getSortColumn(), getFilterString() );
        else // nothing selected (not useful)
           return new DefaultTableModel();
     }
@@ -84,16 +97,16 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
     @Override
     public CPSRecord createNewRecord() {
-        return dataModel.createCrop( new CPSCrop() );
+        return getDataSource().createCrop( new CPSCrop() );
     }
     
     @Override
     public CPSRecord duplicateRecord( int id ) {
-        return dataModel.createCrop( dataModel.getCropInfo( id ));
+        return getDataSource().createCrop( getDataSource().getCropInfo( id ));
     }
     @Override
     public void deleteRecord( int id ) {
-        dataModel.deleteCrop( id );
+        getDataSource().deleteCrop( id );
     }
     
 }
