@@ -10,11 +10,20 @@
 
 package CPS.Data;
 
+import CPS.Data.CPSDatum.CPSDatumState;
+import CPS.Module.CPSDataModelConstants;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.ArrayList;
 
 public abstract class CPSRecord {
+   
+   public final int PROP_ID = CPSDataModelConstants.PROP_CROP_ID;
+   public final int PROP_COMMON_ID = CPSDataModelConstants.PROP_COMMON_ID;
+   
+   private boolean representsMultiIDs;
+   protected CPSDatum<Integer> recordID;
+   protected CPSDatum<ArrayList<Integer>> commonIDs;
    
    protected abstract int lastValidProperty();
    protected ArrayList<Integer> changedProps = new ArrayList<Integer>();
@@ -22,13 +31,68 @@ public abstract class CPSRecord {
    protected abstract CPSDatum getDatum( int prop );
    public abstract String toString(); 
    
-   public abstract int getID();
-   public abstract void setID( int i );
+   public int getID() { 
+       if ( doesRepresentMultipleRecords() )
+          return recordID.getDefaultValue();
+       else
+         return recordID.getDatumAsInt();
+   }
+   public void setID( int i ) {
+       if ( ! doesRepresentMultipleRecords() )
+          set( recordID, new Integer( i )); 
+    } 
    
+   /**
+    * Retrieves the lists of IDs that this record represents.  If this record only represents a single
+    * record, then this will return an empty list, or whatever is the default value of the commonIDs field.
+    * @return An ArrayList of Integers, each of which is a record ID represented by this object.  If
+    *         this object only represents a single ID, this list will be empty and method getID() 
+    *         should be used.
+    * @see getID()
+    */
+   public ArrayList<Integer> getCommonIDs() {
+      if ( doesRepresentMultipleRecords() )
+         return commonIDs.getDatum();
+      else
+         return commonIDs.getDefaultValue();
+   }
+   /**
+    * Record the list of ids which this record represents and sets this record into multiple ID mode.
+    * @param ids A ArrayList of Integers which this record represents.
+    */
+   public void setCommonIDs( ArrayList<Integer> ids ) {
+      setRepresentsMultipleRecords();
+      set( commonIDs, ids );
+   }
+    
+   /**
+    * Sets this object to represent a single record.
+    */
+   public void setRepresentsSingleRecord() {
+      representsMultiIDs = false;
+   }
+   /**
+    * Sets this object to represents multiple records.
+    */
+   public void setRepresentsMultipleRecords() {
+      representsMultiIDs = true;
+   }
+   /**
+    * @return true if this object represents multiple records, false if it represents only one.
+    */
+   public boolean doesRepresentMultipleRecords() {
+      return representsMultiIDs;
+   }
    
    public int getInt( int prop ) {
       Integer i = get( prop );
       return i.intValue();
+   }
+   public String formatInt( int i ) {
+      if ( i == -1 )
+         return "";
+      else 
+         return "" + i;
    }
    public boolean getBoolean( int prop ) {
       Boolean b = get( prop );
@@ -38,13 +102,19 @@ public abstract class CPSRecord {
       Float f = get( prop );
       return f.floatValue();
    }
-   public String getAsString( int prop ) {
-      CPSDatum d = getDatum( prop );
-      if ( isNull( d ))
+   public String formatFloat( float f ) {
+      if ( f < 0 )
          return "";
       else
-         return get( prop ).toString();
+         return "" + f;
    }
+//   public String getAsString( int prop ) {
+//      CPSDatum d = getDatum( prop );
+//      if ( isNull( d ))
+//         return "";
+//      else
+//         return get( prop ).toString();
+//   }
    
    public <T> T get( int prop ) {
       CPSDatum d = getDatum( prop );
@@ -70,6 +140,10 @@ public abstract class CPSRecord {
          return (T) def;
       }
        
+   }
+   
+   public CPSDatumState getStateOf( int prop ) {
+      return getDatum( prop ).getState();
    }
    
    private boolean isNull( CPSDatum d ) {
@@ -110,6 +184,7 @@ public abstract class CPSRecord {
           delta = deltIt.next();
           
           /*
+           * if this is CALCULATED and that IS NOT VALID, then skip
            * if this IS NOT valid AND that IS valid OR   (means: new info added)
            * if this IS     valid AND that IS valid AND
            * if this IS NOT equal to that,               (means: info changed)
@@ -117,9 +192,11 @@ public abstract class CPSRecord {
            * if the recorded difference is NOT valid,
            * then record the difference as the default value
            */
-          if (( ! thi.isValid() && that.isValid() ) ||
-              (   thi.isValid() && that.isValid() ) &&
-                ! thi.getDatum().equals( that.getDatum() )) {
+          if ( thi.isCalculated() && ! that.isConcrete() ) 
+             continue;
+          else if ( ( ! thi.isValid() && that.isValid() ) ||
+                    ( thi.isValid() && that.isValid() ) &&
+                    ! thi.getDatum().equals( that.getDatum() ) ) {
              diffs.set( delta.getPropertyNum(), that.getDatum() );
              if ( ! delta.isValid() )
                 diffs.set( delta.getPropertyNum(), that.getDefaultValue(), true );
@@ -130,7 +207,10 @@ public abstract class CPSRecord {
        // by default, a cropID of -1 means no differences.
        if ( diffsExists ) {
           System.out.println("Differences EXIST: " + diffs.toString() );
-          diffs.setID( this.getID() );
+          if ( this.getCommonIDs().size() > 0 )
+             diffs.setID( 1 );
+          else
+             diffs.setID( this.getID() );
        }
        
        return diffs;
@@ -140,10 +220,10 @@ public abstract class CPSRecord {
    public abstract ArrayList<Integer> getListOfInheritableProperties();
    public CPSRecord inheritFrom( CPSRecord thatRecord ) {
 
-       if ( ! this.getClass().getName().equalsIgnoreCase( thatRecord.getClass().getName() ) ) {
-          System.err.println( "ERROR: cannot inherit data from dissimilar record type" );
-          return this;
-       }
+//       if ( ! this.getClass().getName().equalsIgnoreCase( thatRecord.getClass().getName() ) ) {
+//          System.err.println( "ERROR: cannot inherit data from dissimilar record type" );
+//          return this;
+//       }
        
        CPSDatum thisDat, thatDat;
        
@@ -153,6 +233,8 @@ public abstract class CPSRecord {
           thisDat = this.getDatum( prop );
           thatDat = thatRecord.getDatum( prop );
           
+          
+//          System.out.print("DEBUG Inheriting " + thisDat.getDescriptor() );
           /* 
            * IF: this IS NOT valid AND that IS valid
            * THEN: this datum will be inherited
@@ -160,10 +242,16 @@ public abstract class CPSRecord {
            * IF: this IS valid
            * THEN: ignore this datum, no inheritance needed 
            */
-          if ( thisDat.isValid() )
+          if ( thisDat.isConcrete() ) {
+//             System.out.println(" SKIPPED");
              continue;
-          else if ( ! thisDat.isValid() && thatDat.isValid() ) 
+          }
+          else if ( ( ! thisDat.isValid() || thisDat.isInherited() ) && thatDat.isValid() ) {
+//             System.out.println(" DONE");
              this.inherit( prop, thatDat.getDatum() );
+          }
+//          else
+//             System.out.println(" SKIPPED FOR OTHER REASONS");
        }
        
        return this;

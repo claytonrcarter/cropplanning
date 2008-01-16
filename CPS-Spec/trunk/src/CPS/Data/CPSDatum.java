@@ -1,10 +1,6 @@
 
 package CPS.Data;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
 public class CPSDatum<T> {
 
    protected String descriptor;
@@ -12,10 +8,11 @@ public class CPSDatum<T> {
    
    private int property;
    private String columnName;
-   private boolean stateValid, stateInherited;
+   private boolean stateValid, stateInherited, stateCalculated;
    private T defaultValue;
 
-   public CPSDatum() { 
+   public CPSDatum() {
+      setCalculated(false);
       setInherited(false);
       invalidate();
    }
@@ -32,6 +29,7 @@ public class CPSDatum<T> {
       setProperty(p);
       setColumnName(c);
       setInherited(false);
+      setCalculated(false);
       invalidate();
    }
    
@@ -47,10 +45,15 @@ public class CPSDatum<T> {
    public void validate() { stateValid = true; }
    public void invalidate() { stateValid = false; }
    public boolean isValid() { return stateValid; }
-
+   public boolean isAvailable() { return stateValid || stateInherited || stateCalculated; }
+   public boolean isConcrete() { return stateValid && ! stateInherited && ! stateCalculated; }
+   
    public void setInherited( boolean b ) { stateInherited = b; }
    public boolean isInherited() { return stateInherited; }
 
+   public void setCalculated( boolean b ) { stateCalculated = b; }
+   public boolean isCalculated() { return stateCalculated; }
+   
    protected void setDefaultValue( T v ) { defaultValue = v; }
    public T getDefaultValue() { return defaultValue; }
    
@@ -72,6 +75,7 @@ public class CPSDatum<T> {
          this.datum = datum;
          validate();
          setInherited( false );
+         setCalculated( false );
       }
       else
          invalidate();
@@ -93,11 +97,22 @@ public class CPSDatum<T> {
          return ((Integer) datum).intValue();
    }
    
-   /**
-    * Datum to Swing component conversion methods.
-    */
-   JLabel toLabel() { return new JLabel( getDescriptor() ); }
-   JComponent toEditableField() { return new JTextField( getDatum().toString() ); }
-   JComponent toStaticField() { return new JLabel( getDatum().toString() ); }
-
+   public CPSDatumState getState() {
+      return new CPSDatumState( this.isInherited(), this.isCalculated() );
+   }
+   
+   public class CPSDatumState {
+    
+      boolean inherited, calculated;
+      
+      public CPSDatumState( boolean inherited, boolean calculated ) {
+         this.inherited = inherited;
+         this.calculated = calculated;
+      }
+      
+      public boolean isInherited() { return inherited; }
+      public boolean isCalculated() { return calculated; }
+      
+   }
+   
 }

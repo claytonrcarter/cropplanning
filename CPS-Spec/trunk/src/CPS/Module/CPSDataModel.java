@@ -27,12 +27,40 @@ import CPS.Data.*;
  * @author Clayton
  */
 public abstract class CPSDataModel extends CPSModule {
+
    
    /* Crop Plan methods */
    /* retrieval */
+   /**
+    * Retrieves a list of all crop plans currently available.
+    * @return an unsorted ArrayList of Strings which represent the names of all available crop plans
+    */
    public abstract ArrayList<String> getListOfCropPlans();
+   /**
+    * Retrieve a crop plan in tabular form.
+    * @param plan_name name of the crop plan to retrieve
+    * @return a TableModel representing the retrived plan
+    */
    public abstract TableModel getCropPlan( String plan_name );
+   /**
+    * Same as getCropPlan( String plan_name ) except that this plan is sorted by a particular column.
+    * @param plan_name name of the crop plan to retrieve
+    * @param sortCol the crop plan column name to sort
+    * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
+    * @see getCropPlan( String plan_name )
+    */
    public abstract TableModel getCropPlan( String plan_name, String sortCol );
+   /**
+    * Same as getCropPlan( String plan_name, String sortCol ) except that
+    * the tabular data retrieved is filtered to match a particular character string.  The fields 
+    * that are used for the filtering are determined by the particular implementation. 
+    * 
+    * @param plan_name name of the crop plan to retrieve
+    * @param sortCol the column name to sort
+    * @param filterString a string to use when filtering the data in the plan
+    * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
+    * @see getCropPlan( String plan_name, String sortCol )
+    */
    public abstract TableModel getCropPlan( String plan_name, String sortCol, String filterString );
    /* create and update */ 
    public abstract void createCropPlan(String plan_name);
@@ -41,6 +69,7 @@ public abstract class CPSDataModel extends CPSModule {
    /* Planting methods */
    /* retrieval */
    public abstract CPSPlanting getPlanting( String planName, int PlantingID );
+   public abstract CPSPlanting getCommonInfoForPlantings( String planName, ArrayList<Integer> plantingIDs );
    /* create and update */
    public abstract CPSPlanting createPlanting( String planName, CPSPlanting planting );
    public abstract void updatePlanting( String planName, CPSPlanting planting );
@@ -48,13 +77,17 @@ public abstract class CPSDataModel extends CPSModule {
    
    /* Crop and Variety methods */
    /* retrieval */
-   public abstract ArrayList<String> getListOfCrops();
+   public abstract ArrayList<String> getCropNames();
+   public abstract ArrayList<String> getVarietyNames( String crop_name );
+   public abstract ArrayList<String> getFamilyNames();
    public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
    public abstract CPSCrop getVarietyInfo( String cropName, String varName );
-   public abstract CPSCrop getCropInfo( int CropID );   
+   public abstract CPSCrop getCropInfo( int CropID );
+   public abstract CPSCrop getCommonInfoForCrops( ArrayList<Integer> cropIDs );
    /* create and update */
    public abstract CPSCrop createCrop(CPSCrop crop);
    public abstract void updateCrop( CPSCrop crop );
+   public abstract void updateCrops( CPSCrop changes, ArrayList<Integer> cropIDs );
    public abstract void deleteCrop( int cropID );
    
    public abstract TableModel getCropList();
@@ -80,7 +113,10 @@ public abstract class CPSDataModel extends CPSModule {
    
    public abstract void shutdown();
    
-
+   protected ArrayList<CPSDataModelUser> dataListeners = new ArrayList();
+   public void addDataListener( CPSDataModelUser dmu ) { dataListeners.add( dmu ); }
+   // protected abstract void updateDataListeners();
+   
    public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
       ArrayList<CPSCrop> withSimilar = new ArrayList<CPSCrop>();
       CPSCrop temp;
@@ -96,12 +132,12 @@ public abstract class CPSDataModel extends CPSModule {
              * then we add it and remove it from the list
              * else we just skip it
              */
-            if ( crops.get(i).getSimilarCrop().getCropName().equals("") ||
-                 ! getCropInfo( crops.get(i).getSimilarCrop().getCropName() ).getCropName().equals("") ) {
+            if ( crops.get(i).getSimilarCrop().equals("") ||
+                 ! getCropInfo( crops.get(i).getSimilarCrop() ).getCropName().equals("") ) {
                // create the current crop, but decrement i because the ArrayList
                // will shift all indices when we call remove
                System.out.println("Importing data for crop: " + crops.get(i).getCropName() +
-                                  " similar to: " + crops.get(i).getSimilarCrop().getCropName() );
+                                  " similar to: " + crops.get(i).getSimilarCrop() );
                createCrop( crops.remove(i--) );
             }
             // else leave the crop in the list to be dealt with later
@@ -113,7 +149,6 @@ public abstract class CPSDataModel extends CPSModule {
       if ( crops.size() > 0 )
          importCropsAndVarieties( crops );
    }
-      
    public abstract ArrayList<CPSCrop> exportCropsAndVarieties();
    
 }

@@ -2,7 +2,7 @@ package CPS.Module;
 
 import javax.swing.JPanel;
 
-public abstract class CPSUIModule extends CPSModule {
+public abstract class CPSUI extends CPSModule {
 
     // methods
     public abstract void showUI ();

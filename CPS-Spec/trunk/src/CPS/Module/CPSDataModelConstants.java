@@ -21,6 +21,7 @@ public class CPSDataModelConstants {
    public static final int PROP_FAM_NAME = 15;
    public static final int PROP_BOT_NAME = 16;
    public static final int PROP_CROP_DESC = 17;
+   public static final int PROP_COMMON_ID = 18;
    
    /* "meta" info */
    public static final int PROP_SUCCESSIONS = 20;
