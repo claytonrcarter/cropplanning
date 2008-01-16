@@ -2,7 +2,6 @@ package CPS;
 
 import CPS.Module.*;
 import java.util.*;
-import java.lang.*;
 import java.lang.reflect.*;
 
 import javax.swing.*;
@@ -33,7 +32,8 @@ public class CropPlanning implements Runnable {
        mm = new ModuleManager();
 
        CPSDataModel dm = mm.getDM();
-       CPSUIModule ui = mm.getUI();
+       CPSUI ui = mm.getUI();
+       // CPSSettings settings = mm.getSettings();
 
        mm.loadCoreModules();
        for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {

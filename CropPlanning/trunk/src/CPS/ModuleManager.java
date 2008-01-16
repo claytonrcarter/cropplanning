@@ -12,18 +12,18 @@ import java.util.ArrayList;
 
 public class ModuleManager {
    
-   ArrayList<CPSUIModule>   uiMods;
+   ArrayList<CPSUI>   uiMods;
    ArrayList<CPSDataModel>  dmMods;
    ArrayList<CPSCoreModule> coreMods;
    
    public ModuleManager() {
-      uiMods   = new ArrayList<CPSUIModule>();
+      uiMods   = new ArrayList<CPSUI>();
       dmMods   = new ArrayList<CPSDataModel>();
       coreMods = new ArrayList<CPSCoreModule>();
    }
 
-   public CPSUIModule getUI() {
-      uiMods.add( (CPSUIModule) loadPlugin( "CPS.Core.UI." + "TabbedUI" ) );
+   public CPSUI getUI() {
+      uiMods.add( (CPSUI) loadPlugin( "CPS.Core.UI." + "TabbedUI" ) );
       return uiMods.get(0);
    }
    
@@ -34,7 +34,7 @@ public class ModuleManager {
    
    /* Perhaps we should do more error checking here?  What about unfound core modules? */
    public void loadCoreModules() {
-      CPSUIModule uim = uiMods.get(0);
+      CPSUI uim = uiMods.get(0);
       if ( uim == null ) {
          coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
          coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
@@ -64,7 +64,7 @@ public class ModuleManager {
        return loadPlugin( classname, (String) null );
     }
     
-    private CPSModule loadPlugin( String classname, CPSUIModule uim ) {
+    private CPSModule loadPlugin( String classname, CPSUI uim ) {
        
        Object instance = null;
 
@@ -76,7 +76,7 @@ public class ModuleManager {
                               .newInstance( new Object[]{} );
            else
               instance = Class.forName( classname )
-                              .getConstructor( new Class[] { CPSUIModule.class } )
+                              .getConstructor( new Class[] { CPSUI.class } )
                               .newInstance( new Object[]{ uim } );
             
 	} catch (Exception e) {
