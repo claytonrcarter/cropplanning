@@ -181,6 +181,15 @@ public class LayoutAssist {
 
     }
     
+    public static void finishColumn( JPanel column ) {
+       column.add( Box.createVerticalGlue() );
+    }
+    
+    public static void addPanelToColumn( JPanel column, JPanel p ) {
+       p.setMaximumSize( p.getPreferredSize() );
+       column.add( p );
+    }
+    
     public static void addSubPanel( JPanel p, 
                                     int colStart, int rowStart, int colSpan, int rowSpan,
                                     JPanel newP ) {

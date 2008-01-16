@@ -5,6 +5,7 @@
 
 package CPS.UI.Swing;
 
+import CPS.Data.CPSDatum.CPSDatumState;
 import javax.swing.JTextArea;
 
 /**
@@ -17,14 +18,32 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
     
     public CPSTextArea( int rows, int cols ) {
         super( rows, cols );
-        this.getDocument().addDocumentListener( new CPSDocumentListener(this) );
+        this.getDocument().addDocumentListener( new CPSDocumentChangeListener(this) );
     }
          
     public void setInitialText( String s ) {
-        setText(s);
-        setHasChanged( false );
+        /* setText triggers document listener, which changes background to pink */ 
+       setText(s);
+       setHasChanged( false );
+       setBackgroundNormal();
+       setToolTipText( null );
     }
      
+    public void setInitialText( String s, CPSDatumState c ) {
+       setInitialText(s);
+       if      ( c.isInherited() ) {
+          this.setBackgroundInherited();
+          this.setToolTipText( "Inherited" );
+       }
+       else if ( c.isCalculated() ) {
+          this.setBackgroundCalculated();
+          this.setToolTipText( "Calculated" );
+       }
+       else {
+          // this.setBackgroundNormal();
+          // this.setToolTipText( null );   
+       }
+    }
     
     public boolean hasChanged() { return changed; }
 
@@ -32,5 +51,9 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
         changed = b;
     }
 
+    public void setBackgroundInherited() { setBackground( COLOR_INHERITED ); }
+    public void setBackgroundCalculated() { setBackground( COLOR_CALCULATED ); }
+    public void setBackgroundChanged() { setBackground( COLOR_CHANGED ); }
+    public void setBackgroundNormal() { setBackground( COLOR_NORMAL ); }
 
 }

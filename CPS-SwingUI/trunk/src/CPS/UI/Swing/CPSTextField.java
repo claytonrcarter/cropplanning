@@ -5,6 +5,9 @@
 
 package CPS.UI.Swing;
 
+import CPS.Data.CPSDatum.CPSDatumState;
+import CPS.UI.Swing.autocomplete.AutoCompleteDecorator;
+import java.util.ArrayList;
 import javax.swing.JTextField;
 
 /**
@@ -13,33 +16,77 @@ import javax.swing.JTextField;
  */
 public class CPSTextField extends JTextField implements CPSComponent {
 
-    boolean changed = false;
+   public static final boolean MATCH_STRICT = true;
+   public static final boolean MATCH_PERMISSIVE = false;
+   
+   private boolean changed = false;
+   private boolean strictMatch = false;
     
     public CPSTextField( int size ) {
         super(size);
-        this.getDocument().addDocumentListener( new CPSDocumentListener(this) );
+        addChangeListener();
     }
     
-//    @Override
-//    public String getText() {
-//        String s = super.getText();
-//        
-//        if ( hasChanged() )
-//            return s;
-//        else
-//            return null;
-//    }
+    /**
+     * Initialize this text field and set it to support autocompletion of a given list of values.
+     * @param size width of the text field
+     * @param autocompleteList list of values to match the autocompletion against
+     * @param strictMatch if true only match values in the list, otherwise allow maverick input
+     */
+    public CPSTextField( int size, ArrayList autocompleteList, boolean strictMatch ) {
+       super(size);
+       updateAutocompletionList( autocompleteList, strictMatch );
+    }
+    
+    private void addChangeListener() {
+       this.getDocument().addDocumentListener( new CPSDocumentChangeListener(this) );
+    }
+    
+    /**
+     * Used to determine if this text box matches autocomplete item strictly or not.  If not,
+     * maverick entries are allowed.
+     * @return true is matching string, false otherwise.
+     */
+    public boolean isMatchingStrict() { return strictMatch; }
+    public void updateAutocompletionList( ArrayList autocompleteList, boolean strictMatch ) {
+       this.strictMatch = strictMatch;
+       AutoCompleteDecorator.decorate( this, autocompleteList, this.strictMatch );
+       addChangeListener();
+    }
     
     public void setInitialText( String s ) {
-        setText(s);
-        setHasChanged( false );
+        /* setText triggers document listener, which changes background to pink */ 
+       setText(s);
+       setHasChanged( false );
+       setBackgroundNormal();
+       setToolTipText( null );
     }
      
+    public void setInitialText( String s, CPSDatumState c ) {
+       setInitialText(s);
+       if      ( c.isInherited() ) {
+          this.setBackgroundInherited();
+          this.setToolTipText( "Inherited" );
+       }
+       else if ( c.isCalculated() ) {
+          this.setBackgroundCalculated();
+          this.setToolTipText( "Calculated" );
+       }
+       else {
+          // this.setBackgroundNormal();
+          // this.setToolTipText( null );   
+       }
+    }
     
     public boolean hasChanged() { return changed; }
 
     public void setHasChanged(boolean b) {
         changed = b;
     }
+    
+    public void setBackgroundInherited() { setBackground( COLOR_INHERITED ); }
+    public void setBackgroundCalculated() { setBackground( COLOR_CALCULATED ); }
+    public void setBackgroundChanged() { setBackground( COLOR_CHANGED ); }
+    public void setBackgroundNormal() { setBackground( COLOR_NORMAL ); }
 
 }
