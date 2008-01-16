@@ -1,6 +1,6 @@
 package CPS.Core.UI;
 
-import CPS.Module.CPSUIModule;
+import CPS.Module.CPSUI;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -20,12 +20,14 @@ import java.applet.*;
 import java.net.*;
 
 
-public class TabbedUI extends CPSUIModule {
+public class TabbedUI extends CPSUI implements ActionListener {
 
-    String ModuleName = "TabbedUI";
+    String ModuleName = "CPS";
     String ModuleType = "UI";
     String ModuleVersion = ".1";
 
+    private final String MENU_ITEM_SETTINGS = "Settings...";
+    private final String MENU_ITEM_EXIT = "Exit";
 
     // The preferred size of the demo
     private static final int PREFERRED_WIDTH = 720;
@@ -36,6 +38,7 @@ public class TabbedUI extends CPSUIModule {
     // private JPanel contentPane = null;
     JTabbedPane tabbedpane;
     FrameManager fm;
+    JMenuBar menuBar;
     
     private ArrayList<ModuleListElement> moduleList;
     private boolean modulesUpdated;
@@ -62,7 +65,9 @@ public class TabbedUI extends CPSUIModule {
      */
     public void showUI() {
        
-       fm.getFrame().setTitle( ModuleName );
+       fm.getFrame().setTitle( getModuleName() );
+       
+       fm.getFrame().setJMenuBar( buildMenuBar() );
        
        // initialize tabs
        tabbedpane = new JTabbedPane();
@@ -81,8 +86,7 @@ public class TabbedUI extends CPSUIModule {
      */
     public void addModule ( String name, JPanel content ) {
 
-	content.setBorder( BorderFactory.createTitledBorder( name + 
-							     " border" ));
+	content.setBorder( BorderFactory.createTitledBorder( name ));
         
         moduleList.add( new ModuleListElement( name, content ));
         setModulesUpdated( true );
@@ -128,17 +132,33 @@ public class TabbedUI extends CPSUIModule {
 	fm.getFrame().pack();
     }
 
+    private JMenuBar buildMenuBar() {
+       menuBar = new JMenuBar();
+       JMenu fileMenu = new JMenu( "File" );
+       JMenuItem settings = new JMenuItem( MENU_ITEM_SETTINGS );
+       settings.addActionListener( this );
+       JMenuItem exit = new JMenuItem( MENU_ITEM_EXIT );
+       exit.addActionListener( this );
+       
+       fileMenu.add( settings );
+       fileMenu.add( new JSeparator() );
+       fileMenu.add( exit );
+    
+       menuBar.add( fileMenu );
+       
+       return menuBar;
+    }
+    
+    
     /**
      * methods required to implement CPSModule
      */
     public String getModuleName() {
 	return ModuleName;
     }
-
     public String getModuleType() {
 	return ModuleType;
     }
-
     public String getModuleVersion() {
 	return ModuleVersion;
     }
@@ -171,5 +191,21 @@ public class TabbedUI extends CPSUIModule {
       tabbedpane.setPreferredSize( tabbedpane.getSize() );
       fm.revalidate();   
    }
+   
+   
+   public void actionPerformed( ActionEvent ae ) {
+      String action = ae.getActionCommand();
+      
+      if ( action.equalsIgnoreCase( MENU_ITEM_SETTINGS )) {
+         
+      }
+      else if ( action.equalsIgnoreCase( MENU_ITEM_EXIT )) {
+         // TODO, save data, settings, etc
+         Runtime.getRuntime().exit(0);
+      }
+      
+   }
+   
+   
 }
 

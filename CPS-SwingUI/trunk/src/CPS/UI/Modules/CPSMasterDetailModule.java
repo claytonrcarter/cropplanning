@@ -8,7 +8,8 @@ package CPS.UI.Modules;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
-import CPS.Module.CPSUIModule;
+import CPS.Module.CPSUI;
+import java.awt.Dimension;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
@@ -23,9 +24,9 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     private CPSDetailView detail;
     private CPSMasterView master;
 
-    private CPSUIModule mainUI;
+    private CPSUI mainUI;
     
-    public CPSMasterDetailModule( CPSUIModule uim ) {
+    public CPSMasterDetailModule( CPSUI uim ) {
        mainUI = uim;
    }
     
@@ -87,5 +88,8 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
         detail.setDataSource(dm);
     }
     
+   public Dimension getSize() {
+      return splitPane.getPreferredSize();  
+   }
 
 }

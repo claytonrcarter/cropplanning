@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -61,33 +62,44 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     private CPSMasterDetailModule uiManager;
     
-    private int detailRow = -1, selectedRow = -1;
+    private int detailRow = -1;
     /// selectedID is the ID of the currently selected record (as opposed to
     // the row number of the selected row.
-    private int selectedID = -1;
+    private int[] selectedRows = {};
+    private ArrayList<Integer> selectedIDs = new ArrayList();
     
     
     public CPSMasterView( CPSMasterDetailModule ui ) {
        uiManager = ui;
        filterString = "";
-       sortColumn = null;
+       setSortColumn( "" );
        
        buildMainPanel( null );
     }
     
     protected abstract String getDisplayedTableName();
     protected abstract CPSRecord getDetailsForID( int id );
+    protected abstract CPSRecord getDetailsForIDs( ArrayList<Integer> ids );
+    
     protected CPSRecord getRecordToDisplay() {
-       if ( selectedID == -1 )
+       if ( selectedIDs.size() < 1 ) {
           System.err.println("ERROR displaying record: no item selected from list");
-       return getDetailsForID( selectedID );
+          return null;
+       }
+       else if ( selectedIDs.size() == 1 )
+          return getDetailsForID( selectedIDs.get(0).intValue() );
+       else
+          return getDetailsForIDs( selectedIDs );
     }
     
     protected void refreshDetailView() {
-        if ( selectedID == -1 )
+        if ( selectedIDs.size() < 1 )
             return;
-
-        uiManager.displayDetail( getDetailsForID( selectedID ));
+        else if ( selectedIDs.size() == 1 )
+           uiManager.displayDetail( getDetailsForID( selectedIDs.get(0).intValue() ) );
+        else
+           uiManager.displayDetail( getDetailsForIDs( selectedIDs ));
+        
     }
     
     // pertinent method for TableModelListener
@@ -98,17 +110,31 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
 
     
-    // This method is called when a row in the table is selected.
-    // Pertinent method for ListSelectionListener
-    public void valueChanged(ListSelectionEvent e) {
+    /** 
+     * This method is called when a row in the table is selected.  It is from the 
+     * ListSelectionListener interface.  In it, we retrieve the list of selected rows,
+     * query the db on those rows and update the detail view.
+     * 
+     * @param e The ListSelectionEvent that describes this selection event.
+     */
+    public void valueChanged( ListSelectionEvent e ) {
         //Ignore extra messages.
         if ( e.getValueIsAdjusting() )
             return;
         ListSelectionModel lsm = (ListSelectionModel) e.getSource();
         if ( !lsm.isSelectionEmpty() ) {
-            selectedRow = lsm.getMinSelectionIndex();
-            selectedID = Integer.parseInt( masterTable.getValueAt( selectedRow, -1 ).toString() );
-            System.out.println( "Selected row: " + selectedRow + " (name: " + masterTable.getValueAt( selectedRow, 0 ) + ", id: " + selectedID + " )" );
+            // retrieve the selected row (for single row selection mode)
+            // selectedRow = lsm.getMinSelectionIndex();
+           
+           // retrieve the selected rows (for multi row selection mode)
+           selectedRows = masterTable.getSelectedRows();
+           selectedIDs.clear();
+           for ( int i : selectedRows)
+            selectedIDs.add( new Integer( masterTable.getValueAt( i, -1 ).toString()) );
+           
+           // for single row selection mode
+//           selectedIDs = Integer.parseInt( masterTable.getValueAt( selectedRow, -1 ).toString() );
+           
             refreshDetailView();
         }
     }
@@ -233,10 +259,15 @@ public abstract class CPSMasterView extends CPSDataModelUser
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
        masterTable.setPreferredScrollableViewportSize( d );
        masterTable.setMaximumSize( d );
-       masterTable.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
        masterTable.getTableHeader().addMouseListener( this );
        
-       //Ask to be notified of selection changes.
+       /* setup selection parameters */
+       // enable row selection, disable column selection (default)
+       masterTable.setColumnSelectionAllowed( false );
+       masterTable.setRowSelectionAllowed( true );
+       // allow multiple rows to be selected
+       masterTable.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+       // Ask to be notified of selection changes (see method: valueChanged)
        masterTable.getSelectionModel().addListSelectionListener( this );
        
        initListPanel(); // init listPanel
@@ -276,6 +307,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // JTable to display.  Overriding class should do the fancy work of
     // figuring out which table to query, etc.  Returns a TableModel.
     protected abstract TableModel getMasterListData();
+    protected void setSortColumn( String s ) { 
+       if ( s == null ) s = ""; 
+       sortColumn = s.toLowerCase(); 
+    }
     protected String getSortColumn() { return sortColumn; }
     protected String getFilterString() { return filterString; }
     
@@ -294,16 +329,16 @@ public abstract class CPSMasterView extends CPSDataModelUser
             return;
 
         // TODO: modify the column header to show which column is being sorted
-        // table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
+        //table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
         // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
-        if (sortColumn != null && sortColumn.indexOf(table.getColumnName(vColIndex)) != -1) {
-            if (sortColumn.indexOf("DESC") != -1)
-                sortColumn = table.getColumnName(vColIndex) + " ASC";
+        if (getSortColumn() != null && getSortColumn().indexOf(table.getColumnName(vColIndex)) != -1) {
+            if ( getSortColumn().indexOf("DESC") != -1)
+                setSortColumn( table.getColumnName(vColIndex) + " ASC" );
             else
-                sortColumn = table.getColumnName(vColIndex) + " DESC";
+                setSortColumn( table.getColumnName(vColIndex) + " DESC" );
         }
         else
-            sortColumn = table.getColumnName(vColIndex);
+            setSortColumn( table.getColumnName(vColIndex) );
 
         updateMasterList();
     }
@@ -342,14 +377,25 @@ public abstract class CPSMasterView extends CPSDataModelUser
                 System.err.println("ERROR: cannot duplicate planting, data unavailable");
                 return;
             }
-            int newID = duplicateRecord( selectedID ).getID();
+            else if ( selectedIDs.size() != 1 ) {
+               // TODO, support mupltiple row duplication
+               System.err.println("ERROR: at present, can only duplicate single rows");
+               return;
+            }
+            int newID = duplicateRecord( selectedIDs.get(0).intValue() ).getID();
+            // TODO set selection to newly created records
         }
         else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
             if (!isDataAvailable()) {
                 System.err.println("ERROR: cannon delete entry, data unavailable");
                 return;
             }
-            deleteRecord( selectedID );
+            else if ( selectedIDs.size() != 1 ) {
+               // TODO support mupltiple row duplication
+               System.err.println("ERROR: at present, can only delete single rows");
+               return;
+            }
+            deleteRecord( selectedIDs.get(0).intValue() );
         }
         
         refreshView();

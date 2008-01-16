@@ -29,6 +29,11 @@ import javax.swing.JPanel;
 public abstract class CPSDetailView extends CPSDataModelUser 
                                     implements ActionListener {
   
+   protected final int FIELD_LEN_WAY_LONG = 10;
+   protected final int FIELD_LEN_LONG  = 7;
+   protected final int FIELD_LEN_MED   = 5;
+   protected final int FIELD_LEN_SHORT = 3;
+   
     private JPanel mainPanel, jplAboveDetails, jplBelowDetails;
     protected JPanel jplDetails;
    
@@ -148,7 +153,14 @@ public abstract class CPSDetailView extends CPSDataModelUser
        p.setAlignmentY( JPanel.TOP_ALIGNMENT );
        return p;
     }
-            
+    protected JPanel initPanelWithVerticalBoxLayout() {
+       JPanel p  = new JPanel();
+       p.setLayout( new BoxLayout( p, BoxLayout.PAGE_AXIS ) );
+       p.setAlignmentX( JPanel.LEFT_ALIGNMENT );
+       p.setAlignmentY( JPanel.TOP_ALIGNMENT );
+       return p;
+    }
+    
     public void refreshView() {
         displayRecord( getDisplayedRecord() );
     }
