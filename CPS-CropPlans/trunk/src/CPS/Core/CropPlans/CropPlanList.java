@@ -15,6 +15,7 @@ import CPS.UI.Swing.autocomplete.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -29,21 +30,33 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     
     public CropPlanList( CropPlanUI ui ) {
         super(ui);
+        setSortColumn("date_plant");
     }
     
-    // Retrieve the details (as a Planting) for a given ID
+    /** 
+     * Retrieve the details (as a Planting) for a given ID 
+     * @param id The integer id of the planting to retrieve.
+     * @return The CPSPlanting object representing the retrieved record.
+     */
     protected CPSPlanting getDetailsForID( int id ) {
-//       CPSPlanting p = dataModel.getPlanting( getDisplayedTableName(), id );
-//       CPSCrop c = dataModel.getCropInfo( p.getCropName() );
-//       return (CPSPlanting) p.inheritFrom( c );
-       return dataModel.getPlanting( getDisplayedTableName(), id );
+       return getDataSource().getPlanting( getDisplayedTableName(), id );
     }
 
+    protected CPSPlanting getDetailsForIDs( ArrayList<Integer> ids ) {
+       return getDataSource().getCommonInfoForPlantings( getDisplayedTableName(), ids );
+    }
+    
+    
+    
+    /**
+     * Populates the crop name combobox with the list of valid crop names from CropDB.
+     */
     protected void updateListOfCrops() {
        if ( ! isDataAvailable() )
           return;
        
-       listOfValidCrops = dataModel.getListOfCrops();
+       listOfValidCrops = getDataSource().getCropNames();
+       Collections.sort( listOfValidCrops, String.CASE_INSENSITIVE_ORDER);
        cmbxCropList.removeAllItems();
        cmbxCropList.addItem("");
        for ( String s : listOfValidCrops )
@@ -56,7 +69,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
           return;
        
        String selected = getSelectedPlanName();
-       listOfValidCropPlans = dataModel.getListOfCropPlans();
+       listOfValidCropPlans = getDataSource().getListOfCropPlans();
        cmbxPlanList.removeAllItems();
        for ( String s : listOfValidCropPlans ) {
           // TODO think about this; possibly remove COMMON_PLANTINGS from list returned by
@@ -92,21 +105,21 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         System.out.println( "Selected plan is: " + selectedPlan );
        
         if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
-            return dataModel.getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
+            return getDataSource().getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
        else
           // TODO error checking fall through to following call when invalid plan is selected
           return new DefaultTableModel();
        
     }
     
-    protected String getDisplayedTableName() { return getSelectedPlanName(); }
-    String getSelectedPlanName() { return (String) cmbxPlanList.getSelectedItem(); }
+    protected String getDisplayedTableName() { return (String) cmbxPlanList.getSelectedItem(); }
+    String getSelectedPlanName() { return getDisplayedTableName(); }
    
     public void setDataSource( CPSDataModel dm ) {
         super.setDataSource(dm);
         updateListOfPlans();
         updateListOfCrops();
-    }
+   }
     
     protected void buildAboveListPanel() {
         initAboveListPanel();
@@ -182,7 +195,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
             // update mesh this planting w/ the crop selected, but for now just ...
             System.out.println( "Crop name: selected " + s );
             if ( listOfValidCrops.contains( s ) ) {
-               CPSCrop crop = dataModel.getCropInfo( (String) cmbxCropList.getSelectedItem() );
+               CPSCrop crop = getDataSource().getCropInfo( (String) cmbxCropList.getSelectedItem() );
                System.out.println( "Retrieved info for crop " + crop.getCropName() );
             }
             else {
@@ -196,7 +209,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     public void createNewCropPlan( String newPlanName ) {
         if ( newPlanName.equalsIgnoreCase( "" ) )
             System.err.println( "Cannot create crop plan with no name" );
-        dataModel.createCropPlan( newPlanName );
+        getDataSource().createCropPlan( newPlanName );
         updateListOfPlans();
     }
     
@@ -206,19 +219,24 @@ class CropPlanList extends CPSMasterView implements ActionListener {
           System.err.println("ERROR cannot create record unless a crop plan is selected");
           return null;
        }
-       return dataModel.createPlanting( getSelectedPlanName(), new CPSPlanting() );
+       return getDataSource().createPlanting( getSelectedPlanName(), new CPSPlanting() );
     }
     
     @Override
     public CPSRecord duplicateRecord( int id ) {
-        return dataModel.createPlanting( getSelectedPlanName(),
-                                         dataModel.getPlanting( getSelectedPlanName(),
+        return getDataSource().createPlanting( getSelectedPlanName(),
+                                         getDataSource().getPlanting( getSelectedPlanName(),
                                                                 id ) );     
     }
     
     @Override
     public void deleteRecord( int id ) {
-        dataModel.deletePlanting( getSelectedPlanName(), id );
+        getDataSource().deletePlanting( getSelectedPlanName(), id );
     }
+    
+   @Override
+   public void signalDataUpdate() {
+      // When the data is updated, we should do that following:
+   }
     
 }

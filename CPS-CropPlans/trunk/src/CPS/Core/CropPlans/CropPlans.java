@@ -7,6 +7,7 @@
 package CPS.Core.CropPlans;
 
 import CPS.Module.*;
+import java.awt.Dimension;
 import javax.swing.JPanel;
 
 public class CropPlans extends CPSCoreModule {
@@ -17,7 +18,7 @@ public class CropPlans extends CPSCoreModule {
 
    private CropPlanUI ui;
 
-   public CropPlans( CPSUIModule uim ) {
+   public CropPlans( CPSUI uim ) {
       super(uim);
       
       setModuleName( "CropPlans" );
@@ -31,9 +32,14 @@ public class CropPlans extends CPSCoreModule {
 	return ui.getUI();
    }
 
-    @Override
+   @Override
    public void setDataSource(CPSDataModel dm) {
       ui.setDataSource(dm);
+   }
+   
+   @Override
+   public Dimension getSize() {
+      return ui.getSize();
    }
    
    

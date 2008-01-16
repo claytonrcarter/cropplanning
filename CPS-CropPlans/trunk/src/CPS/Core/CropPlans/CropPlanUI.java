@@ -10,7 +10,7 @@ import CPS.Module.*;
 
 class CropPlanUI extends CPSMasterDetailModule {
     
-    public CropPlanUI ( CPSUIModule uim ) {
+    public CropPlanUI ( CPSUI uim ) {
        super(uim);
        
         setMasterView( new CropPlanList( this ) );
