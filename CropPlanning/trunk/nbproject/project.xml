@@ -22,7 +22,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>CropP-CropDB</foreign-project>
+                <foreign-project>CPS-CropDB</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -30,7 +30,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>CropP-CropPlans</foreign-project>
+                <foreign-project>CPS-CropPlans</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -38,7 +38,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>CropP-SQL</foreign-project>
+                <foreign-project>CPS-HSQLDB</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -46,7 +46,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>CropP-Spec</foreign-project>
+                <foreign-project>CPS-Spec</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -54,7 +54,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>CropPlanning-SwingUI</foreign-project>
+                <foreign-project>CPS-SwingUI</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
