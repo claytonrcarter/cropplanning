@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>CropP-CropPlans</name>
+            <name>CPS-CropPlans</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir"/>
@@ -12,7 +12,7 @@
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1">
             <reference>
-                <foreign-project>CropP-Spec</foreign-project>
+                <foreign-project>CPS-Spec</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
@@ -20,7 +20,7 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>CropPlanning-SwingUI</foreign-project>
+                <foreign-project>CPS-SwingUI</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
