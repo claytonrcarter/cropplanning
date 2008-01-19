@@ -1,0 +1,6 @@
+#summary News and Announcements about the project
+#labels Featured
+
+= New Website =
+
+We're pleased to have successfully migrated to Google Code.  We hope that this will allow others to learn about and help with the project.
