@@ -14,12 +14,12 @@ public class ModuleManager {
    
    ArrayList<CPSUI>   uiMods;
    ArrayList<CPSDataModel>  dmMods;
-   ArrayList<CPSCoreModule> coreMods;
+   ArrayList<CPSDisplayableDataUserModule> coreMods;
    
    public ModuleManager() {
       uiMods   = new ArrayList<CPSUI>();
       dmMods   = new ArrayList<CPSDataModel>();
-      coreMods = new ArrayList<CPSCoreModule>();
+      coreMods = new ArrayList<CPSDisplayableDataUserModule>();
    }
 
    public CPSUI getUI() {
@@ -34,22 +34,15 @@ public class ModuleManager {
    
    /* Perhaps we should do more error checking here?  What about unfound core modules? */
    public void loadCoreModules() {
-      CPSUI uim = uiMods.get(0);
-      if ( uim == null ) {
-         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
-         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
-      }
-      else {
-         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans", uim ));
-         coreMods.add( (CPSCoreModule) loadPlugin( "CPS.Core." + "CropDB.CropDB", uim ));
-      }
+      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
+      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
    }
    
    public int getNumCoreModules() {
       return coreMods.size();
    }
    
-   public CPSCoreModule getCoreModule( int i ) {
+   public CPSDisplayableDataUserModule getCoreModule( int i ) {
       if ( i < 0 || i > getNumCoreModules() )
          return null; // ERROR
       else
