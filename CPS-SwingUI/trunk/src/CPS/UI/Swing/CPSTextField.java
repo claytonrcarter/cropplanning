@@ -50,7 +50,9 @@ public class CPSTextField extends JTextField implements CPSComponent {
     public boolean isMatchingStrict() { return strictMatch; }
     public void updateAutocompletionList( ArrayList autocompleteList, boolean strictMatch ) {
        this.strictMatch = strictMatch;
+       String s = this.getText();
        AutoCompleteDecorator.decorate( this, autocompleteList, this.strictMatch );
+       this.setText(s);
        addChangeListener();
     }
     

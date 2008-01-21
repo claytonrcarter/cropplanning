@@ -37,7 +37,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
     private JPanel mainPanel, jplAboveDetails, jplBelowDetails;
     protected JPanel jplDetails;
    
-    private JLabel lblChanges;
+    private JLabel lblChanges, lblStatus;
     private JButton btnSaveChanges,  btnDiscardChanges;
    
     private boolean displayRecord = false;
@@ -89,8 +89,10 @@ public abstract class CPSDetailView extends CPSDataModelUser
         mainPanel.add( getAboveDetailsPanel(), BorderLayout.PAGE_START );
         mainPanel.add( getDetailsPanel(), BorderLayout.CENTER );
         mainPanel.add( getBelowDetailsPanel(), BorderLayout.PAGE_END );
-        mainPanel.revalidate();
-        uiManager.revalidate();
+        
+        uiManager.signalUIChanged();
+//        mainPanel.revalidate();
+//        uiManager.revalidate();
     }
    
     protected JLabel getNoItemSelectedLabel() {
@@ -121,6 +123,8 @@ public abstract class CPSDetailView extends CPSDataModelUser
         
         Insets small = new Insets( 1, 1, 1, 1 );
       
+        lblStatus = new JLabel();
+        
         lblChanges = new JLabel( "Changes: " );
         btnSaveChanges = new JButton( "Save" );
         btnDiscardChanges = new JButton( "Discard" );
@@ -130,6 +134,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
         btnDiscardChanges.setMargin( small );
       
         initBelowDetailsPanel();
+        jplBelowDetails.add( lblStatus );
         jplBelowDetails.add( Box.createHorizontalGlue() );
         jplBelowDetails.add( lblChanges );
         jplBelowDetails.add( btnSaveChanges );
@@ -161,19 +166,13 @@ public abstract class CPSDetailView extends CPSDataModelUser
        return p;
     }
     
-    public void refreshView() {
-        displayRecord( getDisplayedRecord() );
-    }
+//    public void refreshView() {
+//        displayRecord( getDisplayedRecord() );
+//    }
     public abstract void displayRecord( CPSRecord r );
     public abstract CPSRecord getDisplayedRecord();
     protected String getDisplayedTableName() {
         return uiManager.getMasterTableName();
-    }
-    
-    public void resetColorsCHANGETHISNAME() {
-        Component[] allComponents = jplDetails.getComponents();
-        for (Component c : allComponents)
-            c.setBackground(Color.WHITE);
     }
     
     @Override
@@ -181,7 +180,12 @@ public abstract class CPSDetailView extends CPSDataModelUser
         super.setDataSource(dm);
     }
 
-       
+   protected void setStatus( String s ) {
+      if ( s.toLowerCase().indexOf( "status:" ) == -1 && ! s.equals(""))
+         s = "Status: " + s;
+      
+      lblStatus.setText(s);
+   }    
    
     protected abstract void saveChangesToRecord();
    
@@ -194,11 +198,13 @@ public abstract class CPSDetailView extends CPSDataModelUser
                 return;
             }
             saveChangesToRecord();
-            uiManager.refreshBothViews();
+            setStatus("Changes saved.");
         }
         else if ( action.equalsIgnoreCase( btnDiscardChanges.getText() ) ) {
-            refreshView();
+           displayRecord( getDisplayedRecord() );
         }
+        
+        
     }
 
 }

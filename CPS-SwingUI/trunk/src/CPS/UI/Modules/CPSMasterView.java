@@ -34,6 +34,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import sun.awt.DisplayChangedListener;
 
 /**
  *
@@ -92,7 +93,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
           return getDetailsForIDs( selectedIDs );
     }
     
-    protected void refreshDetailView() {
+    protected void updateDetailView() {
         if ( selectedIDs.size() < 1 )
             return;
         else if ( selectedIDs.size() == 1 )
@@ -106,7 +107,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // what does it listen for?  general changes to the table?
     public void tableChanged(TableModelEvent e) {
         // TODO this is a potential problem; in case table changes in the middle of an edit
-        refreshDetailView();
+        updateDetailView();
     }
 
     
@@ -130,15 +131,32 @@ public abstract class CPSMasterView extends CPSDataModelUser
            selectedRows = masterTable.getSelectedRows();
            selectedIDs.clear();
            for ( int i : selectedRows)
-            selectedIDs.add( new Integer( masterTable.getValueAt( i, -1 ).toString()) );
+            selectedIDs.add( new Integer( getRecordIDForRow( i )) );
            
            // for single row selection mode
 //           selectedIDs = Integer.parseInt( masterTable.getValueAt( selectedRow, -1 ).toString() );
            
-            refreshDetailView();
+            updateDetailView();
         }
     }
 
+    private int getRecordIDForRow( int row ) {
+       return new Integer( masterTable.getValueAt( row, -1 ).toString() ).intValue();
+    }
+           
+    private void setSelectedRowByRecordID( int recordID ) {
+       
+       masterTable.clearSelection();
+       
+       int numRows = masterTable.getRowCount();
+       for ( int row = 0; row < numRows; row++ ) {
+          if ( getRecordIDForRow( row ) == recordID ) {
+             masterTable.setRowSelectionInterval( row, row );
+             break;
+          }
+       }
+          
+    }
     
     public JPanel getJPanel() {
         return getMainPanel();
@@ -279,8 +297,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // This might happen at any time.  So we need to update our view of the data
     // whenever it happens.
     public void setDataSource( CPSDataModel dm ) {
-        super.setDataSource(dm);
-        refreshView();
+       super.setDataSource( dm );
+       dataUpdated();
     }
     
     // Reset the table to display new data, encapsulated in a new TableModel
@@ -289,11 +307,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private void updateListTable( TableModel tm ) {
         tm.addTableModelListener(this);
         masterTable.setModel(tm);
-    }
-    // refreshView - shake everything up and make sure the display is all up to
-    // date
-    protected void refreshView() {
-        updateMasterList();
     }
     // retrieve fresh data and display it
     protected void updateMasterList() {
@@ -331,11 +344,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
         // TODO: modify the column header to show which column is being sorted
         //table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
         // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
-        if (getSortColumn() != null && getSortColumn().indexOf(table.getColumnName(vColIndex)) != -1) {
-            if ( getSortColumn().indexOf("DESC") != -1)
-                setSortColumn( table.getColumnName(vColIndex) + " ASC" );
+        if ( getSortColumn() != null &&
+             getSortColumn().indexOf( table.getColumnName(vColIndex).toLowerCase() ) != -1 ) {
+           if ( getSortColumn().indexOf( "desc" ) != -1 )
+                setSortColumn( table.getColumnName(vColIndex) + " asc" );
             else
-                setSortColumn( table.getColumnName(vColIndex) + " DESC" );
+                setSortColumn( table.getColumnName(vColIndex) + " desc" );
         }
         else
             setSortColumn( table.getColumnName(vColIndex) );
@@ -370,7 +384,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
                 System.err.println("ERROR: cannot create new planting, data unavailable");
                 return;
             }
-            int newID = createNewRecord().getID();
+            CPSRecord newRecord = createNewRecord();
+            int newID = newRecord.getID();
+            // table.setSelectedRow( newID );
+            uiManager.displayDetail( newRecord );
+            uiManager.setStatus( "Editing new record; save changes to add to list." );
         }
         else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
             if (!isDataAvailable()) {
@@ -382,8 +400,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
                System.err.println("ERROR: at present, can only duplicate single rows");
                return;
             }
-            int newID = duplicateRecord( selectedIDs.get(0).intValue() ).getID();
-            // TODO set selection to newly created records
+            CPSRecord newRecord = duplicateRecord( selectedIDs.get(0).intValue() );
+            int newID = newRecord.getID();
+            setSelectedRowByRecordID( newID );
+            uiManager.displayDetail( newRecord );
         }
         else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
             if (!isDataAvailable()) {
@@ -398,8 +418,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
             deleteRecord( selectedIDs.get(0).intValue() );
         }
         
-        refreshView();
     }
     
+   @Override
+   public void dataUpdated() {
+      updateMasterList();
+   }
     
 }

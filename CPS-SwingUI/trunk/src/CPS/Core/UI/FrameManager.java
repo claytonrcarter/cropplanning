@@ -6,12 +6,13 @@
 
 package CPS.Core.UI;
 
+import CPS.Module.CPSUIChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-public class FrameManager {
+public class FrameManager implements CPSUIChangeListener {
    
    private JFrame frame;
    private JPanel contentPane;
@@ -20,7 +21,12 @@ public class FrameManager {
       
       frame = createFrame( GraphicsEnvironment.getLocalGraphicsEnvironment().
                            getDefaultScreenDevice().getDefaultConfiguration() );
-      
+      frame.addComponentListener( new java.awt.event.ComponentAdapter() {
+         public void componentResized(ComponentEvent event) {
+            Dimension minDim = frame.getMinimumSize();
+            frame.setSize( (int) (( frame.getWidth()  < minDim.getWidth()  ) ? minDim.getWidth()  : frame.getWidth() ),
+                           (int) (( frame.getHeight() < minDim.getHeight() ) ? minDim.getHeight() : frame.getHeight()) );
+         }});
    }
  
    
@@ -29,16 +35,16 @@ public class FrameManager {
      * as an application.
      */
     public static JFrame createFrame(GraphicsConfiguration gc) {
-	JFrame frame = new JFrame(gc);
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	JFrame f = new JFrame(gc);
+	f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	WindowListener l = new WindowAdapter() {
 	        public void windowClosing(WindowEvent e) {
 	        }
 	    };
-	frame.addWindowListener(l);
-	return frame;
+	f.addWindowListener(l);
+	return f;
     }
-
+    
     public void buildFrame() {
 	if( getFrame() != null ) {
 	    // put swingset in a frame and show it
@@ -80,10 +86,14 @@ public class FrameManager {
     public JFrame getFrame() {
 	return frame;
     }
+   
+   /* p-p */ void setSize( Dimension contentSize ) {
+      
+   }
     
-    public void revalidate() {
-       frame.validate();
-       frame.pack();
-    }
+   public void uiChanged() {
+      frame.validate();
+      frame.pack();
+   }
 
 }

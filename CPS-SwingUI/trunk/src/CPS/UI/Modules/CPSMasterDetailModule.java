@@ -6,6 +6,7 @@
 package CPS.UI.Modules;
 
 import CPS.Data.CPSRecord;
+import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSUI;
@@ -17,7 +18,7 @@ import javax.swing.JSplitPane;
  *
  * @author Clayton
  */
-public abstract class CPSMasterDetailModule extends CPSDataModelUser {
+public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule {
     
     private JPanel mainPanel = null;
     private JSplitPane splitPane;
@@ -26,9 +27,9 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
 
     private CPSUI mainUI;
     
-    public CPSMasterDetailModule( CPSUI uim ) {
-       mainUI = uim;
-   }
+//    public CPSMasterDetailModule( CPSUI uim ) {
+//       mainUI = uim;
+//   }
     
     protected String getMasterTableName() {
         return master.getDisplayedTableName();
@@ -37,6 +38,8 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     protected void setMasterView( CPSMasterView mv ) { master = mv; }
     protected void setDetailView( CPSDetailView dv ) { detail = dv; }
     
+    // TODO possibly remove this call an just replace it with
+    // with a method to pass a record ID instead of a whole record
     protected void displayDetail( CPSRecord r ) {
         detail.displayRecord(r);
     }
@@ -61,23 +64,28 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
         mainPanel.add(splitPane);
     }
 
-    protected void refreshBothViews() {
-        refreshMasterView();
-        refreshDetailView();
-        mainUI.revalidate();
-    }
-    protected void refreshMasterView() {
-        master.refreshView();
-    }
-    protected void refreshDetailView() {
-       // force detail view to redisplay the record
-       displayDetail( master.getRecordToDisplay() );
-       // detail.refreshView();
-    }
+//    protected void refreshBothViews() {
+//        refreshMasterView();
+//        refreshDetailView();
+//        mainUI.revalidate();
+//    }
+//    protected void refreshMasterView() {
+//        master.refreshView();
+//    }
+//    protected void refreshDetailView() {
+//       // force detail view to redisplay the record
+//       displayDetail( master.getRecordToDisplay() );
+//       // detail.refreshView();
+//    }
 
-    protected void revalidate() {
-        mainPanel.revalidate();
+//    protected void revalidate() {
+//        mainPanel.revalidate();
+//    }
+    
+    protected void setStatus( String s ) {
+       detail.setStatus(s);
     }
+    
     @Override
     public void setDataSource(CPSDataModel dm) {
         // set the data source for this object
@@ -90,6 +98,12 @@ public abstract class CPSMasterDetailModule extends CPSDataModelUser {
     
    public Dimension getSize() {
       return splitPane.getPreferredSize();  
+   }
+   
+   @Override
+   public void dataUpdated() {
+      master.dataUpdated();
+      detail.dataUpdated();
    }
 
 }

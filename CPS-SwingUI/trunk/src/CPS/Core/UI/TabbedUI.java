@@ -22,10 +22,6 @@ import java.net.*;
 
 public class TabbedUI extends CPSUI implements ActionListener {
 
-    String ModuleName = "CPS";
-    String ModuleType = "UI";
-    String ModuleVersion = ".1";
-
     private final String MENU_ITEM_SETTINGS = "Settings...";
     private final String MENU_ITEM_EXIT = "Exit";
 
@@ -52,6 +48,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
      * SwingSet2 Constructors
      */
     public TabbedUI() {	
+       
+       setModuleName( "CPS" );
+       setModuleType( "UI" );
+       setModuleVersion( "0.1" );
        
        fm = new FrameManager();
        moduleList = new ArrayList<ModuleListElement>();
@@ -149,21 +149,6 @@ public class TabbedUI extends CPSUI implements ActionListener {
        return menuBar;
     }
     
-    
-    /**
-     * methods required to implement CPSModule
-     */
-    public String getModuleName() {
-	return ModuleName;
-    }
-    public String getModuleType() {
-	return ModuleType;
-    }
-    public String getModuleVersion() {
-	return ModuleVersion;
-    }
-
-    
     private class ModuleListElement {
        private String name;
        private JPanel content;
@@ -187,10 +172,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
       this.modulesUpdated = modulesUpdated;
    }
    
-   public void revalidate() {
-      tabbedpane.setPreferredSize( tabbedpane.getSize() );
-      fm.revalidate();   
-   }
+//   public void revalidate() {
+//      tabbedpane.setPreferredSize( tabbedpane.getSize() );
+//      fm.revalidate();   
+//   }
    
    
    public void actionPerformed( ActionEvent ae ) {
@@ -203,6 +188,29 @@ public class TabbedUI extends CPSUI implements ActionListener {
          // TODO, save data, settings, etc
          Runtime.getRuntime().exit(0);
       }
+      
+   }
+   
+   public void uiChanged() {
+      Dimension maxDim = new Dimension( 0, 0 );
+      
+      for ( ModuleListElement mle : moduleList ) {
+        Dimension d = mle.getContent().getPreferredSize();
+        
+        maxDim.setSize( Math.max( maxDim.getWidth(),  d.getWidth() ),
+                        Math.max( maxDim.getHeight(), d.getHeight() ));
+        
+      }
+         
+      // TODO calculate the size of this tabbed pane to automatically include the tabs, which
+      // is what the 25 is in there for
+      maxDim.setSize( maxDim.getWidth(), maxDim.getHeight() + 25 );
+      tabbedpane.setPreferredSize( maxDim );
+      
+      // TODO clean this up, add menubar and titlebar height
+      fm.getFrame().setMinimumSize(maxDim);
+      fm.uiChanged();
+      
       
    }
    
