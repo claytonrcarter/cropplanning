@@ -11,6 +11,7 @@ import CPS.UI.Modules.CPSDetailView;
 import CPS.UI.Swing.LayoutAssist;
 import CPS.Data.CPSPlanting;
 import CPS.Module.*;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.*;
 import CPS.UI.Swing.autocomplete.AutoCompleteDecorator;
 import javax.swing.*;
@@ -34,14 +35,18 @@ public class CropPlanInfo extends CPSDetailView {
    
    private CPSPlanting displayedPlanting;
    
-   CropPlanInfo( CropPlanUI ui ) {
-      super( ui, "Planting Info" );
+   CropPlanInfo( CPSMasterDetailModule mdm ) {
+      super( mdm, "Planting Info" );
    }
 
     public CPSRecord getDisplayedRecord() {
        // TODO we should do some double checking in case the displayed info has changed but
        // has not been saved
-       return displayedPlanting;
+       
+       if ( displayedPlanting == null )
+          return new CPSPlanting();
+       else
+          return displayedPlanting;
     }
    
     public void displayRecord( CPSRecord r ) { displayRecord( (CPSPlanting) r ); }
@@ -129,16 +134,29 @@ public class CropPlanInfo extends CPSDetailView {
         cbCompleted.setInitialState( displayedPlanting.getCompleted() );
         
         // TODO  tfldStatus;
-        
    
+        setStatus("");
+        if ( displayedPlanting.getCommonIDs().size() > 0 ) {
+           String ids = "";
+           for ( Integer i : displayedPlanting.getCommonIDs() )
+              ids += i.toString() + ", ";
+           ids = ids.substring( 0, ids.lastIndexOf(", ") );
+           setStatus( "Displaying common data for records: " + ids );
+       }
+           
     }
    
    
     protected void saveChangesToRecord() {
-        String selectedPlan = getDisplayedTableName();
-        CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( this.asPlanting() );
-        if ( diff.getID() != -1 )
-            getDataSource().updatePlanting( selectedPlan, diff );
+       String selectedPlan = getDisplayedTableName();
+       CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( this.asPlanting() );
+       if ( diff.getID() == -1 )
+          return;
+        
+       if ( displayedPlanting.getCommonIDs().size() > 0 )
+          getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
+       else
+          getDataSource().updatePlanting( selectedPlan, diff );
     }
 
    /** asPlanting - create a planting data struct to represent this detail view
@@ -436,16 +454,19 @@ public class CropPlanInfo extends CPSDetailView {
       LayoutAssist.addSubPanel( jplDetails, 2, 0, 1, 1, columnThree );
       LayoutAssist.addSubPanel( jplDetails, 3, 0, 1, 1, columnFour );
 
-      
+      uiManager.signalUIChanged();
    }
    
-   
-   public void signalDataUpdate() {
-      this.displayRecord( getDataSource().getPlanting( getDisplayedTableName(),
-                                                       getDisplayedRecord().getID() ));
-      tfldCropName.updateAutocompletionList( getDataSource().getCropNames(), CPSTextField.MATCH_STRICT );
-      tfldVarName.updateAutocompletionList( getDataSource().getVarietyNames( displayedPlanting.getCropName() ),
-                                            CPSTextField.MATCH_PERMISSIVE );
+   @Override
+   public void dataUpdated() {
+      if ( isRecordDisplayed() ) {
+         this.displayRecord( getDataSource().getPlanting( getDisplayedTableName(),
+                                                          getDisplayedRecord().getID() ) );
+         tfldCropName.updateAutocompletionList( getDataSource().getCropNames(),
+                                                CPSTextField.MATCH_STRICT );
+         tfldVarName.updateAutocompletionList( getDataSource().getVarietyNames( displayedPlanting.getCropName() ),
+                                               CPSTextField.MATCH_PERMISSIVE );
+      }
    }
     
 }

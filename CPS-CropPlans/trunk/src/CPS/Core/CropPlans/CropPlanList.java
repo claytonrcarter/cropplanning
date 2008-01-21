@@ -11,6 +11,7 @@ import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSMasterView;
 import CPS.Module.*;
 import CPS.Data.CPSPlanting;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.autocomplete.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -28,8 +29,8 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     
     private ArrayList<String> listOfValidCropPlans, listOfValidCrops;
     
-    public CropPlanList( CropPlanUI ui ) {
-        super(ui);
+    public CropPlanList( CPSMasterDetailModule mdm ) {
+        super(mdm);
         setSortColumn("date_plant");
     }
     
@@ -46,6 +47,12 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        return getDataSource().getCommonInfoForPlantings( getDisplayedTableName(), ids );
     }
     
+   
+    public void setDataSource( CPSDataModel dm ) {
+        super.setDataSource(dm);
+        updateListOfPlans();
+        updateListOfCrops();
+   }
     
     
     /**
@@ -78,10 +85,10 @@ class CropPlanList extends CPSMasterView implements ActionListener {
              continue;
           cmbxPlanList.addItem(s);
        }
-        if ( selected != null && ! selected.equals( "" ) )
-            cmbxPlanList.setSelectedItem(selected);
+       if ( selected != null && !selected.equals( "" ) )
+          cmbxPlanList.setSelectedItem( selected );
        
-       refreshView();
+       super.dataUpdated();
     }
     
     protected void updateMasterList() {
@@ -114,12 +121,6 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     
     protected String getDisplayedTableName() { return (String) cmbxPlanList.getSelectedItem(); }
     String getSelectedPlanName() { return getDisplayedTableName(); }
-   
-    public void setDataSource( CPSDataModel dm ) {
-        super.setDataSource(dm);
-        updateListOfPlans();
-        updateListOfCrops();
-   }
     
     protected void buildAboveListPanel() {
         initAboveListPanel();
@@ -233,10 +234,5 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     public void deleteRecord( int id ) {
         getDataSource().deletePlanting( getSelectedPlanName(), id );
     }
-    
-   @Override
-   public void signalDataUpdate() {
-      // When the data is updated, we should do that following:
-   }
     
 }

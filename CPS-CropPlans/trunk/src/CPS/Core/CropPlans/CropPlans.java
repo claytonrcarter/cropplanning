@@ -7,40 +7,25 @@
 package CPS.Core.CropPlans;
 
 import CPS.Module.*;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 
-public class CropPlans extends CPSCoreModule {
+public class CropPlans extends CPSMasterDetailModule {
    
-   private String ModuleName = "CropPlans";
-   private String ModuleType = "Core";
-   private String ModuleVersion = "0.1";
-
-   private CropPlanUI ui;
-
-   public CropPlans( CPSUI uim ) {
-      super(uim);
+   public CropPlans() {
       
       setModuleName( "CropPlans" );
       setModuleType( "Core" );
       setModuleVersion( "0.1" );
-     
-      ui = new CropPlanUI( uim );
+      
+      setMasterView( new CropPlanList( this ) );
+      setDetailView( new CropPlanInfo( this ) );
+      
    }
 
    public JPanel display() {
-	return ui.getUI();
+	return getUI();
    }
-
-   @Override
-   public void setDataSource(CPSDataModel dm) {
-      ui.setDataSource(dm);
-   }
-   
-   @Override
-   public Dimension getSize() {
-      return ui.getSize();
-   }
-   
    
 }
