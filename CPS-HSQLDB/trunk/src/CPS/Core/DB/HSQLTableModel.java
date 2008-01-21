@@ -16,6 +16,7 @@ import resultsettablemodel.*;
 public class HSQLTableModel extends ResultSetTableModel {
    
    private boolean idInResults = false;
+   private String tableName = null;
    
    public HSQLTableModel( ResultSet resSet ) throws SQLException {
       super(resSet);
@@ -29,6 +30,11 @@ public class HSQLTableModel extends ResultSetTableModel {
       
    }
 
+   public HSQLTableModel( ResultSet rs, String tableName ) throws SQLException {
+      this( rs );
+      setTableName( tableName );
+   }
+   
     public boolean isCellEditable(int row, int column) { return true; } 
     public int getColumnCount() {
        int cols = super.getColumnCount();
@@ -79,11 +85,11 @@ public class HSQLTableModel extends ResultSetTableModel {
           System.out.println( "Value escaped for SQL as: \"" + val + "\"" );
           
           results.absolute(row+1);
-          String sql = "UPDATE " + metadata.getTableName(1) + " ";
+          String sql = "UPDATE " + this.getTableName() + " ";
           sql += "SET " + metadata.getColumnName( column+1 ) + " = " + val + " ";
           sql += "WHERE id = " + results.getInt( "id" );
           // sql += "WHERE " + metadata.getColumnName(1) + " = " + results.getInt(1);
-      
+          
           System.out.println( "Attempting to execute: " + sql );
 
           // HACK!
@@ -97,6 +103,16 @@ public class HSQLTableModel extends ResultSetTableModel {
        }
        catch ( Exception ex ) { ex.printStackTrace(); }
          
+    }
+    
+    private String getTableName() throws SQLException {
+       if ( tableName == null )
+          return metadata.getTableName(1);
+       else
+          return tableName;
+    }
+    private void setTableName( String s ) {
+       tableName = s;
     }
     
 }

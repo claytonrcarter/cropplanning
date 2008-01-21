@@ -11,6 +11,7 @@ package CPS.Core.DB;
 import CPS.Data.CPSCrop;
 import CPS.Data.CPSDatum;
 import CPS.Data.CPSPlanting;
+import CPS.Data.CPSRecord;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -165,43 +166,13 @@ public class HSQLDBCreator {
    }
    
    public static void updateCrop( Connection con, CPSCrop crop ) {
-      ArrayList<Integer> id = new ArrayList<Integer>( 1 );
+      ArrayList<Integer> id = new ArrayList<Integer>();
       id.add( new Integer( crop.getID() ));
       updateCrops( con, crop, id );
    }
    
-   public static void updateCrops( Connection con, CPSCrop changes, ArrayList<Integer> ids ) { 
-      try {
-         
-         String idString = HSQLDB.intListToIDString(ids);
-         
-         String sql = "UPDATE " + "CROPS_VARIETIES" + " SET ";
-         
-         Iterator<CPSDatum> i = changes.iterator();
-         CPSDatum c;
-         
-         while ( i.hasNext() ) {
-            c = i.next();
-            if ( c.isValid() )
-               sql += c.getColumnName() + " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
-         }
-         
-         sql = sql.substring( 0, sql.lastIndexOf( ", " ));
-         //sql += "similar_to = " + HSQLDB.escapeValue( crop.getSimilarCrop().getCropName() );
-         
-         // this space is crucial
-//         sql += " " + "WHERE id = " + crop.getID();
-         sql += " " + "WHERE id IN ( " + idString + " ) ";
-         
-         System.out.println("Attempting to execute: " + sql );
-
-         
-         Statement st = con.createStatement();
-         st.executeUpdate( sql );
-         st.close();
-         
-      }
-      catch ( SQLException ex ) { ex.printStackTrace(); }
+   public static void updateCrops( Connection con, CPSCrop changes, ArrayList<Integer> ids ) {
+      updateRecords( con, "CROPS_VARIETIES", changes, ids );
    }
    
    public static int insertPlanting( Connection con, 
@@ -219,7 +190,8 @@ public class HSQLDBCreator {
          
          while ( i.hasNext() ) {
             c = i.next();
-            if ( c.isValid() || isEmpty ) {
+            if ( c.isConcrete() || isEmpty ) {
+//            if ( c.isValid() || isEmpty ) {
                // System.out.println(" Processing datum: " + c.getColumnName() );
                cols += c.getColumnName() + ", ";
                // This would be the place to check for data inheritance and insert "escape" data for it
@@ -261,12 +233,25 @@ public class HSQLDBCreator {
     * method that takes a String tableName and a CPSRecord.  Everything else is
     * identical. Perhaps same thing for insertCrop and insertPlanting */
    public static void updatePlanting( Connection con, String planName, CPSPlanting p ) {
-      
+      ArrayList<Integer> id = new ArrayList();
+      id.add( new Integer( p.getID() ) );
+      updatePlantings( con, planName, p, id );
+   }
+   
+   public static void updatePlantings( Connection con, String planName, 
+                                       CPSPlanting changes, ArrayList<Integer> ids ) {
+      updateRecords( con, planName, changes, ids );
+   }
+   
+   private static void updateRecords( Connection con, String tableName, 
+                                      CPSRecord changes, ArrayList<Integer> ids ) {
       try {
          
-         String sql = "UPDATE " + planName + " SET ";
+         String idString = HSQLDB.intListToIDString( ids );
          
-         Iterator<CPSDatum> i = p.iterator();
+         String sql = "UPDATE " + tableName + " SET ";
+         
+         Iterator<CPSDatum> i = changes.iterator();
          CPSDatum c;
          
          while ( i.hasNext() ) {
@@ -276,10 +261,9 @@ public class HSQLDBCreator {
          }
          
          sql = sql.substring( 0, sql.lastIndexOf( ", " ));
-         //sql += "similar_to = " + HSQLDB.escapeValue( crop.getSimilarCrop().getCropName() );
          
-         // this space is crucial
-         sql += " " + "WHERE id = " + p.getID();
+         // the first space character on the following line is CRUCIAL
+         sql += " " + "WHERE id IN ( " + idString + " ) ";
          
          System.out.println("Attempting to execute: " + sql );
 

@@ -35,6 +35,9 @@ public class HSQLDB extends CPSDataModel {
    private ResultSet rsPlantCache = null;
    public String state = null;
    
+   private ArrayList<String> cropColumnList, plantingColumnList;
+   private ArrayList<String[]> plantingCropColumnMapping;
+   
    private HSQLQuerier query;
    
    public HSQLDB() {
@@ -58,6 +61,10 @@ public class HSQLDB extends CPSDataModel {
          this.importCropsAndVarieties( HSQLDBPopulator.loadDefaultCropList( dbDir )
                                                       .exportCropsAndVarieties() );
       }
+      
+      plantingCropColumnMapping = buildPlantingCropColumnMapping();
+      cropColumnList = buildCropColumnList();
+      plantingColumnList = buildPlantingColumnList();
       
    }
    
@@ -139,6 +146,10 @@ public class HSQLDB extends CPSDataModel {
    }
    
    private ArrayList<String> getCropColumnList() {
+      return cropColumnList;
+   }
+   
+   private ArrayList<String> buildCropColumnList() {
       ArrayList<String> l = new ArrayList();
       l.add( "id" );
       l.add( "crop_name" );
@@ -171,7 +182,69 @@ public class HSQLDB extends CPSDataModel {
       return l;
    }
    
+   private ArrayList<String[]> getPlantingCropColumnMapping() {
+      return plantingCropColumnMapping;
+   }
+   
+   private ArrayList<String[]> buildPlantingCropColumnMapping() {
+      ArrayList<String[]> l = new ArrayList();
+      
+      // Third column: "how to calculate"; must be in SQL and must fit into a COALESCE expression
+      
+      l.add( new String[] { "id",              null,              null } );
+      l.add( new String[] { "crop_name",       null,              null } );
+      l.add( new String[] { "var_name",        null,              null } );
+      l.add( new String[] { "groups",          "groups",          null } );
+      l.add( new String[] { "successions",     null,              null } );
+      l.add( new String[] { "location",        null,              null } );
+      
+      l.add( new String[] { "keywords",        "keywords",        null } );
+      l.add( new String[] { "status",          null,              null } );
+      l.add( new String[] { "completed",       null,              null } );
+      l.add( new String[] { "other_req",       "other_req",       null } );
+      l.add( new String[] { "notes",           null,              null } );
+      
+      l.add( new String[] { "maturity",        "maturity",        null } );
+      l.add( new String[] { "mat_adjust",      "mat_adjust",      null } );
+      l.add( new String[] { "planting_adjust", null,              null } );
+      l.add( new String[] { "ds_adjust",       null,              null } );
+      l.add( new String[] { "season_adjust",   null,              null } );
+      l.add( new String[] { "time_to_tp",      "time_to_tp",      null } );
+      l.add( new String[] { "misc_adjust",     "misc_adjust",     null } );
+      
+      l.add( new String[] { "date_plant",      null,              "\"CPS.Core.DB.HSQLCalc.plantFromHarvest\"( date_harvest, maturity ), "
+                                                                + "\"CPS.Core.DB.HSQLCalc.plantFromTP\"( date_tp, time_to_tp )" } );
+      l.add( new String[] { "date_tp",         null,              "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )" } );
+      l.add( new String[] { "date_harvest",    null,              "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity ) " } );
+      
+      l.add( new String[] { "beds_to_plant",   null,              null } );
+      l.add( new String[] { "rows_p_bed",      "rows_p_bed",      null } );
+      l.add( new String[] { "plants_needed",   null,              null } );
+      l.add( new String[] { "rowft_to_plant",  null,              null } );
+      l.add( new String[] { "inrow_space",     "space_inrow",     null } );
+      l.add( new String[] { "row_space",       "space_betrow",    null } );
+      l.add( new String[] { "plants_to_start", null,              null } );
+      l.add( new String[] { "flat_size",       "flat_size",       null } );
+      l.add( new String[] { "flats_needed",    null,              null } );
+      l.add( new String[] { "planter",         "planter",         null } );
+      l.add( new String[] { "planter_setting", "planter_setting", null } );
+      
+      l.add( new String[] { "yield_p_foot",    "yield_p_foot",    null } );
+      l.add( new String[] { "total_yield",     null,              null } );
+      l.add( new String[] { "yield_num_weeks", "yield_num_weeks", null } );
+      l.add( new String[] { "yield_p_week",    "yield_p_week",    null } );
+      
+      l.add( new String[] { "crop_unit",       "crop_unit",       null } );
+      l.add( new String[] { "crop_unit_value", "crop_unit_value", null } );
+      
+      return l;
+   }
+   
    private ArrayList<String> getPlantingColumnList() {
+      return plantingColumnList;
+   }
+   
+   private ArrayList<String> buildPlantingColumnList() {
       ArrayList<String> l = new ArrayList();
    
       l.add( "id" );
@@ -227,8 +300,7 @@ public class HSQLDB extends CPSDataModel {
    }
    
    private String getAbbreviatedCropPlanColumnNames() {
-      return getMandatoryColumnNames() + ", " + "var_name, maturity, location, completed, " + 
-                  "date_plant, date_harvest, rows_p_bed";
+      return getMandatoryColumnNames() + ", " + "var_name, maturity, date_plant, date_harvest, completed, location ";
    }
    private String getCropPlanFilterColumnNames() {
       return getAbbreviatedCropPlanColumnNames() + ", keywords, groups";
@@ -332,6 +404,7 @@ public class HSQLDB extends CPSDataModel {
     */
    public void createCropPlan( String plan_name ) {
       HSQLDBCreator.createCropPlan( con, plan_name );
+      updateDataListeners();
    }
    
    // TODO implement updateCropPlan
@@ -347,9 +420,18 @@ public class HSQLDB extends CPSDataModel {
    }
 
    public TableModel getCropPlan( String plan_name, String sortCol, String filterString ) {
-      return cachedListTableQuery( plan_name, getAbbreviatedCropPlanColumnNames(), 
-                                   null, sortCol, 
-                                   buildFilterExpression( this.getCropPlanFilterColumnNames(), filterString ));
+      return HSQLQuerier.tableResults( 
+              query.submitCalculatedCropPlanQuery( plan_name, 
+                                                   getPlantingCropColumnMapping(),
+                                                   getAbbreviatedCropPlanColumnNames(),
+                                                   sortCol,
+                                                   buildFilterExpression( this.getCropPlanFilterColumnNames(),
+                                                                          filterString ) ),
+               plan_name );
+      
+//      return cachedListTableQuery( plan_name, getAbbreviatedCropPlanColumnNames(), 
+//                                   null, sortCol, 
+//                                   buildFilterExpression( this.getCropPlanFilterColumnNames(), filterString ));
    }
 
    
@@ -388,20 +470,21 @@ public class HSQLDB extends CPSDataModel {
    
    /* we make the assumption that we're zero-based, ResultSets are not */
    public CPSCrop getCropInfo( int id ) {
-      try {
-         // TODO figure out better way to handle result caching
-         // we could just make this a string based query (ie getCropInfoForRow
-         // disabling this makes it a simple query on an ID
-         if ( false && rsListCache != null ) {
-            rsListCache.absolute( id + 1 );
-            id = rsListCache.getInt( "id" );
-         } 
-         rsCropCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
-         return resultSetAsCrop( rsCropCache );
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }
+      if ( id != -1 )
+         try {
+            // TODO figure out better way to handle result caching
+            // we could just make this a string based query (ie getCropInfoForRow
+            // disabling this makes it a simple query on an ID
+            if ( false && rsListCache != null ) {
+               rsListCache.absolute( id + 1 );
+               id = rsListCache.getInt( "id" );
+            }
+            rsCropCache = query.submitQuery( "CROPS_VARIETIES", "*", "id = " + id );
+            return resultSetAsCrop( rsCropCache );
+         }
+         catch ( SQLException e ) { e.printStackTrace(); }
 
-      return null;
+      return new CPSCrop();
    }
    
    
@@ -496,14 +579,18 @@ public class HSQLDB extends CPSDataModel {
 
    public void updateCrop( CPSCrop crop ) {
       HSQLDBCreator.updateCrop( con, crop );
+      updateDataListeners();
    }
    
    public void updateCrops( CPSCrop changes, ArrayList<Integer> ids ) {
       HSQLDBCreator.updateCrops( con, changes, ids );
+      updateDataListeners();
    }
 
    public CPSCrop createCrop(CPSCrop crop) {
       int newID = HSQLDBCreator.insertCrop( con, crop );
+      // TODO is this really a good idea?
+      updateDataListeners();
       if ( newID == -1 )
          return new CPSCrop();
       else
@@ -512,14 +599,17 @@ public class HSQLDB extends CPSDataModel {
    
    public void deleteCrop( int cropID ) {
        HSQLDBCreator.deleteRecord(con, "CROPS_VARIETIES", cropID);   
+       updateDataListeners();
    }
    
    public void deletePlanting( String planName, int plantingID ) {
        HSQLDBCreator.deleteRecord( con, planName, plantingID );
+       updateDataListeners();
    }
    
    public CPSPlanting createPlanting( String planName, CPSPlanting planting ) {
       int newID = HSQLDBCreator.insertPlanting( con, planName, planting );
+      updateDataListeners();
       if ( newID == -1 )
          return new CPSPlanting();
       else
@@ -529,24 +619,32 @@ public class HSQLDB extends CPSDataModel {
    
    /* we make the assumption that we're zero-based, ResultSets are not */
    public CPSPlanting getPlanting( String planName, int id ) {
-      try {
-         // TODO figure out better way to handle result caching
-         // we could just make this a string based query (ie getCropInfoForRow
-         // disabling this makes it a simple query on an ID
-         if ( false && rsListCache != null ) {
-            rsListCache.absolute( id + 1 );
-            id = rsListCache.getInt( "id" );
-         } 
-         rsPlantCache = query.submitQuery( planName, "*", "id = " + id );
-         return resultSetAsPlanting( rsPlantCache );
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }
-
-      return null;
+      
+      if ( id != -1 )
+         try {
+            // TODO figure out better way to handle result caching
+            // we could just make this a string based query (ie getCropInfoForRow
+            // disabling this makes it a simple query on an ID
+            if ( false && rsListCache != null ) {
+               rsListCache.absolute( id + 1 );
+               id = rsListCache.getInt( "id" );
+            }
+            rsPlantCache = query.submitQuery( planName, "*", "id = " + id );
+            return resultSetAsPlanting( rsPlantCache );
+         }
+         catch ( SQLException e ) { e.printStackTrace(); }
+      
+      return new CPSPlanting();
    }
 
    public void updatePlanting( String planName, CPSPlanting planting ) {
       HSQLDBCreator.updatePlanting( con, planName, planting );
+      updateDataListeners();
+   }
+   
+   public void updatePlantings( String planName, CPSPlanting changes, ArrayList<Integer> ids ) {
+      HSQLDBCreator.updatePlantings( con, planName, changes, ids );
+      updateDataListeners();
    }
    
    private CPSPlanting resultSetAsPlanting( ResultSet rs ) throws SQLException {
@@ -760,5 +858,5 @@ public class HSQLDB extends CPSDataModel {
          ex.printStackTrace();
       }
    }
-
+   
 }

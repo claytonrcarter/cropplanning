@@ -7,6 +7,7 @@
 package CPS.Core.DB;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,7 +73,39 @@ public class HSQLQuerier {
    /* ****************
     * Static Methods *
     * ****************/
-   
+   static String putTogetherConditionalSortAndFilterString( String conditional,
+                                                            String sort,
+                                                            String filter ) {
+      String s = " ";
+      
+      boolean cond = conditional != null && conditional.length() > 0;
+      boolean filt = filter != null      && filter.length() > 0;
+      
+      if ( cond || filt ) {
+         s += " WHERE ( ";
+         if ( cond )
+            s += conditional;
+         
+         if ( filt ) {
+            if ( cond )
+               s += " AND ( " + filter + " )";
+            else
+               s += filter;
+            
+         }
+         
+         s += " ) ";
+      }
+      
+      /* TODO: if sort != crop_name, then make crop_name secondary sort
+       * if sort == crop_name, then make var_name secondary sort
+       * unless already includes secondary sort 
+       */
+      if ( sort != null && sort.length() > 0 )
+         s += " ORDER BY " + sort;
+      
+      return s;
+   }
    
    static synchronized ResultSet submitQuery( Connection con,
                                               String table,
@@ -83,32 +116,13 @@ public class HSQLQuerier {
                                               boolean prepared ) {
       ResultSet rs;
       String query = "SELECT " + columns + " FROM " + table;
+      query += putTogetherConditionalSortAndFilterString( conditional, sort, filter );
       
-      boolean cond = conditional != null && conditional.length() > 0;
-      boolean filt = filter != null      && filter.length() > 0;
-      
-      if ( cond || filt ) {
-         query += " WHERE ( ";
-         if ( cond )
-            query += conditional;
-         
-         if ( filt ) {
-            if ( cond )
-               query += " AND ( " + filter + " )";
-            else
-               query += filter;
-            
-         }
-         
-         query += " ) ";
-      }
-      
-      /* TODO: if sort != crop_name, then make crop_name secondary sort
-       * if sort == crop_name, then make var_name secondary sort
-       * unless already includes secondary sort 
-       */
-      if ( sort != null && sort.length() > 0 )
-         query += " ORDER BY " + sort;
+      return submitRawQuery( con, query, prepared );
+   }
+   
+   public static synchronized ResultSet submitRawQuery( Connection con, String query, boolean prepared ) {
+      ResultSet rs;
       
       System.out.println("DEBUG Submitting query: " + query );
       
@@ -123,8 +137,7 @@ public class HSQLQuerier {
             Statement s = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE,
                                                ResultSet.CONCUR_READ_ONLY );
             rs = s.executeQuery( query );
-         }
-            
+         }  
       }
       catch ( SQLException e ) {
          e.printStackTrace();
@@ -149,14 +162,11 @@ public class HSQLQuerier {
    public synchronized ResultSet submitCommonInfoQuery( String table,
                                                          ArrayList<String> columns,
                                                          ArrayList<Integer> ids ) {
-       ResultSet rs = null;
-      
       String idString = HSQLDB.intListToIDString(ids);
       
       /* start the query string */
       String query = "";
       query += "SELECT ";
-      
       
       for ( String col : columns ) {
          query += "MIN( SELECT ";
@@ -171,19 +181,80 @@ public class HSQLQuerier {
       
       System.out.println("DEBUG Submitting query: " + query );
       
-      try {
-         Statement s = con.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                            ResultSet.CONCUR_READ_ONLY );
-         rs = s.executeQuery( query );
-      }
-      catch ( SQLException e ) {
-         e.printStackTrace();
-         rs = null;
-      }
-      
-      return rs;
+      return submitRawQuery( con, query, false );
    }
    
+   public synchronized ResultSet submitCalculatedCropPlanQuery( String planName,
+                                                                ArrayList<String[]> colMap,
+                                                                String displayColumns,
+                                                                String sortColumn,
+                                                                String filterExp ) {
+      
+      int PLANT_COL = 0;
+      int CROP_COL = 1;
+      int CALC = 2;
+      
+      /* This string represents the query which will fill in the "static" fields
+       * in each planting from the corresponding fields in the crop */
+      String fillInQuery = "SELECT ";
+      for ( String[] s : colMap ) {
+         if ( s[CROP_COL] == null )
+            fillInQuery += "p." + s[PLANT_COL];
+         else {
+            fillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
+            fillInQuery +=           "c." + s[CROP_COL] + " ) AS " + s[PLANT_COL];
+         }
+         fillInQuery += ", ";
+      }
+      fillInQuery = fillInQuery.substring( 0, fillInQuery.lastIndexOf( ", " ));
+      fillInQuery += " FROM " + planName + " AS p, crops_varieties AS c ";
+      fillInQuery += "WHERE p.crop_name = c.crop_name AND c.var_name IS NULL ";
+//      fillInQuery += "WHERE p.crop_name = c.crop_name AND p.var_name = c.var_name ";
+      
+/**      fillInQuery += "p.id, p.crop_name, p.var_name, ";
+      fillInQuery += "p.date_plant, p.date_tp, p.date_harvest, ";
+      fillInQuery += "COALESCE( p.maturity, c.maturity ) AS maturity, ";
+      fillInQuery += "COALESCE( p.rows_p_bed, c.rows_p_bed ) AS rows_p_bed, ";
+      fillInQuery += "COALESCE( p.time_to_tp, c.time_to_tp ) AS time_to_tp, ";
+      fillInQuery += "location, completed ";
+      fillInQuery += "FROM " + planName + " AS p, crops_varieties AS c ";
+      fillInQuery += "WHERE p.crop_name = c.crop_name AND c.var_name IS NULL";
+ */
+      
+      String passQuery = "SELECT ";
+      for ( String[] s : colMap ) {
+         if ( s[CALC] == null )
+            passQuery += s[PLANT_COL];
+         else {
+            passQuery += "COALESCE( " + s[PLANT_COL] + ", ";
+            passQuery +=            s[CALC] + " ) AS " + s[PLANT_COL];
+         }
+         passQuery += ", ";
+      }
+      passQuery = passQuery.substring( 0, passQuery.lastIndexOf( ", " ));
+     
+/**      passQuery += "id, crop_name, var_name, maturity, location, completed, ";
+      passQuery += "COALESCE( date_plant, ";
+      passQuery += "\"CPS.Core.DB.HSQLCalc.plantFromHarvest\"( date_harvest, maturity ) ";
+      passQuery += ", \"CPS.Core.DB.HSQLCalc.plantFromTP\"( date_tp, time_to_tp )";
+      passQuery += " ) AS date_plant, ";
+//      passQuery += " date_tp, ";
+      passQuery += "COALESCE( date_tp, ";
+      passQuery += "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )";
+      passQuery += " ) AS date_tp, ";
+      passQuery += "COALESCE( date_harvest, ";
+      passQuery += "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity )";
+      passQuery += " ) AS date_harvest, ";
+      passQuery += " rows_p_bed, time_to_tp ";
+ */  
+ 
+      String pass1 = passQuery + " FROM ( " + fillInQuery + " ) ";
+      String pass2 = passQuery + " FROM ( " + pass1 + " ) ";
+      
+//      return submitQuery( "( " + pass2 + " )", displayColumns, null, sortColumn, filterExp ); 
+      return storeQuery( "( " + pass2 + " )", displayColumns, null, sortColumn, filterExp ); 
+      
+   }
    
    /**
     * Creates a new HSQLTableModel for the given ResultSet.
@@ -201,5 +272,14 @@ public class HSQLQuerier {
       }
    }
    
+   public static TableModel tableResults( ResultSet rs, String tableName ) {
+      try {
+         return new HSQLTableModel( rs, tableName );
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         return new DefaultTableModel();
+      }
+   }
    
 }
