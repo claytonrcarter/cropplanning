@@ -290,6 +290,8 @@ public class CPSPlanting extends CPSRecord {
        CPSDatum p = getDatum( PROP_DATE_PLANT );
        CPSDatum m = getDatum( PROP_MATURITY );
        CPSDatum h = getDatum( PROP_DATE_HARVEST );
+       CPSDatum t = getDatum( PROP_DATE_TP );
+       CPSDatum w = getDatum( PROP_TIME_TO_TP );
        
        /* Only calculate the planting date if:
         * DATE_PLANT is *NOT* valid AND
@@ -298,11 +300,12 @@ public class CPSPlanting extends CPSRecord {
        if ( ! p.isValid() && 
               h.isValid() && m.isValid() ) {
           getDatum( PROP_DATE_PLANT ).setCalculated( true );
-           GregorianCalendar c = new GregorianCalendar();
-           c.setTime( getDateToHarvest() );
-           // -1 ==> subtract
-           c.add( GregorianCalendar.DAY_OF_YEAR, -1 * getMaturityDays() );
-           return c.getTime();
+          return CPSCalculations.calcDatePlantFromDateHarvest( getDateToHarvest(), getMaturityDays() );
+       }
+       else if ( ! p.isValid() && 
+                   t.isValid() && w.isValid() ) {
+          getDatum( PROP_DATE_PLANT ).setCalculated( true );
+          return CPSCalculations.calcDatePlantFromDateTP( getDateToTP(), getTimeToTP() );
        }
        else
            return get( PROP_DATE_PLANT, new Date(0) ); 
@@ -330,11 +333,7 @@ public class CPSPlanting extends CPSRecord {
       if ( ! t.isValid() &&
              p.isValid() && w.isValid() ) {
          getDatum( PROP_DATE_TP ).setCalculated( true );
-         GregorianCalendar c = new GregorianCalendar();
-         c.setTime( getDateToPlant() ); // could just use variable p
-         // time to tp is in weeks
-         c.add( GregorianCalendar.DAY_OF_YEAR, getTimeToTP() * 7 );
-         return c.getTime();
+         return CPSCalculations.calcDateTPFromDatePlant( getDateToPlant(), getTimeToTP() );
       }
       else
          return get( PROP_DATE_TP, new Date(0) );
@@ -347,10 +346,13 @@ public class CPSPlanting extends CPSRecord {
    public void setDateToTP( String d, boolean force ) { setDateToTP( parseDate( d ), force ); }
    
    public Date getDateToHarvest() {
-       CPSDatum h = getDatum( PROP_DATE_HARVEST );
-       CPSDatum p = getDatum(PROP_DATE_PLANT);
-       CPSDatum m = getDatum(PROP_MATURITY);
-       
+      CPSDatum h = getDatum( PROP_DATE_HARVEST );
+      CPSDatum p = getDatum( PROP_DATE_PLANT );
+      CPSDatum m = getDatum( PROP_MATURITY );
+      CPSDatum t = getDatum( PROP_DATE_TP );
+      CPSDatum w = getDatum( PROP_TIME_TO_TP );
+      
+      
        /* Only calculate the harvest date if:
         * DATE_HARVEST is *NOT* valid AND
         * DATE_PLANTING AND MATURITY *ARE* valid 
@@ -358,10 +360,14 @@ public class CPSPlanting extends CPSRecord {
        if ( ! h.isValid() && 
               p.isValid() && m.isValid() ) {
            getDatum( PROP_DATE_HARVEST ).setCalculated( true );
-           GregorianCalendar c = new GregorianCalendar();
-           c.setTime( getDateToPlant() );
-           c.add( GregorianCalendar.DAY_OF_YEAR, getMaturityDays() );
-           return c.getTime();
+           return CPSCalculations.calcDateHarvestFromDatePlant( getDateToPlant(), getMaturityDays() );
+       }
+       else if ( ! h.isValid() && 
+                   t.isValid() && m.isValid() && w.isValid() ) {
+          getDatum( PROP_DATE_HARVEST ).setCalculated( true );
+          return CPSCalculations.calcDateHarvestFromDateTP( getDateToTP(), 
+                                                            getMaturityDays(),
+                                                            getTimeToTP() );
        }
        else
            return get(PROP_DATE_HARVEST, new Date(0));
@@ -387,19 +393,17 @@ public class CPSPlanting extends CPSRecord {
       if ( ! b.isValid() &&
              r.isValid() && rpb.isValid() ) {
          getDatum( PROP_BEDS_PLANT ).setCalculated( true );
-         int rowFt = getRowFtToPlant();
-         int rowsPerBed = getRowsPerBed();
-         return  (float) ( ( 1.0 * rowFt / rowsPerBed ) / CONST_BED_LENGTH );
+         return CPSCalculations.calcBedsToPlantFromRowFtToPlant( getRowFtToPlant(),
+                                                                 getRowsPerBed(),
+                                                                 CONST_BED_LENGTH );
       }
       else if ( ! b.isValid() && 
                   p.isValid() && ps.isValid() && rpb.isValid() ) {
          getDatum( PROP_BEDS_PLANT ).setCalculated( true );
-         int plants = getPlantsNeeded();
-         int inRowSpace = getInRowSpacing();
-         int rowsPerBed = getRowsPerBed();
-         float rowFt = plants * ( inRowSpace / 12 ); // LATER 12 is a little too English-unit-centric
-         // LATER when we implement calculation of rowFtNeeded, we could just call that here
-         return ( rowFt / rowsPerBed ) / CONST_BED_LENGTH;
+         return CPSCalculations.calcBedsToPlantFromPlantsNeeded( getPlantsNeeded(),
+                                                                 getInRowSpacing(),
+                                                                 getRowsPerBed(),
+                                                                 CONST_BED_LENGTH );
       }
       else
          return get( PROP_BEDS_PLANT, new Float( -1.0 ) ).intValue(); 
@@ -425,22 +429,15 @@ public class CPSPlanting extends CPSRecord {
       if ( ! p.isValid() &&
              b.isAvailable() && rpb.isAvailable() && ps.isAvailable() ) {
          getDatum( PROP_PLANTS_NEEDED ).setCalculated( true );
-         float beds = getBedsToPlant();
-         int rowsPerBed = getRowsPerBed();
-         int space = getInRowSpacing();
-         /* rowft = beds * rowsPerBed * BED_LENGTH */
-         /* plants/ft = 12 / inRowSpacing (inRowSpacing is really inches/plant) */
-         /* plants_needed = rowft * plants/ft */
-         return (int) ( ( beds * rowsPerBed * CONST_BED_LENGTH ) * ( 12.0 / space ) );
+         return CPSCalculations.calcPlantsNeededFromBedsToPlant( getBedsToPlant(), 
+                                                                 getInRowSpacing(),
+                                                                 getRowsPerBed(),
+                                                                 CONST_BED_LENGTH );
       }
       else if ( ! p.isValid() && 
                   r.isAvailable() && ps.isAvailable() ) {
          getDatum( PROP_PLANTS_NEEDED ).setCalculated( true );
-         int rowFt = getRowFtToPlant();
-         int inRowSpace = getInRowSpacing();
-         /* plants_needed = rowFt * plants/ft */
-         /* plants/ft = 12 / inRowSpace */
-         return (int) ( rowFt * ( 12.0 / inRowSpace ) );
+         return CPSCalculations.calcPlantsNeededFromRowFtToPlant( getRowFtToPlant(), getInRowSpacing() );
       }
       else
          return get( PROP_PLANTS_NEEDED, new Integer( -1 ) ).intValue();
@@ -466,19 +463,15 @@ public class CPSPlanting extends CPSRecord {
       if ( ! r.isValid() &&
              b.isAvailable() && rpb.isAvailable() ) {
          getDatum( PROP_ROWFT_PLANT ).setCalculated( true );
-         float beds = getBedsToPlant();
-         int rowsPerBed = getRowsPerBed();
-         /* rowft = beds * rowsPerBed * BED_LENGTH */
-         return (int) ( beds * rowsPerBed * CONST_BED_LENGTH );
+         return CPSCalculations.calcRowFtToPlantFromBedsToPlant( getBedsToPlant(),
+                                                                 getRowsPerBed(),
+                                                                 CONST_BED_LENGTH );
       }
       else if ( ! r.isValid() && 
                   p.isAvailable() && ps.isAvailable() ) {
          getDatum( PROP_ROWFT_PLANT ).setCalculated( true );
-         int plants = getPlantsNeeded();
-         int inRowSpace = getInRowSpacing();
-         /* rowFt = plants_needed * ft/plant */
-         /* plants/ft = inRowSpace / 12 */
-         return (int) ( plants * ( inRowSpace / 12.0 ) );
+         return CPSCalculations.calcRowFtToPlantFromPlantsNeeded( getPlantsNeeded(),
+                                                                  getInRowSpacing() );
       }
       else
          return get( PROP_ROWFT_PLANT, new Integer( -1 )).intValue();
@@ -500,7 +493,7 @@ public class CPSPlanting extends CPSRecord {
        */
       if ( ! s.isValid() && n.isAvailable() ) {
          getDatum( PROP_PLANTS_START ).setCalculated( true );
-         return (int) ( getPlantsNeeded() * ( 1 + CONST_FUDGE ) );
+         return CPSCalculations.calcPlantsToStart( getPlantsNeeded(), CONST_FUDGE );
       }
       else
          return get( PROP_PLANTS_START, new Integer( -1 ) ).intValue();
@@ -519,7 +512,9 @@ public class CPSPlanting extends CPSRecord {
       if ( ! n.isValid() && 
              p.isAvailable() && s.isAvailable() ) {
          getDatum( PROP_FLATS_NEEDED ).setCalculated( true );
-         return getPlantsToStart() / getFlatSizeCapacity();
+         // TODO Math.ceil()
+         return (int) CPSCalculations.calcFlatsNeeded( getPlantsToStart(),
+                                                       getFlatSizeCapacity() );
       }
       return get( PROP_FLATS_NEEDED, new Integer( -1 )).intValue(); 
    }
@@ -588,24 +583,7 @@ public class CPSPlanting extends CPSRecord {
 
    public String getFlatSize() { return get( PROP_FLAT_SIZE, "" ); }
    public int getFlatSizeCapacity() {
-      String s = getFlatSize();
-      int cap = 0;
-      try {
-         // For the case where FlatSize is eg "128" or "72"
-         cap = Integer.parseInt(s);
-      } catch ( NumberFormatException ignore ) {
-         // For the case where FlatSize is eg "1020 tray (500)" or "mini (50)"
-         int openPar = s.lastIndexOf( "(" );
-         int closePar = s.lastIndexOf( ")" );
-         System.out.println( "Parsing string '" + s.substring( openPar + 1, closePar ) + "'" );
-         try {
-            cap = Integer.parseInt( s.substring( openPar + 1, closePar ) );
-         } catch ( NumberFormatException ignoreAgain ) {
-            System.err.println( "ERROR: couldn't deduce the capacity of given flat size: " + s );
-         }
-      }
-      
-      return cap;
+      return CPSCalculations.calcFlatCapacity( getFlatSize() );
    }
    public CPSDatumState getFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
    public void setFlatSize( String i ) { setFlatSize( i, false ); }
@@ -637,7 +615,7 @@ public class CPSPlanting extends CPSRecord {
       if ( ! t.isValid() &&
              y.isAvailable() && r.isAvailable() ) {
          getDatum( PROP_TOTAL_YIELD ).setCalculated( true );
-         return getYieldPerFoot() * getRowFtToPlant();
+         return CPSCalculations.calcTotalYieldFromRowFtToPlant( getRowFtToPlant(), getYieldPerFoot() );
       }
       else
          return get( PROP_TOTAL_YIELD, new Float( -1.0 ) ).floatValue(); 
@@ -697,18 +675,6 @@ public class CPSPlanting extends CPSRecord {
       }
       // else thatRecord is a CPSCrop, proceed w/ inherit
       return super.inheritFrom( thatRecord );
-      
-      
-//      CPSCrop thatCrop = (CPSCrop) thatRecord;
-//      
-//      for ( Integer prop : getListOfInheritableProperties() ) {   
-//         CPSDatum thisDat = this.getDatum( prop );
-//         CPSDatum thatDat = thatCrop.getDatum( prop );
-//         if ( ! thisDat.isValid() && thatDat.isValid() )
-//            this.inherit( prop, thatDat.getDatum() );
-//      }
-//      
-//      return this;
    }
    
    /* *********************************************************************************************/

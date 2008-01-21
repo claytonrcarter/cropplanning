@@ -73,6 +73,7 @@ public abstract class CPSDataModel extends CPSModule {
    /* create and update */
    public abstract CPSPlanting createPlanting( String planName, CPSPlanting planting );
    public abstract void updatePlanting( String planName, CPSPlanting planting );
+   public abstract void updatePlantings( String planName, CPSPlanting changes, ArrayList<Integer> plantingIDs );
    public abstract void deletePlanting( String planting, int plantingID );
    
    /* Crop and Variety methods */
@@ -113,9 +114,21 @@ public abstract class CPSDataModel extends CPSModule {
    
    public abstract void shutdown();
    
-   protected ArrayList<CPSDataModelUser> dataListeners = new ArrayList();
-   public void addDataListener( CPSDataModelUser dmu ) { dataListeners.add( dmu ); }
-   // protected abstract void updateDataListeners();
+   /** An ArrayList of CPSDataModelUsers which will be notified when the database has changed or been updated. */
+   protected ArrayList<CPSDataUser> dataListeners = new ArrayList();
+   /**
+    * Add a CPSDataModelUser to the list of of modules that wish to be notified when the data has been updated
+    * @param dmu The CPSDataModelUser to be added (and subsequently notified)
+    */
+   public void addDataListener( CPSDataUser dmu ) { dataListeners.add( dmu ); }
+   /**
+    * This method is called whenever there is a change or update in the database.  It notifies
+    * all data listeners that the data has been updated.
+    */
+   protected void updateDataListeners() {
+      for( CPSDataUser dmu : dataListeners )
+         dmu.dataUpdated();
+   }
    
    public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
       ArrayList<CPSCrop> withSimilar = new ArrayList<CPSCrop>();

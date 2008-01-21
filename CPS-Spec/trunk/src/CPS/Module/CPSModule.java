@@ -1,7 +1,7 @@
 package CPS.Module;
 
-/* this extends might be a bad idea! it seems like an awfully broad stroke */
-public abstract class CPSModule extends CPSDataModelUser {
+
+public abstract class CPSModule {
 
    protected String ModuleName;
    protected String ModuleType;
