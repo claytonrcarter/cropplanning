@@ -9,6 +9,7 @@
 package CPS.Core.CropDB;
 
 import CPS.Module.*;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 
@@ -16,38 +17,21 @@ import javax.swing.JPanel;
  *
  * @author Clayton
  */
-public class CropDB extends CPSCoreModule {
+public class CropDB extends CPSMasterDetailModule {
    
-    private String ModuleName = "CropDB";
-    private String ModuleType = "Core";
-    private String ModuleVersion = "0.1";
-
-    private CropDBUI ui;
-
-    public CropDB ( CPSUI uim ) {
-       super(uim);
+    public CropDB () {
        
        setModuleName( "CropDB" );
        setModuleType( "Core" );
        setModuleVersion( "0.1" );
-     
-       ui = new CropDBUI( uim );
-
+       
+       setMasterView( new CropDBCropList( this ) );
+       setDetailView( new CropDBCropInfo( this ) );
+       
     }
 
     public JPanel display () {
-	return ui.getUI();
+	return getUI();
     }
     
-    /* no special init required; just pass it to the UI and let it
-     * worry about it. */
-    public void setDataSource( CPSDataModel dm ) {
-       ui.setDataSource(dm);
-    }
-  
-    @Override
-   public Dimension getSize() {
-      return ui.getSize();
-   }
-
 }

@@ -9,6 +9,7 @@ package CPS.Core.CropDB;
 import CPS.Data.CPSRecord;
 import CPS.Module.*;
 import CPS.Data.CPSCrop;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Modules.CPSMasterView;
 import java.awt.*;
 import java.awt.event.*;
@@ -21,8 +22,8 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
 
     private JRadioButton radioAll, radioCrops, radioVar;
     
-    CropDBCropList( CropDBUI ui ) {
-       super(ui);
+    CropDBCropList( CPSMasterDetailModule mdm ) {
+       super(mdm);
        setSortColumn("crop_name");
     }
     
@@ -108,6 +109,7 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     public void deleteRecord( int id ) {
         getDataSource().deleteCrop( id );
     }
+    
     
 }
 

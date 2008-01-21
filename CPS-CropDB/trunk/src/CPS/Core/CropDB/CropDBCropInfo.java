@@ -10,6 +10,7 @@ import CPS.UI.Swing.LayoutAssist;
 import CPS.Data.*;
 import CPS.Module.*;
 import CPS.UI.Modules.CPSDetailView;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.CPSTextArea;
 import CPS.UI.Swing.CPSTextField;
 import javax.swing.*;
@@ -27,8 +28,8 @@ public class CropDBCropInfo extends CPSDetailView {
    
    private CPSCrop displayedCrop;
       
-   CropDBCropInfo( CropDBUI ui ) {
-       super( ui, "Crop Info" );
+   CropDBCropInfo( CPSMasterDetailModule mdm ) {
+       super( mdm, "Crop Info" );
    }
    
    public CPSRecord getDisplayedRecord() { return displayedCrop; }
@@ -300,7 +301,7 @@ public class CropDBCropInfo extends CPSDetailView {
       LayoutAssist.addTextArea(  jplDetails, 1, 13, 7, tareNotes );
       
       
-      
+      uiManager.signalUIChanged();  
    }
 
    
@@ -340,6 +341,17 @@ public class CropDBCropInfo extends CPSDetailView {
               continue;
           cmbxSimilar.addItem( name );
       }      
+   }
+   
+   @Override
+   public void dataUpdated() {
+      if ( isRecordDisplayed() ) {
+         this.displayRecord( getDataSource().getCropInfo( getDisplayedRecord().getID() ) );
+         tfldCropName.updateAutocompletionList( getDataSource().getCropNames(),
+                                                CPSTextField.MATCH_PERMISSIVE );
+         tfldVarName.updateAutocompletionList( getDataSource().getVarietyNames( displayedCrop.getCropName() ),
+                                               CPSTextField.MATCH_PERMISSIVE );
+      }
    }
    
 }
