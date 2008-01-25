@@ -94,6 +94,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     protected void updateMasterList() {
        super.updateMasterList();
 
+       // find column "crop_name" and set it to use a combobox editor
        for ( int i = 0 ; i < masterTable.getColumnModel().getColumnCount() ; i++ )
           if ( masterTable.getColumnName(i).equalsIgnoreCase("crop_name") )
              break;
@@ -112,7 +113,8 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         System.out.println( "Selected plan is: " + selectedPlan );
        
         if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
-            return getDataSource().getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
+            return getDataSource().getCropPlan( selectedPlan, getDisplayedColumnList(), getSortColumn(), getFilterString() );
+//            return getDataSource().getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
        else
           // TODO error checking fall through to following call when invalid plan is selected
           return new DefaultTableModel();
@@ -234,5 +236,24 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     public void deleteRecord( int id ) {
         getDataSource().deletePlanting( getSelectedPlanName(), id );
     }
+    
+   @Override
+   protected ArrayList<String> getDisplayableColumnList() {
+      return getDataSource().getPlantingDisplayableColumns();
+   }
+   
+   @Override
+   protected ArrayList<String> getDefaultDisplayableColumnList() {
+      ArrayList<String> l = new ArrayList();
+      // crop_name is implicit and MANDATORY in dataModel
+      l.add( "var_name" );
+      l.add( "maturity" );
+      l.add( "date_plant" );
+      l.add( "date_harvest" );
+      l.add( "completed" );
+      l.add( "location" );
+      
+      return l;
+   }
     
 }
