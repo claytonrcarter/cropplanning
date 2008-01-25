@@ -129,10 +129,10 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         btnNewPlan = new JButton( "New" );
         btnNewPlan.setActionCommand( "NewPlan" );
         btnNewPlan.setMargin( new Insets( 1, 1, 1, 1 ) );
-        btnNewPlan.addActionListener( new CropPlanBoxActionListener() );
+        btnNewPlan.addActionListener( this );
         cmbxPlanList = new JComboBox();
         cmbxPlanList.setEditable( true );
-        cmbxPlanList.addActionListener( this );
+        cmbxPlanList.addActionListener( new CropPlanBoxActionListener() );
        
         jplAboveList.add( lblPlanName );
         jplAboveList.add( cmbxPlanList );
