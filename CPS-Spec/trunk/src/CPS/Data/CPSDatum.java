@@ -98,20 +98,22 @@ public class CPSDatum<T> {
    }
    
    public CPSDatumState getState() {
-      return new CPSDatumState( this.isInherited(), this.isCalculated() );
+      return new CPSDatumState( this.isInherited(), this.isCalculated(), this.isValid() );
    }
    
    public class CPSDatumState {
     
-      boolean inherited, calculated;
+      boolean inherited, calculated, valid;
       
-      public CPSDatumState( boolean inherited, boolean calculated ) {
+      public CPSDatumState( boolean inherited, boolean calculated, boolean valid ) {
          this.inherited = inherited;
          this.calculated = calculated;
+         this.valid = valid;
       }
       
       public boolean isInherited() { return inherited; }
       public boolean isCalculated() { return calculated; }
+      public boolean isValid() { return valid; }
       
    }
    

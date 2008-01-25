@@ -20,7 +20,7 @@ public class CPSPlanting extends CPSRecord {
 //      s += "successions BOOLEAN, ";
 //      s += "fudge     FLOAT, ";
 
-   public final int PROP_CROP_ID       = CPSDataModelConstants.PROP_CROP_ID;
+//   public final int PROP_CROP_ID       = CPSDataModelConstants.PROP_CROP_ID;
    public final int PROP_CROP_NAME     = CPSDataModelConstants.PROP_CROP_NAME;
    public final int PROP_VAR_NAME      = CPSDataModelConstants.PROP_VAR_NAME;
    public final int PROP_GROUPS        = CPSDataModelConstants.PROP_GROUPS;
@@ -66,7 +66,7 @@ public class CPSPlanting extends CPSRecord {
    private final double CONST_FUDGE = .25;
    
 //   private CPSDatum<Integer> plantingID;
-   private CPSDatum<Integer> cropID;
+//   private CPSDatum<Integer> cropID;
    private CPSDatum<String> crop_name;
    private CPSDatum<String> var_name;
    private CPSDatum<String> groups;
@@ -108,7 +108,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSPlanting() {
       
       recordID = new CPSDatum<Integer>( "Unique ID", PROP_ID, "id", new Integer(-1) );
-      cropID = new CPSDatum<Integer>( "Unique ID of Crop", PROP_CROP_ID, "crop_id", new Integer(-1));
+//      cropID = new CPSDatum<Integer>( "Unique ID of Crop", PROP_CROP_ID, "crop_id", new Integer(-1));
       commonIDs = new CPSDatum<ArrayList<Integer>>( "Crop IDs represented", PROP_COMMON_ID, "column_DNE", new ArrayList() );
        
       
@@ -226,6 +226,9 @@ public class CPSPlanting extends CPSRecord {
    /* *********************************************************************************************/
    /* GETTERS and SETTERS
    /* *********************************************************************************************/
+//   public int getCropID() { return get( PROP_CROP_ID, new Integer( -1 ) ); }
+//   public void setCropID( int i ) { set( cropID, i, false ); }
+   
    public String getCropName() { return get(PROP_CROP_NAME, ""); }
    public CPSDatumState getCropNameState() { return getStateOf( PROP_CROP_NAME ); }
    public void setCropName(String s) { setCropName( s, false ); }
@@ -686,7 +689,8 @@ public class CPSPlanting extends CPSRecord {
    public class PlantingIterator extends CPSRecordIterator {
        
       public  boolean ignoreThisProperty() {
-         return this.currentProp == PROP_ID || this.currentProp == PROP_CROP_ID;
+//         return this.currentProp == PROP_ID || this.currentProp == PROP_CROP_ID;
+         return this.currentProp == PROP_ID;
       }
        
    }
