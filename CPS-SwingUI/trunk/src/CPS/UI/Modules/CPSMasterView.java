@@ -20,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -322,8 +323,24 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void updateColumnListPopUpMenu() {
        pupColumnList.removeAll();
        
-       // add each item to PopupMenu, w/ BOLD == selected
-       for ( ColumnNameTuple c : columnList ) {
+       // We will only "feature" the first 20 entries, the rest will be buried in
+       // a submenu
+       
+       // Create and populate the submenu
+       JMenu subMenu = new JMenu( "More ..." );
+       for ( ColumnNameTuple c : columnList.subList( 20, columnList.size() ) ) {
+          JMenuItem menuItem;
+          if ( c.selected )
+             menuItem = new JMenuItem( "<html><b>" + c.columnName + "</b></html>" );
+          else
+             menuItem = new JMenuItem( c.columnName );
+          menuItem.setActionCommand( "popup-" + c.columnName );
+          menuItem.addActionListener( this );
+          subMenu.add( menuItem );
+       }
+       
+       // now create and populate the actual PopupMenu, w/ BOLD == selected
+       for ( ColumnNameTuple c : columnList.subList( 0, 20 ) ) {
           JMenuItem menuItem;
           if ( c.selected )
              menuItem = new JMenuItem( "<html><b>" + c.columnName + "</b></html>" );
@@ -333,6 +350,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
           menuItem.addActionListener( this );
           pupColumnList.add( menuItem );
        }
+       if ( subMenu.getItemCount() > 0 )
+           pupColumnList.add( subMenu );
        
     }
     
@@ -405,7 +424,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
         if (vColIndex == -1)
             return;
         
-        if ( evt.getButton() == evt.BUTTON1 ) {
+        if ( evt.getButton() == evt.BUTTON1 && ! evt.isControlDown() ) {
            // TODO: modify the column header to show which column is being sorted
            //table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
            // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
@@ -419,9 +438,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
            else
               setSortColumn( table.getColumnName( vColIndex ) );
         }
-        else if ( evt.getButton() == evt.BUTTON3 ) {
-           // show popup
-           System.out.println( "SHOW POPUP!" );
+        else if ( evt.getButton() == evt.BUTTON3 || // RIGHT mouse button on Windows
+                  evt.getButton() == evt.BUTTON1 && evt.isControlDown() // CTRL + click on Mac
+                ) {
            pupColumnList.show( evt.getComponent(),
                                evt.getX(), evt.getY() );
            
