@@ -59,7 +59,15 @@ public class HSQLTableModel extends ResultSetTableModel {
     public Object getValueAt( int r, int c ) {
        if ( idInResults )
           c++;
-       return super.getValueAt( r, c );
+//       return super.getValueAt( r, c );
+       // this was yanked and reworked from superclass; it was just converting
+       // everything to a String but we need to keep it as Objects
+       Object o = null;
+       try {
+	    results.absolute(r+1);      // Go to the specified row
+	    o = results.getObject(c+1); // Get value of the column
+	} catch (SQLException e) { return e.toString(); }
+       return o;
     }
     
     // Since its not editable, we don't need to implement these methods
