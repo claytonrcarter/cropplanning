@@ -20,6 +20,8 @@ public class HSQLConnect {
    private static final String dbOpenOnly = ";" + "ifexists=true";
    private static final String dbPrefix = "jdbc:hsqldb:file:";
    
+   private static final boolean DEVEL_SERVER_CONNECTION = false;
+   
    private HSQLConnect() {}
 
    public static Connection getConnection( String dir, String dbFilename, String driver ) {
@@ -53,8 +55,10 @@ public class HSQLConnect {
    
    
    private static String buildDBConnectionString( String dir, String dbFilename ) {
-//      return dbPrefix + dir + fileSep + dbFilename + dbProperties;
-       return "jdbc:hsqldb:hsql://localhost/xdb";
+      if ( DEVEL_SERVER_CONNECTION )
+         return "jdbc:hsqldb:hsql://localhost/xdb";
+      else 
+         return dbPrefix + dir + fileSep + dbFilename + dbProperties;
    }
    
    private static void loadDriver( String driver ) {
