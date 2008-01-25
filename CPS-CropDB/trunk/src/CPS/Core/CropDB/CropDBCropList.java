@@ -110,6 +110,22 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
         getDataSource().deleteCrop( id );
     }
     
+     @Override
+   protected ArrayList<String> getDisplayableColumnList() {
+      return getDataSource().getCropDisplayableColumns();
+   }
+   
+   @Override
+   protected ArrayList<String> getDefaultDisplayableColumnList() {
+      ArrayList<String> l = new ArrayList();
+      // crop_name is implicit and MANDATORY in dataModel
+      l.add( "var_name" );
+      l.add( "fam_name" );
+      l.add( "maturity" );
+      
+      return l;
+   }
+  
     
 }
 
