@@ -64,7 +64,7 @@ public class HSQLDB extends CPSDataModel {
       
       plantingCropColumnMapping = buildPlantingCropColumnMapping();
       cropColumnList = buildCropColumnList();
-      plantingColumnList = buildPlantingColumnList();
+      buildPlantingColumnList();
       
    }
    
@@ -155,17 +155,11 @@ public class HSQLDB extends CPSDataModel {
       l.add( "crop_name" );
       l.add( "var_name" );
       l.add( "bot_name" );
-      l.add( "fam_name" );
-      l.add( "groups" );
-      l.add( "successions" );
       l.add( "description" );
       l.add( "keywords" );
-      l.add( "fudge" );
       l.add( "other_req" );
       l.add( "notes" );
       l.add( "maturity" );
-      l.add( "mat_adjust" );
-      l.add( "misc_adjust" );
       l.add( "time_to_tp" );
       l.add( "rows_p_bed" );
       l.add( "space_inrow" );
@@ -178,7 +172,19 @@ public class HSQLDB extends CPSDataModel {
       l.add( "yield_p_week" );
       l.add( "crop_unit" );
       l.add( "crop_unit_value" );
+      l.add( "fudge" );
+      l.add( "mat_adjust" );
+      l.add( "misc_adjust" );
+      l.add( "fam_name" );
+      l.add( "groups" );
+      l.add( "successions" );
 
+      return l;
+   }
+   
+   public ArrayList<String> getCropDisplayableColumns() {
+      ArrayList<String> l = getCropColumnList();
+      l.remove(0); // remove id from list
       return l;
    }
    
@@ -217,20 +223,24 @@ public class HSQLDB extends CPSDataModel {
       l.add( new String[] { "date_tp",         null,              "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )" } );
       l.add( new String[] { "date_harvest",    null,              "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity ) " } );
       
-      l.add( new String[] { "beds_to_plant",   null,              null } );
+      l.add( new String[] { "beds_to_plant",   null,              "\"CPS.Core.DB.HSQLCalc.bedsFromRowFt\"( rowft_to_plant, rows_p_bed, 100 ), "
+                                                                + "\"CPS.Core.DB.HSQLCalc.bedsFromPlants\"( plants_needed, inrow_space, rows_p_bed, 100 )" } );
       l.add( new String[] { "rows_p_bed",      "rows_p_bed",      null } );
-      l.add( new String[] { "plants_needed",   null,              null } );
-      l.add( new String[] { "rowft_to_plant",  null,              null } );
+      l.add( new String[] { "plants_needed",   null,              "\"CPS.Core.DB.HSQLCalc.plantsFromBeds\"( beds_to_plant, inrow_space, rows_p_bed, 100 ), "
+                                                                + "\"CPS.Core.DB.HSQLCalc.plantsFromRowFt\"( rowft_to_plant, inrow_space )" } );
+      l.add( new String[] { "rowft_to_plant",  null,              "\"CPS.Core.DB.HSQLCalc.rowFtFromBeds\"( beds_to_plant, rows_p_bed, 100 ), "
+                                                                + "\"CPS.Core.DB.HSQLCalc.rowFtFromPlants\"( plants_needed, inrow_space )" } );
       l.add( new String[] { "inrow_space",     "space_inrow",     null } );
       l.add( new String[] { "row_space",       "space_betrow",    null } );
-      l.add( new String[] { "plants_to_start", null,              null } );
+      l.add( new String[] { "plants_to_start", null,              "\"CPS.Core.DB.HSQLCalc.plantsToStart\"( plants_needed, .25 )" } );
       l.add( new String[] { "flat_size",       "flat_size",       null } );
       l.add( new String[] { "flats_needed",    null,              null } );
+//      l.add( new String[] { "flats_needed",    null,              "\"CPS.Core.DB.HSQLCalc.flatsNeeded\"( plants_to_start, flat_size )" } );
       l.add( new String[] { "planter",         "planter",         null } );
       l.add( new String[] { "planter_setting", "planter_setting", null } );
       
       l.add( new String[] { "yield_p_foot",    "yield_p_foot",    null } );
-      l.add( new String[] { "total_yield",     null,              null } );
+      l.add( new String[] { "total_yield",     null,              "\"CPS.Core.DB.HSQLCalc.totalYieldFromRowFt\"( rowft_to_plant, yield_p_foot )" } );
       l.add( new String[] { "yield_num_weeks", "yield_num_weeks", null } );
       l.add( new String[] { "yield_p_week",    "yield_p_week",    null } );
       
@@ -244,56 +254,55 @@ public class HSQLDB extends CPSDataModel {
       return plantingColumnList;
    }
    
-   private ArrayList<String> buildPlantingColumnList() {
-      ArrayList<String> l = new ArrayList();
+   private void buildPlantingColumnList() {
+      plantingColumnList = new ArrayList();
    
-      l.add( "id" );
-      l.add( "crop_name" );
-      l.add( "var_name" );
-      l.add( "groups" );
-      l.add( "successions" );
-      l.add( "location" );
+      plantingColumnList.add( "id" );
+      plantingColumnList.add( "crop_name" );
+      plantingColumnList.add( "var_name" );
+      plantingColumnList.add( "maturity" );
+      plantingColumnList.add( "date_plant" );
+      plantingColumnList.add( "date_tp" );
+      plantingColumnList.add( "date_harvest" );
+      plantingColumnList.add( "location" );
+      plantingColumnList.add( "beds_to_plant" );
+      plantingColumnList.add( "plants_needed" );
+      plantingColumnList.add( "rowft_to_plant" );
+      plantingColumnList.add( "rows_p_bed" );
+      plantingColumnList.add( "plants_to_start" );
+      plantingColumnList.add( "flat_size" );
+      plantingColumnList.add( "flats_needed" );
+      plantingColumnList.add( "yield_p_foot" );
+      plantingColumnList.add( "total_yield" );
+      plantingColumnList.add( "time_to_tp" );
       
-      l.add( "keywords" );
-      l.add( "status" );
-      l.add( "completed" );
-      l.add( "other_req" );
-      l.add( "notes" );
+      plantingColumnList.add( "inrow_space" );
+      plantingColumnList.add( "row_space" );
+      plantingColumnList.add( "yield_num_weeks" );
+      plantingColumnList.add( "yield_p_week" );
+      plantingColumnList.add( "crop_unit" );
+      plantingColumnList.add( "crop_unit_value" );
       
-      l.add( "maturity" );
-      l.add( "mat_adjust" );
-      l.add( "planting_adjust" );
-      l.add( "ds_adjust" );
-      l.add( "season_adjust" );
-      l.add( "time_to_tp" );
-      l.add( "misc_adjust" );
-      
-      l.add( "date_plant" );
-      l.add( "date_tp" );
-      l.add( "date_harvest" );
-      
-      l.add( "beds_to_plant" );
-      l.add( "rows_p_bed" );
-      l.add( "plants_needed" );
-      l.add( "rowft_to_plant" );
-      l.add( "inrow_space" );
-      l.add( "row_space" );
-      l.add( "plants_to_start" );
-      l.add( "flat_size" );
-      l.add( "flats_needed" );
-      l.add( "planter" );
-      l.add( "planter_setting" );
-      
-      l.add( "yield_p_foot" );
-      l.add( "total_yield" );
-      l.add( "yield_num_weeks" );
-      l.add( "yield_p_week" );
-      
-      l.add( "crop_unit" );
-      l.add( "crop_unit_value" );
-      
-      return l;
+      plantingColumnList.add( "groups" );
+      plantingColumnList.add( "keywords" );
+      plantingColumnList.add( "completed" );
+      plantingColumnList.add( "other_req" );
+      plantingColumnList.add( "notes" );
+      plantingColumnList.add( "planter" );
+      plantingColumnList.add( "planter_setting" );
+      plantingColumnList.add( "mat_adjust" );
+      plantingColumnList.add( "misc_adjust" );
+      plantingColumnList.add( "planting_adjust" );
+      plantingColumnList.add( "ds_adjust" );
+      plantingColumnList.add( "season_adjust" );
+      plantingColumnList.add( "successions" );
+      plantingColumnList.add( "status" );
    }
+   
+   public ArrayList<String> getPlantingDisplayableColumns() {
+      return new ArrayList<String>( getPlantingColumnList().subList( 1, getPlantingColumnList().size() ) );
+   }
+   
    
    private String getVarietiesColumnNames() {
       return getCropsColumnNames();
@@ -420,10 +429,17 @@ public class HSQLDB extends CPSDataModel {
    }
 
    public TableModel getCropPlan( String plan_name, String sortCol, String filterString ) {
+      return getCropPlan( plan_name, getAbbreviatedCropPlanColumnNames(), sortCol, filterString );
+   }
+   
+   public TableModel getCropPlan( String plan_name, String columns, String sortCol, String filterString ) {
+      String mand = getMandatoryColumnNames();
+      if ( ! columns.startsWith(mand) )
+         columns = mand + ", " + columns;
       return HSQLQuerier.tableResults( 
               query.submitCalculatedCropPlanQuery( plan_name, 
                                                    getPlantingCropColumnMapping(),
-                                                   getAbbreviatedCropPlanColumnNames(),
+                                                   columns,
                                                    sortCol,
                                                    buildFilterExpression( this.getCropPlanFilterColumnNames(),
                                                                           filterString ) ),
@@ -441,6 +457,7 @@ public class HSQLDB extends CPSDataModel {
    
    public CPSPlanting getCommonInfoForPlantings( String plan_name, ArrayList<Integer> plantingIDs ) {
       try {
+         System.out.println("Querying columns: " + getPlantingColumnList() );
          rsPlantCache = query.submitCommonInfoQuery( plan_name, getPlantingColumnList(), plantingIDs );
          
          CPSPlanting p = resultSetAsPlanting( rsPlantCache );
@@ -528,7 +545,7 @@ public class HSQLDB extends CPSDataModel {
       if ( rs.next() ) {
          try {
             
-            crop.setID( rs.getInt( "ID" ));
+            crop.setID( rs.getInt( "id" ));
             crop.setCropName( captureString( rs.getString( "crop_name" ) ));            
             crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
             crop.setBotanicalName( captureString( rs.getString( "bot_name" ) ) );
@@ -637,13 +654,35 @@ public class HSQLDB extends CPSDataModel {
       return new CPSPlanting();
    }
 
-   public void updatePlanting( String planName, CPSPlanting planting ) {
-      HSQLDBCreator.updatePlanting( con, planName, planting );
+   public void updatePlanting( String planName, CPSPlanting changes ) {
+//      CPSCrop c = getVarietyInfo( planting.getCropName(), planting.getVarietyName() );
+      ArrayList<Integer> changedID = new ArrayList();
+      changedID.add( new Integer( changes.getID() ));
+//      HSQLDBCreator.updatePlanting( con, planName, planting, c.getID() );
+      updatePlantings( planName, changes, changedID );
       updateDataListeners();
    }
    
-   public void updatePlantings( String planName, CPSPlanting changes, ArrayList<Integer> ids ) {
-      HSQLDBCreator.updatePlantings( con, planName, changes, ids );
+   public void updatePlantings( String planName, CPSPlanting changes, ArrayList<Integer> changedIDs ) {
+      ArrayList<Integer> cropIDs = new ArrayList();
+      for ( Integer i : changedIDs ) {
+         CPSPlanting p = getPlanting( planName, i.intValue() );
+         if ( changes.getCropNameState().isValid() )
+            p.setCropName( changes.getCropName() );
+         if ( changes.getVarietyNameState().isValid() )
+            p.setVarietyName( changes.getVarietyName() );
+         
+         int cropID = getVarietyInfo( p.getCropName(), p.getVarietyName() ).getID();
+         
+         if ( cropID == -1 )
+            cropID = getCropInfo( p.getCropName() ).getID();
+         
+         // TODO error if cropID == -1 again
+         
+         cropIDs.add( new Integer( cropID  ));
+      }
+      
+      HSQLDBCreator.updatePlantings( con, planName, changes, changedIDs, cropIDs );
       updateDataListeners();
    }
    
@@ -658,7 +697,7 @@ public class HSQLDB extends CPSDataModel {
             // Not yet implemented:
             // PROP_CROP_ID, PROP_STATUS, PROP_COMPLETED     
 
-            p.setID( rs.getInt( "ID" ));
+            p.setID( rs.getInt( "id" ));
             p.setCropName( captureString( rs.getString( "crop_name" ) ));            
             p.setVarietyName( captureString( rs.getString( "var_name" ) ));
 
@@ -701,10 +740,11 @@ public class HSQLDB extends CPSDataModel {
             p.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
             p.setCropYieldUnitValue( captureFloat( rs.getFloat( "crop_unit_value" )));
 
-            p.setCompleted( captureString( rs.getString( "completed" ) ));
+            p.setCompleted( rs.getBoolean( "completed" ) );
             
             /* handle data inheritance */
-            p.inheritFrom( getCropInfo( p.getCropName() ));
+            p.inheritFrom( getCropInfo( rs.getInt( "crop_id" ) ));
+//            p.inheritFrom( getCropInfo( p.getCropName() ));
             
          }  catch ( SQLException e ) { e.printStackTrace(); }
       }

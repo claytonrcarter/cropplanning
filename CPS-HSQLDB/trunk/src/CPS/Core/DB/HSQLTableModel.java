@@ -28,6 +28,12 @@ public class HSQLTableModel extends ResultSetTableModel {
       if ( metadata.getColumnLabel( 1 ).equalsIgnoreCase( "id" ) )
          idInResults = true;
       
+      // TODO find boolean columns and set renderer/editor to a JCheckBox
+      // TODO adjust the width of the columns downward
+      //      this could be really fancy, averaging the width of all of the contents
+      //      or really simple, just leaving as is for Strings, but using preset values for
+      //      numbers, booleans and dates
+      
    }
 
    public HSQLTableModel( ResultSet rs, String tableName ) throws SQLException {
@@ -114,5 +120,33 @@ public class HSQLTableModel extends ResultSetTableModel {
     private void setTableName( String s ) {
        tableName = s;
     }
+   
+    @Override
+   public Class getColumnClass( int column ) {
+       if ( idInResults )
+          column++;
+       
+       String type = null;
+       
+       try {
+          type = metadata.getColumnTypeName( column + 1 );
+       }
+       catch ( Exception e ) { e.printStackTrace(); }
+       
+       if      ( type == null ||
+                 type.equalsIgnoreCase("VARCHAR") ||
+                 type.equalsIgnoreCase("DATE") )
+          return new String().getClass();
+       else if ( type.equalsIgnoreCase("INTEGER") )
+          return new Integer(0).getClass();
+       else if ( type.equalsIgnoreCase("FLOAT") )
+          return new Double(0).getClass();
+       else if ( type.equalsIgnoreCase("BOOLEAN") )
+          return new Boolean(true).getClass();
+       else
+          return new String().getClass();
+       
+   }
+    
     
 }

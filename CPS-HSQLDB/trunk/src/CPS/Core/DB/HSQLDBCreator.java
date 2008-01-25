@@ -172,7 +172,7 @@ public class HSQLDBCreator {
    }
    
    public static void updateCrops( Connection con, CPSCrop changes, ArrayList<Integer> ids ) {
-      updateRecords( con, "CROPS_VARIETIES", changes, ids );
+      updateRecords( con, "CROPS_VARIETIES", changes, ids, null );
    }
    
    public static int insertPlanting( Connection con, 
@@ -232,44 +232,74 @@ public class HSQLDBCreator {
    /* TODO updatePlanting and updateCrop could be conflated into an updateRecord
     * method that takes a String tableName and a CPSRecord.  Everything else is
     * identical. Perhaps same thing for insertCrop and insertPlanting */
-   public static void updatePlanting( Connection con, String planName, CPSPlanting p ) {
+   public static void updatePlanting( Connection con, String planName, CPSPlanting p, int cropID ) {
       ArrayList<Integer> id = new ArrayList();
+      ArrayList<Integer> cID = new ArrayList();
+      
       id.add( new Integer( p.getID() ) );
-      updatePlantings( con, planName, p, id );
+      cID.add( new Integer( cropID ) );
+      
+      updatePlantings( con, planName, p, id, cID );
    }
    
    public static void updatePlantings( Connection con, String planName, 
-                                       CPSPlanting changes, ArrayList<Integer> ids ) {
-      updateRecords( con, planName, changes, ids );
+                                       CPSPlanting changes, 
+                                       ArrayList<Integer> ids,
+                                       ArrayList<Integer> cropIDs ) {
+      updateRecords( con, planName, changes, ids, cropIDs );
    }
    
-   private static void updateRecords( Connection con, String tableName, 
-                                      CPSRecord changes, ArrayList<Integer> ids ) {
+   /**
+    * Update a list of (one or more) records.
+    * 
+    * @param con A connection upon which to perform the update.
+    * @param tableName The table to update.
+    * @param changes A "sparse" CPSRecord object containing the data to update.
+    * @param changedIDs A list of record ids to update.
+    * @param cropIDs A list ids from table CROPS_VARIETIES that correspond to the list of record ids.
+    *                This may be "null" if the records being updated are CPSCrops, but MUST NOT be 
+    *                "null" when CPSPlantings are being updated.  The list must correspond in length
+    *                and order to the list of records to be updated.
+    */
+   private static void updateRecords( Connection con, String tableName,
+                                      CPSRecord changes, 
+                                      ArrayList<Integer> changedIDs,
+                                      ArrayList<Integer> cropIDs ) {
+      // To the developer: a simpler structure for this method would be to just create one
+      // UPDATE statement with the condition if "WHERE id IN ( changedIDs )", but we have to
+      // do it this way in order to support the crop_id FOREIGN KEY in the crop plan schema
+      
       try {
          
-         String idString = HSQLDB.intListToIDString( ids );
-         
-         String sql = "UPDATE " + tableName + " SET ";
-         
-         Iterator<CPSDatum> i = changes.iterator();
+         // Build the list of changes to commit to each record
+         String sqlChanges = "";
+         Iterator<CPSDatum> iter = changes.iterator();
          CPSDatum c;
-         
-         while ( i.hasNext() ) {
-            c = i.next();
+         while ( iter.hasNext() ) {
+            c = iter.next();
             if ( c.isValid() )
-               sql += c.getColumnName() + " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
+               sqlChanges += c.getColumnName() + " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
          }
-         
-         sql = sql.substring( 0, sql.lastIndexOf( ", " ));
-         
-         // the first space character on the following line is CRUCIAL
-         sql += " " + "WHERE id IN ( " + idString + " ) ";
-         
-         System.out.println("Attempting to execute: " + sql );
+         sqlChanges = sqlChanges.substring( 0, sqlChanges.lastIndexOf( ", " ) );
 
          
+         // Build the overall update statement for each record id
+         String sqlUpdate = "";
+         for ( int i = 0; i < changedIDs.size(); i++ ) {
+       
+            sqlUpdate += "UPDATE " + tableName + " SET " + sqlChanges;
+            
+            if ( changes instanceof CPSPlanting )
+               sqlUpdate += ", crop_id = " + cropIDs.get(i).intValue() ;
+         
+            // the first space character on the following line is CRUCIAL
+            sqlUpdate += " " + "WHERE id = " + changedIDs.get(i).intValue() + " ; ";
+         
+         }
+         
+         System.out.println("Attempting to execute: " + sqlUpdate );
          Statement st = con.createStatement();
-         st.executeUpdate( sql );
+         st.executeUpdate( sqlUpdate );
          st.close();
          
       }

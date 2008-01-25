@@ -195,21 +195,36 @@ public class HSQLQuerier {
       int CALC = 2;
       
       /* This string represents the query which will fill in the "static" fields
-       * in each planting from the corresponding fields in the crop */
-      String fillInQuery = "SELECT ";
+       * in each crop (w/ variety) from the corresponding fields in the crop (w/o variety) */
+      String cropFillInQuery = " SELECT id, ";
       for ( String[] s : colMap ) {
          if ( s[CROP_COL] == null )
-            fillInQuery += "p." + s[PLANT_COL];
-         else {
-            fillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
-            fillInQuery +=           "c." + s[CROP_COL] + " ) AS " + s[PLANT_COL];
-         }
-         fillInQuery += ", ";
+            continue;
+         cropFillInQuery += "COALESCE( c1." + s[CROP_COL] + ", ";
+         cropFillInQuery +=           "c2." + s[CROP_COL] + " ) AS " + s[CROP_COL];
+         cropFillInQuery += ", ";
       }
-      fillInQuery = fillInQuery.substring( 0, fillInQuery.lastIndexOf( ", " ));
-      fillInQuery += " FROM " + planName + " AS p, crops_varieties AS c ";
-      fillInQuery += "WHERE p.crop_name = c.crop_name AND c.var_name IS NULL ";
-//      fillInQuery += "WHERE p.crop_name = c.crop_name AND p.var_name = c.var_name ";
+      cropFillInQuery = cropFillInQuery.substring( 0, cropFillInQuery.lastIndexOf( ", " ));
+      cropFillInQuery += " FROM crops_varieties AS c1, crops_varieties AS c2 ";
+      cropFillInQuery += " WHERE c1.crop_name = c2.crop_name AND c2.var_name IS NULL";
+      
+      /* This string represents the query which will fill in the "static" fields
+       * in each planting from the corresponding fields in the crop */
+      String plantingFillInQuery = "SELECT ";
+      for ( String[] s : colMap ) {
+         if ( s[CROP_COL] == null )
+            plantingFillInQuery += "p." + s[PLANT_COL];
+         else {
+            plantingFillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
+            plantingFillInQuery +=           "c." + s[CROP_COL] + " ) AS " + s[PLANT_COL];
+         }
+         plantingFillInQuery += ", ";
+      }
+      plantingFillInQuery = plantingFillInQuery.substring( 0, plantingFillInQuery.lastIndexOf( ", " ));
+      plantingFillInQuery += " FROM " + planName + " AS p, ( " + cropFillInQuery + " ) AS c ";
+//      plantingFillInQuery += " FROM " + planName + " AS p, crops_varieties AS c ";
+//      fillInQuery += "WHERE p.crop_name = c.crop_name AND c.var_name IS NULL ";
+      plantingFillInQuery += "WHERE p.crop_id = c.id ";
       
 /**      fillInQuery += "p.id, p.crop_name, p.var_name, ";
       fillInQuery += "p.date_plant, p.date_tp, p.date_harvest, ";
@@ -227,7 +242,7 @@ public class HSQLQuerier {
             passQuery += s[PLANT_COL];
          else {
             passQuery += "COALESCE( " + s[PLANT_COL] + ", ";
-            passQuery +=            s[CALC] + " ) AS " + s[PLANT_COL];
+            passQuery +=                s[CALC] + " ) AS " + s[PLANT_COL];
          }
          passQuery += ", ";
       }
@@ -248,7 +263,7 @@ public class HSQLQuerier {
       passQuery += " rows_p_bed, time_to_tp ";
  */  
  
-      String pass1 = passQuery + " FROM ( " + fillInQuery + " ) ";
+      String pass1 = passQuery + " FROM ( " + plantingFillInQuery + " ) ";
       String pass2 = passQuery + " FROM ( " + pass1 + " ) ";
       
 //      return submitQuery( "( " + pass2 + " )", displayColumns, null, sortColumn, filterExp ); 

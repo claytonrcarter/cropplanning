@@ -39,13 +39,13 @@ public class HSQLDBSchemas {
       s += "crop_name   VARCHAR, ";
       s += "var_name    VARCHAR, ";
       s += "groups      VARCHAR, ";
-      s += "successions BOOLEAN, ";
+      s += "successions BOOLEAN, "; // TODO remove
       s += "location    VARCHAR, ";
       
       s += "keywords  VARCHAR, ";
       s += "status    VARCHAR, ";
-      s += "completed VARCHAR, ";
-      s += "fudge     FLOAT, ";
+      s += "completed BOOLEAN, ";
+      s += "fudge     FLOAT, "; // TODO remove
       s += "other_req VARCHAR, ";
       s += "notes     VARCHAR, ";
       
@@ -61,7 +61,7 @@ public class HSQLDBSchemas {
       s += "date_tp         DATE, ";
       s += "date_harvest    DATE, ";
       
-      s += "beds_to_plant   INTEGER, ";
+      s += "beds_to_plant   FLOAT, ";
       s += "rows_p_bed      INTEGER, ";
       s += "plants_needed   INTEGER, ";
       s += "rowft_to_plant  INTEGER, ";
@@ -69,7 +69,7 @@ public class HSQLDBSchemas {
       s += "row_space       FLOAT, ";
       s += "plants_to_start INTEGER, ";
       s += "flat_size       VARCHAR, ";
-      s += "flats_needed    INTEGER, ";
+      s += "flats_needed    FLOAT, ";
       s += "planter         VARCHAR, ";
       s += "planter_setting VARCHAR, ";
       
@@ -80,6 +80,8 @@ public class HSQLDBSchemas {
       
       s += "crop_unit       VARCHAR, ";
       s += "crop_unit_value FLOAT, ";
+      
+      s += "FOREIGN KEY ( crop_id ) REFERENCES crops_varieties ( id ), ";
       
       return s;
    }
@@ -110,26 +112,26 @@ public class HSQLDBSchemas {
       // ==[ PASTE ]==
       // The following columns are copied from plantingDataSchema()
       // presumably just for testing; think we'll move these back at some point?
-      s += "time_to_tp INTEGER, ";
+      s += "time_to_tp          INTEGER, ";
       
-      s += "rows_p_bed  INTEGER, ";
-      s += "space_inrow INTEGER, ";
-      s += "space_betrow   INTEGER, ";
+      s += "rows_p_bed          INTEGER, ";
+      s += "space_inrow         FLOAT, ";
+      s += "space_betrow        FLOAT, ";
       
-      s += "flat_size       VARCHAR, ";
-      s += "planter         VARCHAR, ";
-      s += "planter_setting VARCHAR, ";
+      s += "flat_size           VARCHAR, ";
+      s += "planter             VARCHAR, ";
+      s += "planter_setting     VARCHAR, ";
 
-      s += "yield_p_foot    FLOAT, ";
-      s += "yield_num_weeks INTEGER, ";
-      s += "yield_p_week    FLOAT, ";
-      s += "crop_unit       VARCHAR, ";
-      s += "crop_unit_value FLOAT, ";
+      s += "yield_p_foot        FLOAT, ";
+      s += "yield_num_weeks     INTEGER, ";
+      s += "yield_p_week        FLOAT, ";
+      s += "crop_unit           VARCHAR, ";
+      s += "crop_unit_value     FLOAT, ";
       // ==[ DONE ]==
       
-      s  += "seeds_sources      VARCHAR, ";
-      s  += "seeds_item_code    VARCHAR, ";
-      s  += "seeds_unit_size    VARCHAR, ";
+      s  += "seeds_sources      VARCHAR, "; // TODO remove; factor out
+      s  += "seeds_item_code    VARCHAR, "; // TODO remove; factor out
+      s  += "seeds_unit_size    VARCHAR, "; // TODO remove; factor out
       
       return s;
    }

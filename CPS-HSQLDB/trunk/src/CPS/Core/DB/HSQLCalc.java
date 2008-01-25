@@ -36,9 +36,7 @@ public class HSQLCalc {
       if ( harvest == null )
          return null;
       
-      System.out.println("DB CALL: calcing planting date");  
       return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateHarvest( harvest, mat ).getTime() );
-      
    }
    
    /**
@@ -59,7 +57,6 @@ public class HSQLCalc {
       if ( plant == null ) 
          return null;
       
-      System.out.println( "DB CALL: calcing harvest date" );
       return new Date( CPS.Data.CPSCalculations.calcDateHarvestFromDatePlant( plant, mat ).getTime() );
    }
    
@@ -77,14 +74,14 @@ public class HSQLCalc {
    /**
     * Calculate number of beds to plant from row feet to plant, rows/bed and bedLength.
     */
-   public static float bedsFromRowFt( int rowFt, int rowsPerBed, int bedLength ) {
+   public static double bedsFromRowFt( int rowFt, int rowsPerBed, int bedLength ) {
       return CPS.Data.CPSCalculations.calcBedsToPlantFromRowFtToPlant( rowFt, rowsPerBed, bedLength );
    }
 
    /**
     * Calculate beds to plant from number of plants needed, in row spacing, rows per bed and bed length
     */
-   public static float bedsFromPlants( int plantsNeeded, 
+   public static double bedsFromPlants( int plantsNeeded, 
                                        int inRowSpacing,
                                        int rowsPerBed,
                                        int bedLength ) {
@@ -97,11 +94,11 @@ public class HSQLCalc {
    /**
     * Calculate plants needed based on the beds to plant, in row spacing, rows per bed and bed length.
     */
-   public static int plantsFromBeds( float bedsToPlant,
-                                           int inRowSpacing,
-                                           int rowsPerBed,
-                                           int bedLength ) {
-      return CPS.Data.CPSCalculations.calcPlantsNeededFromBedsToPlant( bedsToPlant,
+   public static int plantsFromBeds( double bedsToPlant,
+                                     int inRowSpacing,
+                                     int rowsPerBed,
+                                     int bedLength ) {
+      return CPS.Data.CPSCalculations.calcPlantsNeededFromBedsToPlant( (float) bedsToPlant,
                                                                        inRowSpacing,
                                                                        rowsPerBed,
                                                                        bedLength );
@@ -117,8 +114,10 @@ public class HSQLCalc {
    /**
     * Calculate row feet to plant from beds to plant, rows/bed and bed length.
     */
-   public static int rowFtFromBeds( float bedsToPlant, int rowsPerBed, int bedLength ) {
-      return CPS.Data.CPSCalculations.calcRowFtToPlantFromBedsToPlant( bedsToPlant, rowsPerBed, bedLength );
+   public static int rowFtFromBeds( double bedsToPlant, int rowsPerBed, int bedLength ) {
+      return CPS.Data.CPSCalculations.calcRowFtToPlantFromBedsToPlant( (float) bedsToPlant, 
+                                                                               rowsPerBed,
+                                                                               bedLength );
    }
    
    /**
@@ -138,16 +137,21 @@ public class HSQLCalc {
    /**
     * Calculate number of flats needed based on plants to start and String representing flat size.
     */
-   public static float flatsNeeded( int plantsToStart, String flatSize ) {
+   public static Double flatsNeeded( int plantsToStart, String flatSize ) {
+      if ( flatSize == null ) 
+         return null;
+      
+      System.out.println("DB CALL: Calculating size of flat: " + flatSize );
+      
       int c = CPS.Data.CPSCalculations.calcFlatCapacity( flatSize );
-      return CPS.Data.CPSCalculations.calcFlatsNeeded( plantsToStart, c );
+      return new Double( CPS.Data.CPSCalculations.calcFlatsNeeded( plantsToStart, c ));
    }
    
    /**
     * Calculate total yield based on row feet to plant and yieldPerFt.
     */
-   public static float totalYieldFromRowFt( int rowFt, float yieldPerFt ) {
-      return CPS.Data.CPSCalculations.calcTotalYieldFromRowFtToPlant( rowFt, yieldPerFt );
+   public static double totalYieldFromRowFt( int rowFt, double yieldPerFt ) {
+      return CPS.Data.CPSCalculations.calcTotalYieldFromRowFtToPlant( rowFt, (float) yieldPerFt );
    }
 
 }
