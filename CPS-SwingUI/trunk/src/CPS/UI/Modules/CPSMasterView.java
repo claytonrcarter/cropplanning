@@ -20,7 +20,9 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -34,7 +36,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import sun.awt.DisplayChangedListener;
 
 /**
  *
@@ -53,6 +54,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private JPanel jplBelowList  = null;
     
     protected JTable masterTable;
+    protected JPopupMenu pupColumnList;
     private String sortColumn;
     private JTextField tfldFilter;
     private String filterString;
@@ -68,6 +70,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // the row number of the selected row.
     private int[] selectedRows = {};
     private ArrayList<Integer> selectedIDs = new ArrayList();
+    private ArrayList<ColumnNameTuple> columnList = new ArrayList();
     
     
     public CPSMasterView( CPSMasterDetailModule ui ) {
@@ -293,11 +296,61 @@ public abstract class CPSMasterView extends CPSDataModelUser
        
     }
     
+    protected abstract ArrayList<String> getDisplayableColumnList();
+    protected abstract ArrayList<String> getDefaultDisplayableColumnList();
+    protected void buildColumnListPopUpMenu() {
+       pupColumnList = new JPopupMenu();
+      
+       ArrayList<String> columnNames = getDisplayableColumnList();
+       ArrayList<String> defaultCols = getDefaultDisplayableColumnList();
+       
+       // retrieve list of columns, build tuple list w/ column and ISSELECTED
+       for ( String s : columnNames ) {
+          if ( defaultCols.contains( s ) )
+             columnList.add( new ColumnNameTuple( s, true ) );
+          else
+             columnList.add( new ColumnNameTuple( s, false ) );
+       }
+
+       updateColumnListPopUpMenu();
+       // AL should set column to SELECTED
+       // then update popup list and master list
+       // this class shouldn't do anything else, I don't think, but subclasses should 
+       
+    }
+    
+    protected void updateColumnListPopUpMenu() {
+       pupColumnList.removeAll();
+       
+       // add each item to PopupMenu, w/ BOLD == selected
+       for ( ColumnNameTuple c : columnList ) {
+          JMenuItem menuItem;
+          if ( c.selected )
+             menuItem = new JMenuItem( "<html><b>" + c.columnName + "</b></html>" );
+          else
+             menuItem = new JMenuItem( c.columnName );
+          menuItem.setActionCommand( "popup-" + c.columnName );
+          menuItem.addActionListener( this );
+          pupColumnList.add( menuItem );
+       }
+       
+    }
+    
+    protected String getDisplayedColumnList() {
+       String s = "";
+       for ( ColumnNameTuple c : columnList ) {
+          if ( c.selected )
+             s += c.columnName + ", ";
+       }
+       s = s.substring( 0, s.lastIndexOf(", ") );
+       return s;
+    }
     
     // This might happen at any time.  So we need to update our view of the data
     // whenever it happens.
     public void setDataSource( CPSDataModel dm ) {
        super.setDataSource( dm );
+       buildColumnListPopUpMenu();
        dataUpdated();
     }
     
@@ -307,7 +360,18 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private void updateListTable( TableModel tm ) {
         tm.addTableModelListener(this);
         masterTable.setModel(tm);
+    
+        masterTable.setAutoResizeMode(masterTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        for ( int colIndex = 0; colIndex < masterTable.getColumnCount(); colIndex++ ) {
+           Class c = masterTable.getColumnClass(colIndex);
+           if ( c.getName().equals( new Boolean(true).getClass().getName() ) )
+              masterTable.getColumnModel().getColumn( colIndex ).setPreferredWidth( 20 );
+           else if ( c.getName().equals( new Integer(0).getClass().getName() ) ||
+                     c.getName().equals( new Double(0).getClass().getName() ) )
+              masterTable.getColumnModel().getColumn( colIndex ).setPreferredWidth( 40 );
+        }
     }
+    
     // retrieve fresh data and display it
     protected void updateMasterList() {
         if ( !isDataAvailable() )
@@ -340,20 +404,29 @@ public abstract class CPSMasterView extends CPSDataModelUser
         // Return if not clicked on any column header
         if (vColIndex == -1)
             return;
-
-        // TODO: modify the column header to show which column is being sorted
-        //table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
-        // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
-        if ( getSortColumn() != null &&
-             getSortColumn().indexOf( table.getColumnName(vColIndex).toLowerCase() ) != -1 ) {
-           if ( getSortColumn().indexOf( "desc" ) != -1 )
-                setSortColumn( table.getColumnName(vColIndex) + " asc" );
-            else
-                setSortColumn( table.getColumnName(vColIndex) + " desc" );
+        
+        if ( evt.getButton() == evt.BUTTON1 ) {
+           // TODO: modify the column header to show which column is being sorted
+           //table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
+           // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
+           if ( getSortColumn() != null &&
+                getSortColumn().indexOf( table.getColumnName(vColIndex).toLowerCase() ) != -1 ) {
+              if ( getSortColumn().indexOf( "desc" ) != -1 )
+                   setSortColumn( table.getColumnName(vColIndex) + " asc" );
+              else
+                   setSortColumn( table.getColumnName(vColIndex) + " desc" );
+           }
+           else
+              setSortColumn( table.getColumnName( vColIndex ) );
         }
-        else
-            setSortColumn( table.getColumnName(vColIndex) );
-
+        else if ( evt.getButton() == evt.BUTTON3 ) {
+           // show popup
+           System.out.println( "SHOW POPUP!" );
+           pupColumnList.show( evt.getComponent(),
+                               evt.getX(), evt.getY() );
+           
+        }
+        
         updateMasterList();
     }
     public void mouseEntered(MouseEvent mouseEvent) {}
@@ -375,6 +448,33 @@ public abstract class CPSMasterView extends CPSDataModelUser
         if (action.equalsIgnoreCase(btnFilterClear.getText())) {
             tfldFilter.setText("");
             return;
+        }
+
+        if ( action.startsWith( "popup-" ) ) {
+           String selectedCol = action;
+           // remove the popup- and leave the column name
+           selectedCol = selectedCol.replaceFirst( "popup-", "" );
+           
+           System.out.println("Selecing column: " + selectedCol );
+           
+           for ( ColumnNameTuple c : columnList ) {
+              if ( selectedCol.equalsIgnoreCase( c.columnName )) {
+                 c.selected = ! c.selected;
+                 break;
+              }
+           }
+//           for ( int i = 0; i < columnList.size(); i++ ) {
+//              if ( selectedCol.equalsIgnoreCase( columnList.get(i).columnName )) {
+//                 columnList.set( i, new ColumnNameTuple( columnList.get(i).columnName,
+//                                                         ! columnList.get(i).selected ));
+//                 break;
+//              }
+//           }
+           
+           
+           updateColumnListPopUpMenu();
+           dataUpdated();
+           return;
         }
         
         // Note the return above, this implies that the following list of if's
@@ -425,4 +525,14 @@ public abstract class CPSMasterView extends CPSDataModelUser
       updateMasterList();
    }
     
+   
+   private class ColumnNameTuple {
+      public String columnName;
+      public boolean selected;
+      
+      public ColumnNameTuple( String name, boolean b ) {
+         columnName = name;
+         selected = b;
+      }
+   }
 }

@@ -18,6 +18,8 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
     
     public CPSTextArea( int rows, int cols ) {
         super( rows, cols );
+        setLineWrap( true );
+        setWrapStyleWord( false );
         this.getDocument().addDocumentListener( new CPSDocumentChangeListener(this) );
     }
          

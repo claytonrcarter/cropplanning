@@ -148,9 +148,10 @@ public class LayoutAssist {
 	Insets i  = new Insets( 0, 2, 2, 5 );
 	GridBagConstraints c = new GridBagConstraints();
 
-	ta.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
-							Color.GRAY,
-							Color.WHITE ));
+        // needed for when we're not using a scrollpane
+//	ta.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
+//							Color.GRAY,
+//							Color.WHITE ));
 
 	c.gridx = colStart;
 	c.gridy = rowStart;
@@ -159,7 +160,10 @@ public class LayoutAssist {
 	c.anchor = GridBagConstraints.FIRST_LINE_START;
 	c.insets = i;
 	
-	p.add( ta, c );
+        JScrollPane sp = new JScrollPane( ta );
+        
+	p.add( sp, c );
+//	p.add( ta, c );
 
     }
 
