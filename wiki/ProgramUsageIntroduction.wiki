@@ -9,6 +9,11 @@ This write up covers the program in its early development stages.  Later release
 
 The program requires the Java Runtime Environment version 1.5 or later.  Any computer than can run Java 1.5 (and the includes most computers) will be able to run this program.
 
+= Caveats =
+
+Remember, this is VERY EARLY release software.  Expect it to crash, lose your data and slit your throat while your sleep.  Any problems that exist will not be fixed unless we hear about them.  Testing is important and WE NEED YOUR HELP to test this software.
+
+
 = Concepts =
 
 It is important to understand a couple things about the simple way that this program "models" crops and plantings.  Information is "passed down" from "crops", to "varieties" and then to "plantings".  This allows you to change some common aspects of your crop plan (such as your row spacing, rows/bed, etc) without having to change EVERY entry in your plan.  
