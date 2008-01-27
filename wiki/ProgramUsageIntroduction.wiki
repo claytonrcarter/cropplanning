@@ -11,7 +11,7 @@ The program requires the Java Runtime Environment version 1.5 or later.  Any com
 
 = Caveats =
 
-Remember, this is VERY EARLY release software.  Expect it to crash, lose your data and slit your throat while your sleep.  Any problems that exist will not be fixed unless we hear about them.  Testing is important and WE NEED YOUR HELP to test this software.
+Remember, this is VERY EARLY release software.  Expect it to crash, lose your data and slit your throat while your sleep.  Any problems that exist will not be fixed unless we hear about them.  Testing is important and WE NEED YOUR HELP to test this software.  Also remember that we have an extensive of improvements that we hope to add sooner AND later and that anything you don't see in here is either on the way or overlooked.  Please [mailto:cropplanning@gmail.com let us know] what you think.
 
 
 = Concepts =
