@@ -9,32 +9,32 @@ This project is written BY farmers FOR farmers.  It is free software and, as suc
 
 == Coding ==
 
-Technical skill required: high
+_Technical skill required:_ high
 
 The project is and always will be in search of computer programmers that can help create and maintain the source code of the project.  Developers with experience in software engineering, Java and SQL are most sought.
 
 == Website ==
 
-Technical skill required: medium
+_Technical skill required:_ medium
 
 We need help creating and maintaining a website.
 
 == Testing ==
 
-Technical skill required: low
+_Technical skill required:_ low
 
 Anyone with a critical eye and an investigative nature can help out here.  Download and run the software, taking notes about bugs and other things that don't seem to work.  Be sure to keep track of how to "replicate" the problem, or how to make it happen again and again so that we can double check.  Sign up for an account at gmail code and 
 [http://code.google.com/p/cropplanning/issues/list submit issues] for us to work on.
 
 == Documentation ==
 
-Technical skill required: low
+_Technical skill required:_ low
 
 Help us create readable help documents for new users.
 
 == Spread the Word ==
 
-Technical skill required: low
+_Technical skill required:_ low
 
 If you like the software, tell all your friends!  Link to us from your website and consider speaking to local farming and gardening groups about this software.
 
