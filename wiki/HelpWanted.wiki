@@ -11,7 +11,7 @@ This project is written BY farmers FOR farmers.  It is free software and, as suc
 
 Technical skill required: high
 
-The project is and always will be in search of computer programmers that can help create and maintain the source code of the project.
+The project is and always will be in search of computer programmers that can help create and maintain the source code of the project.  Developers with experience in software engineering, Java and SQL are most sought.
 
 == Website ==
 
