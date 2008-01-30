@@ -1,4 +1,24 @@
-/* Copyright (C) Jan 20, 2008 Clayton Carter */
+/* CPSCalculations.java - created: January 2008
+ * Copyright (C) 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 
 package CPS.Data;
@@ -101,7 +121,8 @@ public class CPSCalculations {
    }
    
    public static float calcFlatsNeeded( int plantsToStart, int flatCapacity ) {
-      return plantsToStart / (float) flatCapacity;
+      return roundQuarter( plantsToStart / (float) flatCapacity );
+//      return plantsToStart / (float) flatCapacity;
    }
    
    public static int calcFlatCapacity( String flatSize ) {
@@ -125,5 +146,17 @@ public class CPSCalculations {
    
    public static float calcTotalYieldFromRowFtToPlant( int rowFt, float yieldPerFt ) {
       return rowFt * yieldPerFt;
+//      return roundQuarter( rowFt * yieldPerFt );
    }
+   
+   private static float roundQuarter( float f ) {
+       return (float) Math.ceil( f * 4 ) / 4;
+   }
+   private static float roundHalf( float f ) {
+       return (float) Math.ceil( f * 2 ) / 2;
+   }
+   private static float roundThird( float f ) {
+       return (float) Math.ceil( f * 3 ) / 3;
+   }
+   
 }

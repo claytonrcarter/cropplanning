@@ -63,13 +63,16 @@ public abstract class CPSDataModel extends CPSModule {
     */
    public abstract TableModel getCropPlan( String plan_name, String sortCol, String filterString );
    public abstract TableModel getCropPlan( String plan_name, String columns, String sortCol, String filterString );
+   public abstract CPSPlanting getSumsForCropPlan( String plan_name, String filterString );
    /* create and update */ 
    public abstract void createCropPlan(String plan_name);
    public abstract void updateCropPlan( String plan_name );
    
    /* Planting methods */
    /* retrieval */
+   public abstract ArrayList<String> getPlantingDefaultColumns();
    public abstract ArrayList<String> getPlantingDisplayableColumns();
+   public abstract ArrayList<String[]> getPlantingPrettyNames();
    public abstract CPSPlanting getPlanting( String planName, int PlantingID );
    public abstract CPSPlanting getCommonInfoForPlantings( String planName, ArrayList<Integer> plantingIDs );
    /* create and update */
@@ -80,7 +83,9 @@ public abstract class CPSDataModel extends CPSModule {
    
    /* Crop and Variety methods */
    /* retrieval */
+   public abstract ArrayList<String> getCropDefaultColumns();
    public abstract ArrayList<String> getCropDisplayableColumns();
+   public abstract ArrayList<String[]> getCropPrettyNames();
    public abstract ArrayList<String> getCropNames();
    public abstract ArrayList<String> getVarietyNames( String crop_name );
    public abstract ArrayList<String> getFamilyNames();
@@ -114,6 +119,13 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getAbbreviatedVarietyList( String sortCol, String filterString );
    public abstract TableModel getCropAndVarietyList( String sortCol, String filterString );
    public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString );
+   
+   public abstract TableModel getCropList( String columns, String sortCol, String filterString );
+   public abstract TableModel getAbbreviatedCropList( String columns, String sortCol, String filterString );
+   public abstract TableModel getVarietyList( String columns, String sortCol, String filterString );
+   public abstract TableModel getAbbreviatedVarietyList( String columns, String sortCol, String filterString );
+   public abstract TableModel getCropAndVarietyList( String columns, String sortCol, String filterString );
+   public abstract TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, String filterString );
    
    public abstract void shutdown();
    

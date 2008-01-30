@@ -1,3 +1,26 @@
+/* CPSPlanting.java
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 package CPS.Data;
 
 /**
@@ -27,7 +50,9 @@ public class CPSPlanting extends CPSRecord {
    public final int PROP_LOCATION      = CPSDataModelConstants.PROP_LOCATION;
    public final int PROP_KEYWORDS      = CPSDataModelConstants.PROP_KEYWORDS;
    public final int PROP_STATUS        = CPSDataModelConstants.PROP_STATUS;
-   public final int PROP_COMPLETED     = CPSDataModelConstants.PROP_COMPLETED;
+   public final int PROP_DONE_PLANTING = CPSDataModelConstants.PROP_DONE_PLANTING;
+   public final int PROP_DONE_TP       = CPSDataModelConstants.PROP_DONE_TP;
+   public final int PROP_DONE_HARVEST  = CPSDataModelConstants.PROP_DONE_HARVEST;
    public final int PROP_OTHER_REQ     = CPSDataModelConstants.PROP_OTHER_REQ;
    public final int PROP_NOTES         = CPSDataModelConstants.PROP_NOTES;
    public final int PROP_MATURITY      = CPSDataModelConstants.PROP_MATURITY;
@@ -59,8 +84,14 @@ public class CPSPlanting extends CPSRecord {
    public final int PROP_CROP_UNIT     = CPSDataModelConstants.PROP_CROP_UNIT;
    public final int PROP_CROP_UNIT_VALUE = CPSDataModelConstants.PROP_CROP_UNIT_VALUE;
    
+   public final int PROP_CUSTOM1       = CPSDataModelConstants.PROP_CUSTOM1;
+   public final int PROP_CUSTOM2       = CPSDataModelConstants.PROP_CUSTOM2;
+   public final int PROP_CUSTOM3       = CPSDataModelConstants.PROP_CUSTOM3;
+   public final int PROP_CUSTOM4       = CPSDataModelConstants.PROP_CUSTOM4;
+   public final int PROP_CUSTOM5       = CPSDataModelConstants.PROP_CUSTOM5;
+   
    /* from CPSDataModelConstants: this is the highest value defined there */
-   protected int lastValidProperty() { return PROP_YIELD_P_WEEK; }
+   protected int lastValidProperty() { return PROP_CUSTOM5; }
    
    private final int CONST_BED_LENGTH = 100;
    private final double CONST_FUDGE = .25;
@@ -73,7 +104,9 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<String> location;
    private CPSDatum<String> keywords;
    private CPSDatum<String> status;
-   private CPSDatum<Boolean> completed;
+   private CPSDatum<Boolean> done_plant;
+   private CPSDatum<Boolean> done_tp;
+   private CPSDatum<Boolean> done_harvest;
    private CPSDatum<String> other_req;
    private CPSDatum<String> notes;
    private CPSDatum<Integer> maturity;
@@ -84,7 +117,7 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<Integer> plants_needed;
    private CPSDatum<Integer> rowft_to_plant;
    private CPSDatum<Integer> plants_to_start;
-   private CPSDatum<Integer> flats_needed; //LATER convert to float
+   private CPSDatum<Float> flats_needed; //LATER convert to float
    
    private CPSDatum<Integer> mat_adjust;
    private CPSDatum<Integer> planting_adjust;
@@ -103,6 +136,11 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<String> crop_unit;
    private CPSDatum<Float> crop_unit_value;
 
+   private CPSDatum<String> custom1;
+   private CPSDatum<String> custom2;
+   private CPSDatum<String> custom3;
+   private CPSDatum<String> custom4;
+   private CPSDatum<String> custom5;
    
    
    public CPSPlanting() {
@@ -118,7 +156,9 @@ public class CPSPlanting extends CPSRecord {
       location = new CPSDatum<String>( "Location", PROP_LOCATION, "location", "" );
       keywords = new CPSDatum<String>( "Keywords", PROP_KEYWORDS, "keywords", "" );
       status = new CPSDatum<String>( "Status", PROP_STATUS, "status", "" );
-      completed = new CPSDatum<Boolean>( "Completed?", PROP_COMPLETED, "completed", new Boolean( false ));
+      done_plant = new CPSDatum<Boolean>( "Done Planting?", PROP_DONE_PLANTING, "done_plant", new Boolean( false ));
+      done_tp = new CPSDatum<Boolean>( "Done Transplanting?", PROP_DONE_TP, "done_tp", new Boolean( false ));
+      done_harvest = new CPSDatum<Boolean>( "Done Harvesting?", PROP_DONE_HARVEST, "done_harvest", new Boolean( false ));
       other_req = new CPSDatum<String>( "Other Requirements", PROP_OTHER_REQ, "other_req", "" );
       notes = new CPSDatum<String>( "Notes", PROP_NOTES, "notes", "" );
       maturity = new CPSDatum<Integer>( "Maturity Days", PROP_MATURITY, "maturity", new Integer(-1));
@@ -133,7 +173,7 @@ public class CPSPlanting extends CPSRecord {
       plants_needed = new CPSDatum<Integer>( "Num. Plants Needed", PROP_PLANTS_NEEDED, "plants_needed", new Integer(-1) );
       rowft_to_plant = new CPSDatum<Integer>( "Row Feet To Plant", PROP_ROWFT_PLANT, "rowft_to_plant", new Integer(-1) );
       plants_to_start = new CPSDatum<Integer>( "Num. Plants to Start", PROP_PLANTS_START, "plants_to_start", new Integer(-1) );
-      flats_needed = new CPSDatum<Integer>( "Num. Flats Needed", PROP_FLATS_NEEDED, "flats_needed", new Integer(-1) );
+      flats_needed = new CPSDatum<Float>( "Num. Flats Needed", PROP_FLATS_NEEDED, "flats_needed", new Float(-1.0) );
       
       mat_adjust = new CPSDatum<Integer>( "Mat. Adjustment", PROP_MAT_ADJUST, "mat_adjust", new Integer(-1) );
       planting_adjust = new CPSDatum<Integer>( "Add. Adjustment to Mat.", PROP_PLANTING_ADJUST, "planting_adjust", new Integer(-1) );
@@ -152,6 +192,12 @@ public class CPSPlanting extends CPSRecord {
       crop_unit = new CPSDatum<String>( "Unit of Yield", PROP_CROP_UNIT, "crop_unit", "" );
       crop_unit_value = new CPSDatum<Float>( "Value per Yield Unit", PROP_CROP_UNIT_VALUE, "crop_unit_value", new Float(-1.0));
 
+      custom1 = new CPSDatum<String>( "Custom Field 1", PROP_CUSTOM1, "custom1", "" );
+      custom2 = new CPSDatum<String>( "Custom Field 2", PROP_CUSTOM2, "custom2", "" );
+      custom3 = new CPSDatum<String>( "Custom Field 3", PROP_CUSTOM3, "custom3", "" );
+      custom4 = new CPSDatum<String>( "Custom Field 4", PROP_CUSTOM4, "custom4", "" );
+      custom5 = new CPSDatum<String>( "Custom Field 5", PROP_CUSTOM5, "custom5", "" );
+      
    }
 
 
@@ -165,7 +211,9 @@ public class CPSPlanting extends CPSRecord {
           case PROP_LOCATION:      return location;
           case PROP_KEYWORDS:      return keywords;
           case PROP_STATUS:        return status;
-          case PROP_COMPLETED:     return completed;
+          case PROP_DONE_PLANTING: return done_plant;
+          case PROP_DONE_TP:       return done_tp;
+          case PROP_DONE_HARVEST:  return done_harvest;
           case PROP_OTHER_REQ:     return other_req;
           case PROP_NOTES:         return notes;
           case PROP_MATURITY:      return maturity;
@@ -194,6 +242,12 @@ public class CPSPlanting extends CPSRecord {
           case PROP_YIELD_P_WEEK:  return yield_p_week;
           case PROP_CROP_UNIT:     return crop_unit;
           case PROP_CROP_UNIT_VALUE: return crop_unit_value;
+          
+          case PROP_CUSTOM1:       return custom1;
+          case PROP_CUSTOM2:       return custom2;
+          case PROP_CUSTOM3:       return custom3;
+          case PROP_CUSTOM4:       return custom4;
+          case PROP_CUSTOM5:       return custom5;
           
           default:
              return null;
@@ -259,16 +313,38 @@ public class CPSPlanting extends CPSRecord {
    public void setStatus( String e) { setStatus( e, false ); }
    public void setStatus( String e, boolean force ) { set( status, e, force ); }
 
-   public Boolean getCompleted() { return get( PROP_COMPLETED, new Boolean( false )).booleanValue(); }
-   public CPSDatumState getCompletedState() { return getStateOf( PROP_COMPLETED ); }
-   public void setCompleted( String s ) { 
+   public Boolean getDonePlanting() { return get( PROP_DONE_PLANTING, new Boolean( false )).booleanValue(); }
+   public CPSDatumState getDonePlantingStrate() { return getStateOf( PROP_DONE_PLANTING  ); }
+   public void setDonePlanting( String s ) { 
       if ( s != null && s.equalsIgnoreCase("true") )
-         setCompleted( true );
+         setDonePlanting( true );
       else
-         setCompleted( false );
+         setDonePlanting( false );
    }
-   public void setCompleted( Boolean b ) { setCompleted( b, false ); }
-   public void setCompleted( Boolean b, boolean force ) { set( completed, b, force ); }
+   public void setDonePlanting( Boolean b ) { setDonePlanting( b, false ); }
+   public void setDonePlanting( Boolean b, boolean force ) { set( done_plant, b, force ); }
+
+   public Boolean getDoneTP() { return get( PROP_DONE_PLANTING, new Boolean( false )).booleanValue(); }
+   public CPSDatumState getDoneTPStrate() { return getStateOf( PROP_DONE_PLANTING  ); }
+   public void setDoneTP( String s ) { 
+      if ( s != null && s.equalsIgnoreCase("true") )
+         setDoneTP( true );
+      else
+         setDoneTP( false );
+   }
+   public void setDoneTP( Boolean b ) { setDoneTP( b, false ); }
+   public void setDoneTP( Boolean b, boolean force ) { set( done_plant, b, force ); }
+
+   public Boolean getDoneHarvest() { return get( PROP_DONE_PLANTING, new Boolean( false )).booleanValue(); }
+   public CPSDatumState getDoneHarvestStrate() { return getStateOf( PROP_DONE_PLANTING  ); }
+   public void setDoneHarvest( String s ) { 
+      if ( s != null && s.equalsIgnoreCase("true") )
+         setDoneHarvest( true );
+      else
+         setDoneHarvest( false );
+   }
+   public void setDoneHarvest( Boolean b ) { setDoneHarvest( b, false ); }
+   public void setDoneHarvest( Boolean b, boolean force ) { set( done_plant, b, force ); }
 
    public String getOtherRequirments() { return get( PROP_OTHER_REQ, "" ); }
    public CPSDatumState getOtherRequirmentsState() { return getStateOf( PROP_OTHER_REQ ); }
@@ -409,7 +485,7 @@ public class CPSPlanting extends CPSRecord {
                                                                  CONST_BED_LENGTH );
       }
       else
-         return get( PROP_BEDS_PLANT, new Float( -1.0 ) ).intValue(); 
+         return get( PROP_BEDS_PLANT, new Float( -1.0 ) ).floatValue(); 
    }
    public String getBedsToPlantString() { return formatFloat( getBedsToPlant() ); }
    public CPSDatumState getBedsToPlantState() { return getStateOf( PROP_BEDS_PLANT ); }
@@ -507,7 +583,7 @@ public class CPSPlanting extends CPSRecord {
    public void setPlantsToStart( String s ) { setPlantsToStart( s, false ); }
    public void setPlantsToStart( String s, boolean force ) { setPlantsToStart( parseInt(s), force ); }
 
-   public int getFlatsNeeded() {
+   public float getFlatsNeeded() {
       CPSDatum n = getDatum( PROP_FLATS_NEEDED );
       CPSDatum p = getDatum( PROP_PLANTS_START );
       CPSDatum s = getDatum( PROP_FLAT_SIZE );
@@ -516,17 +592,17 @@ public class CPSPlanting extends CPSRecord {
              p.isAvailable() && s.isAvailable() ) {
          getDatum( PROP_FLATS_NEEDED ).setCalculated( true );
          // TODO Math.ceil()
-         return (int) CPSCalculations.calcFlatsNeeded( getPlantsToStart(),
+         return CPSCalculations.calcFlatsNeeded( getPlantsToStart(),
                                                        getFlatSizeCapacity() );
       }
-      return get( PROP_FLATS_NEEDED, new Integer( -1 )).intValue(); 
+      return get( PROP_FLATS_NEEDED, new Float( -1.0 )).floatValue(); 
    }
-   public String getFlatsNeededString() { return formatInt( getFlatsNeeded() ); }
+   public String getFlatsNeededString() { return formatFloat( getFlatsNeeded() ); }
    public CPSDatumState getFlatsNeededState() { return getStateOf( PROP_FLATS_NEEDED ); }
-   public void setFlatsNeeded( int i ) { setFlatsNeeded( i, false ); }
-   public void setFlatsNeeded( int i, boolean force ) { set( flats_needed, new Integer( i ), force ); }
+   public void setFlatsNeeded( float i ) { setFlatsNeeded( i, false ); }
+   public void setFlatsNeeded( float i, boolean force ) { set( flats_needed, new Float( i ), force ); }
    public void setFlatsNeeded( String s ) { setFlatsNeeded( s, false ); }
-   public void setFlatsNeeded( String s, boolean force ) { setFlatsNeeded( parseInt(s), force ); }
+   public void setFlatsNeeded( String s, boolean force ) { setFlatsNeeded( parseFloat(s), force ); }
    
    public int getMatAdjust() { return get( PROP_MAT_ADJUST, new Integer( -1 )).intValue(); }
    public String getMatAdjustString() { return formatInt( getMatAdjust() ); }
@@ -658,6 +734,27 @@ public class CPSPlanting extends CPSRecord {
    public void setCropYieldUnitValue( float i, boolean force ) { set( crop_unit_value, new Float( i ), force ); }
    public void setCropYieldUnitValue( String s ) { setCropYieldUnitValue( s, false ); }
    public void setCropYieldUnitValue( String s, boolean force ) { setCropYieldUnitValue( parseFloat(s), force ); }
+   
+   public String getCustomField1() { return get( PROP_CUSTOM1, "" ); }
+   public String getCustomField2() { return get( PROP_CUSTOM2, "" ); }
+   public String getCustomField3() { return get( PROP_CUSTOM3, "" ); }
+   public String getCustomField4() { return get( PROP_CUSTOM4, "" ); }
+   public String getCustomField5() { return get( PROP_CUSTOM5, "" ); }
+   public CPSDatumState getCustomField1State() { return getStateOf( PROP_CUSTOM1 ); }
+   public CPSDatumState getCustomField2State() { return getStateOf( PROP_CUSTOM2 ); }
+   public CPSDatumState getCustomField3State() { return getStateOf( PROP_CUSTOM3 ); }
+   public CPSDatumState getCustomField4State() { return getStateOf( PROP_CUSTOM4 ); }
+   public CPSDatumState getCustomField5State() { return getStateOf( PROP_CUSTOM5 ); }
+   public void setCustomField1( String s ) { setCustomField1( s, false ); }
+   public void setCustomField2( String s ) { setCustomField2( s, false ); }
+   public void setCustomField3( String s ) { setCustomField3( s, false ); }
+   public void setCustomField4( String s ) { setCustomField4( s, false ); }
+   public void setCustomField5( String s ) { setCustomField5( s, false ); }
+   public void setCustomField1( String s, boolean force ) { set( custom1, s, force ); }
+   public void setCustomField2( String s, boolean force ) { set( custom2, s, force ); }
+   public void setCustomField3( String s, boolean force ) { set( custom3, s, force ); }
+   public void setCustomField4( String s, boolean force ) { set( custom4, s, force ); }
+   public void setCustomField5( String s, boolean force ) { set( custom5, s, force ); }
    
    /* *********************************************************************************************/
    /* META METHODS - Operate on entire objects. */

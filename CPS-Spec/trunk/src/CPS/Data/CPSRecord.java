@@ -1,12 +1,25 @@
-/*
- * CPSRecord.java
+/* CPSRecord.java - Created: December 8, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on December 8, 2007, 6:39 PM by Clayton
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This is an abstract class to define the format used by all "record" data structures
- * such as CPSCrop (holding data about crop entries) and CPSPlanting (holding
- * data about individual crop plan plantings).
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 package CPS.Data;
 
@@ -16,6 +29,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.ArrayList;
 
+/**
+ * This is an abstract class to define the format used by all "record" data structures
+ * such as CPSCrop (holding data about crop entries) and CPSPlanting (holding
+ * data about individual crop plan plantings).
+ */
 public abstract class CPSRecord {
    
    public final int PROP_ID = CPSDataModelConstants.PROP_CROP_ID;

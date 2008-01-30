@@ -31,7 +31,9 @@ public class CPSDataModelConstants {
    public static final int PROP_NOTES = 24;
    public static final int PROP_SIMILAR = 25;
    public static final int PROP_STATUS = 26;
-   public static final int PROP_COMPLETED = 27;
+   public static final int PROP_DONE_PLANTING = 27;
+   public static final int PROP_DONE_TP = 28;
+   public static final int PROP_DONE_HARVEST = 29;
    
    /* maturity day info */
    public static final int PROP_MATURITY = 30;
@@ -71,5 +73,11 @@ public class CPSDataModelConstants {
    public static final int PROP_YIELD_NUM_WEEKS = 82;
    public static final int PROP_YIELD_P_WEEK  = 83;
    
+   /* custom fields */
+   public static final int PROP_CUSTOM1 = 90;
+   public static final int PROP_CUSTOM2 = 91;
+   public static final int PROP_CUSTOM3 = 92;
+   public static final int PROP_CUSTOM4 = 93;
+   public static final int PROP_CUSTOM5 = 94;
    
 }
