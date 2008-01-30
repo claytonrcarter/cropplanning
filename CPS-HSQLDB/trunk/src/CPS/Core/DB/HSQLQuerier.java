@@ -1,7 +1,23 @@
-/*
- * HSQLQuery.java
+/* HSQLQuery.java - Created: March 15, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on March 15, 2007, 9:51 AM by Clayton
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.Core.DB;
@@ -183,6 +199,20 @@ public class HSQLQuerier {
       
       return submitRawQuery( con, query, false );
    }
+
+   
+   public synchronized ResultSet submitSummedCropPlanQuery( String planName,
+                                                                ArrayList<String[]> colMap,
+                                                                ArrayList<String> displayColumns,
+                                                                String filterExp ) {
+       String sumCols = "";
+       for ( String s : displayColumns )
+           sumCols += " SUM( " + s + " ) AS " + s + ", ";
+       sumCols = sumCols.substring( 0, sumCols.lastIndexOf( ", " ) );
+       
+       return submitCalculatedCropPlanQuery( planName, colMap, sumCols, null, filterExp);
+       
+   }
    
    public synchronized ResultSet submitCalculatedCropPlanQuery( String planName,
                                                                 ArrayList<String[]> colMap,
@@ -190,85 +220,67 @@ public class HSQLQuerier {
                                                                 String sortColumn,
                                                                 String filterExp ) {
       
-      int PLANT_COL = 0;
-      int CROP_COL = 1;
-      int CALC = 2;
+       String filledInQuery = createCoalescedCropPlanQueryString( planName, colMap );
       
-      /* This string represents the query which will fill in the "static" fields
-       * in each crop (w/ variety) from the corresponding fields in the crop (w/o variety) */
-      String cropFillInQuery = " SELECT id, ";
-      for ( String[] s : colMap ) {
-         if ( s[CROP_COL] == null )
-            continue;
-         cropFillInQuery += "COALESCE( c1." + s[CROP_COL] + ", ";
-         cropFillInQuery +=           "c2." + s[CROP_COL] + " ) AS " + s[CROP_COL];
-         cropFillInQuery += ", ";
-      }
-      cropFillInQuery = cropFillInQuery.substring( 0, cropFillInQuery.lastIndexOf( ", " ));
-      cropFillInQuery += " FROM crops_varieties AS c1, crops_varieties AS c2 ";
-      cropFillInQuery += " WHERE c1.crop_name = c2.crop_name AND c2.var_name IS NULL";
+      // using pass2 in parens as the tablename; this is sort of a virtual table
+      return storeQuery( "( " + filledInQuery + " )", displayColumns, null, sortColumn, filterExp ); 
       
-      /* This string represents the query which will fill in the "static" fields
-       * in each planting from the corresponding fields in the crop */
-      String plantingFillInQuery = "SELECT ";
-      for ( String[] s : colMap ) {
-         if ( s[CROP_COL] == null )
-            plantingFillInQuery += "p." + s[PLANT_COL];
-         else {
-            plantingFillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
-            plantingFillInQuery +=           "c." + s[CROP_COL] + " ) AS " + s[PLANT_COL];
-         }
-         plantingFillInQuery += ", ";
-      }
-      plantingFillInQuery = plantingFillInQuery.substring( 0, plantingFillInQuery.lastIndexOf( ", " ));
-      plantingFillInQuery += " FROM " + planName + " AS p, ( " + cropFillInQuery + " ) AS c ";
-//      plantingFillInQuery += " FROM " + planName + " AS p, crops_varieties AS c ";
-//      fillInQuery += "WHERE p.crop_name = c.crop_name AND c.var_name IS NULL ";
-      plantingFillInQuery += "WHERE p.crop_id = c.id ";
+   }
+   
+   private String createCoalescedCropPlanQueryString( String planName, ArrayList<String[]> colMap ) {
+       
+       int PLANT_COL = 0;
+       int CROP_COL = 1;
+       int CALC = 2;
       
-/**      fillInQuery += "p.id, p.crop_name, p.var_name, ";
-      fillInQuery += "p.date_plant, p.date_tp, p.date_harvest, ";
-      fillInQuery += "COALESCE( p.maturity, c.maturity ) AS maturity, ";
-      fillInQuery += "COALESCE( p.rows_p_bed, c.rows_p_bed ) AS rows_p_bed, ";
-      fillInQuery += "COALESCE( p.time_to_tp, c.time_to_tp ) AS time_to_tp, ";
-      fillInQuery += "location, completed ";
-      fillInQuery += "FROM " + planName + " AS p, crops_varieties AS c ";
-      fillInQuery += "WHERE p.crop_name = c.crop_name AND c.var_name IS NULL";
- */
-      
-      String passQuery = "SELECT ";
-      for ( String[] s : colMap ) {
-         if ( s[CALC] == null )
-            passQuery += s[PLANT_COL];
-         else {
-            passQuery += "COALESCE( " + s[PLANT_COL] + ", ";
-            passQuery +=                s[CALC] + " ) AS " + s[PLANT_COL];
-         }
-         passQuery += ", ";
-      }
-      passQuery = passQuery.substring( 0, passQuery.lastIndexOf( ", " ));
-     
-/**      passQuery += "id, crop_name, var_name, maturity, location, completed, ";
-      passQuery += "COALESCE( date_plant, ";
-      passQuery += "\"CPS.Core.DB.HSQLCalc.plantFromHarvest\"( date_harvest, maturity ) ";
-      passQuery += ", \"CPS.Core.DB.HSQLCalc.plantFromTP\"( date_tp, time_to_tp )";
-      passQuery += " ) AS date_plant, ";
-//      passQuery += " date_tp, ";
-      passQuery += "COALESCE( date_tp, ";
-      passQuery += "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )";
-      passQuery += " ) AS date_tp, ";
-      passQuery += "COALESCE( date_harvest, ";
-      passQuery += "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity )";
-      passQuery += " ) AS date_harvest, ";
-      passQuery += " rows_p_bed, time_to_tp ";
- */  
- 
-      String pass1 = passQuery + " FROM ( " + plantingFillInQuery + " ) ";
-      String pass2 = passQuery + " FROM ( " + pass1 + " ) ";
-      
-//      return submitQuery( "( " + pass2 + " )", displayColumns, null, sortColumn, filterExp ); 
-      return storeQuery( "( " + pass2 + " )", displayColumns, null, sortColumn, filterExp ); 
-      
+       /* This string represents the query which will fill in the "static" fields
+        * in each crop (w/ variety) from the corresponding fields in the crop (w/o variety) */
+       String cropFillInQuery = " SELECT id, ";
+       for ( String[] s : colMap ) {
+           if ( s[CROP_COL] == null )
+               continue;
+           cropFillInQuery += "COALESCE( c1." + s[CROP_COL] + ", ";
+           cropFillInQuery += "c2." + s[CROP_COL] + " ) AS " + s[CROP_COL];
+           cropFillInQuery += ", ";
+       }
+       cropFillInQuery = cropFillInQuery.substring( 0, cropFillInQuery.lastIndexOf( ", " ) );
+       cropFillInQuery += " FROM crops_varieties AS c1, crops_varieties AS c2 ";
+       cropFillInQuery += " WHERE c1.crop_name = c2.crop_name AND c2.var_name IS NULL";
+
+       /* This string represents the query which will fill in the "static" fields
+        * in each planting from the corresponding fields in the crop */
+       String plantingFillInQuery = "SELECT ";
+       for ( String[] s : colMap ) {
+           if ( s[CROP_COL] == null )
+               plantingFillInQuery += "p." + s[PLANT_COL];
+           else {
+               plantingFillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
+               plantingFillInQuery += "c." + s[CROP_COL] + " ) AS " + s[PLANT_COL];
+           }
+           plantingFillInQuery += ", ";
+       }
+       plantingFillInQuery = plantingFillInQuery.substring( 0, plantingFillInQuery.lastIndexOf( ", " ) );
+       plantingFillInQuery += " FROM " + planName + " AS p, ( " + cropFillInQuery + " ) AS c ";
+       plantingFillInQuery += "WHERE p.crop_id = c.id ";
+
+       String passQuery = "SELECT ";
+       for ( String[] s : colMap ) {
+           if ( s[CALC] == null )
+               passQuery += s[PLANT_COL];
+           else {
+               passQuery += "COALESCE( " + s[PLANT_COL] + ", ";
+               passQuery += s[CALC] + " ) AS " + s[PLANT_COL];
+           }
+           passQuery += ", ";
+       }
+       passQuery = passQuery.substring( 0, passQuery.lastIndexOf( ", " ) );
+
+       String pass1 = passQuery + " FROM ( " + plantingFillInQuery + " ) ";
+       String pass2 = passQuery + " FROM ( " + pass1 + " ) ";
+       String pass3 = passQuery + " FROM ( " + pass2 + " ) ";
+
+       return pass3;
+       
    }
    
    /**

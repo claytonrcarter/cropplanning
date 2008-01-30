@@ -1,9 +1,23 @@
-/*
- * HQSLDBSchemas.java
+/* HQSLDBSchemas.java - Created: March 13, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on March 13, 2007, 11:15 AM
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.Core.DB;
@@ -44,7 +58,6 @@ public class HSQLDBSchemas {
       
       s += "keywords  VARCHAR, ";
       s += "status    VARCHAR, ";
-      s += "completed BOOLEAN, ";
       s += "fudge     FLOAT, "; // TODO remove
       s += "other_req VARCHAR, ";
       s += "notes     VARCHAR, ";
@@ -58,8 +71,11 @@ public class HSQLDBSchemas {
       s += "misc_adjust     INTEGER, ";
       
       s += "date_plant      DATE, ";
+      s += "done_plant      BOOLEAN, ";
       s += "date_tp         DATE, ";
+      s += "done_tp         BOOLEAN, ";
       s += "date_harvest    DATE, ";
+      s += "done_harvest    BOOLEAN, ";
       
       s += "beds_to_plant   FLOAT, ";
       s += "rows_p_bed      INTEGER, ";
@@ -80,6 +96,12 @@ public class HSQLDBSchemas {
       
       s += "crop_unit       VARCHAR, ";
       s += "crop_unit_value FLOAT, ";
+      
+      s += "custom1         VARCHAR, ";
+      s += "custom2         VARCHAR, ";
+      s += "custom3         VARCHAR, ";
+      s += "custom4         VARCHAR, ";
+      s += "custom5         VARCHAR, ";
       
       s += "FOREIGN KEY ( crop_id ) REFERENCES crops_varieties ( id ), ";
       
@@ -132,6 +154,13 @@ public class HSQLDBSchemas {
       s  += "seeds_sources      VARCHAR, "; // TODO remove; factor out
       s  += "seeds_item_code    VARCHAR, "; // TODO remove; factor out
       s  += "seeds_unit_size    VARCHAR, "; // TODO remove; factor out
+      
+//      s += "custom1         VARCHAR, ";
+//      s += "custom2         VARCHAR, ";
+//      s += "custom3         VARCHAR, ";
+//      s += "custom4         VARCHAR, ";
+//      s += "custom5         VARCHAR, ";
+
       
       return s;
    }

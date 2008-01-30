@@ -1,9 +1,23 @@
-/*
- * HSQLDBCreator.java
+/* HSQLDBCreator.java - Created: February 1, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on February 1, 2007, 10:09 PM
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.Core.DB;
@@ -177,7 +191,8 @@ public class HSQLDBCreator {
    
    public static int insertPlanting( Connection con, 
                                      String planName,
-                                     CPSPlanting planting ) {
+                                     CPSPlanting planting,
+                                     int cropID ) {
    
       try {
          
@@ -202,6 +217,11 @@ public class HSQLDBCreator {
          if ( cols.length() > 0 && vals.length() > 0 ) {
             cols = cols.substring( 0, cols.lastIndexOf( ", " ));
             vals = vals.substring( 0, vals.lastIndexOf( ", " ));
+         }
+         
+         if ( cropID != -1 ) {
+             cols += ", crop_id";
+             vals += ", " + cropID;
          }
          
          String sql = "INSERT INTO " + planName + " ( " + cols + " ) VALUES ( " + vals + " )";
