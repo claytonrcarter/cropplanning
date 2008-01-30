@@ -1,6 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/* CPSMasterView.java
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.UI.Modules;
@@ -15,11 +32,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -35,6 +56,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -54,8 +76,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private JPanel jplFilter = null;
     private JPanel jplBelowList  = null;
     
+    private JLabel lblStats;
+    
     protected JTable masterTable;
     protected JPopupMenu pupColumnList;
+//    private ColumnHeaderToolTips headerToolTips = new ColumnHeaderToolTips();
     private String sortColumn;
     private JTextField tfldFilter;
     private String filterString;
@@ -71,7 +96,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // the row number of the selected row.
     private int[] selectedRows = {};
     private ArrayList<Integer> selectedIDs = new ArrayList();
-    private ArrayList<ColumnNameTuple> columnList = new ArrayList();
+    private ArrayList<ColumnNameStruct> columnList = new ArrayList();
     
     
     public CPSMasterView( CPSMasterDetailModule ui ) {
@@ -135,7 +160,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
            selectedRows = masterTable.getSelectedRows();
            selectedIDs.clear();
            for ( int i : selectedRows)
-            selectedIDs.add( new Integer( getRecordIDForRow( i )) );
+                selectedIDs.add( new Integer( getRecordIDForRow( i ) ) );
            
            // for single row selection mode
 //           selectedIDs = Integer.parseInt( masterTable.getValueAt( selectedRow, -1 ).toString() );
@@ -229,12 +254,17 @@ public abstract class CPSMasterView extends CPSDataModelUser
         btnDupeRecord.setMargin( small );
         btnDeleteRecord.setMargin( small );
         
+        lblStats = new JLabel();
+        lblStats.setText("");
+        lblStats.setToolTipText("Statistics regarding displayed or selected rows in the table.");
+        
         if ( init )
             initBelowListPanel();
         jplBelowList.add( btnNewRecord );
         jplBelowList.add( btnDupeRecord );
         jplBelowList.add( btnDeleteRecord );
         jplBelowList.add( Box.createHorizontalGlue() );
+        jplBelowList.add( lblStats );
       
     }
     
@@ -246,9 +276,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
         // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
         tfldFilter.getDocument().addDocumentListener( new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-             filterString = tfldFilter.getText(); updateMasterList(); }
+             filterString = tfldFilter.getText(); dataUpdated(); }
             public void removeUpdate(DocumentEvent e) {
-             filterString = tfldFilter.getText(); updateMasterList(); }
+             filterString = tfldFilter.getText(); dataUpdated(); }
             public void changedUpdate(DocumentEvent evt) {}
        });
        
@@ -258,6 +288,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
        btnFilterClear.setFocusPainted(false);
        btnFilterClear.setBorderPainted(false);
        btnFilterClear.addActionListener(this);
+       btnFilterClear.setToolTipText("Clear filter");
        
        jplFilter = new JPanel();
        jplFilter.setLayout( new BoxLayout( jplFilter, BoxLayout.LINE_AXIS ) );
@@ -297,20 +328,35 @@ public abstract class CPSMasterView extends CPSDataModelUser
        
     }
     
+    protected abstract String getTableStatisticsString();
+    protected void updateStatisticsLabel() {
+        String stats = getTableStatisticsString();
+        
+        if ( stats == null || stats.equals("") ) {
+            lblStats.setText("");
+            lblStats.setToolTipText(null);
+        }
+        else {
+            lblStats.setText( stats );
+            lblStats.setToolTipText("Statistics regarding displayed or selected rows in the table.");
+        }
+        
+    }
+    
     protected abstract ArrayList<String> getDisplayableColumnList();
     protected abstract ArrayList<String> getDefaultDisplayableColumnList();
     protected void buildColumnListPopUpMenu() {
        pupColumnList = new JPopupMenu();
       
-       ArrayList<String> columnNames = getDisplayableColumnList();
+       ArrayList<String[]> columnNames = getColumnPrettyNameMap();
        ArrayList<String> defaultCols = getDefaultDisplayableColumnList();
        
        // retrieve list of columns, build tuple list w/ column and ISSELECTED
-       for ( String s : columnNames ) {
-          if ( defaultCols.contains( s ) )
-             columnList.add( new ColumnNameTuple( s, true ) );
+       for ( String[] s : columnNames ) {
+          if ( defaultCols.contains( s[0] ) )
+             columnList.add( new ColumnNameStruct( s[0], s[1], true ) );
           else
-             columnList.add( new ColumnNameTuple( s, false ) );
+             columnList.add( new ColumnNameStruct( s[0], s[1], false ) );
        }
 
        updateColumnListPopUpMenu();
@@ -328,24 +374,24 @@ public abstract class CPSMasterView extends CPSDataModelUser
        
        // Create and populate the submenu
        JMenu subMenu = new JMenu( "More ..." );
-       for ( ColumnNameTuple c : columnList.subList( 20, columnList.size() ) ) {
+       for ( ColumnNameStruct c : columnList.subList( 20, columnList.size() ) ) {
           JMenuItem menuItem;
           if ( c.selected )
-             menuItem = new JMenuItem( "<html><b>" + c.columnName + "</b></html>" );
+             menuItem = new JMenuItem( "<html><b>" + c.prettyName + "</b></html>" );
           else
-             menuItem = new JMenuItem( c.columnName );
+             menuItem = new JMenuItem( c.prettyName );
           menuItem.setActionCommand( "popup-" + c.columnName );
           menuItem.addActionListener( this );
           subMenu.add( menuItem );
        }
        
        // now create and populate the actual PopupMenu, w/ BOLD == selected
-       for ( ColumnNameTuple c : columnList.subList( 0, 20 ) ) {
+       for ( ColumnNameStruct c : columnList.subList( 0, 20 ) ) {
           JMenuItem menuItem;
           if ( c.selected )
-             menuItem = new JMenuItem( "<html><b>" + c.columnName + "</b></html>" );
+             menuItem = new JMenuItem( "<html><b>" + c.prettyName + "</b></html>" );
           else
-             menuItem = new JMenuItem( c.columnName );
+             menuItem = new JMenuItem( c.prettyName );
           menuItem.setActionCommand( "popup-" + c.columnName );
           menuItem.addActionListener( this );
           pupColumnList.add( menuItem );
@@ -355,9 +401,38 @@ public abstract class CPSMasterView extends CPSDataModelUser
        
     }
     
+    protected abstract ArrayList<String[]> getColumnPrettyNameMap();
+    private void updateColumnHeader() {
+        
+        ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
+        ArrayList<String[]> prettyNames = getColumnPrettyNameMap();
+        int COLNAME = 0;
+        int PRETTYNAME = 1;
+        
+        // Assign a tooltip for each of the columns
+        for ( int c = 0; c < masterTable.getColumnCount(); c++ ) {
+            String colName = masterTable.getColumnModel().getColumn( c ).getHeaderValue().toString().toLowerCase();
+            String s = null;
+            
+            for ( int l = 0; l < prettyNames.size(); l++ )
+                if ( colName.equals( prettyNames.get(l)[COLNAME]) ) {
+                    s = prettyNames.get(l)[PRETTYNAME];
+                    break;
+                }
+            
+            // Change the name to the "pretty name"
+            if ( s != null )
+                masterTable.getColumnModel().getColumn( c ).setHeaderValue( s );
+            // set the tool tip to the "pretty name"
+            tips.setToolTip( masterTable.getColumnModel().getColumn( c ), s );
+        }
+        masterTable.getTableHeader().addMouseMotionListener( tips );
+    
+    }
+    
     protected String getDisplayedColumnList() {
        String s = "";
-       for ( ColumnNameTuple c : columnList ) {
+       for ( ColumnNameStruct c : columnList ) {
           if ( c.selected )
              s += c.columnName + ", ";
        }
@@ -383,12 +458,17 @@ public abstract class CPSMasterView extends CPSDataModelUser
         masterTable.setAutoResizeMode(masterTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         for ( int colIndex = 0; colIndex < masterTable.getColumnCount(); colIndex++ ) {
            Class c = masterTable.getColumnClass(colIndex);
-           if ( c.getName().equals( new Boolean(true).getClass().getName() ) )
+           // Boolean
+           if ( c.getName().equals( new Boolean(true).getClass().getName() ) ) {
+               masterTable.getColumnModel().getColumn( colIndex ).setMaxWidth( 20 );
               masterTable.getColumnModel().getColumn( colIndex ).setPreferredWidth( 20 );
+           }
            else if ( c.getName().equals( new Integer(0).getClass().getName() ) ||
                      c.getName().equals( new Double(0).getClass().getName() ) )
               masterTable.getColumnModel().getColumn( colIndex ).setPreferredWidth( 40 );
         }
+        
+        updateColumnHeader(); 
     }
     
     // retrieve fresh data and display it
@@ -399,6 +479,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
         updateListTable( getMasterListData() );
         
     }
+    
+    protected void setStatus( String s ) {
+        uiManager.setStatus(s);
+    }
+    
     /// Abstract method to retrieve new data and then hand it off to the
     // JTable to display.  Overriding class should do the fancy work of
     // figuring out which table to query, etc.  Returns a TableModel.
@@ -463,39 +548,37 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
         System.out.println("DEBUG Action performed in CPSMasterView: " + action);
 
-        /* Button FILTER CLEAR */
+        /*
+         * FILTER BUTTON CLEAR
+         */
         if (action.equalsIgnoreCase(btnFilterClear.getText())) {
             tfldFilter.setText("");
             return;
         }
-
+        
+        /*
+         * COLUMN SELECTION POPUP WINDOW
+         */
         if ( action.startsWith( "popup-" ) ) {
            String selectedCol = action;
            // remove the popup- and leave the column name
            selectedCol = selectedCol.replaceFirst( "popup-", "" );
            
-           System.out.println("Selecing column: " + selectedCol );
-           
-           for ( ColumnNameTuple c : columnList ) {
+           for ( ColumnNameStruct c : columnList ) {
               if ( selectedCol.equalsIgnoreCase( c.columnName )) {
                  c.selected = ! c.selected;
                  break;
               }
-           }
-//           for ( int i = 0; i < columnList.size(); i++ ) {
-//              if ( selectedCol.equalsIgnoreCase( columnList.get(i).columnName )) {
-//                 columnList.set( i, new ColumnNameTuple( columnList.get(i).columnName,
-//                                                         ! columnList.get(i).selected ));
-//                 break;
-//              }
-//           }
-           
+           }           
            
            updateColumnListPopUpMenu();
            dataUpdated();
            return;
         }
         
+        /*
+         * OTHER BUTTONS: New, Dupe, Delete
+         */
         // Note the return above, this implies that the following list of if's
         // should really start with an "else"
         if ( action.equalsIgnoreCase( btnNewRecord.getActionCommand() ) ) {
@@ -507,7 +590,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
             int newID = newRecord.getID();
             // table.setSelectedRow( newID );
             uiManager.displayDetail( newRecord );
-            uiManager.setStatus( "Editing new record; save changes to add to list." );
+            setStatus( "Editing new record; save changes to add to list." );
         }
         else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
             if (!isDataAvailable()) {
@@ -542,16 +625,91 @@ public abstract class CPSMasterView extends CPSDataModelUser
    @Override
    public void dataUpdated() {
       updateMasterList();
+      updateStatisticsLabel();
+      
+      // no data in table
+      if ( masterTable.getRowCount() < 1 ) {
+          // if no records returned, we can't very well duplicate or delete any
+          btnDupeRecord.setEnabled(false);
+          btnDeleteRecord.setEnabled(false);
+          
+          // if the filter string is empty, then there really are no records
+          // else we're just created an incorrect or too restrictive filter
+          if ( getFilterString().equals("") ) {
+              tfldFilter.setEnabled(false);
+              if ( getDisplayedTableName() == null || getDisplayedTableName().equals("") )
+                  btnNewRecord.setEnabled( false );
+              else
+                  btnNewRecord.setEnabled( true );
+              setStatus( "No records found.  Use \"New\" button to create some." );
+          }
+          else {
+              btnNewRecord.setEnabled(false);
+              tfldFilter.setEnabled(true);
+              setStatus( "Filter returned no records.  Check spelling or be less specific." );
+          }
+      }
+      // table contains data; undo anything we might have just done (in the "if" clause) 
+      else {
+          btnNewRecord.setEnabled(true);
+          btnDeleteRecord.setEnabled(true);
+          btnDupeRecord.setEnabled(true);
+          tfldFilter.setEnabled(true);
+          
+          if ( selectedIDs.size() > 0 )
+              setStatus( null );
+          else
+              setStatus( "No records selected.  Select item from table above to display detailed information." );
+      }
+          
    }
     
    
-   private class ColumnNameTuple {
+   private class ColumnNameStruct {
       public String columnName;
+      public String prettyName;
       public boolean selected;
       
-      public ColumnNameTuple( String name, boolean b ) {
+      public ColumnNameStruct( String name, String pretty, boolean b ) {
          columnName = name;
+         prettyName = pretty;
          selected = b;
       }
+   }
+
+   private class ColumnHeaderToolTips extends MouseMotionAdapter {
+        // Current column whose tooltip is being displayed.
+        // This variable is used to minimize the calls to setToolTipText().
+        TableColumn curCol;
+    
+        // Maps TableColumn objects to tooltips
+        Map tips = new HashMap();
+    
+        // If tooltip is null, removes any tooltip text.
+        public void setToolTip(TableColumn col, String tooltip) {
+            if (tooltip == null) {
+                tips.remove(col);
+            } else {
+                tips.put(col, tooltip);
+            }
+        }
+    
+        public void mouseMoved(MouseEvent evt) {
+            TableColumn col = null;
+            JTableHeader header = (JTableHeader)evt.getSource();
+            JTable table = header.getTable();
+            TableColumnModel colModel = table.getColumnModel();
+            int vColIndex = colModel.getColumnIndexAtX(evt.getX());
+    
+            // Return if not clicked on any column header
+            if (vColIndex >= 0) {
+                col = colModel.getColumn(vColIndex);
+            }
+    
+            if (col != curCol) {
+                header.setToolTipText((String)tips.get(col));
+                curCol = col;
+            }
+        }
    }
 }

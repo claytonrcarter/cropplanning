@@ -1,6 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/* CPSDetailView.java
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.UI.Modules;
@@ -37,7 +54,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
     private JPanel mainPanel, jplAboveDetails, jplBelowDetails;
     protected JPanel jplDetails;
    
-    private JLabel lblChanges, lblStatus;
+    private JLabel lblChanges, lblStatus = new JLabel();
     private JButton btnSaveChanges,  btnDiscardChanges;
    
     private boolean displayRecord = false;
@@ -78,7 +95,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
         
         if ( ! isRecordDisplayed() ) {
             initMainPanel( title );
-            mainPanel.add( getNoItemSelectedLabel(), BorderLayout.CENTER );    
+            mainPanel.add( lblStatus, BorderLayout.CENTER );    
         }
         else
             rebuildMainPanel();
@@ -91,12 +108,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
         mainPanel.add( getBelowDetailsPanel(), BorderLayout.PAGE_END );
         
         uiManager.signalUIChanged();
-//        mainPanel.revalidate();
-//        uiManager.revalidate();
-    }
-   
-    protected JLabel getNoItemSelectedLabel() {
-        return new JLabel( "Select item from table to display detailed information." );
+
     }
    
     protected JPanel getAboveDetailsPanel() {
@@ -123,8 +135,6 @@ public abstract class CPSDetailView extends CPSDataModelUser
         
         Insets small = new Insets( 1, 1, 1, 1 );
       
-        lblStatus = new JLabel();
-        
         lblChanges = new JLabel( "Changes: " );
         btnSaveChanges = new JButton( "Save" );
         btnDiscardChanges = new JButton( "Discard" );
@@ -181,10 +191,12 @@ public abstract class CPSDetailView extends CPSDataModelUser
     }
 
    protected void setStatus( String s ) {
-      if ( s.toLowerCase().indexOf( "status:" ) == -1 && ! s.equals(""))
-         s = "Status: " + s;
+       if ( s == null )
+           s = "";
+       if ( s.toLowerCase().indexOf( "status:" ) == -1 && !s.equals( "" ) )
+           s = "Status: " + s;
       
-      lblStatus.setText(s);
+       lblStatus.setText( s );
    }    
    
     protected abstract void saveChangesToRecord();
