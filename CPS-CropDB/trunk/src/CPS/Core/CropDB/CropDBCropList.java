@@ -1,7 +1,23 @@
-/*
- * CropDBCropList.java
+/* CropDBCropList.java - created: March 14, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on March 14, 2007, 1:03 PM
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.Core.CropDB;
@@ -73,11 +89,11 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
           return new DefaultTableModel();
        
        if      ( radioAll.isSelected() )
-          return getDataSource().getAbbreviatedCropAndVarietyList( getSortColumn(), getFilterString() );
+          return getDataSource().getAbbreviatedCropAndVarietyList( getDisplayedColumnList(), getSortColumn(), getFilterString() );
        else if ( radioCrops.isSelected() )
-          return getDataSource().getAbbreviatedCropList( getSortColumn(), getFilterString() );
+          return getDataSource().getAbbreviatedCropList( getDisplayedColumnList(), getSortColumn(), getFilterString() );
        else if ( radioVar.isSelected() )
-          return getDataSource().getAbbreviatedVarietyList( getSortColumn(), getFilterString() );
+          return getDataSource().getAbbreviatedVarietyList( getDisplayedColumnList(), getSortColumn(), getFilterString() );
        else // nothing selected (not useful)
           return new DefaultTableModel();
     }
@@ -117,15 +133,19 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
    
    @Override
    protected ArrayList<String> getDefaultDisplayableColumnList() {
-      ArrayList<String> l = new ArrayList();
-      // crop_name is implicit and MANDATORY in dataModel
-      l.add( "var_name" );
-      l.add( "fam_name" );
-      l.add( "maturity" );
-      
-      return l;
+      return getDataSource().getCropDefaultColumns();
    }
+   
+   protected ArrayList<String[]> getColumnPrettyNameMap() {
+       return getDataSource().getCropPrettyNames();
+   }
+
+    @Override
+    protected String getTableStatisticsString() {
+        return "";
+    }
   
+   
     
 }
 
