@@ -1,3 +1,27 @@
+/* ResultSetTableModel.java
+ * Copyright © 2000-2008 O'Reilly Media, Inc. All Rights Reserved.
+ * 
+ * This file is distributed as part of the project "Crop Planning Software".
+ * For more information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * The source for this class was originally found at:
+ * 
+ *     http://www.oreillynet.com/oreilly/java/news/javaex_code.zip
+ *
+ * With an accompanying article here:
+ * 
+ *     http://www.oreillynet.com/pub/a/oreilly/java/news/javaex_1000.html
+ * 
+ * No statement is made at that site regarding the licensing of this source
+ * code.  As such we are using it AS IS and WITHOUT ANY WARRANTY; without 
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE.
+ * 
+ */
+
+
 package resultsettablemodel;
 
 import java.sql.*;

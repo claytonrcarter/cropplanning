@@ -1,6 +1,27 @@
-package jdbctablemodel;
+/* JDBCTableModel.java
+ * Copyright © 2008 SYS-CON Media. All Rights Reserved.
+ * 
+ * This file is distributed as part of the project "Crop Planning Software".
+ * For more information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * The source for this class was originally found at:
+ * 
+ *     http://photos.sys-con.com/story/res/36848/source.html
+ *
+ * With an accompanying article here:
+ * 
+ *     http://jdj.sys-con.com/read/36848.htm
+ * 
+ * No statement is made at that site regarding the licensing of this source
+ * code.  As such we are using it AS IS and WITHOUT ANY WARRANTY; without 
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE.
+ * 
+ */
 
-// from http://jdj.sys-con.com/read/36848.htm
+package jdbctablemodel;
 
 // new class. This is the table model
 import javax.swing.table.*;

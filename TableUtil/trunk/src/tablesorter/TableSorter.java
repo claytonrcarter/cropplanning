@@ -1,3 +1,26 @@
+/* TableSorter.java
+ * Copyright (C) 1995-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * This file is distributed as part of the project "Crop Planning Software".
+ * For more information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
+ *
+ * The source for this class was originally found at:
+ * 
+ *     http://java.sun.com/docs/books/tutorial/uiswing/examples/components/TableSorterDemoProject/src/components/TableSorter.java
+ *
+ * With an accompanying article here:
+ * 
+ *     http://java.sun.com/docs/books/tutorial/uiswing/components/table.html#sorting
+ * 
+ * No statement is made at that site regarding the licensing of this source
+ * code.  As such we are using it AS IS and WITHOUT ANY WARRANTY; without 
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+ * PURPOSE.
+ * 
+ */
+
 package tablesorter;
 
 import java.awt.*;
@@ -60,9 +83,6 @@ import javax.swing.table.*;
  * @author Dan van Enckevort
  * @author Parwinder Sekhon
  * @version 2.0 02/27/04
- *
- * URL http://java.sun.com/docs/books/tutorial/uiswing/components/examples/TableSorter.java
- * URL http://java.sun.com/docs/books/tutorial/uiswing/components/table.html#sorting
  */
 
 public class TableSorter extends AbstractTableModel {
