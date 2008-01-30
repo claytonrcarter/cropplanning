@@ -1,7 +1,23 @@
-/*
- * CropDBCropInfo.java
+/* CropDBCropInfo.java - created: March 15, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on March 15, 2007, 11:26 AM by Clayton
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.Core.CropPlans;
@@ -31,7 +47,7 @@ public class CropPlanInfo extends CPSDetailView {
    private CPSTextField tfldLocation, tfldStatus;
    
 //   private CPSDatum<String> status;
-   private CPSCheckBox cbCompleted;
+//   private CPSCheckBox cbCompleted;
    
    private CPSPlanting displayedPlanting;
    
@@ -131,7 +147,7 @@ public class CropPlanInfo extends CPSDetailView {
         tfldLocation.setInitialText( displayedPlanting.getLocation(),
                                    displayedPlanting.getLocationState() );
 
-        cbCompleted.setInitialState( displayedPlanting.getCompleted() );
+//        cbCompleted.setInitialState( displayedPlanting.getDonePlanting() );
         
         // TODO  tfldStatus;
    
@@ -210,7 +226,7 @@ public class CropPlanInfo extends CPSDetailView {
        if ( tfldCropYieldUnitValue.hasChanged() ) p.setCropYieldUnitValue( tfldCropYieldUnitValue.getText(), ALLOW_NULL );
        if ( tfldLocation.hasChanged() ) p.setLocation( tfldLocation.getText(), ALLOW_NULL );
            
-       if ( cbCompleted.hasChanged() ) p.setCompleted( cbCompleted.isSelected() );
+//       if ( cbCompleted.hasChanged() ) p.setDonePlanting( cbCompleted.isSelected() );
        
 // TODO:          tfldStatus;
        return p;
@@ -256,7 +272,7 @@ public class CropPlanInfo extends CPSDetailView {
       tfldCropYieldUnitValue = new CPSTextField( FIELD_LEN_SHORT );
       tfldLocation = new CPSTextField( FIELD_LEN_MED );
       
-      cbCompleted = new CPSCheckBox();
+//      cbCompleted = new CPSCheckBox();
       
 // TODO     tfldStatus;
         
@@ -281,8 +297,8 @@ public class CropPlanInfo extends CPSDetailView {
       LayoutAssist.createLabel(  jplName, 0, 2, "<html>Belongs to <br>Groups:</html>" );
       LayoutAssist.addTextArea(  jplName, 1, 2, 1, 2, tareGroups );
       
-      LayoutAssist.createLabel(  jplName, 0, 4, "Completed?" );
-      LayoutAssist.addCheckBox(  jplName, 1, 4, cbCompleted );
+//      LayoutAssist.createLabel(  jplName, 0, 4, "Completed?" );
+//      LayoutAssist.addCheckBox(  jplName, 1, 4, cbCompleted );
       
       LayoutAssist.addPanelToColumn( columnOne, jplName );
       

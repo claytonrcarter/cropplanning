@@ -1,7 +1,23 @@
-/*
- * CropDBCropList.java
+/* CropDBCropList.java - Created: March 14, 2007
+ * Copyright (C) 2007, 2008 Clayton Carter
+ * 
+ * This file is part of the project "Crop Planning Software".  For more
+ * information:
+ *    website: http://cropplanning.googlecode.com
+ *    email:   cropplanning@gmail.com 
  *
- * Created on March 14, 2007, 1:03 PM
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package CPS.Core.CropPlans;
@@ -88,7 +104,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        if ( selected != null && !selected.equals( "" ) )
           cmbxPlanList.setSelectedItem( selected );
        
-       super.dataUpdated();
+       dataUpdated();
     }
     
     protected void updateMasterList() {
@@ -128,7 +144,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         initAboveListPanel();
                 
         lblPlanName = new JLabel( "Plan Name:");
-        btnNewPlan = new JButton( "New" );
+        btnNewPlan = new JButton( "New Plan" );
         btnNewPlan.setActionCommand( "NewPlan" );
         btnNewPlan.setMargin( new Insets( 1, 1, 1, 1 ) );
         btnNewPlan.addActionListener( this );
@@ -244,16 +260,38 @@ class CropPlanList extends CPSMasterView implements ActionListener {
    
    @Override
    protected ArrayList<String> getDefaultDisplayableColumnList() {
-      ArrayList<String> l = new ArrayList();
-      // crop_name is implicit and MANDATORY in dataModel
-      l.add( "var_name" );
-      l.add( "maturity" );
-      l.add( "date_plant" );
-      l.add( "date_harvest" );
-      l.add( "completed" );
-      l.add( "location" );
-      
-      return l;
+       return getDataSource().getPlantingDefaultColumns();
    }
+   
+   protected ArrayList<String[]> getColumnPrettyNameMap() {
+       return getDataSource().getPlantingPrettyNames();
+   }
+
+    @Override
+    protected String getTableStatisticsString() {
+        if ( ! isDataAvailable() || getSelectedPlanName() == null )
+            return "";
+        
+       CPSPlanting p = getDataSource().getSumsForCropPlan( getSelectedPlanName(),
+                                                           getFilterString() );
+       String s = "";
+       s += "Plantings:" + masterTable.getRowCount() + "/";
+       s += "Beds:" + p.getBedsToPlantString() + "/";
+       s += "RowFeet:" + p.getRowFtToPlantString() + "/";
+//       s += "Plants:" + p.getPlantsNeededString() + " - ";
+       s += "Flats:" + p.getFlatsNeededString();
+       
+       return s;
+    }
     
+    @Override
+    public void dataUpdated() {
+        super.dataUpdated();
+        
+        if ( getSelectedPlanName() == null ) {
+            setStatus( "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one." );
+        }
+        
+        
+    }
 }
