@@ -142,6 +142,7 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<String> custom4;
    private CPSDatum<String> custom5;
    
+   private CPSDateValidator dateValidator;
    
    public CPSPlanting() {
       
@@ -162,10 +163,6 @@ public class CPSPlanting extends CPSRecord {
       other_req = new CPSDatum<String>( "Other Requirements", PROP_OTHER_REQ, "other_req", "" );
       notes = new CPSDatum<String>( "Notes", PROP_NOTES, "notes", "" );
       maturity = new CPSDatum<Integer>( "Maturity Days", PROP_MATURITY, "maturity", new Integer(-1));
-      // TODO these should default to first frost free date?
-//      date_plant = new CPSDatum<Calendar>( "Planting Date", PROP_DATE_PLANT, "date_plant", new GregorianCalendar() );
-//      date_tp = new CPSDatum<Calendar>( "Transplant Date", PROP_DATE_TP, "date_tp", new GregorianCalendar() );
-//      date_harvest = new CPSDatum<Calendar>( "Harvest Date", PROP_DATE_HARVEST, "date_harvest", new GregorianCalendar() );
       date_plant = new CPSDatum<Date>( "Planting Date", PROP_DATE_PLANT, "date_plant", new Date(0) );
       date_tp = new CPSDatum<Date>( "Transplant Date", PROP_DATE_TP, "date_tp", new Date(0) );
       date_harvest = new CPSDatum<Date>( "Harvest Date", PROP_DATE_HARVEST, "date_harvest", new Date(0) );
@@ -197,6 +194,8 @@ public class CPSPlanting extends CPSRecord {
       custom3 = new CPSDatum<String>( "Custom Field 3", PROP_CUSTOM3, "custom3", "" );
       custom4 = new CPSDatum<String>( "Custom Field 4", PROP_CUSTOM4, "custom4", "" );
       custom5 = new CPSDatum<String>( "Custom Field 5", PROP_CUSTOM5, "custom5", "" );
+      
+      dateValidator = new CPSDateValidator();
       
    }
 
@@ -807,16 +806,18 @@ public class CPSPlanting extends CPSRecord {
     }
 
 
-   public static Date parseDate( String s ) {
+   public Date parseDate( String s ) {
        if ( s == null || s.equals("") )
            return new Date(0);
+     
+       return dateValidator.parse(s);
        
-      try {
-         return DateFormat.getDateInstance( DateFormat.SHORT ).parse( s );
-      } catch ( Exception e ) {
-         System.err.println( "ERROR parsing date: " + s );
-         return null;
-      }
+//      try {
+//         return DateFormat.getDateInstance( DateFormat.SHORT ).parse( s );
+//      } catch ( Exception e ) {
+//         System.err.println( "ERROR parsing date: " + s );
+//         return null;
+//      }
        
 //       SimpleDateFormat sdf = new SimpleDateFormat( "dd MM yyyy" );
 //       try {
@@ -827,12 +828,16 @@ public class CPSPlanting extends CPSRecord {
 //       }
    }
    
-   public static String formatDate( Date d ) {
-      if ( d.getTime() == 0 )
+   public String formatDate( Date d ) {
+       if ( d.getTime() == 0 )
          return "";
-      else
-         return DateFormat.getDateInstance( DateFormat.SHORT ).format( d );
-
+       else
+           return dateValidator.format( d );
+       
+//      else
+//         return DateFormat.getDateInstance( DateFormat.SHORT ).format( d );
+          
+          
 //      else {
 //         SimpleDateFormat sdf = new SimpleDateFormat( "dd MM yyyy" );
 //         return sdf.format( d );

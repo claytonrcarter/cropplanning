@@ -61,9 +61,9 @@ public abstract class CPSDataModel extends CPSModule {
     * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
     * @see getCropPlan( String plan_name, String sortCol )
     */
-   public abstract TableModel getCropPlan( String plan_name, String sortCol, String filterString );
-   public abstract TableModel getCropPlan( String plan_name, String columns, String sortCol, String filterString );
-   public abstract CPSPlanting getSumsForCropPlan( String plan_name, String filterString );
+   public abstract TableModel getCropPlan( String plan_name, String sortCol, CPSComplexPlantingFilter filter );
+   public abstract TableModel getCropPlan( String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filter );
+   public abstract CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filter );
    /* create and update */ 
    public abstract void createCropPlan(String plan_name);
    public abstract void updateCropPlan( String plan_name );
@@ -73,6 +73,7 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract ArrayList<String> getPlantingDefaultColumns();
    public abstract ArrayList<String> getPlantingDisplayableColumns();
    public abstract ArrayList<String[]> getPlantingPrettyNames();
+   public abstract ArrayList<String[]> getPlantingShortNames();
    public abstract CPSPlanting getPlanting( String planName, int PlantingID );
    public abstract CPSPlanting getCommonInfoForPlantings( String planName, ArrayList<Integer> plantingIDs );
    /* create and update */
@@ -113,19 +114,19 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getCropAndVarietyList( String sortCol );
    public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol );
    
-   public abstract TableModel getCropList( String sortCol, String filterString );
-   public abstract TableModel getAbbreviatedCropList( String sortCol, String filterString );
-   public abstract TableModel getVarietyList( String sortCol, String filterString );
-   public abstract TableModel getAbbreviatedVarietyList( String sortCol, String filterString );
-   public abstract TableModel getCropAndVarietyList( String sortCol, String filterString );
-   public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString );
+   public abstract TableModel getCropList( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getAbbreviatedCropList( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getVarietyList( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getAbbreviatedVarietyList( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropAndVarietyList( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol, CPSComplexFilter filter );
    
-   public abstract TableModel getCropList( String columns, String sortCol, String filterString );
-   public abstract TableModel getAbbreviatedCropList( String columns, String sortCol, String filterString );
-   public abstract TableModel getVarietyList( String columns, String sortCol, String filterString );
-   public abstract TableModel getAbbreviatedVarietyList( String columns, String sortCol, String filterString );
-   public abstract TableModel getCropAndVarietyList( String columns, String sortCol, String filterString );
-   public abstract TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, String filterString );
+   public abstract TableModel getCropList( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getAbbreviatedCropList( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getVarietyList( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getAbbreviatedVarietyList( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filter );
    
    public abstract void shutdown();
    
