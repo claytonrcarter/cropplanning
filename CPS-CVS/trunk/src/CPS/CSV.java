@@ -30,7 +30,8 @@ import java.util.ArrayList;
 import javax.swing.table.TableModel;
 
 public class CSV extends CPSDataModel {
-   
+
+    
    CSVTableModel ctm;
    
    public CSV( String file ) {
@@ -131,12 +132,12 @@ public class CSV extends CPSDataModel {
    public TableModel getAbbreviatedVarietyList(String sortCol) { return null; }
    public TableModel getCropAndVarietyList(String sortCol) { return null; }
    public TableModel getAbbreviatedCropAndVarietyList(String sortCol) { return null; }
-   public TableModel getCropList(String sortCol, String filter) { return null; }
-   public TableModel getAbbreviatedCropList(String sortCol, String filter) { return null; }
-   public TableModel getVarietyList(String sortCol, String filter) { return null; }
-   public TableModel getAbbreviatedVarietyList(String sortCol, String filter) { return null; }
-   public TableModel getCropAndVarietyList(String sortCol, String filter) { return null; }
-   public TableModel getAbbreviatedCropAndVarietyList(String sortCol, String filter) { return null; }
+   public TableModel getCropList(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getAbbreviatedCropList(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getAbbreviatedVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getCropAndVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getAbbreviatedCropAndVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
 
    public CPSCrop getVarietyInfo(String cropName, String varName) { return null; }
    public CPSCrop getCropInfo(int CropID) { return null; }
@@ -145,7 +146,7 @@ public class CSV extends CPSDataModel {
    public void updateCropPlan(String plan_name) {}
    public TableModel getCropPlan(String plan_name) { return null; }
    public TableModel getCropPlan(String plan_name, String sortCol) { return null; }
-   public TableModel getCropPlan(String plan_name, String sortCol, String filterString) { return null; }
+   public TableModel getCropPlan(String plan_name, String sortCol, CPSComplexPlantingFilter filterString) { return null; }
    
    public CPSPlanting createPlanting( String plan_name, CPSPlanting planting ) { return null; };
    public CPSPlanting getPlanting(String planName, int PlantingID) { return null; }
@@ -180,7 +181,7 @@ public class CSV extends CPSDataModel {
    }
 
     @Override
-    public TableModel getCropPlan(String plan_name, String columns, String sortCol, String filterString) {
+    public TableModel getCropPlan(String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filterString) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -215,37 +216,41 @@ public class CSV extends CPSDataModel {
     }
 
     @Override
-    public TableModel getCropList( String columns, String sortCol, String filterString ) {
+    public TableModel getCropList( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     @Override
-    public TableModel getAbbreviatedCropList( String columns, String sortCol, String filterString ) {
+    public TableModel getAbbreviatedCropList( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     @Override
-    public TableModel getVarietyList( String columns, String sortCol, String filterString ) {
+    public TableModel getVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     @Override
-    public TableModel getAbbreviatedVarietyList( String columns, String sortCol, String filterString ) {
+    public TableModel getAbbreviatedVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     @Override
-    public TableModel getCropAndVarietyList( String columns, String sortCol, String filterString ) {
+    public TableModel getCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     @Override
-    public TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, String filterString ) {
+    public TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     @Override
-    public CPSPlanting getSumsForCropPlan( String plan_name, String filterString ) {
+    public CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filterString ) {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+   @Override
+    public ArrayList<String[]> getPlantingShortNames() {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
    
