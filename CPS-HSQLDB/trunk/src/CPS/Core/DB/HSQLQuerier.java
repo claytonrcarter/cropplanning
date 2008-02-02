@@ -130,6 +130,9 @@ public class HSQLQuerier {
                                               String sort,
                                               String filter,
                                               boolean prepared ) {
+       
+       table = HSQLDB.escapeTableName( table );
+       
       ResultSet rs;
       String query = "SELECT " + columns + " FROM " + table;
       query += putTogetherConditionalSortAndFilterString( conditional, sort, filter );
@@ -228,6 +231,8 @@ public class HSQLQuerier {
    }
    
    private String createCoalescedCropPlanQueryString( String planName, ArrayList<String[]> colMap ) {
+       
+       planName = HSQLDB.escapeTableName( planName );
        
        int PLANT_COL = 0;
        int CROP_COL = 1;

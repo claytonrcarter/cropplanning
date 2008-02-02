@@ -53,7 +53,7 @@ public class HSQLDBSchemas {
       s += "crop_name   VARCHAR, ";
       s += "var_name    VARCHAR, ";
       s += "groups      VARCHAR, ";
-      s += "successions BOOLEAN, "; // TODO remove
+      s += "direct_seed BOOLEAN, ";
       s += "location    VARCHAR, ";
       
       s += "keywords  VARCHAR, ";
@@ -155,11 +155,11 @@ public class HSQLDBSchemas {
       s  += "seeds_item_code    VARCHAR, "; // TODO remove; factor out
       s  += "seeds_unit_size    VARCHAR, "; // TODO remove; factor out
       
-//      s += "custom1         VARCHAR, ";
-//      s += "custom2         VARCHAR, ";
-//      s += "custom3         VARCHAR, ";
-//      s += "custom4         VARCHAR, ";
-//      s += "custom5         VARCHAR, ";
+      s += "custom1         VARCHAR, ";
+      s += "custom2         VARCHAR, ";
+      s += "custom3         VARCHAR, ";
+      s += "custom4         VARCHAR, ";
+      s += "custom5         VARCHAR, ";
 
       
       return s;

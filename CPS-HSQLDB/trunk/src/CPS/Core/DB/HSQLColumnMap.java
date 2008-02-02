@@ -81,6 +81,45 @@ public class HSQLColumnMap {
     }
     
     
+    public ArrayList<String[]> getPlantingShortNameMapping() {
+        return getColumnNameShortNameMapping( plantingColumnMap );
+    }
+    private ArrayList<String[]> getColumnNameShortNameMapping( ArrayList<ColumnStruct> m ) {
+        ArrayList<ColumnStruct> l = new ArrayList();
+        
+        /* collect displayable columns */
+        for ( ColumnStruct cs : m ) {
+            if ( cs.displayable )
+                l.add( cs );
+        }
+        
+        /* sort the columns to move all of the "most important" to the top */
+        Collections.sort( l, new Comparator<ColumnStruct>() { 
+                                 public int compare( ColumnStruct c1, ColumnStruct c2 ) {
+                                  if      ( c1.mostImportant == c2.mostImportant )
+                                      return 0;
+                                  else if ( c1.mostImportant && ! c2.mostImportant )
+                                      return -1;
+                                  else if ( ! c1.mostImportant && c2.mostImportant )
+                                      return 1;
+                                  else
+                                      return 0;
+                              }
+                             } );
+        
+        /* now just collect the column names from the sorted list  */
+        ArrayList<String[]> als = new ArrayList();
+        for ( ColumnStruct cs : m )
+            if ( cs.displayable )
+                if ( cs.shortColumnName == null )
+                    als.add( new String[]{ cs.columnName, cs.prettyColumnName } );
+                else
+                    als.add( new String[]{ cs.columnName, cs.shortColumnName } );
+        
+        return als;
+    }
+    
+    
     public ArrayList<String[]> getPlantingPrettyNameMapping() {
         return getColumnNamePrettyNameMapping(plantingColumnMap);
     }
@@ -225,56 +264,56 @@ public class HSQLColumnMap {
     private void buildPlantingColumnMap() {
         ArrayList<ColumnStruct> l = new ArrayList<ColumnStruct>();
 
-//      l.add( new ColumnStruct( colName,          mapsTo,            calc, mand,  disp,  filt,  def,   imp,  prettyName ));
+//      l.add( new ColumnStruct( colName,          mapsTo,            calc, mand,  disp,  filt,  def,   imp,  prettyName,        shortName ));
 
         l.add( new ColumnStruct( "id",             null,              null, true,  false, false, false, false, "" ) );
-        l.add( new ColumnStruct( "crop_name",      "crop_name",       null, true,  true,  true,  true,  true,  "Crop Name" ));
-        l.add( new ColumnStruct( "var_name",       "var_name",        null, false, true,  true,  true,  true,  "Variety Name" ));
+        l.add( new ColumnStruct( "crop_name",      "crop_name",       null, true,  true,  true,  true,  true,  "Crop Name",         "Crop" ));
+        l.add( new ColumnStruct( "var_name",       "var_name",        null, false, true,  true,  true,  true,  "Variety Name",      "Variety" ));
         l.add( new ColumnStruct( "groups",         "groups",          null, false, true,  true,  false, false, "Groups" ) );
 //        l.add( new ColumnStruct( "successions",  null,
-        l.add( new ColumnStruct( "location",       null,              null, false, true,  true,  true,  true,  "Location" ) );
+        l.add( new ColumnStruct( "location",       null,              null, false, true,  true,  true,  true,  "Location",          "Loc." ) );
         l.add( new ColumnStruct( "keywords",       "keywords",        null, false, true,  true,  false, false, "Keywords" ) );
 //        l.add( new ColumnStruct( "status",       null, null ) );
         l.add( new ColumnStruct( "other_req",      "other_req",       null, false, true,  true,  false, false, "Other Requirements" ) );
         l.add( new ColumnStruct( "notes",          null,              null, false, false, true,  false, false, "Notes" ) );
-        l.add( new ColumnStruct( "maturity",       "maturity",        null, false, true,  false, true,  true,  "Maturity Days" ) );
-        l.add( new ColumnStruct( "mat_adjust",     "mat_adjust",      null, false, true,  false, false, false, "Mat. Adjustment" ) );
+        l.add( new ColumnStruct( "maturity",       "maturity",        null, false, true,  false, true,  true,  "Maturity Days",     "Mat." ) );
+        l.add( new ColumnStruct( "mat_adjust",     "mat_adjust",      null, false, true,  false, false, false, "Mat. Adjustment",   "Mat +/-" ) );
       l.add( new ColumnStruct(  "planting_adjust", null,              null, false, true,  false, false, false, "Mat. Adjustment for Planting" ));
 //    l.add( new ColumnStruct(  "ds_adjust",       null,              null, false, true,  false, false, false, "Mat. Adjustment due to direct seeding"  ));
       l.add( new ColumnStruct(  "season_adjust",   null,              null, false, true,  false, false, false, "Seasonal Mat. Adj." ));
-      l.add( new ColumnStruct(  "time_to_tp",      "time_to_tp",      null, false, true,  false, false, true,  "Time in GH (weeks)"  ));
+      l.add( new ColumnStruct(  "time_to_tp",      "time_to_tp",      null, false, true,  false, false, true,  "Time in GH (weeks)", "Weeks in GH"   ));
       l.add( new ColumnStruct(  "misc_adjust",     "misc_adjust",     null, false, true,  false, false, false, "Misc. Mat. Adjustment"  ));
 
       l.add( new ColumnStruct(  "date_plant",      null,              "\"CPS.Core.DB.HSQLCalc.plantFromHarvest\"( date_harvest, maturity ), "
                                                                     + "\"CPS.Core.DB.HSQLCalc.plantFromTP\"( date_tp, time_to_tp )",
-                                                                            false, true,  true,  true,  true,  "Planting Date" ));
+                                                                            false, true,  true,  true,  true,  "Planting Date",       "Plant" ));
       l.add( new ColumnStruct(  "done_plant",      null,              null, false, true,  false, true,  true,  "Planted?"  ));
       l.add( new ColumnStruct(  "date_tp",         null,              "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )",
-                                                                            false, true,  true,  false, true,  "Transplant Date" ));
+                                                                            false, true,  true,  false, true,  "Transplant Date",      "TP" ));
       l.add( new ColumnStruct(  "done_tp",         null,              null, false, true,  false, false, true,  "Transplanted?"  ));
       l.add( new ColumnStruct(  "date_harvest",    null,              "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity ) ",
-                                                                            false, true,  true,  true,  true,  "Harvest Date" ));
+                                                                            false, true,  true,  true,  true,  "Harvest Date",         "Pick" ));
       l.add( new ColumnStruct(  "done_harvest",    null,              null, false, true,  false, true,  true,  "Picked?"  ));
 
 //      l.add( new ColumnStruct( colName,          mapsTo,            calc, mand,  disp,  filt,  def,   imp,  prettyName ));
       l.add( new ColumnStruct(  "beds_to_plant",   null,              "\"CPS.Core.DB.HSQLCalc.bedsFromRowFt\"( rowft_to_plant, rows_p_bed, 100 ), "
                                                                     + "\"CPS.Core.DB.HSQLCalc.bedsFromPlants\"( plants_needed, inrow_space, rows_p_bed, 100 )",
-                                                                            false, true,  false, false, true,  "Beds to Plant"  ));
+                                                                            false, true,  false, false, true,  "Beds to Plant",         "Beds"  ));
       l.add( new ColumnStruct(  "rows_p_bed",      "rows_p_bed",      null, false, true,  false, false, false, "Rows/Bed"  ));
       l.add( new ColumnStruct(  "plants_needed",   null,              "\"CPS.Core.DB.HSQLCalc.plantsFromBeds\"( beds_to_plant, inrow_space, rows_p_bed, 100 ), "
                                                                     + "\"CPS.Core.DB.HSQLCalc.plantsFromRowFt\"( rowft_to_plant, inrow_space )",
-                                                                            false, true,  false, false, true,  "Plants Needed"  ));
+                                                                            false, true,  false, false, true,  "Plants Needed",         "Plants"  ));
       l.add( new ColumnStruct(  "plants_to_start", null,              "\"CPS.Core.DB.HSQLCalc.plantsToStart\"( plants_needed, .25 )",
-                                                                            false, true,  false, false, true,  "Plants to Start (Needed + Fudge)"  ));
+                                                                            false, true,  false, false, true,  "Plants to Start (Needed + Fudge)", "Plants"  ));
       l.add( new ColumnStruct(  "rowft_to_plant",  null,              "\"CPS.Core.DB.HSQLCalc.rowFtFromBeds\"( beds_to_plant, rows_p_bed, 100 ), "
                                                                     + "\"CPS.Core.DB.HSQLCalc.rowFtFromPlants\"( plants_needed, inrow_space )",
-                                                                            false, true,  false, false, true,  "Row Feet to Plant"  ));
-      l.add( new ColumnStruct(  "inrow_space",     "space_inrow",     null, false, true,  false, false, false, "Spacing between Plants"  ));
-      l.add( new ColumnStruct(  "row_space",       "space_betrow",    null, false, true,  false, false, false, "Spacing between Rows"  ));
-      l.add( new ColumnStruct(  "flat_size",       "flat_size",       null, false, true,  true,  false, false, "GH Flat Size or Capacity"  ));
+                                                                            false, true,  false, false, true,  "Row Feet to Plant",      "Rowft"  ));
+      l.add( new ColumnStruct(  "inrow_space",     "space_inrow",     null, false, true,  false, false, false, "Spacing between Plants", "Plant Space"  ));
+      l.add( new ColumnStruct(  "row_space",       "space_betrow",    null, false, true,  false, false, false, "Spacing between Rows",   "Row Space"  ));
+      l.add( new ColumnStruct(  "flat_size",       "flat_size",       null, false, true,  true,  false, false, "GH Flat Size or Capacity", "Flat"  ));
 //      l.add( new ColumnStruct(  "flats_needed",    null,              null, false, true,  false, false, true,  "GH Flats Needed"  ));
       l.add( new ColumnStruct(  "flats_needed",    null,              "\"CPS.Core.DB.HSQLCalc.flatsNeeded\"( plants_to_start, flat_size )",
-                                                                            false, true,  false, false, true,  "GH Flats Needed"  ));
+                                                                            false, true,  false, false, true,  "GH Flats Needed",         "Flats"  ));
       l.add( new ColumnStruct(  "planter",         "planter",         null, false, true,  true,  false, false, "Planter"  ));
       l.add( new ColumnStruct(  "planter_setting", "planter_setting", null, false, true,  true,  false, false, "Planter Setting"  ));
 
@@ -302,6 +341,7 @@ public class HSQLColumnMap {
 
         public String columnName;
         public String prettyColumnName;
+        public String shortColumnName;
         public String columnDescription;
         public String correlatedColumn;
         public String calculation;
@@ -310,6 +350,20 @@ public class HSQLColumnMap {
         public boolean filterable;
         public boolean displayByDefault;
         public boolean mostImportant;
+        
+        public ColumnStruct( String colName,
+                             String mapsTo,
+                             String calc,
+                             boolean mand,
+                             boolean disp,
+                             boolean filt,
+                             boolean def,
+                             boolean imp,
+                             String prettyName,
+                             String shortName ) {
+            this( colName, mapsTo, calc, mand, disp, filt, def, imp, prettyName );
+            this.shortColumnName = shortName;
+        }
 
         public ColumnStruct( String colName,
                              String mapsTo,
@@ -330,6 +384,8 @@ public class HSQLColumnMap {
             this.filterable = filt;
             this.displayByDefault = def;
             this.mostImportant = imp;
+            
+            this.shortColumnName = null;
         }
 
     }

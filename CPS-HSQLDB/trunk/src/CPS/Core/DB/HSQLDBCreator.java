@@ -68,10 +68,13 @@ public class HSQLDBCreator {
          Statement st = con.createStatement();
    
          // Create the table for the crop plan
+         String s = createTableCropPlan( name );
+         System.out.println("Executing update: " + s );
+         
          st.executeUpdate( createTableCropPlan( name ) );
       
          // Record the plan in the table listing all of the plans.
-         String s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + HSQLDB.escapeValue( name ) + " );";
+         s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + HSQLDB.escapeValue( name ) + " );";
       
          System.out.println("Executing update: " + s );
          st.executeUpdate( s );
@@ -84,7 +87,7 @@ public class HSQLDBCreator {
    public static void deleteRecord( Connection con, String table, int row ) {
       
        try {
-           String s = "DELETE FROM " + table + " WHERE id = " + row;
+           String s = "DELETE FROM " + HSQLDB.escapeTableName(table) + " WHERE id = " + row;
       
            System.out.println("Executing update: " + s);
            Statement st = con.createStatement();
@@ -118,7 +121,7 @@ public class HSQLDBCreator {
       if ( table_def.endsWith( ", " ))
          table_def = table_def.substring( 0, table_def.length() - 2 );
       
-      return "CREATE TABLE " + name + " ( " + table_def + " ) ";
+      return "CREATE TABLE " + HSQLDB.escapeTableName( name ) + " ( " + table_def + " ) ";
    }
    
    public static int insertCrop( Connection con, CPSCrop crop ) {
@@ -224,7 +227,7 @@ public class HSQLDBCreator {
              vals += ", " + cropID;
          }
          
-         String sql = "INSERT INTO " + planName + " ( " + cols + " ) VALUES ( " + vals + " )";
+         String sql = "INSERT INTO " + HSQLDB.escapeTableName( planName ) + " ( " + cols + " ) VALUES ( " + vals + " )";
          
          System.out.println( "Attempting to execute: " + sql );
          
@@ -307,7 +310,7 @@ public class HSQLDBCreator {
          String sqlUpdate = "";
          for ( int i = 0; i < changedIDs.size(); i++ ) {
        
-            sqlUpdate += "UPDATE " + tableName + " SET " + sqlChanges;
+            sqlUpdate += "UPDATE " + HSQLDB.escapeTableName( tableName ) + " SET " + sqlChanges;
             
             if ( changes instanceof CPSPlanting )
                sqlUpdate += ", crop_id = " + cropIDs.get(i).intValue() ;

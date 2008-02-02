@@ -22,16 +22,22 @@
 
 package CPS.Core.DB;
 
+import CPS.Data.CPSDateValidator;
+import CPS.Module.CPSDataUser;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import resultsettablemodel.*;
 
 public class HSQLTableModel extends ResultSetTableModel {
    
+    private static final boolean DEBUG = true;
+    
    private boolean idInResults = false;
    private String tableName = null;
+   
+   private CPSDateValidator dateValidator;
    
    public HSQLTableModel( ResultSet resSet ) throws SQLException {
       super(resSet);
@@ -43,6 +49,11 @@ public class HSQLTableModel extends ResultSetTableModel {
       if ( metadata.getColumnLabel( 1 ).equalsIgnoreCase( "id" ) )
          idInResults = true;
       
+      dateValidator = new CPSDateValidator();
+      dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
+      dateValidator.setDefaultFormat( CPSDateValidator.DATE_FORMAT_SQL );
+              
+      
       // TODO find boolean columns and set renderer/editor to a JCheckBox
       // TODO adjust the width of the columns downward
       //      this could be really fancy, averaging the width of all of the contents
@@ -50,13 +61,27 @@ public class HSQLTableModel extends ResultSetTableModel {
       //      numbers, booleans and dates
       
    }
-
+   
    public HSQLTableModel( ResultSet rs, String tableName ) throws SQLException {
       this( rs );
       setTableName( tableName );
    }
    
     public boolean isCellEditable(int row, int column) { return true; } 
+    
+    @Override
+    public int getRowCount() {
+        try {
+            results.last();                      // Move to last row
+            return results.getRow();             // How many rows?
+        }
+        catch ( Exception e ) {
+            System.err.println("NonFatal Exception:");
+            e.printStackTrace();
+            return super.getRowCount();
+        }
+    }
+    
     public int getColumnCount() {
        int cols = super.getColumnCount();
        if ( idInResults )
@@ -85,7 +110,6 @@ public class HSQLTableModel extends ResultSetTableModel {
        return o;
     }
     
-    // Since its not editable, we don't need to implement these methods
     public void setValueAt(Object value, int row, int column) {
     
        if ( idInResults )
@@ -94,24 +118,17 @@ public class HSQLTableModel extends ResultSetTableModel {
        
        try {
       
-           String val = value.toString();
-           System.out.println("Setting column " + metadata.getCatalogName(column) +
-                              " (num: " + column +
-                              ", type: " + metadata.getColumnTypeName( column ) +
-                              "), row " + row + ": to " + value.toString());
-        
-          if      ( val.equals( "" ))
+          String val = "";
+          if      ( value == null || value.toString().equals( "" ))
              val = "NULL";
-          else if ( metadata.getColumnType(column+1) == java.sql.Types.VARCHAR ||
-                    metadata.getColumnType(column+1) == java.sql.Types.CHAR    ||
-                    metadata.getColumnType(column+1) == java.sql.Types.LONGVARCHAR ) 
-             val = HSQLDB.escapeValue( val );
-          else if ( metadata.getColumnType(column+1) == java.sql.Types.DATE ) {
-              SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd");
-              val = HSQLDB.escapeValue(sdf.parse((String) val));
-          }
- 
-          System.out.println( "Value escaped for SQL as: \"" + val + "\"" );
+          else
+             val = HSQLDB.escapeValue( value );
+
+           if ( DEBUG )
+               System.out.println( "Setting column " + metadata.getCatalogName( column ) +
+                                   " (num: " + column +
+                                   ", type: " + metadata.getColumnTypeName( column ) +
+                                   "), row " + row + ": to " + val );
           
           results.absolute(row+1);
           String sql = "UPDATE " + this.getTableName() + " ";
@@ -119,13 +136,15 @@ public class HSQLTableModel extends ResultSetTableModel {
           sql += "WHERE id = " + results.getInt( "id" );
           // sql += "WHERE " + metadata.getColumnName(1) + " = " + results.getInt(1);
           
-          System.out.println( "Attempting to execute: " + sql );
+          if ( DEBUG )
+               System.out.println( "Attempting to execute: " + sql );
 
           // HACK!
           // this makes the change to the DB
           results.getStatement().getConnection().createStatement().executeUpdate( sql );
           // this refreshes our copy of the data from the query stored by PreparedStatement
           results = ((PreparedStatement) results.getStatement()).executeQuery();
+          updateMetaData();
           
           fireTableDataChanged();
          
@@ -157,9 +176,10 @@ public class HSQLTableModel extends ResultSetTableModel {
        catch ( Exception e ) { e.printStackTrace(); }
        
        if      ( type == null ||
-                 type.equalsIgnoreCase("VARCHAR") ||
-                 type.equalsIgnoreCase("DATE") )
+                 type.equalsIgnoreCase("VARCHAR") )
           return new String().getClass();
+       else if ( type.equalsIgnoreCase("DATE") )
+          return new Date().getClass();
        else if ( type.equalsIgnoreCase("INTEGER") )
           return new Integer(0).getClass();
        else if ( type.equalsIgnoreCase("FLOAT") )
@@ -170,6 +190,20 @@ public class HSQLTableModel extends ResultSetTableModel {
           return new String().getClass();
        
    }
+    
+    
+   private void updateMetaData() {
+       try {
+           metadata = results.getMetaData();       // Get metadata on them
+       }
+       catch ( SQLException e ) {
+           e.printStackTrace();
+       }
+   }
+
+    
+
+   
     
     
 }

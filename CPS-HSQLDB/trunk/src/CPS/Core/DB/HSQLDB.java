@@ -39,6 +39,8 @@ import resultsettablemodel.*;
  */
 public class HSQLDB extends CPSDataModel {
    
+    private static final boolean DEBUG = true;
+    
    private Connection con;
    private final String hsqlDriver = "org.hsqldb.jdbcDriver";
    private final String dbDir = System.getProperty("user.dir");
@@ -49,10 +51,7 @@ public class HSQLDB extends CPSDataModel {
    private ResultSet rsPlantCache = null;
    public String state = null;
    
-//   private ArrayList<String> cropColumnList, plantingColumnList;
-//   private ArrayList<String[]> plantingCropColumnMapping;
    private HSQLColumnMap columnMap;
-   
    private HSQLQuerier query;
    
    public HSQLDB() {
@@ -78,11 +77,7 @@ public class HSQLDB extends CPSDataModel {
       }
       
       columnMap = new HSQLColumnMap();
-      
-//      plantingCropColumnMapping = buildPlantingCropColumnMapping();
-//      cropColumnList = buildCropColumnList();
-//      buildPlantingColumnList();
-      
+ 
    }
    
    private synchronized ArrayList<String> getDistinctValuesForColumn( String table, String column ) {
@@ -204,6 +199,10 @@ public class HSQLDB extends CPSDataModel {
       return columnMap.getPlantingPrettyNameMapping(); 
    }
    
+   public ArrayList<String[]> getPlantingShortNames() {
+      return columnMap.getPlantingShortNameMapping(); 
+   }
+   
    private String getAbbreviatedCropPlanColumnNames() {
        return listToCSVString( columnMap.getDefaultPlantingColumnList() );
    }
@@ -247,15 +246,15 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getAbbreviatedCropList( String sortCol ) {
       return getAbbreviatedCropList( sortCol, null );
    }
-   public TableModel getAbbreviatedCropList( String sortCol, String filterString ) {
-       return getAbbreviatedCropList( getAbbreviatedCropVarColumnNames( false ), sortCol, filterString );
+   public TableModel getAbbreviatedCropList( String sortCol, CPSComplexFilter filter ) {
+       return getAbbreviatedCropList( getAbbreviatedCropVarColumnNames( false ), sortCol, filter );
    }
-   public TableModel getAbbreviatedCropList( String columns, String sortCol, String filterString ) {
+   public TableModel getAbbreviatedCropList( String columns, String sortCol, CPSComplexFilter filter ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
                                    includeMandatoryColumns(columns),
                                    "var_name IS NULL",
                                    sortCol,
-                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
+                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ));
    }
    
    public TableModel getCropList() { 
@@ -264,12 +263,12 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getCropList( String sortCol ) { 
       return getCropList( sortCol, null );
    }   
-   public TableModel getCropList( String sortCol, String filterString ) { 
-      return getCropList( getCropsColumnNames(), sortCol, filterString );
+   public TableModel getCropList( String sortCol, CPSComplexFilter filter ) { 
+      return getCropList( getCropsColumnNames(), sortCol, filter );
    }
-   public TableModel getCropList( String columns, String sortCol, String filterString ) { 
+   public TableModel getCropList( String columns, String sortCol, CPSComplexFilter filter ) { 
       return cachedListTableQuery( "CROPS_VARIETIES", includeMandatoryColumns(columns), null, sortCol,
-                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
+                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ));
    }
    
    public TableModel getVarietyList() {
@@ -278,12 +277,12 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getVarietyList( String sortCol ) {
       return getVarietyList( sortCol, null );
    }
-   public TableModel getVarietyList( String sortCol, String filterString ) {
-       return getVarietyList( getVarietiesColumnNames(), sortCol, filterString );
+   public TableModel getVarietyList( String sortCol, CPSComplexFilter filter ) {
+       return getVarietyList( getVarietiesColumnNames(), sortCol, filter );
    }
-   public TableModel getVarietyList( String columns, String sortCol, String filterString ) {
+   public TableModel getVarietyList( String columns, String sortCol, CPSComplexFilter filter ) {
       return cachedListTableQuery( "CROPS_VARIETIES", includeMandatoryColumns(columns), null, sortCol,
-                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
+                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ));
    }
 
    public TableModel getAbbreviatedVarietyList() {
@@ -292,15 +291,15 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getAbbreviatedVarietyList( String sortCol ) {
       return getAbbreviatedVarietyList( sortCol, null ); 
    }
-   public TableModel getAbbreviatedVarietyList( String sortCol, String filterString ) {
-       return getAbbreviatedCropAndVarietyList( getAbbreviatedCropVarColumnNames( true ), sortCol, filterString );
+   public TableModel getAbbreviatedVarietyList( String sortCol, CPSComplexFilter filter ) {
+       return getAbbreviatedCropAndVarietyList( getAbbreviatedCropVarColumnNames( true ), sortCol, filter );
    }
-   public TableModel getAbbreviatedVarietyList( String columns, String sortCol, String filterString ) {
+   public TableModel getAbbreviatedVarietyList( String columns, String sortCol, CPSComplexFilter filter ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
                                    includeMandatoryColumns(columns),
                                    "var_name IS NOT NULL",
                                    sortCol,
-                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString )); 
+                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter )); 
    }
    
    public TableModel getCropAndVarietyList() {
@@ -309,12 +308,12 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getCropAndVarietyList( String sortCol ) {
       return getCropAndVarietyList( sortCol, null );
    }
-   public TableModel getCropAndVarietyList( String sortCol, String filterString ) {
-       return getCropAndVarietyList( getCropsColumnNames(), sortCol, filterString );
+   public TableModel getCropAndVarietyList( String sortCol, CPSComplexFilter filter ) {
+       return getCropAndVarietyList( getCropsColumnNames(), sortCol, filter );
    }
-   public TableModel getCropAndVarietyList( String columns, String sortCol, String filterString ) {
+   public TableModel getCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filter ) {
       return cachedListTableQuery( "CROPS_VARIETIES", includeMandatoryColumns(columns), null, sortCol,
-                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ));
+                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ));
    }
    
    public TableModel getAbbreviatedCropAndVarietyList() {
@@ -323,12 +322,12 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getAbbreviatedCropAndVarietyList( String sortCol ) {
       return getAbbreviatedCropAndVarietyList( sortCol, null );
    }
-   public TableModel getAbbreviatedCropAndVarietyList( String sortCol, String filterString ) {
-       return getAbbreviatedCropAndVarietyList( getAbbreviatedCropVarColumnNames( true ), sortCol, filterString );
+   public TableModel getAbbreviatedCropAndVarietyList( String sortCol, CPSComplexFilter filter ) {
+       return getAbbreviatedCropAndVarietyList( getAbbreviatedCropVarColumnNames( true ), sortCol, filter );
    }
-   public TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, String filterString ) {
+   public TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filter ) {
       return cachedListTableQuery( "CROPS_VARIETIES", includeMandatoryColumns(columns), null, sortCol,
-                                   buildFilterExpression( getCropVarFilterColumnNames(), filterString ) );
+                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ) );
    }
 
    /*
@@ -351,23 +350,23 @@ public class HSQLDB extends CPSDataModel {
       return getCropPlan( plan_name, sortCol, null );
    }
 
-   public TableModel getCropPlan( String plan_name, String sortCol, String filterString ) {
-      return getCropPlan( plan_name, getAbbreviatedCropPlanColumnNames(), sortCol, filterString );
+   public TableModel getCropPlan( String plan_name, String sortCol, CPSComplexPlantingFilter filter ) {
+      return getCropPlan( plan_name, getAbbreviatedCropPlanColumnNames(), sortCol, filter );
    }
    
-   public TableModel getCropPlan( String plan_name, String columns, String sortCol, String filterString ) {
+   public TableModel getCropPlan( String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filter ) {
       return HSQLQuerier.tableResults( 
               query.submitCalculatedCropPlanQuery( plan_name, 
                                                    getPlantingCropColumnMapping(),
                                                    includeMandatoryColumns(columns),
                                                    sortCol,
-                                                   buildFilterExpression( this.getCropPlanFilterColumnNames(),
-                                                                          filterString ) ),
+                                                   buildComplexFilterExpression( this.getCropPlanFilterColumnNames(),
+                                                                                 filter ) ),
                plan_name );
       
    }
 
-   public CPSPlanting getSumsForCropPlan( String plan_name, String filterString ) {
+   public CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filter ) {
        ArrayList<String> colsToSum = new ArrayList<String>( 4 );
        colsToSum.add( "beds_to_plant" );
        colsToSum.add( "rowft_to_plant" );
@@ -379,8 +378,8 @@ public class HSQLDB extends CPSDataModel {
            return resultSetAsPlanting( query.submitSummedCropPlanQuery( plan_name,
                                                                         getPlantingCropColumnMapping(),
                                                                         colsToSum,
-                                                                        buildFilterExpression( this.getCropPlanFilterColumnNames(),
-                                                                                               filterString )));
+                                                                        buildComplexFilterExpression( this.getCropPlanFilterColumnNames(),
+                                                                                               filter )));
        }
        catch ( SQLException e ) {
            e.printStackTrace();
@@ -771,6 +770,14 @@ public class HSQLDB extends CPSDataModel {
          return o.toString();
    }
 
+   public static String escapeTableName( String t ) {
+       // if t starts with a digit, then escape it
+       if ( t.matches("^\\d.*") )
+           return "\"" + t + "\"";
+       else
+           return t;
+   }
+   
    /** captureValue methods are opposite of escapeValue method.
     *  Takes an SQL value and converts it to the correct "default" or "null"
     *  value for our program.
@@ -825,8 +832,75 @@ public class HSQLDB extends CPSDataModel {
    }
    
    
+   /* based upon a complex filter including various boolean values and a
+    * space delimited uesr input, create an 
+    * SQL expression that can be used as a WHERE clause.  Does not include
+    * the WHERE keyword
+    */
+   private String buildComplexFilterExpression( ArrayList<String> colList, CPSComplexPlantingFilter filter ) {
+       
+       String filterString = buildGeneralFilterExpression( colList, filter );
+       
+       if ( filterString == null )
+           filterString = "";
+       
+       if ( filter.isViewLimited() ) {
+          
+           if ( ! filterString.equals( "" ) )
+               filterString += " AND ";
+       
+           if ( filter.filterOnPlantingMethod() )
+               filterString += "time_to_tp " + (( filter.isDirectSeeded() ) ? " IS " : " IS NOT " ) + " NULL AND ";
+           
+           if ( filter.filterOnPlanting() )
+               filterString += "done_plant = " + (( filter.isDonePlanting() ) ? "TRUE " : "FALSE " ) + " AND ";
+           if ( filter.filterOnTransplanting() )
+               filterString += "done_tp = " + (( filter.isDoneTransplanting() ) ? "TRUE " : "FALSE " ) + " AND ";
+           if ( filter.filterOnHarvest() )
+               filterString += "done_harvest = " + (( filter.isDoneHarvesting() ) ? "TRUE " : "FALSE " ) + " AND ";
+       
+           // TODO add date filters
+           if ( filter.filterOnPlantingDate() )
+               if      ( filter.getPlantingRangeEnd() == null )
+                   filterString += "date_plant >= " + escapeValue( filter.getPlantingRangeStart() ) + " AND ";
+               else if ( filter.getPlantingRangeStart() == null )
+                   filterString += "date_plant <= " + escapeValue( filter.getPlantingRangeEnd() ) + " AND ";
+               else // both != null
+                   filterString += "date_plant BETWEEN " + escapeValue( filter.getPlantingRangeStart() ) + " AND " +
+                                                           escapeValue( filter.getPlantingRangeEnd() ) + " AND ";
+           
+           if ( filter.filterOnTPDate() )
+               if      ( filter.getTpRangeEnd() == null )
+                   filterString += "date_tp >= " + escapeValue( filter.getTpRangeStart() ) + " AND ";
+               else if ( filter.getTpRangeStart() == null )
+                   filterString += "date_tp <= " + escapeValue( filter.getTpRangeEnd() ) + " AND ";
+               else // both != null
+                   filterString += "date_tp BETWEEN " + escapeValue( filter.getTpRangeStart() ) + " AND " +
+                                                        escapeValue( filter.getTpRangeEnd() ) + " AND ";
+           
+           if ( filter.filterOnHarvestDate() )
+               if      ( filter.getHarvestDateEnd() == null )
+                   filterString += "date_harvest >= " + escapeValue( filter.getHarvestDateStart() ) + " AND ";
+               else if ( filter.getHarvestDateStart() == null )
+                   filterString += "date_harvest <= " + escapeValue( filter.getHarvestDateEnd() ) + " AND ";
+               else // both != null
+                   filterString += "date_harvest BETWEEN " + escapeValue( filter.getHarvestDateStart() ) + " AND " +
+                                                             escapeValue( filter.getHarvestDateEnd() ) + " AND ";
+           
+           filterString = filterString.substring( 0, filterString.lastIndexOf( " AND " ));
+       }
+           
+       return filterString;
+       
+   }
    
-   private String buildFilterExpression( ArrayList<String> colList, String filterString ) {
+   /* based upon a simple filter of space delimited uesr input, create an 
+    * SQL expression that can be used as a WHERE clause.  Does not include
+    * the WHERE
+    */
+   private String buildGeneralFilterExpression( ArrayList<String> colList, CPSComplexFilter filter ) {
+      String filterString = filter.getFilterString();
+       
       if ( filterString == null || filterString.length() == 0 )
          return null;
       
@@ -836,6 +910,10 @@ public class HSQLDB extends CPSDataModel {
       String exp = "";
       // loop over the filter string (seperated by spaces)
       for ( String filt : filterString.split(" ") ) {
+          
+          // for cases where just spaces or double spaces are entered
+          if ( filt.length() == 0 )
+              continue;
           
           // loop over the list of column names (seperated by commas)
           for ( String col : colList ) {
@@ -847,14 +925,20 @@ public class HSQLDB extends CPSDataModel {
           // remove the last " OR " and tack on an " AND "
           exp = " ( " + exp.substring( 0, exp.lastIndexOf( " OR " )) + " ) AND ";
       }
+
       // strip off the final " AND "
-      return exp.substring( 0, exp.lastIndexOf( " AND " ));
+      if ( exp.length() > 0 )
+           exp = exp.substring( 0, exp.lastIndexOf( " AND " ) );
+      
+       return exp;
+       
    }
    
    public void shutdown() {
       try {
-//         Statement st = con.createStatement();
-//         st.execute("SHUTDOWN");
+          // TODO check to see which which mode we're in: if server, don't do the following
+         Statement st = con.createStatement();
+         st.execute("SHUTDOWN");
          con.close();
       }
       catch ( SQLException ex ) {
