@@ -22,9 +22,11 @@
 
 package CPS.UI.Modules;
 
+import CPS.Data.CPSComplexFilter;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
+import CPS.UI.Swing.CPSTable;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -73,23 +75,24 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private JPanel masterListPanel = null;
     protected JPanel jplAboveList = null;
     private JPanel jplList = null;
-    private JPanel jplFilter = null;
+    protected JPanel jplFilter = null;
     private JPanel jplBelowList  = null;
     
     private JLabel lblStats;
     
-    protected JTable masterTable;
+    protected CPSTable masterTable;
     protected JPopupMenu pupColumnList;
 //    private ColumnHeaderToolTips headerToolTips = new ColumnHeaderToolTips();
     private String sortColumn;
     private JTextField tfldFilter;
-    private String filterString;
+//    private String filterString;
     
     private JButton btnFilterClear;
 
     private JButton btnNewRecord, btnDupeRecord, btnDeleteRecord;
     
     private CPSMasterDetailModule uiManager;
+    protected CPSComplexFilter filter;
     
     private int detailRow = -1;
     /// selectedID is the ID of the currently selected record (as opposed to
@@ -101,7 +104,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     public CPSMasterView( CPSMasterDetailModule ui ) {
        uiManager = ui;
-       filterString = "";
+       filter = new CPSComplexFilter();
+//       filterString = "";
        setSortColumn( "" );
        
        buildMainPanel( null );
@@ -268,30 +272,38 @@ public abstract class CPSMasterView extends CPSDataModelUser
       
     }
     
+    protected void initFilterPanel() {
+        jplFilter = new JPanel();
+        jplFilter.setLayout( new BoxLayout( jplFilter, BoxLayout.LINE_AXIS ) );
+        jplFilter.add( Box.createHorizontalGlue() );
+    }
     protected JPanel buildFilterComponent() {
+        return buildFilterComponent(true);
+    }
+    protected JPanel buildFilterComponent( boolean init ) {
         
         tfldFilter = new JTextField(10);
         tfldFilter.setMaximumSize(tfldFilter.getPreferredSize());
         // HACK! TODO, improve this; possibly by implementing a delay?
         // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
         tfldFilter.getDocument().addDocumentListener( new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-             filterString = tfldFilter.getText(); dataUpdated(); }
-            public void removeUpdate(DocumentEvent e) {
-             filterString = tfldFilter.getText(); dataUpdated(); }
+            public void insertUpdate(DocumentEvent e) { updateFilter(); }
+            public void removeUpdate(DocumentEvent e) { updateFilter(); }
             public void changedUpdate(DocumentEvent evt) {}
        });
        
        btnFilterClear = new JButton( "X" );
        btnFilterClear.setMargin( new Insets( 0, 0, 0, 0 ));
+//       btnFilterClear.setMaximumSize( new Dimension( 20, btnFilterClear.getSize().height ));
        btnFilterClear.setContentAreaFilled(false);
        btnFilterClear.setFocusPainted(false);
        btnFilterClear.setBorderPainted(false);
        btnFilterClear.addActionListener(this);
        btnFilterClear.setToolTipText("Clear filter");
        
-       jplFilter = new JPanel();
-       jplFilter.setLayout( new BoxLayout( jplFilter, BoxLayout.LINE_AXIS ) );
+       if ( init )
+           initFilterPanel();
+       
        jplFilter.add( tfldFilter );
        jplFilter.add( btnFilterClear );
        return jplFilter;
@@ -308,18 +320,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     protected void buildListPanel() {
        
-       masterTable = new JTable();
+       masterTable = new CPSTable();
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
        masterTable.setPreferredScrollableViewportSize( d );
        masterTable.setMaximumSize( d );
        masterTable.getTableHeader().addMouseListener( this );
        
-       /* setup selection parameters */
-       // enable row selection, disable column selection (default)
-       masterTable.setColumnSelectionAllowed( false );
-       masterTable.setRowSelectionAllowed( true );
-       // allow multiple rows to be selected
-       masterTable.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
        // Ask to be notified of selection changes (see method: valueChanged)
        masterTable.getSelectionModel().addListSelectionListener( this );
        
@@ -401,34 +407,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
        
     }
     
-    protected abstract ArrayList<String[]> getColumnPrettyNameMap();
-    private void updateColumnHeader() {
-        
-        ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
-        ArrayList<String[]> prettyNames = getColumnPrettyNameMap();
-        int COLNAME = 0;
-        int PRETTYNAME = 1;
-        
-        // Assign a tooltip for each of the columns
-        for ( int c = 0; c < masterTable.getColumnCount(); c++ ) {
-            String colName = masterTable.getColumnModel().getColumn( c ).getHeaderValue().toString().toLowerCase();
-            String s = null;
-            
-            for ( int l = 0; l < prettyNames.size(); l++ )
-                if ( colName.equals( prettyNames.get(l)[COLNAME]) ) {
-                    s = prettyNames.get(l)[PRETTYNAME];
-                    break;
-                }
-            
-            // Change the name to the "pretty name"
-            if ( s != null )
-                masterTable.getColumnModel().getColumn( c ).setHeaderValue( s );
-            // set the tool tip to the "pretty name"
-            tips.setToolTip( masterTable.getColumnModel().getColumn( c ), s );
-        }
-        masterTable.getTableHeader().addMouseMotionListener( tips );
     
-    }
     
     protected String getDisplayedColumnList() {
        String s = "";
@@ -448,27 +427,15 @@ public abstract class CPSMasterView extends CPSDataModelUser
        dataUpdated();
     }
     
+    protected abstract ArrayList<String[]> getColumnPrettyNameMap();
+    
     // Reset the table to display new data, encapsulated in a new TableModel
     // We should consider renaming this as the name is rather ambiguous.  
     // Perhaps updateMasterTable or updateMasterListTable?
     private void updateListTable( TableModel tm ) {
         tm.addTableModelListener(this);
-        masterTable.setModel(tm);
-    
-        masterTable.setAutoResizeMode(masterTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        for ( int colIndex = 0; colIndex < masterTable.getColumnCount(); colIndex++ ) {
-           Class c = masterTable.getColumnClass(colIndex);
-           // Boolean
-           if ( c.getName().equals( new Boolean(true).getClass().getName() ) ) {
-               masterTable.getColumnModel().getColumn( colIndex ).setMaxWidth( 20 );
-              masterTable.getColumnModel().getColumn( colIndex ).setPreferredWidth( 20 );
-           }
-           else if ( c.getName().equals( new Integer(0).getClass().getName() ) ||
-                     c.getName().equals( new Double(0).getClass().getName() ) )
-              masterTable.getColumnModel().getColumn( colIndex ).setPreferredWidth( 40 );
-        }
-        
-        updateColumnHeader(); 
+        masterTable.setModel(tm);    
+        masterTable.setColumnNamesAndToolTips( getColumnPrettyNameMap() );
     }
     
     // retrieve fresh data and display it
@@ -493,7 +460,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
        sortColumn = s.toLowerCase(); 
     }
     protected String getSortColumn() { return sortColumn; }
-    protected String getFilterString() { return filterString; }
+    protected CPSComplexFilter getFilter() { return filter; }
+    protected void updateFilter() {
+        filter.setFilterString( tfldFilter.getText() ); 
+        dataUpdated();
+    }
+
     
     public void mouseClicked(MouseEvent evt) {
         JTable table = ((JTableHeader) evt.getSource()).getTable();
@@ -635,7 +607,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
           
           // if the filter string is empty, then there really are no records
           // else we're just created an incorrect or too restrictive filter
-          if ( getFilterString().equals("") ) {
+          if ( getFilter().getFilterString().equals("") ) {
               tfldFilter.setEnabled(false);
               if ( getDisplayedTableName() == null || getDisplayedTableName().equals("") )
                   btnNewRecord.setEnabled( false );
@@ -677,39 +649,4 @@ public abstract class CPSMasterView extends CPSDataModelUser
       }
    }
 
-   private class ColumnHeaderToolTips extends MouseMotionAdapter {
-        // Current column whose tooltip is being displayed.
-        // This variable is used to minimize the calls to setToolTipText().
-        TableColumn curCol;
-    
-        // Maps TableColumn objects to tooltips
-        Map tips = new HashMap();
-    
-        // If tooltip is null, removes any tooltip text.
-        public void setToolTip(TableColumn col, String tooltip) {
-            if (tooltip == null) {
-                tips.remove(col);
-            } else {
-                tips.put(col, tooltip);
-            }
-        }
-    
-        public void mouseMoved(MouseEvent evt) {
-            TableColumn col = null;
-            JTableHeader header = (JTableHeader)evt.getSource();
-            JTable table = header.getTable();
-            TableColumnModel colModel = table.getColumnModel();
-            int vColIndex = colModel.getColumnIndexAtX(evt.getX());
-    
-            // Return if not clicked on any column header
-            if (vColIndex >= 0) {
-                col = colModel.getColumn(vColIndex);
-            }
-    
-            if (col != curCol) {
-                header.setToolTipText((String)tips.get(col));
-                curCol = col;
-            }
-        }
-   }
 }

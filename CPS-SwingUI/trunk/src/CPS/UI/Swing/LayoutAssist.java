@@ -38,7 +38,8 @@ public class LayoutAssist {
    public static void addSeparator( JPanel p, int colStart, int row, int colSpan ) {
       
       JSeparator js = new JSeparator( JSeparator.HORIZONTAL );
-      
+
+      /* Insets: top, left, bottom, right */
       Insets i = new Insets( 1, 1, 3, 1 );
       GridBagConstraints c = new GridBagConstraints();
       
@@ -54,22 +55,63 @@ public class LayoutAssist {
    }
    
    
+   public static void addComponent( JPanel p, int col, int row, JComponent jc ) {
+       
+      Insets i = new Insets( 0, 2, 2, 5 );
+      GridBagConstraints c = new GridBagConstraints();
+
+      c.gridx = col;
+      c.gridy = row;
+//      c.gridwidth  = colSpan;
+//       c.gridheight = rowSpan;
+      c.anchor = GridBagConstraints.FIRST_LINE_START;
+      c.insets = i;
+	
+      p.add( jc, c );
+      
+   }
+   
+   public static void addButton( JPanel p, int col, int row, AbstractButton b ) {
+       addButton( p, col, row, 1, 1, b );
+   }
+   
+   public static void addButton( JPanel p, int col, int row, int colSpan, int rowSpan, AbstractButton b ) {
+
+      Insets i = new Insets( 0, 2, 2, 5 );
+      GridBagConstraints c = new GridBagConstraints();
+
+      c.gridx = col;
+      c.gridy = row;
+      c.gridwidth  = colSpan;
+       c.gridheight = rowSpan;
+      c.anchor = GridBagConstraints.FIRST_LINE_START;
+      c.insets = i;
+	
+      p.add( b, c );
+      
+   }
+   
    /**
     * createLabel
     */
-   public static void createLabel( JPanel p, int x, int y, String str ) {
+   public static void createLabel( JPanel p, int col, int row, String str ) {
       if ( ! str.endsWith(":") )
          str += ":";
-      addLabel( p, x, y, new JLabel( str ));
+      addLabel( p, col, row, new JLabel( str ));
    }
    
-   public static void addLabel( JPanel p, int x, int y, JLabel jl ) {
+   public static void addLabel( JPanel p, int col, int row, JLabel jl ) {
+       addLabel( p, col, row, 1, 1, jl );
+   }
+   public static void addLabel( JPanel p, int col, int row, int colSpan, int rowSpan, JLabel jl ) {
       
       Insets i  = new Insets( 0, 0, 0, 5 );
       GridBagConstraints c = new GridBagConstraints();
 
-      c.gridx = x;
-      c.gridy = y;
+      c.gridx = col;
+      c.gridy = row;
+      c.gridwidth = colSpan;
+      c.gridheight = rowSpan;
       c.anchor = GridBagConstraints.FIRST_LINE_END;
       c.insets = i;
 	
@@ -77,16 +119,35 @@ public class LayoutAssist {
 
    }
 
-   private static void createCheckBox( JPanel p, int x, int y, String s, boolean b ) {
-      addCheckBox( p, x, y, new JCheckBox( s, b ));
+   public static void addLabelLeftAlign( JPanel p, int col, int row, JLabel jl ) {
+       addLabelLeftAlign( p, col, row, 1, 1, jl );
+   }
+   public static void addLabelLeftAlign( JPanel p, int col, int row, int colSpan, int rowSpan, JLabel jl ) {
+      
+      Insets i  = new Insets( 0, 0, 0, 5 );
+      GridBagConstraints c = new GridBagConstraints();
+
+      c.gridx = col;
+      c.gridy = row;
+      c.gridwidth = colSpan;
+      c.gridheight = rowSpan;
+      c.anchor = GridBagConstraints.FIRST_LINE_START;
+      c.insets = i;
+	
+      p.add( jl, c );
+
+   }
+
+   private static void createCheckBox( JPanel p, int col, int row, String s, boolean b ) {
+      addCheckBox( p, col, row, new JCheckBox( s, b ));
    }
    
-   public static void addCheckBox( JPanel p, int x, int y, JCheckBox jc ) {
+   public static void addCheckBox( JPanel p, int col, int row, JCheckBox jc ) {
       Insets i = new Insets( 0, 2, 2, 5 );
       GridBagConstraints c = new GridBagConstraints();
       
-      c.gridx = x;
-      c.gridy = y;
+      c.gridx = col;
+      c.gridy = row;
       c.anchor = GridBagConstraints.FIRST_LINE_START;
       c.insets = i;
       
@@ -97,26 +158,26 @@ public class LayoutAssist {
     /**
      * createTextField
      */
-   private static void createTextField( JPanel p, int x, int y ) {
-      createTextField( p, x, y, "", 10 );
+   private static void createTextField( JPanel p, int col, int y ) {
+      createTextField( p, col, y, "", 10 );
    }
 
-   private static void createTextField( JPanel p, int x, int y, String str ) {
-      createTextField( p, x, y, str, 10 );
+   private static void createTextField( JPanel p, int col, int row, String str ) {
+      createTextField( p, col, row, str, 10 );
    }
     
-   private static void createTextField( JPanel p, int x, int y, int col ) {
-      createTextField( p, x, y, "", col );
+   private static void createTextField( JPanel p, int col, int row, int cols ) {
+      createTextField( p, col, row, "", cols );
    }
 
    private static void createTextField( JPanel p,
-				        int x, int y, 
-				        String str, int col ) {
-      addTextField( p, x, y, new JTextField( str, col ));
+				        int col, int row, 
+				        String str, int cols ) {
+      addTextField( p, col, row, new JTextField( str, cols ));
    }
    
    public static void addTextField( JPanel p, 
-                                     int x, int y,
+                                     int col, int row,
 				     JTextField tf ) {
 
 	Insets i  = new Insets( 0, 2, 2, 5 );
@@ -128,8 +189,8 @@ public class LayoutAssist {
 	tf.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
 							Color.GRAY,
 							Color.WHITE ));
-	c.gridx = x;
-	c.gridy = y;
+	c.gridx = col;
+	c.gridy = row;
 	c.anchor = GridBagConstraints.FIRST_LINE_START;
 	c.insets = i;
 	
@@ -140,21 +201,21 @@ public class LayoutAssist {
     /**
      * createTextArea
      */
-    private static void createTextArea( JPanel p, int x, int y ) {
-	addTextArea( p, x, y, new JTextArea( "", 3, 10 ));
+    private static void createTextArea( JPanel p, int col, int row ) {
+	addTextArea( p, col, row, new JTextArea( "", 3, 10 ));
     }
 
-    private static void createTextArea( JPanel p, int x, int y, String str ) {
-	addTextArea( p, x, y, new JTextArea( str, 3, 10 ));
+    private static void createTextArea( JPanel p, int col, int row, String str ) {
+	addTextArea( p, col, row, new JTextArea( str, 3, 10 ));
     }
 
     private static void createTextArea( JPanel p,
-				 int x, int y, int row, int col ) {
-	addTextArea( p, x, y, new JTextArea( "", row, col ));
+				 int col, int row, int rows, int cols ) {
+	addTextArea( p, col, row, new JTextArea( "", rows, cols ));
     }
     
-    public static void addTextArea( JPanel p, int x, int y, JTextArea ta ) {
-       addTextArea( p, x, y, 1, ta.getHeight(), ta );
+    public static void addTextArea( JPanel p, int col, int row, JTextArea ta ) {
+       addTextArea( p, col, row, 1, ta.getHeight(), ta );
     }
     public static void addTextArea( JPanel p, int colStart, int rowStart, int colSpan, JTextArea ta ) {
        addTextArea( p, colStart, rowStart, colSpan, ta.getHeight(), ta );
@@ -183,7 +244,7 @@ public class LayoutAssist {
 
     }
 
-    public static void addComboBox( JPanel p, int x, int y, JComboBox cb ) {
+    public static void addComboBox( JPanel p, int col, int row, JComboBox cb ) {
       
        Insets i  = new Insets( 0, 2, 2, 5 );
        GridBagConstraints c = new GridBagConstraints();
@@ -192,8 +253,8 @@ public class LayoutAssist {
 							Color.GRAY,
 							Color.WHITE ));
 
-       c.gridx = x;
-       c.gridy = y;
+       c.gridx = col;
+       c.gridy = row;
        c.anchor = GridBagConstraints.FIRST_LINE_START;
        c.insets = i;
 	
