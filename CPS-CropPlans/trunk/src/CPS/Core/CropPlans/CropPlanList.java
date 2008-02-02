@@ -22,17 +22,22 @@
 
 package CPS.Core.CropPlans;
 
+import CPS.Data.CPSComplexFilter;
+import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSCrop;
+import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSMasterView;
 import CPS.Module.*;
 import CPS.Data.CPSPlanting;
 import CPS.UI.Modules.CPSMasterDetailModule;
+import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.autocomplete.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -43,11 +48,16 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     private JComboBox cmbxPlanList, cmbxCropList;
     private JButton btnNewPlan;
     
+    private JButton btnLimit;
+    private CPSComplexFilterDialog dlgFilter;
+    
     private ArrayList<String> listOfValidCropPlans, listOfValidCrops;
     
     public CropPlanList( CPSMasterDetailModule mdm ) {
         super(mdm);
         setSortColumn("date_plant");
+        filter = new CPSComplexPlantingFilter();
+        dlgFilter = new CPSComplexFilterDialog();
     }
     
     /** 
@@ -110,17 +120,16 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     protected void updateMasterList() {
        super.updateMasterList();
 
-       // find column "crop_name" and set it to use a combobox editor
-       for ( int i = 0 ; i < masterTable.getColumnModel().getColumnCount() ; i++ )
-          if ( masterTable.getColumnName(i).equalsIgnoreCase("crop_name") )
-             break;
-       // TODO: continue { (crop_name never found) i = -1 }
-       int cropColNum = 0;
-       if ( masterTable.getRowCount() > 0 ) // TODO && i != -1
-          masterTable.getColumnModel().getColumn(cropColNum)
-                     .setCellEditor( new ComboBoxCellEditor( cmbxCropList ) );
-        
+       if ( masterTable.getRowCount() > 0 ) 
+           // install custom table renderes and editors
+           for ( int i = 0; i < masterTable.getColumnModel().getColumnCount(); i++ ) {
+               // install autocomplete combobox in column "crop_name"
+               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "crop_name" ) )
+                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new ComboBoxCellEditor( cmbxCropList ) );
+           }
     }
+       
+       
     protected TableModel getMasterListData() {
         if ( !isDataAvailable() )
             return new DefaultTableModel();
@@ -129,7 +138,8 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         System.out.println( "Selected plan is: " + selectedPlan );
        
         if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
-            return getDataSource().getCropPlan( selectedPlan, getDisplayedColumnList(), getSortColumn(), getFilterString() );
+            return getDataSource().getCropPlan( selectedPlan, getDisplayedColumnList(), getSortColumn(),
+                                                (CPSComplexPlantingFilter) getFilter() );
 //            return getDataSource().getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
        else
           // TODO error checking fall through to following call when invalid plan is selected
@@ -168,6 +178,27 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        AutoCompleteDecorator.decorate( cmbxCropList );
        
     }
+
+    @Override
+    protected JPanel buildFilterComponent() {
+        initFilterPanel();
+        
+        btnLimit = new JButton( "Limit View" );
+        btnLimit.setMargin( new Insets( 1, 1, 1, 1 ));
+        btnLimit.addActionListener(this);
+        
+        jplFilter.add( btnLimit );
+        
+        return super.buildFilterComponent( false );
+    }
+
+    @Override
+    protected void updateFilter() {
+        filter = dlgFilter.getFilter();
+        super.updateFilter();
+    }
+    
+    
     
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
@@ -181,6 +212,10 @@ class CropPlanList extends CPSMasterView implements ActionListener {
             }
             createNewCropPlan( getSelectedPlanName() );
         }
+       else if ( action.equalsIgnoreCase( btnLimit.getText() )) {
+           dlgFilter.setVisible( true );
+           updateFilter();
+       }
         else
             super.actionPerformed( actionEvent );    
         
@@ -273,7 +308,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
             return "";
         
        CPSPlanting p = getDataSource().getSumsForCropPlan( getSelectedPlanName(),
-                                                           getFilterString() );
+                                                           (CPSComplexPlantingFilter) getFilter() );
        String s = "";
        s += "Plantings:" + masterTable.getRowCount() + "/";
        s += "Beds:" + p.getBedsToPlantString() + "/";
@@ -292,6 +327,6 @@ class CropPlanList extends CPSMasterView implements ActionListener {
             setStatus( "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one." );
         }
         
-        
     }
+    
 }
