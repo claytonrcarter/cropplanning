@@ -29,9 +29,11 @@ the button that says "Free Java Download".
 
 *Step 4*: Open the Archive
 
-    _Mac_: Double click on the .dmg file.  This will open the archive and "mount" it on your desktop as though it were a CD, DVD or hard drive.  Double click on the mounted drive to view the files in the archive.
+    _Mac_: The Mac version is distributed as a compressed disk image (a .dmg file).  To open the file, just double click on the .dmg file.  This will open the archive and "mount" it on your desktop as though it were a CD, DVD or hard drive.  Double click on the mounted drive to view the files in the archive.
 
-    _Windows_: There are two options for Windows: *1)* modern Windows computers can simply double click on the .zip file to open it up and view the contents.  *2)* older Windows computers might not be able to do it and will have to use a 3rd party archive utility to open the file.  We suggest [http://www.7-zip.org/ 7-Zip].  Open the archive (the .zip file) in 7-Zip and proceed to the next step.
+    _Windows_: The Windows version is distributed as a compressed file archive.  Inside the archive is a directory which contains the "important" files.  There are two options for opening this archive:
+        # modern Windows computers can simply double click on the .zip file to open it up and view the contents.
+        # older Windows computers might not be able to do the double click trick and will have to use a 3rd party archive utility to open the file.  We suggest [http://www.7-zip.org/ 7-Zip].  Open the archive (the .zip file) in 7-Zip and proceed to the next step.
 
 
 *Step 5*: Copy Program
