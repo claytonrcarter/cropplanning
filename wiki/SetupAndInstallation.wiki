@@ -11,9 +11,9 @@ the button that says "Free Java Download".
 
     _Mac_: All users of Mac OS X 10.4 or greater should be all set.  The Mac OS version number is available under the Apple menu in the upper left corner of the screen, select "About this Mac".  Any version above 10.4.0 will have Java 1.5 already installed.
 
-    _Windows_: Most Windows users will have to download and install Java.  The age of your computer will only be an issue on truly ancient machines.  This software was created on a computer that is over 7 years old.
+    _Windows_: Most Windows users will have to download and install Java.  The age of your computer will only be an issue on truly ancient machines.  This software was created and runs fine on a computer that is over 7 years old.
 
-    _Other users_: This software will run on any computer for which a version of Java 1.5 is available.  Please [mailto:cropplanning@gmail.com contact us] so that we can make a non-Windows/Mac version available.
+    _Other users_: This software will run on any computer for which a version of Java 1.5 is available.  Please download the zip archive and follow the directions below, except that you'll have to run the program from the command line with the command `java -jar CropPlanning.jar`
 
 
 == Installation ==
