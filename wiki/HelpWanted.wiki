@@ -26,6 +26,13 @@ _Technical skill required:_ low
 Anyone with a critical eye and an investigative nature can help out here.  Download and run the software, taking notes about bugs and other things that don't seem to work.  Be sure to keep track of how to "replicate" the problem, or how to make it happen again and again so that we can double check.  Sign up for an account at gmail code and 
 [http://code.google.com/p/cropplanning/issues/list submit issues] for us to work on.
 
+== Artwork ==
+
+_Technical skill required:_ medium
+
+We need an artist to create a program icon!
+
+
 == Documentation ==
 
 _Technical skill required:_ low
