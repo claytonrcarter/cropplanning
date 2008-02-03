@@ -1,0 +1,46 @@
+#summary How to set up and install the software
+#labels Featured,Phase-Deploy,Phase-Support,Target-Users
+
+== Requirements ==
+
+=== Java ===
+
+This software requires Java version 1.5 (aka Java 5) or greater.  The latest version of
+the "Java Runtime Environment" can be downloaded from http://www.java.com/ .  Look for 
+the button that says "Free Java Download".
+
+    _Mac_: All users of Mac OS X 10.4 or greater should be all set.  The Mac OS version number is available under the Apple menu in the upper left corner of the screen, select "About this Mac".  Any version above 10.4.0 will have Java 1.5 already installed.
+
+    _Windows_: Most Windows users will have to download and install Java.  The age of your computer will only be an issue on truly ancient machines.  This software was created on a computer that is over 7 years old.
+
+    _Other users_: This software will run on any computer for which a version of Java 1.5 is available.  Please [mailto:cropplanning@gmail.com contact us] so that we can make a non-Windows/Mac version available.
+
+
+== Installation ==
+
+*Step 1*: Verify and/or Download and Install Java, as detailed above
+
+*Step 2*: [http://code.google.com/p/cropplanning/downloads/list Download]
+
+*Step 3*: Make Directory
+
+    Right now, you will have to create a directory on your computer for the software.  Your desktop would be a suitable place to do this: "Right click" or "CTRL Click" on your desktop and select "New Folder".  (_Windows_: Select "New >" then "Folder".)  A suitable name for the directory might be `CropPlanning`, `CPS` or `CropPlans`.
+
+
+*Step 4*: Open the Archive
+
+    _Mac_: Double click on the .dmg file.  This will open the archive and "mount" it on your desktop as though it were a CD, DVD or hard drive.  Double click on the mounted drive to view the files in the archive.
+
+    _Windows_: There are two options for Windows: *1)* modern Windows computers can simply double click on the .zip file to open it up and view the contents.  *2)* older Windows computers might not be able to do it and will have to use a 3rd party archive utility to open the file.  We suggest [http://www.7-zip.org/ 7-Zip].  Open the archive (the .zip file) in 7-Zip and proceed to the next step.
+
+
+*Step 5*: Copy Program
+
+    With the archive opened and displayed in a window, simply drag the program file (On _Mac_: `CropPlanning`, on _Windows_: `CropPlanning.exe`) to the directory or folder that you created in step 2.
+
+
+*Step 6*: Open the program
+
+    Just double click on the program icon!
+
+For a brief intro on how to use the program, check out the page ProgramUsageIntroduction.
