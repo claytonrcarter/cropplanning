@@ -1,6 +1,7 @@
 #summary A template we can use for release notes
 #labels Phase-Deploy,Target-Developers
 
+{{{
 CropPlanning Software
 http://cropplanning.googlecode.com
 cropplanning@gmail.com
@@ -64,4 +65,4 @@ Also, just take a look at our "HelpWanted" page to see if you can help out any o
 
     http://code.google.com/p/cropplanning/wiki/HelpWanted
     
-    
+}}}
