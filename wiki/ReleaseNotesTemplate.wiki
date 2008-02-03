@@ -28,30 +28,11 @@ Please remember that this software is currently being released FOR TESTING ONLY.
 
 ===[ Installation ]===
 
-Installation is simple
+Please follow installation instructions at:
 
-Step 1: Confirm or Install Java
+http://code.google.com/p/cropplanning/wiki/SetupAndInstallation
 
-This software requires Java version 1.5 (aka Java 5) or greater.  The latest version of
-the "Java Runtime Environment" can be downloaded from http://www.java.com/ .  Look for 
-the button that says "Free Java Download".
-
-    Mac: All users of Mac OS X 10.4 or greater should be all set.
-
-Step 2: Make Directory
-
-You will have to create a directory on your computer for the software.  "Right click" or 
-"CTRL Click" on your desktop and select "New Folder" (Windows: Select "New >" then "Folder").
-
-Step 3: Copy Program
-
-Open the archive that you downloaded from the website (hint: if you're reading this file,
-you've probably already done that) and simply drag the program file (Mac: CropPlanning, 
-Windows: CropPlanning.exe) to the directory or folder that you created in the last step.  
-
-Step 4: Open the program
-
-Just double click on the program icon!
+Briefly: 1) Make sure Java 1.5 or greater is installed, 2) Open the archive (which you had to do to read this), 3) Copy the enclosed files to your hard drive, 4) double click on the  program file (On Mac: CropPlanning, on Windows: CropPlanning.exe)
 
 ===[ Using the Program ]===
 
@@ -62,8 +43,7 @@ http://code.google.com/p/cropplanning/wiki/ProgramUsageIntroduction
 
 ===[ How To Help ]===
 
-Communicate!  Send all of your ideas, suggestions, bugs, etc to cropplanning@gmail.com.  If you 
-feel comfortable, submit "issues" (ie, bugs, feature requests, etc) directly through the website at
+Communicate!  Send all of your ideas, suggestions, bugs, etc to cropplanning@gmail.com.  If you feel comfortable, submit "issues" (ie, bugs, feature requests, etc) directly through the website at
 
 	http://code.google.com/p/cropplanning/issues/list
 	
