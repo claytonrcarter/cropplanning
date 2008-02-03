@@ -1,5 +1,4 @@
 #summary News and Announcements about the project
-#labels Featured
 
 = New Website =
 
