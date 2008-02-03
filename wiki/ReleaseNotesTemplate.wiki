@@ -53,6 +53,12 @@ Step 4: Open the program
 
 Just double click on the program icon!
 
+===[ Using the Program ]===
+
+There is a brief introduction to the program available at
+
+http://code.google.com/p/cropplanning/wiki/ProgramUsageIntroduction
+
 
 ===[ How To Help ]===
 
