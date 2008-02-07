@@ -11,7 +11,7 @@ This software requires Java version 1.5 (aka Java 5) or greater.  Java is availa
 
     Before anything else, check out this website which will check to see if you have Java installed and which version is installed:
 
-[http://www.java.com/en/download/installed.jsp?detect=jre&try=1 Detect Java Version]
+    [http://www.java.com/en/download/installed.jsp?detect=jre&try=1 Detect Java Version]
 
     They "recommend" Java 1.6 (aka Java 6), but you'll be fine for this software as long as they show that you have Java version 1.5.0 or higher
 
