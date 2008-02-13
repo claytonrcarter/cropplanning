@@ -31,6 +31,7 @@ import javax.swing.*;
 public class CropPlanning implements Runnable {
 
    private ModuleManager mm;
+   public static final String CPS_CORE_VERSION = CPSModule.GLOBAL_DEVEL_VERSION;
    
     public static void main(String[] args) {
 
@@ -39,35 +40,41 @@ public class CropPlanning implements Runnable {
     }
 
     public CropPlanning() {
-
-	/* PSEUDO CODE
-	 * Load all modules in module directory
-	 * Catagorize modules
-	 * Initialize DATA modules
-	 * Initialize LOGIC modules
-	 * Initialize UI modules
-	 * Initialize EXTENSION modules
-	 *  - for modToExtend in EXTENSION.extendsWhat()
-	 *      modToExtend.registerExtension(EXTENSION)
-         */
        
        mm = new ModuleManager();
 
-       CPSDataModel dm = mm.getDM();
+       GlobalSettings globSet = mm.getGlobalSettings();
        CPSUI ui = mm.getUI();
-       // CPSSettings settings = mm.getSettings();
-
+       ui.addModuleConfiguration( globSet );
+       
+       // even with ambiguous references, the setOutputDir saves to the
+       // "backing store" and will be queried whenever another module asks for it
+       if ( globSet.getFirstTimeRun() )
+           globSet.setOutputDir( ui.showFirstRunDialog( globSet.getOutputDir() ));
+       
+       CPSDataModel dm = mm.getDM();
+       // TODO test to see if data is available and then send a dialog to user if not
+       if ( dm instanceof CPSConfigurable )
+           ui.addModuleConfiguration( (CPSConfigurable) dm );
+       
        mm.loadCoreModules();
        for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {
+           // get the module (which was loaded and inited by ModuleManager)
           CPSDisplayableDataUserModule cm2 = mm.getCoreModule(i);
           System.out.println("DRIVER: Initializing module: " + cm2.getModuleName() );
+          // apply global settings
+           cm2.receiveGlobalSettings( mm.getGlobalSettings() );
+          // apply data source
           cm2.setDataSource(dm);
-          ui.addModule( cm2.getModuleName(), cm2.display() );
+          // add it to the UI
+          ui.addModule( cm2 );
           cm2.addUIChangeListener( ui );
        }
        
        Runtime.getRuntime().addShutdownHook( new Thread(this) );
                    
+       globSet.setLastVersionUsed( CPSModule.versionAsLongInt( CPS_CORE_VERSION ) );
+       
        ui.showUI();
        
     }

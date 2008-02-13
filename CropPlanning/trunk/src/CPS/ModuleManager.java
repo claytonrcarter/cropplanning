@@ -32,19 +32,28 @@ public class ModuleManager {
    ArrayList<CPSDataModel>  dmMods;
    ArrayList<CPSDisplayableDataUserModule> coreMods;
    
+   GlobalSettings globalSettings;
+   
    public ModuleManager() {
       uiMods   = new ArrayList<CPSUI>();
       dmMods   = new ArrayList<CPSDataModel>();
       coreMods = new ArrayList<CPSDisplayableDataUserModule>();
+      
+      globalSettings = new GlobalSettings();
+      
    }
 
+   public GlobalSettings getGlobalSettings() {
+       return globalSettings;
+   }
+   
    public CPSUI getUI() {
       uiMods.add( (CPSUI) loadPlugin( "CPS.Core.UI." + "TabbedUI" ) );
       return uiMods.get(0);
    }
    
    public CPSDataModel getDM() {
-      dmMods.add( (CPSDataModel) loadPlugin( "CPS.Core.DB." + "HSQLDB" ) );
+      dmMods.add( (CPSDataModel) loadPlugin( "CPS.Core.DB." + "HSQLDB", getGlobalSettings() ) );
       return dmMods.get(0);
    }
    
@@ -75,20 +84,20 @@ public class ModuleManager {
        return loadPlugin( classname, (String) null );
     }
     
-    private CPSModule loadPlugin( String classname, CPSUI uim ) {
+    private CPSModule loadPlugin( String classname, Object arg ) {
        
        Object instance = null;
 
 	try {
 
-           if ( uim == null )
+           if ( arg == null )
               instance = Class.forName( classname )
                               .getConstructor( new Class[] {} )
                               .newInstance( new Object[]{} );
            else
               instance = Class.forName( classname )
-                              .getConstructor( new Class[] { CPSUI.class } )
-                              .newInstance( new Object[]{ uim } );
+                              .getConstructor( new Class[] { CPSGlobalSettings.class } )
+                              .newInstance( new Object[]{ arg } );
             
 	} catch (Exception e) {
 	    System.out.println("Error occurred loading demo w/ UI Module: " + classname);
