@@ -45,13 +45,13 @@ import javax.swing.table.*;
 class CropPlanList extends CPSMasterView implements ActionListener {
    
     private JLabel lblPlanName;
-    private JComboBox cmbxPlanList, cmbxCropList;
+    private JComboBox cmbxPlanList, cmbxCropList, cmbxFieldList;
     private JButton btnNewPlan;
     
     private JButton btnLimit;
     private CPSComplexFilterDialog dlgFilter;
     
-    private ArrayList<String> listOfValidCropPlans, listOfValidCrops;
+    private ArrayList<String> listOfValidCropPlans, listOfValidCrops, listOfFields;
     
     public CropPlanList( CPSMasterDetailModule mdm ) {
         super(mdm);
@@ -78,6 +78,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         super.setDataSource(dm);
         updateListOfPlans();
         updateListOfCrops();
+        updateListOfFieldNames();
    }
     
     
@@ -88,13 +89,26 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        if ( ! isDataAvailable() )
           return;
        
-       listOfValidCrops = getDataSource().getCropNames();
+       listOfValidCrops = getDataSource().getCropNameList();
        Collections.sort( listOfValidCrops, String.CASE_INSENSITIVE_ORDER);
        cmbxCropList.removeAllItems();
        cmbxCropList.addItem("");
        for ( String s : listOfValidCrops )
           cmbxCropList.addItem(s);
        
+    }
+    
+    protected void updateListOfFieldNames() {
+       if ( ! isDataAvailable() )
+          return;
+       
+        listOfFields = getDataSource().getFieldNameList( getSelectedPlanName() );
+       Collections.sort( listOfFields, String.CASE_INSENSITIVE_ORDER);
+       cmbxFieldList.removeAllItems();
+       cmbxFieldList.addItem("");
+       for ( String s : listOfFields )
+          cmbxFieldList.addItem(s);
+        
     }
     
     protected void updateListOfPlans() {
@@ -124,8 +138,14 @@ class CropPlanList extends CPSMasterView implements ActionListener {
            // install custom table renderes and editors
            for ( int i = 0; i < masterTable.getColumnModel().getColumnCount(); i++ ) {
                // install autocomplete combobox in column "crop_name"
-               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "crop_name" ) )
+               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "crop_name" ) ) {
                    masterTable.getColumnModel().getColumn( i ).setCellEditor( new ComboBoxCellEditor( cmbxCropList ) );
+                   continue;
+               }
+               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "location" ) ) {
+                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new ComboBoxCellEditor( cmbxFieldList ) );
+                   continue;
+               }
            }
     }
        
@@ -134,9 +154,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         if ( !isDataAvailable() )
             return new DefaultTableModel();
          
-        String selectedPlan = getSelectedPlanName();
-        System.out.println( "Selected plan is: " + selectedPlan );
-       
+        String selectedPlan = getSelectedPlanName();       
         if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
             return getDataSource().getCropPlan( selectedPlan, getDisplayedColumnList(), getSortColumn(),
                                                 (CPSComplexPlantingFilter) getFilter() );
@@ -176,6 +194,12 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        cmbxCropList = new JComboBox();
        cmbxCropList.addActionListener( new CropBoxInTableActionListener() );
        AutoCompleteDecorator.decorate( cmbxCropList );
+       
+       cmbxFieldList = new JComboBox();
+       cmbxFieldList.setEditable(true);
+       AutoCompleteDecorator.decorate(cmbxFieldList);
+       
+       
        
     }
 
@@ -326,6 +350,10 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         if ( getSelectedPlanName() == null ) {
             setStatus( "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one." );
         }
+        else {
+            updateListOfFieldNames();
+        }
+        
         
     }
     

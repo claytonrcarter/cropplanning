@@ -22,18 +22,20 @@
 
 package CPS.Core.CropPlans;
 
+import CPS.CSV;
 import CPS.Module.*;
 import CPS.UI.Modules.CPSMasterDetailModule;
-import java.awt.Dimension;
 import javax.swing.JPanel;
 
-public class CropPlans extends CPSMasterDetailModule {
+public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
    
    public CropPlans() {
       
       setModuleName( "CropPlans" );
       setModuleType( "Core" );
-      setModuleVersion( "0.1" );
+      setModuleVersion( GLOBAL_DEVEL_VERSION );
+      
+      //addRequirment( "CPSDriver", "0.1.0" );
       
       setMasterView( new CropPlanList( this ) );
       setDetailView( new CropPlanInfo( this ) );
@@ -43,5 +45,25 @@ public class CropPlans extends CPSMasterDetailModule {
    public JPanel display() {
 	return getUI();
    }
+ 
+   public void exportData() {
+        if ( isDataAvailable() ) {
+            CPSExporter exp = new CSV();
+            String planName = this.getMasterTableName();
+            String fileName = getGlobalSettings().getOutputDir() + 
+                              System.getProperty( "file.separator" ) +
+                              "ExportedCropPlan - " + planName + "." + exp.getExportFileDefaultExtension(); 
+            exp.exportCropPlan( fileName, planName, getDataSource().getCropPlanAsList( planName ));
+        }
+        else {
+            System.err.println("ERROR(CropPlans): No data exported, no data available.");
+        }
+            
+    }
+
+    public String getExportName() {
+        return "Selected crop plan";
+    }
+    
    
 }

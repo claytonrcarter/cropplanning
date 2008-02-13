@@ -73,6 +73,7 @@ public class CropPlanInfo extends CPSDetailView {
         if ( ! isRecordDisplayed() ) {
             setRecordDisplayed();
             rebuildMainPanel();
+            updateAutocompletionComponents();
         }
 
         tfldCropName.setInitialText( displayedPlanting.getCropName() );
@@ -159,20 +160,32 @@ public class CropPlanInfo extends CPSDetailView {
            ids = ids.substring( 0, ids.lastIndexOf(", ") );
            setStatus( "Displaying common data for records: " + ids );
        }
+        
            
     }
+
+    @Override
+    public void setForEditting() {
+        tfldCropName.requestFocus();
+    }
    
+    
    
     protected void saveChangesToRecord() {
        String selectedPlan = getDisplayedTableName();
        CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( this.asPlanting() );
-       if ( diff.getID() == -1 )
+       if ( diff.getID() == -1 ) {
+           System.out.println("DEBUG(CPInfo): no changes found (Invalid id) ... not saving;");
           return;
-        
+       }
+       
+       System.out.println("DEBUG(CPInfo): changes found (Valid id) ... attempting to save changes");    
        if ( displayedPlanting.getCommonIDs().size() > 0 )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
        else
           getDataSource().updatePlanting( selectedPlan, diff );
+       
+       selectRecordInMasterView( displayedPlanting.getID() );
     }
 
    /** asPlanting - create a planting data struct to represent this detail view
@@ -236,7 +249,7 @@ public class CropPlanInfo extends CPSDetailView {
    protected void buildDetailsPanel() {
        
         tfldCropName = new CPSTextField( FIELD_LEN_LONG,
-                                         getDataSource().getCropNames(),
+                                         getDataSource().getCropNameList(),
                                          CPSTextField.MATCH_STRICT );
         
         tfldVarName = new CPSTextField( FIELD_LEN_LONG );
@@ -318,7 +331,7 @@ public class CropPlanInfo extends CPSDetailView {
       LayoutAssist.createLabel(  jplSucc, 0, 3, "BTN: Show only this group" );
       LayoutAssist.createLabel(  jplSucc, 0, 4, "BTN: Jump to next/last" );
       
-      LayoutAssist.addPanelToColumn( columnOne, jplSucc );
+//      LayoutAssist.addPanelToColumn( columnOne, jplSucc );
       LayoutAssist.finishColumn( columnOne );
       
       /* ***********************************/
@@ -473,15 +486,23 @@ public class CropPlanInfo extends CPSDetailView {
       uiManager.signalUIChanged();
    }
    
+   protected void updateAutocompletionComponents() {
+       tfldCropName.updateAutocompletionList( getDataSource().getCropNameList(),
+                                              CPSTextField.MATCH_PERMISSIVE );
+       tfldVarName.updateAutocompletionList( getDataSource().getVarietyNameList( displayedPlanting.getCropName(), getDisplayedTableName() ),
+                                             CPSTextField.MATCH_PERMISSIVE );
+       tfldLocation.updateAutocompletionList( getDataSource().getFieldNameList( this.getDisplayedTableName() ),
+                                              CPSTextField.MATCH_PERMISSIVE );
+       tfldFlatSize.updateAutocompletionList( getDataSource().getFlatSizeList( this.getDisplayedTableName() ),
+                                              CPSTextField.MATCH_PERMISSIVE );
+   }
+   
    @Override
    public void dataUpdated() {
       if ( isRecordDisplayed() ) {
          this.displayRecord( getDataSource().getPlanting( getDisplayedTableName(),
                                                           getDisplayedRecord().getID() ) );
-         tfldCropName.updateAutocompletionList( getDataSource().getCropNames(),
-                                                CPSTextField.MATCH_STRICT );
-         tfldVarName.updateAutocompletionList( getDataSource().getVarietyNames( displayedPlanting.getCropName() ),
-                                               CPSTextField.MATCH_PERMISSIVE );
+         updateAutocompletionComponents();
       }
    }
     
