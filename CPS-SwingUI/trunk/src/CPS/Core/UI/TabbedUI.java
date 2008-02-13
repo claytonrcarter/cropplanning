@@ -22,6 +22,9 @@
 
 package CPS.Core.UI;
 
+import CPS.Module.CPSConfigurable;
+import CPS.Module.CPSDisplayableDataUserModule;
+import CPS.Module.CPSExportable;
 import CPS.Module.CPSUI;
 
 import javax.swing.*;
@@ -55,8 +58,12 @@ public class TabbedUI extends CPSUI implements ActionListener {
     // A place to hold on to the visible demo
     // private JPanel contentPane = null;
     JTabbedPane tabbedpane;
+    SettingsDialog settings;
     FrameManager fm;
-    JMenuBar menuBar;
+    
+    protected JMenuBar menuBar;
+    protected JMenu exportMenu = null;
+    protected ArrayList<CPSExportable> exportables;
     
     private ArrayList<ModuleListElement> moduleList;
     private boolean modulesUpdated;
@@ -73,11 +80,14 @@ public class TabbedUI extends CPSUI implements ActionListener {
        
        setModuleName( "CPS" );
        setModuleType( "UI" );
-       setModuleVersion( "0.1" );
+       setModuleVersion( GLOBAL_DEVEL_VERSION );
        
        fm = new FrameManager();
        moduleList = new ArrayList<ModuleListElement>();
        setModulesUpdated( false );
+       
+       exportables = new ArrayList<CPSExportable>();
+       settings = new SettingsDialog();
        
     }
 
@@ -103,6 +113,24 @@ public class TabbedUI extends CPSUI implements ActionListener {
  
     }
 
+    public String showFirstRunDialog( String defaultDir ) {
+        FirstRunDialog dlg = new FirstRunDialog( "Crop Planning Software: Welcome!", defaultDir );
+        dlg.setVisible(true);
+        return dlg.getOutputDir();
+    }
+    
+    public void addModule( CPSDisplayableDataUserModule mod ) {
+        addModule( mod.getModuleName(), mod.display() );
+        if ( mod instanceof CPSExportable ) {
+            System.out.println("DEBUG(TabbedUI): Found exportable module: " + mod.getModuleName() );
+            this.addExportMenuItem( (CPSExportable) mod );
+        }
+        if ( mod instanceof CPSConfigurable ) {
+            System.out.println("DEBUG(TabbedUI): Found configurable module: " + mod.getModuleName() );
+            this.addModuleConfiguration( (CPSConfigurable) mod );
+        }
+    }
+    
     /**
      * Add a module to the UI.
      */
@@ -117,6 +145,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
 
     }
 
+    public void addModuleConfiguration( CPSConfigurable c ) {
+        settings.addModuleConfiguration(c);
+    }
+    
     private void addModules() {
        if ( tabbedpane == null || ! areModulesUpdated() )
           return;
@@ -157,18 +189,48 @@ public class TabbedUI extends CPSUI implements ActionListener {
     private JMenuBar buildMenuBar() {
        menuBar = new JMenuBar();
        JMenu fileMenu = new JMenu( "File" );
-       JMenuItem settings = new JMenuItem( MENU_ITEM_SETTINGS );
-       settings.addActionListener( this );
-       JMenuItem exit = new JMenuItem( MENU_ITEM_EXIT );
-       exit.addActionListener( this );
+       JMenuItem settingsItem = new JMenuItem( MENU_ITEM_SETTINGS );
+       settingsItem.addActionListener( this );
+//        settingsItem.setEnabled( false );
+        
+        if ( exportMenu == null )
+            initExportMenu();
+        
+        JMenuItem exitItem = new JMenuItem( MENU_ITEM_EXIT );
+        exitItem.addActionListener( this );
        
-       fileMenu.add( settings );
+       fileMenu.add( settingsItem );
+       fileMenu.add( exportMenu );
        fileMenu.add( new JSeparator() );
-       fileMenu.add( exit );
+       fileMenu.add( exitItem );
     
        menuBar.add( fileMenu );
+       // menuBar.add( Horizontal spacer )
+       // menuBar.add( aboutItem );
        
        return menuBar;
+    }
+    
+    private void initExportMenu() {
+        
+        exportMenu = new JMenu( "Export" );
+        exportMenu.setEnabled( false );
+        
+    }
+    
+    public void addExportMenuItem( CPSExportable ex ) {
+        
+        JMenuItem exportItem = new JMenuItem( ex.getExportName() );
+        exportItem.setActionCommand( "export-" + ex.getExportName() ); 
+        exportItem.addActionListener(this);
+        
+        exportables.add( ex );
+        
+        if ( exportMenu == null )
+            initExportMenu();
+        exportMenu.add( exportItem );
+        exportMenu.setEnabled(true);
+        
     }
     
     private class ModuleListElement {
@@ -203,8 +265,18 @@ public class TabbedUI extends CPSUI implements ActionListener {
    public void actionPerformed( ActionEvent ae ) {
       String action = ae.getActionCommand();
       
-      if ( action.equalsIgnoreCase( MENU_ITEM_SETTINGS )) {
-         
+      if ( action.startsWith( "export-" )) {
+          String exportableName = action.substring( "export-".length(), action.length() );
+          System.out.println("DEBUG(TabbedUI): Looking up exportable: " + exportableName );
+          for ( CPSExportable ex : exportables )
+              if ( ex.getExportName().equalsIgnoreCase( exportableName ) ) {
+                  // export and get out of here
+                  ex.exportData();
+                  return;
+              }
+      }
+      else if ( action.equalsIgnoreCase( MENU_ITEM_SETTINGS )) {
+         settings.setVisible(true);
       }
       else if ( action.equalsIgnoreCase( MENU_ITEM_EXIT )) {
          // TODO, save data, settings, etc

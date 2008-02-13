@@ -44,10 +44,6 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
 
     private CPSUI mainUI;
     
-//    public CPSMasterDetailModule( CPSUI uim ) {
-//       mainUI = uim;
-//   }
-    
     protected String getMasterTableName() {
         return master.getDisplayedTableName();
     }
@@ -60,6 +56,13 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
     protected void displayDetail( CPSRecord r ) {
         detail.displayRecord(r);
     }
+    protected void setDetailViewForEditting() {
+        detail.setForEditting();
+    }
+    protected void selectRecordInMasterView( int id ) {
+        master.selectRecord( id );
+    }
+    
     
     public JPanel getUI() {
         if ( mainPanel == null )
@@ -80,24 +83,6 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
         initUI();
         mainPanel.add(splitPane);
     }
-
-//    protected void refreshBothViews() {
-//        refreshMasterView();
-//        refreshDetailView();
-//        mainUI.revalidate();
-//    }
-//    protected void refreshMasterView() {
-//        master.refreshView();
-//    }
-//    protected void refreshDetailView() {
-//       // force detail view to redisplay the record
-//       displayDetail( master.getRecordToDisplay() );
-//       // detail.refreshView();
-//    }
-
-//    protected void revalidate() {
-//        mainPanel.revalidate();
-//    }
     
     protected void setStatus( String s ) {
        detail.setStatus(s);

@@ -84,6 +84,7 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
     public void setBackgroundChanged() { setBackground( COLOR_CHANGED ); }
     public void setBackgroundNormal() { setBackground( COLOR_NORMAL ); }
     
+    @Override
     public boolean isManagingFocus() { return false; }
     
     private Action nextFocusAction = new AbstractAction("Move Focus Forwards") {

@@ -25,10 +25,13 @@ package CPS.UI.Swing;
 
 import CPS.Data.CPSDateValidator;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractCellEditor;
@@ -36,6 +39,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -94,6 +98,37 @@ public class CPSTable extends JTable {
        }
         
     }
+
+    @Override
+    public void setRowSelectionInterval( int arg0, int arg1 ) {
+        super.setRowSelectionInterval( arg0, arg1 );
+        ensureRowIsVisible(arg0);
+    }
+    
+    // Assumes table is contained in a JScrollPane. Scrolls the
+    // cell (rowIndex, vColIndex) so that it is visible within the viewport.
+    public void ensureRowIsVisible( int rowIndex ) {
+        if ( !( this.getParent() instanceof JViewport ) ) {
+            return;
+        }
+        JViewport viewport = (JViewport) this.getParent();
+    
+        // This rectangle is relative to the table where the
+        // northwest corner of cell (0,0) is always (0,0).
+        Rectangle rect = this.getCellRect( rowIndex, 1, true );
+    
+        // The location of the viewport relative to the table
+        Point pt = viewport.getViewPosition();
+    
+        // Translate the cell location so that it is relative
+        // to the view, assuming the northwest corner of the
+        // view is (0,0)
+        rect.setLocation( rect.x - pt.x, rect.y - pt.y );
+    
+        // Scroll the area into view
+        viewport.scrollRectToVisible( rect );
+    }
+    
     
     public void setColumnNamesAndToolTips( ArrayList<String[]> prettyNames ) {
         ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
@@ -164,8 +199,31 @@ public class CPSTable extends JTable {
         public Object getCellEditorValue() {
             if ( ((JTextField) component ).getText().equals( "" ))
                 return null;
-            else
-                return dateValidator.parse( ( (JTextField) component ).getText() );
+            
+            String dateText = ( (JTextField) component ).getText();
+//            // handles addition of negative numbers
+//            if ( dateText.matches( ".+\\+.+") ) {
+//                String[] s = dateText.split("\\+");
+//                GregorianCalendar cal = new GregorianCalendar();
+//                cal.setTime( dateValidator.parse( s[0].trim() ) );
+//                cal.add( GregorianCalendar.DAY_OF_YEAR, Integer.parseInt( s[1].trim() ));
+//                return cal.getTime();
+//            }
+//            // does NOT handle subtract of negative numbers
+//            else if ( dateText.matches( ".+-.+") ) {
+//                String[] s = dateText.split("-");
+//                // if we split into two, then there was just one -
+//                if ( s.length == 2 ) {
+//                    GregorianCalendar cal = new GregorianCalendar();
+//                    cal.setTime( dateValidator.parse( s[0].trim() ) );
+//                    cal.add( GregorianCalendar.DAY_OF_YEAR, -1 * Integer.parseInt( s[1].trim() ) );
+//                    return cal.getTime();
+//                }
+//                else
+//                    System.err.println("ERROR(CPSTable): Can't understand date:" + dateText + " [Too many '-'s]" );
+//            }
+            
+            return dateValidator.parse( dateText.trim() );
         }
     }
        

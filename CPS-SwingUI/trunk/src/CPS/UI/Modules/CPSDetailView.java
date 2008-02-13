@@ -137,6 +137,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
       
         lblChanges = new JLabel( "Changes: " );
         btnSaveChanges = new JButton( "Save" );
+        btnSaveChanges.setMnemonic( java.awt.event.KeyEvent.VK_ENTER );
         btnDiscardChanges = new JButton( "Discard" );
         btnSaveChanges.addActionListener( this );
         btnDiscardChanges.addActionListener( this );
@@ -179,11 +180,18 @@ public abstract class CPSDetailView extends CPSDataModelUser
 //    public void refreshView() {
 //        displayRecord( getDisplayedRecord() );
 //    }
+    protected void selectRecordInMasterView( int id ) {
+        uiManager.selectRecordInMasterView( id );
+    }
     public abstract void displayRecord( CPSRecord r );
+    public abstract void setForEditting();
     public abstract CPSRecord getDisplayedRecord();
+    protected abstract void updateAutocompletionComponents();
+   
     protected String getDisplayedTableName() {
         return uiManager.getMasterTableName();
     }
+    
     
     @Override
     public void setDataSource(CPSDataModel dm) {

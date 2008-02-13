@@ -176,7 +176,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private int getRecordIDForRow( int row ) {
        return new Integer( masterTable.getValueAt( row, -1 ).toString() ).intValue();
     }
-           
+    
+    protected void selectRecord( int id ) {
+        setSelectedRowByRecordID( id );
+    }
     private void setSelectedRowByRecordID( int recordID ) {
        
        masterTable.clearSelection();
@@ -349,6 +352,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
         
     }
     
+    protected abstract ArrayList<String[]> getColumnPrettyNameMap();
     protected abstract ArrayList<String> getDisplayableColumnList();
     protected abstract ArrayList<String> getDefaultDisplayableColumnList();
     protected void buildColumnListPopUpMenu() {
@@ -426,8 +430,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
        buildColumnListPopUpMenu();
        dataUpdated();
     }
-    
-    protected abstract ArrayList<String[]> getColumnPrettyNameMap();
     
     // Reset the table to display new data, encapsulated in a new TableModel
     // We should consider renaming this as the name is rather ambiguous.  
@@ -525,6 +527,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
          */
         if (action.equalsIgnoreCase(btnFilterClear.getText())) {
             tfldFilter.setText("");
+            tfldFilter.requestFocus();
             return;
         }
         
@@ -560,8 +563,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
             }
             CPSRecord newRecord = createNewRecord();
             int newID = newRecord.getID();
-            // table.setSelectedRow( newID );
             uiManager.displayDetail( newRecord );
+            uiManager.setDetailViewForEditting();
+            setSelectedRowByRecordID( newID );
             setStatus( "Editing new record; save changes to add to list." );
         }
         else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
@@ -576,8 +580,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
             }
             CPSRecord newRecord = duplicateRecord( selectedIDs.get(0).intValue() );
             int newID = newRecord.getID();
-            setSelectedRowByRecordID( newID );
             uiManager.displayDetail( newRecord );
+            uiManager.setDetailViewForEditting();
+            setSelectedRowByRecordID( newID );
         }
         else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
             if (!isDataAvailable()) {
