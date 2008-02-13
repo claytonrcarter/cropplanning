@@ -89,11 +89,11 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
           return new DefaultTableModel();
        
        if      ( radioAll.isSelected() )
-          return getDataSource().getAbbreviatedCropAndVarietyList( getDisplayedColumnList(), getSortColumn(), getFilter() );
+          return getDataSource().getCropAndVarietyTable( getDisplayedColumnList(), getSortColumn(), getFilter() );
        else if ( radioCrops.isSelected() )
-          return getDataSource().getAbbreviatedCropList( getDisplayedColumnList(), getSortColumn(), getFilter() );
+          return getDataSource().getCropTable( getDisplayedColumnList(), getSortColumn(), getFilter() );
        else if ( radioVar.isSelected() )
-          return getDataSource().getAbbreviatedVarietyList( getDisplayedColumnList(), getSortColumn(), getFilter() );
+          return getDataSource().getVarietyTable( getDisplayedColumnList(), getSortColumn(), getFilter() );
        else // nothing selected (not useful)
           return new DefaultTableModel();
     }

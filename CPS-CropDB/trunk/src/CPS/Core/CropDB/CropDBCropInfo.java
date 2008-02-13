@@ -57,25 +57,11 @@ public class CropDBCropInfo extends CPSDetailView {
       if ( ! isRecordDisplayed() ) {
          setRecordDisplayed();
          rebuildMainPanel();
+         updateAutocompletionComponents();
       }
       
       tfldCropName.setInitialText( displayedCrop.getCropName() );
       tfldVarName.setInitialText( displayedCrop.getVarietyName() );
-      
-//      if ( displayedCrop.isCrop() ) {
-//
-//         lblSimilar.setVisible( true );
-//         cmbxSimilar.setVisible( true );
-         
-//         if ( ! displayedCrop.getSimilarCrop().equalsIgnoreCase("") )
-//            cmbxSimilar.setSelectedItem( displayedCrop.getSimilarCrop() );
-//         else
-//            cmbxSimilar.setSelectedItem( "None" );
-//      } 
-//      else {
-//         lblSimilar.setVisible( false );
-//         cmbxSimilar.setVisible( false ); 
-//      }
       
       tfldFamName.setInitialText( displayedCrop.getFamilyName(),
                                   displayedCrop.getFamilyNameState() );
@@ -122,8 +108,13 @@ public class CropDBCropInfo extends CPSDetailView {
       tfldYieldUnitValue.setInitialText( displayedCrop.getCropUnitValueString(),
                                   displayedCrop.getCropUnitValueState() );
       
-      
    }
+   
+   @Override
+    public void setForEditting() {
+        tfldCropName.requestFocus();
+    }
+   
    
    public CPSCrop asCrop() {
       
@@ -173,7 +164,7 @@ public class CropDBCropInfo extends CPSDetailView {
        
       tfldCropName = new CPSTextField(10);
       tfldVarName = new CPSTextField( 10 );
-      tfldFamName = new CPSTextField( 10, getDataSource().getFamilyNames(), CPSTextField.MATCH_PERMISSIVE );
+      tfldFamName = new CPSTextField( 10, getDataSource().getFamilyNameList(), CPSTextField.MATCH_PERMISSIVE );
       
       tareDesc = new CPSTextArea( 3, 10 );
       tareGroups = new CPSTextArea( 2, 10 );
@@ -330,6 +321,8 @@ public class CropDBCropInfo extends CPSDetailView {
           getDataSource().updateCrops( diff, displayedCrop.getCommonIDs() );
        else
           getDataSource().updateCrop( diff );
+       
+       selectRecordInMasterView( displayedCrop.getID() );
     }
      
    
@@ -342,7 +335,7 @@ public class CropDBCropInfo extends CPSDetailView {
       // TODO updated whenever a new crop is created.
       // TODO should filter out blanks (done) and duplicates
       // now fill in the SimilarTo combobox
-      TableModel tm = getDataSource().getCropList( "crop_name" );
+      TableModel tm = getDataSource().getCropTable( "crop_name" );
       
       int nameCol = 0;
       // find the column storing the crop names
@@ -358,15 +351,24 @@ public class CropDBCropInfo extends CPSDetailView {
           cmbxSimilar.addItem( name );
       }      
    }
+
+    @Override
+    protected void updateAutocompletionComponents() {
+        tfldCropName.updateAutocompletionList( getDataSource().getCropNameList(),
+                                               CPSTextField.MATCH_PERMISSIVE );
+        tfldVarName.updateAutocompletionList( getDataSource().getVarietyNameList( displayedCrop.getCropName() ),
+                                              CPSTextField.MATCH_PERMISSIVE );
+        tfldFamName.updateAutocompletionList( getDataSource().getFamilyNameList(),
+                                              CPSTextField.MATCH_PERMISSIVE );
+        tfldFlatSize.updateAutocompletionList( getDataSource().getFlatSizeList(),
+                                              CPSTextField.MATCH_PERMISSIVE );
+    }
    
    @Override
    public void dataUpdated() {
       if ( isRecordDisplayed() ) {
          this.displayRecord( getDataSource().getCropInfo( getDisplayedRecord().getID() ) );
-         tfldCropName.updateAutocompletionList( getDataSource().getCropNames(),
-                                                CPSTextField.MATCH_PERMISSIVE );
-         tfldVarName.updateAutocompletionList( getDataSource().getVarietyNames( displayedCrop.getCropName() ),
-                                               CPSTextField.MATCH_PERMISSIVE );
+         updateAutocompletionComponents();
       }
    }
    

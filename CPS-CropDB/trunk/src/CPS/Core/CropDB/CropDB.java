@@ -22,22 +22,22 @@
 
 package CPS.Core.CropDB;
 
+import CPS.CSV;
 import CPS.Module.*;
 import CPS.UI.Modules.CPSMasterDetailModule;
-import java.awt.Dimension;
 import javax.swing.JPanel;
 
 /**
  *
  * @author Clayton
  */
-public class CropDB extends CPSMasterDetailModule {
+public class CropDB extends CPSMasterDetailModule implements CPSExportable {
    
     public CropDB () {
        
        setModuleName( "CropDB" );
        setModuleType( "Core" );
-       setModuleVersion( "0.1" );
+       setModuleVersion( GLOBAL_DEVEL_VERSION );
        
        setMasterView( new CropDBCropList( this ) );
        setDetailView( new CropDBCropInfo( this ) );
@@ -47,5 +47,25 @@ public class CropDB extends CPSMasterDetailModule {
     public JPanel display () {
 	return getUI();
     }
+
+    public void exportData() {
+        if ( isDataAvailable() ) {
+            CPSExporter exp = new CSV();
+            String fileName = getGlobalSettings().getOutputDir() + 
+                              System.getProperty( "file.separator" ) +
+                              "ExportedCropsAndVars." + exp.getExportFileDefaultExtension();
+            exp.exportCropsAndVarieties( fileName, getDataSource().getCropsAndVarietiesAsList() );
+        }
+        else {
+            System.err.println("ERROR(CropDB): No data exported, no data available.");
+        }
+            
+    }
+
+    public String getExportName() {
+        return "Crops and varieties from " + getModuleName();
+    }
+    
+    
     
 }
