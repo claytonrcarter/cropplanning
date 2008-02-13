@@ -45,26 +45,41 @@ public class HSQLConnect {
       return establishConnection( buildDBConnectionString( dir, dbFilename ));
    }
    
-   public static Connection createDB( String dir, String dbFilename ) {
-      Connection con = connectToNew( buildDBConnectionString( dir, dbFilename ));
+   public static Connection createDB( String dir, String dbFilename, long currentVersion ) {
+      Connection con = connectToNew( buildDBConnectionString( dir, dbFilename ), currentVersion );
       return con;
    }
 
-   /** This is sketchy and is only needed when we're using a server based db */
+   /** 
+    * Test the existence of a standard table to see if the database is empty.
+    * This is only the case when HSQLD is running in server mode.
+    * @param con Database connection upon which to operate.
+    * @return True if the database is empty, false if it is not.
+    */
    public static boolean dbIsEmpty( Connection con ) {
+       return ! tableExists( con, "CROP_PLANS" );
+   }
+   
+   /**
+    * Simple test to see if a table exists.
+    * @param con Connection upon which to operate.
+    * @param tableName Name of table whose existence we question.
+    * @return true if the table exists, false if it does not.
+    */
+   public static boolean tableExists( Connection con, String tableName ) {
     
       try {
          Statement st = con.createStatement();
     
-         String tableName = "COMMON_PLANTINGS";
-         String query = "select * from  " + tableName + " where 1=0";
+//         String query = "select * from  " + tableName + " where 1=0";
+         String query = "SELECT count(*) FROM  " + HSQLDB.escapeTableName( tableName );
          st = con.createStatement();
          st.executeQuery( query );
-         return false;
-      }
-      catch ( Exception e ) {
-         // table does not exist or some other problem
          return true;
+      }
+      catch ( Exception ignore ) {
+         // table does not exist or some other problem
+         return false;
       }
     
    }
@@ -127,13 +142,13 @@ public class HSQLConnect {
       return connectToDB( db + dbOpenOnly );
    }
    
-   private static Connection connectToNew( String db ) {
+   private static Connection connectToNew( String db, long currentVersion ) {
       Connection con = connectToDB( db );
       
       if ( con == null ) // error occured
          return con;
       
-      HSQLDBCreator.createTables( con );
+      HSQLDBCreator.createTables( con, currentVersion );
 //      HSQLDBPopulator.populateTables( con );
       
       return con;

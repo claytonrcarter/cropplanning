@@ -94,7 +94,7 @@ public class HSQLCalc {
    /**
     * Calculate number of beds to plant from row feet to plant, rows/bed and bedLength.
     */
-   public static double bedsFromRowFt( int rowFt, int rowsPerBed, int bedLength ) {
+   public static double bedsFromRowFt( int rowFt, int rowsPerBed, Integer bedLength ) {
       return CPS.Data.CPSCalculations.calcBedsToPlantFromRowFtToPlant( rowFt, rowsPerBed, bedLength );
    }
 
@@ -154,6 +154,13 @@ public class HSQLCalc {
       return CPS.Data.CPSCalculations.calcPlantsToStart( plantsNeeded, fudgeFactor );
    }
    
+   public static int bedLength( String fieldName ) {
+//       if ( fieldName == null )
+//           return null;
+       
+       return CPS.Data.CPSCalculations.extractBedLength( fieldName );
+   }
+   
    /**
     * Calculate number of flats needed based on plants to start and String representing flat size.
     */
@@ -161,7 +168,7 @@ public class HSQLCalc {
       if ( flatSize == null ) 
          return null;
       
-      int c = CPS.Data.CPSCalculations.calcFlatCapacity( flatSize );
+      int c = CPS.Data.CPSCalculations.extractFlatCapacity( flatSize );
       return new Double( CPS.Data.CPSCalculations.calcFlatsNeeded( plantsToStart, c ));
    }
    

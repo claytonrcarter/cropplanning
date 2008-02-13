@@ -23,7 +23,6 @@
 package CPS.Core.DB;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,6 +30,9 @@ import java.sql.Statement;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A class to handle the nitty-gritty queries of the database.
@@ -49,13 +51,13 @@ public class HSQLQuerier {
       return rsCache;
    }
    
-   public TableModel getCachedResultsAsTable() {
-      return tableResults( getCachedResults() );
-   }
-   
-   public TableModel tableQuery( String table, String columns, String conditional ) {
-      return tableResults( storeQuery( table, columns, conditional ));
-   }
+//   public TableModel getCachedResultsAsTable() {
+//      return tableResults( getCachedResults() );
+//   }
+//   
+//   public TableModel tableQuery( String table, String columns, String conditional ) {
+//      return tableResults( storeQuery( table, columns, conditional ));
+//   }
       
    public ResultSet storeQuery( String table, String columns ) {
       return storeQuery( table, columns, null, null );
@@ -165,6 +167,77 @@ public class HSQLQuerier {
       return rs;
    }
    
+   public static synchronized long getLastUsedVersion( Connection con ) {
+       
+       try {
+           Statement s = con.createStatement();
+           String query = "SELECT prev_ver FROM " + 
+                          HSQLDB.escapeTableName( "CPS_METADATA" );
+           ResultSet rs = s.executeQuery( query );
+           
+           if ( rs.next() ) {
+               long prev_ver = rs.getLong( "prev_ver" );
+               return prev_ver;
+           }
+           else {
+               System.out.println("ERROR: couldn't find previous version (no results)");
+               return -1;
+           }
+           
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         return -1;
+      }
+   }
+   
+   
+   public static synchronized ArrayList<String> getDistinctValuesForColumn( Connection con, ArrayList<String> tables, String column ) {
+       
+       ArrayList<String> l = new ArrayList<String>();
+       Set set = new HashSet();
+      
+       for ( String table : tables ) {
+           l = HSQLQuerier.getDistinctValuesForColumn( con, table, column );
+           set.addAll( l );
+       }
+      
+       l.clear();
+       l.addAll( set );
+      
+       return l;
+       
+   }
+   
+   public static synchronized ArrayList<String> getDistinctValuesForColumn( Connection con, String table, String column ) {
+       if ( table == null || column == null ) 
+           return new ArrayList<String>();
+       
+      try {
+         String query = "SELECT DISTINCT " + column + " FROM " + HSQLDB.escapeTableName( table );
+         Statement st = con.createStatement();
+         ResultSet rs = st.executeQuery( query );
+      
+//         System.out.println("Executed query: " + query );
+         
+         ArrayList<String> l = new ArrayList<String>();
+         while ( rs.next() ) {
+            String s = (String) rs.getObject(1);
+            if ( s == null || s.equals( "" ) )
+               continue;
+//            System.out.println("DEBUG Adding item " + (String) rs.getObject(1) );
+            l.add( s );
+         }
+         Collections.sort( l, String.CASE_INSENSITIVE_ORDER );
+         return l;
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         return new ArrayList<String>();
+      }
+      
+   }
+   
    
    /**
     * A method to create and submit queries which conflate the results and return a
@@ -196,7 +269,7 @@ public class HSQLQuerier {
       }
       query = query.substring( 0, query. lastIndexOf( ", " ));
       
-      query += " FROM " + table;
+      query += " FROM " + HSQLDB.escapeTableName( table );
       
       System.out.println("DEBUG Submitting query: " + query );
       
@@ -205,32 +278,76 @@ public class HSQLQuerier {
 
    
    public synchronized ResultSet submitSummedCropPlanQuery( String planName,
-                                                                ArrayList<String[]> colMap,
-                                                                ArrayList<String> displayColumns,
-                                                                String filterExp ) {
+                                                              ArrayList<String[]> plantColMap,
+                                                              ArrayList<String[]> cropColMap,
+                                                              ArrayList<String> displayColumns,
+                                                              String filterExp ) {
        String sumCols = "";
        for ( String s : displayColumns )
            sumCols += " SUM( " + s + " ) AS " + s + ", ";
        sumCols = sumCols.substring( 0, sumCols.lastIndexOf( ", " ) );
        
-       return submitCalculatedCropPlanQuery( planName, colMap, sumCols, null, filterExp);
+       return submitCalculatedCropPlanQuery( planName, plantColMap, cropColMap, sumCols, null, filterExp);
        
    }
    
-   public synchronized ResultSet submitCalculatedCropPlanQuery( String planName,
-                                                                ArrayList<String[]> colMap,
-                                                                String displayColumns,
-                                                                String sortColumn,
-                                                                String filterExp ) {
+   public synchronized ResultSet submitCalculatedCropAndVarQuery( ArrayList<String[]> colMap,
+                                                                  String displayColumns,
+                                                                  String sortColumn,
+                                                                  String filterExp ) {
       
-       String filledInQuery = createCoalescedCropPlanQueryString( planName, colMap );
+       String filledInQuery = createCoalescedCropAndVarQueryString( colMap );
       
       // using pass2 in parens as the tablename; this is sort of a virtual table
       return storeQuery( "( " + filledInQuery + " )", displayColumns, null, sortColumn, filterExp ); 
       
    }
    
-   private String createCoalescedCropPlanQueryString( String planName, ArrayList<String[]> colMap ) {
+   public synchronized ResultSet submitCalculatedCropPlanQuery( String planName,
+                                                                ArrayList<String[]> plantColMap,
+                                                                ArrayList<String[]> cropColMap,
+                                                                String displayColumns,
+                                                                String sortColumn,
+                                                                String filterExp ) {
+      
+       String filledInQuery = createCoalescedCropPlanQueryString( planName, plantColMap, cropColMap );
+      
+      // using pass2 in parens as the tablename; this is sort of a virtual table
+      return storeQuery( "( " + filledInQuery + " )", displayColumns, null, sortColumn, filterExp ); 
+      
+   }
+   
+    private String createCoalescedCropAndVarQueryString( ArrayList<String[]> colMap ) {
+       
+       int CROP_COL = 0;
+       int MAP_COL = 1;
+        
+       /* This string represents the query which will fill in the "static" fields
+        * in each crop (w/ variety) from the corresponding fields in the crop (w/o variety) */
+       String cropFillInQuery = " SELECT ";
+       for ( String[] s : colMap ) {
+           if ( s[MAP_COL] == null ) {
+               cropFillInQuery += "v." + s[CROP_COL] + ", ";
+               continue;
+           }
+           cropFillInQuery += "COALESCE( v." + s[CROP_COL] + ", ";
+           cropFillInQuery += "c." + s[CROP_COL] + " ) AS " + s[CROP_COL];
+           cropFillInQuery += ", ";
+       }
+       cropFillInQuery = cropFillInQuery.substring( 0, cropFillInQuery.lastIndexOf( ", " ) );
+//       cropFillInQuery += " FROM crops_varieties AS v, crops_varieties AS c ";
+       cropFillInQuery += " FROM        crops_varieties                                        AS v ";
+       cropFillInQuery += " LEFT JOIN ( SELECT * FROM crops_varieties WHERE var_name IS NULL ) AS c ";
+//       cropFillInQuery += " WHERE v.crop_name = c.crop_name";
+       cropFillInQuery += " ON v.crop_name = c.crop_name";
+       
+       return cropFillInQuery;
+        
+    }
+   
+   private String createCoalescedCropPlanQueryString( String planName,
+                                                      ArrayList<String[]> plantColMap,
+                                                      ArrayList<String[]> cropColMap ) {
        
        planName = HSQLDB.escapeTableName( planName );
        
@@ -238,24 +355,12 @@ public class HSQLQuerier {
        int CROP_COL = 1;
        int CALC = 2;
       
-       /* This string represents the query which will fill in the "static" fields
-        * in each crop (w/ variety) from the corresponding fields in the crop (w/o variety) */
-       String cropFillInQuery = " SELECT id, ";
-       for ( String[] s : colMap ) {
-           if ( s[CROP_COL] == null )
-               continue;
-           cropFillInQuery += "COALESCE( c1." + s[CROP_COL] + ", ";
-           cropFillInQuery += "c2." + s[CROP_COL] + " ) AS " + s[CROP_COL];
-           cropFillInQuery += ", ";
-       }
-       cropFillInQuery = cropFillInQuery.substring( 0, cropFillInQuery.lastIndexOf( ", " ) );
-       cropFillInQuery += " FROM crops_varieties AS c1, crops_varieties AS c2 ";
-       cropFillInQuery += " WHERE c1.crop_name = c2.crop_name AND c2.var_name IS NULL";
-
+       String cropFillInQuery = createCoalescedCropAndVarQueryString( cropColMap );
+       
        /* This string represents the query which will fill in the "static" fields
         * in each planting from the corresponding fields in the crop */
        String plantingFillInQuery = "SELECT ";
-       for ( String[] s : colMap ) {
+       for ( String[] s : plantColMap ) {
            if ( s[CROP_COL] == null )
                plantingFillInQuery += "p." + s[PLANT_COL];
            else {
@@ -269,7 +374,7 @@ public class HSQLQuerier {
        plantingFillInQuery += "WHERE p.crop_id = c.id ";
 
        String passQuery = "SELECT ";
-       for ( String[] s : colMap ) {
+       for ( String[] s : plantColMap ) {
            if ( s[CALC] == null )
                passQuery += s[PLANT_COL];
            else {
@@ -294,9 +399,9 @@ public class HSQLQuerier {
     * @param rs ResultSet to embed in the new HSQLTableModel
     * @return A new HSQLTableModel wrapped around the given ResultSet
     */
-   public static TableModel tableResults( ResultSet rs ) {
+   public static TableModel tableResults( HSQLDB dm, ResultSet rs ) {
       try {
-         return new HSQLTableModel( rs );
+         return new HSQLTableModel( dm, rs );
       }
       catch ( SQLException e ) {
          e.printStackTrace();
@@ -304,9 +409,9 @@ public class HSQLQuerier {
       }
    }
    
-   public static TableModel tableResults( ResultSet rs, String tableName ) {
+   public static TableModel tableResults( HSQLDB dm, ResultSet rs, String tableName ) {
       try {
-         return new HSQLTableModel( rs, tableName );
+         return new HSQLTableModel( dm, rs, tableName );
       }
       catch ( SQLException e ) {
          e.printStackTrace();

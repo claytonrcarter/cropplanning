@@ -103,7 +103,7 @@ public class HSQLDBSchemas {
       s += "custom4         VARCHAR, ";
       s += "custom5         VARCHAR, ";
       
-      s += "FOREIGN KEY ( crop_id ) REFERENCES crops_varieties ( id ), ";
+//      s += "FOREIGN KEY ( crop_id ) REFERENCES crops_varieties ( id ), ";
       
       return s;
    }
@@ -194,6 +194,15 @@ public class HSQLDBSchemas {
       
       return s;
       
+   }
+   
+   static String cpsDbMetaDataSchema() {
+      
+       String s = new String();
+
+       s += "prev_ver  BIGINT, ";
+       
+       return s;
    }
    
 }

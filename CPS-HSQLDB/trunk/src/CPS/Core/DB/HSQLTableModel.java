@@ -23,7 +23,7 @@
 package CPS.Core.DB;
 
 import CPS.Data.CPSDateValidator;
-import CPS.Module.CPSDataUser;
+import CPS.Module.CPSDataModel;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,8 +38,9 @@ public class HSQLTableModel extends ResultSetTableModel {
    private String tableName = null;
    
    private CPSDateValidator dateValidator;
+   private HSQLDB dataModel;
    
-   public HSQLTableModel( ResultSet resSet ) throws SQLException {
+   public HSQLTableModel( HSQLDB dm, ResultSet resSet ) throws SQLException {
       super(resSet);
       if ( results.getType() == ResultSet.TYPE_FORWARD_ONLY )
          throw new SQLException( "RSTableModel does not accept ResultSets of TYPE_FORWARD_ONLY" );
@@ -53,7 +54,7 @@ public class HSQLTableModel extends ResultSetTableModel {
       dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
       dateValidator.setDefaultFormat( CPSDateValidator.DATE_FORMAT_SQL );
               
-      
+      this.dataModel = dm;
       // TODO find boolean columns and set renderer/editor to a JCheckBox
       // TODO adjust the width of the columns downward
       //      this could be really fancy, averaging the width of all of the contents
@@ -62,8 +63,8 @@ public class HSQLTableModel extends ResultSetTableModel {
       
    }
    
-   public HSQLTableModel( ResultSet rs, String tableName ) throws SQLException {
-      this( rs );
+   public HSQLTableModel( HSQLDB dm, ResultSet rs, String tableName ) throws SQLException {
+      this( dm, rs );
       setTableName( tableName );
    }
    
@@ -131,7 +132,7 @@ public class HSQLTableModel extends ResultSetTableModel {
                                    "), row " + row + ": to " + val );
           
           results.absolute(row+1);
-          String sql = "UPDATE " + this.getTableName() + " ";
+          String sql = "UPDATE " + HSQLDB.escapeTableName( this.getTableName() ) + " ";
           sql += "SET " + metadata.getColumnName( column+1 ) + " = " + val + " ";
           sql += "WHERE id = " + results.getInt( "id" );
           // sql += "WHERE " + metadata.getColumnName(1) + " = " + results.getInt(1);
@@ -147,6 +148,7 @@ public class HSQLTableModel extends ResultSetTableModel {
           updateMetaData();
           
           fireTableDataChanged();
+          dataModel.updateDataListeners();
          
        }
        catch ( Exception ex ) { ex.printStackTrace(); }

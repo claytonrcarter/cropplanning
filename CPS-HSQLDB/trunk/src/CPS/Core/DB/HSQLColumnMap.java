@@ -158,6 +158,15 @@ public class HSQLColumnMap {
         return als;
     }
     
+    public ArrayList<String[]> getCropInheritanceColumnMapping() {
+        ArrayList<String[]> l = new ArrayList<String[]>( cropColumnMap.size() );
+        for ( ColumnStruct cs : cropColumnMap )
+//            if ( cs.displayable || cs.mandatory )
+                l.add( new String[] { cs.columnName, cs.correlatedColumn } );
+        
+        return l;
+    }
+    
     public ArrayList<String[]> getPlantingToCropColumnMapping() {
         ArrayList<String[]> l = new ArrayList<String[]>( plantingColumnMap.size() );
         for ( ColumnStruct cs : plantingColumnMap )
@@ -227,33 +236,38 @@ public class HSQLColumnMap {
     private void buildCropColumnMap() {
         ArrayList<ColumnStruct> l = new ArrayList();
 
-//      l.add( new ColumnStruct( colName,          mapsTo, calc, mand,  disp,  filt,  def,   imp,   prettyName ));
-        l.add( new ColumnStruct( "id",             null,   null, true,  false, false, false, false, "" ));
-        l.add( new ColumnStruct( "crop_name",      null,   null, true,  true,  true,  true,  true,  "Crop Name" ));
-        l.add( new ColumnStruct( "var_name",       null,   null, false, true,  true,  true,  true,  "Variety Name" ));
-        l.add( new ColumnStruct( "bot_name",       null,   null, false, false, true,  false, false, "Botanical Name" ));
-        l.add( new ColumnStruct( "description",    null,   null, false, false, true,  false, false, "Description" ));
-        l.add( new ColumnStruct( "keywords",       null,   null, false, true,  true,  false, false, "Keywords" ));
-        l.add( new ColumnStruct( "other_req",      null,   null, false, true,  true,  false, false, "Other Requirements" ));
-        l.add( new ColumnStruct( "notes",          null,   null, false, false, true,  false, false, "Notes" ));
-        l.add( new ColumnStruct( "maturity",       null,   null, false, true,  false, true,  true , "Maturity Days" ));
-        l.add( new ColumnStruct( "time_to_tp",     null,   null, false, true,  false, false, true , "Time In GH (weeks)" ));
-        l.add( new ColumnStruct( "rows_p_bed",     null,   null, false, true,  false, false, true , "Rows/Bed" ));
-        l.add( new ColumnStruct( "space_inrow",    null,   null, false, true,  false, false, true , "Space between Plants" ));
-        l.add( new ColumnStruct( "space_betrow",   null,   null, false, true,  false, false, false, "Space between Rows" ));
-        l.add( new ColumnStruct( "flat_size",      null,   null, false, true,  true,  false, false, "Plug Flat Size/Capacity" ));
-        l.add( new ColumnStruct( "planter",        null,   null, false, true,  true,  false, false, "Planter" ));
-        l.add( new ColumnStruct( "planter_setting",null,   null, false, true,  true,  false, false, "Planter Setting" ));
-        l.add( new ColumnStruct( "yield_p_foot",   null,   null, false, true,  false, false, true , "Yield/Foot" ));
-        l.add( new ColumnStruct( "yield_num_weeks",null,   null, false, true,  false, false, false, "Yields For (weeks)" ));
-        l.add( new ColumnStruct( "yield_p_week",   null,   null, false, true,  false, false, false, "Yield/Week" ));
-        l.add( new ColumnStruct( "crop_unit",      null,   null, false, true,  true,  false, false, "Yield Unit" ));
-        l.add( new ColumnStruct( "crop_unit_value",null,   null, false, true,  false, false, true , "Unit Value" ));
-        l.add( new ColumnStruct( "fudge",          null,   null, false, false, false, false, false, "Fudge Factor" ));
-        l.add( new ColumnStruct( "mat_adjust",     null,   null, false, true,  false, false, false, "Mat. Adjustment" ));
-        l.add( new ColumnStruct( "misc_adjust",    null,   null, false, true,  false, false, false, "Misc. Mat. Adjustment" ));
-        l.add( new ColumnStruct( "fam_name",       null,   null, false, true,  true,  true,  true,  "Family Name" ));
-        l.add( new ColumnStruct( "groups",         null,   null, false, true,  true,  false, false, "Groups" ));
+        /*
+         * If a column is inheritable from a crop to a var, then duplicate the
+         * column name in the "mapsTo" field.
+         */
+        
+//      l.add( new ColumnStruct( colName,          mapsTo,            calc, mand,  disp,  filt,  def,   imp,   prettyName ));
+        l.add( new ColumnStruct( "id",             null,              null, true,  false, false, false, false, "" ));
+        l.add( new ColumnStruct( "crop_name",      null,              null, true,  true,  true,  true,  true,  "Crop Name" ));
+        l.add( new ColumnStruct( "var_name",       null,              null, false, true,  true,  true,  true,  "Variety Name" ));
+        l.add( new ColumnStruct( "bot_name",       "bot_name",        null, false, false, true,  false, false, "Botanical Name" ));
+        l.add( new ColumnStruct( "description",    null,              null, false, false, true,  false, false, "Description" ));
+        l.add( new ColumnStruct( "keywords",       null,              null, false, true,  true,  false, false, "Keywords" ));
+        l.add( new ColumnStruct( "other_req",      "other_req",       null, false, true,  true,  false, false, "Other Requirements" ));
+        l.add( new ColumnStruct( "notes",          null,              null, false, false, true,  false, false, "Notes" ));
+        l.add( new ColumnStruct( "maturity",       "maturity",        null, false, true,  false, true,  true , "Maturity Days" ));
+        l.add( new ColumnStruct( "time_to_tp",     "time_to_tp",      null, false, true,  false, false, true , "Time In GH (weeks)" ));
+        l.add( new ColumnStruct( "rows_p_bed",     "rows_p_bed",      null, false, true,  false, false, true , "Rows/Bed" ));
+        l.add( new ColumnStruct( "space_inrow",    "space_inrow",     null, false, true,  false, false, true , "Space between Plants" ));
+        l.add( new ColumnStruct( "space_betrow",   "space_betrow",    null, false, true,  false, false, false, "Space between Rows" ));
+        l.add( new ColumnStruct( "flat_size",      "flat_size",       null, false, true,  true,  false, false, "Plug Flat Size/Capacity" ));
+        l.add( new ColumnStruct( "planter",        "planter",         null, false, true,  true,  false, false, "Planter" ));
+        l.add( new ColumnStruct( "planter_setting","planter_setting", null, false, true,  true,  false, false, "Planter Setting" ));
+        l.add( new ColumnStruct( "yield_p_foot",   "yield_p_foot",    null, false, true,  false, false, true , "Yield/Foot" ));
+        l.add( new ColumnStruct( "yield_num_weeks","yield_num_weeks", null, false, true,  false, false, false, "Yields For (weeks)" ));
+        l.add( new ColumnStruct( "yield_p_week",   "yield_p_week",    null, false, true,  false, false, false, "Yield/Week" ));
+        l.add( new ColumnStruct( "crop_unit",      "crop_unit",       null, false, true,  true,  false, false, "Yield Unit" ));
+        l.add( new ColumnStruct( "crop_unit_value","crop_unit_value", null, false, true,  false, false, true , "Unit Value" ));
+        l.add( new ColumnStruct( "fudge",          "fudge",           null, false, false, false, false, false, "Fudge Factor" ));
+        l.add( new ColumnStruct( "mat_adjust",     "mat_adjust",      null, false, true,  false, false, false, "Mat. Adjustment" ));
+        l.add( new ColumnStruct( "misc_adjust",    "misc_adjust",     null, false, true,  false, false, false, "Misc. Mat. Adjustment" ));
+        l.add( new ColumnStruct( "fam_name",       "fam_name",        null, false, true,  true,  true,  true,  "Family Name" ));
+        l.add( new ColumnStruct( "groups",         "groups",          null, false, true,  true,  false, false, "Groups" ));
 //        l.add( new ColumnStruct( "successions",    null,   null, false, false, false, false, false, "Successions" ));
 //      l.add( new ColumnStruct( colName,          mapsTo, calc, mand,  disp,  filt,  def,   imp,   prettyName ));
 
@@ -289,24 +303,30 @@ public class HSQLColumnMap {
                                                                             false, true,  true,  true,  true,  "Planting Date",       "Plant" ));
       l.add( new ColumnStruct(  "done_plant",      null,              null, false, true,  false, true,  true,  "Planted?"  ));
       l.add( new ColumnStruct(  "date_tp",         null,              "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )",
-                                                                            false, true,  true,  false, true,  "Transplant Date",      "TP" ));
-      l.add( new ColumnStruct(  "done_tp",         null,              null, false, true,  false, false, true,  "Transplanted?"  ));
+                                                                            false, true,  true,  true, true,  "Transplant Date",      "TP" ));
+      l.add( new ColumnStruct(  "done_tp",         null,              null, false, true,  false, true, true,  "Transplanted?"  ));
       l.add( new ColumnStruct(  "date_harvest",    null,              "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity ) ",
                                                                             false, true,  true,  true,  true,  "Harvest Date",         "Pick" ));
       l.add( new ColumnStruct(  "done_harvest",    null,              null, false, true,  false, true,  true,  "Picked?"  ));
 
 //      l.add( new ColumnStruct( colName,          mapsTo,            calc, mand,  disp,  filt,  def,   imp,  prettyName ));
-      l.add( new ColumnStruct(  "beds_to_plant",   null,              "\"CPS.Core.DB.HSQLCalc.bedsFromRowFt\"( rowft_to_plant, rows_p_bed, 100 ), "
-                                                                    + "\"CPS.Core.DB.HSQLCalc.bedsFromPlants\"( plants_needed, inrow_space, rows_p_bed, 100 )",
+      l.add( new ColumnStruct(  "beds_to_plant",   null,              "\"CPS.Core.DB.HSQLCalc.bedsFromRowFt\"( rowft_to_plant, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) ), "
+                                                                    + "\"CPS.Core.DB.HSQLCalc.bedsFromPlants\"( plants_needed, inrow_space, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) )",
+//      l.add( new ColumnStruct(  "beds_to_plant",   null,              "\"CPS.Core.DB.HSQLCalc.bedsFromRowFt\"( rowft_to_plant, rows_p_bed, 100 ), "
+//                                                                    + "\"CPS.Core.DB.HSQLCalc.bedsFromPlants\"( plants_needed, inrow_space, rows_p_bed, 100 )",
                                                                             false, true,  false, false, true,  "Beds to Plant",         "Beds"  ));
       l.add( new ColumnStruct(  "rows_p_bed",      "rows_p_bed",      null, false, true,  false, false, false, "Rows/Bed"  ));
-      l.add( new ColumnStruct(  "plants_needed",   null,              "\"CPS.Core.DB.HSQLCalc.plantsFromBeds\"( beds_to_plant, inrow_space, rows_p_bed, 100 ), "
+      l.add( new ColumnStruct(  "plants_needed",   null,              "\"CPS.Core.DB.HSQLCalc.plantsFromBeds\"( beds_to_plant, inrow_space, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) ), "
                                                                     + "\"CPS.Core.DB.HSQLCalc.plantsFromRowFt\"( rowft_to_plant, inrow_space )",
+//      l.add( new ColumnStruct(  "plants_needed",   null,              "\"CPS.Core.DB.HSQLCalc.plantsFromBeds\"( beds_to_plant, inrow_space, rows_p_bed, 100 ), "
+//                                                                    + "\"CPS.Core.DB.HSQLCalc.plantsFromRowFt\"( rowft_to_plant, inrow_space )",
                                                                             false, true,  false, false, true,  "Plants Needed",         "Plants"  ));
       l.add( new ColumnStruct(  "plants_to_start", null,              "\"CPS.Core.DB.HSQLCalc.plantsToStart\"( plants_needed, .25 )",
                                                                             false, true,  false, false, true,  "Plants to Start (Needed + Fudge)", "Plants"  ));
-      l.add( new ColumnStruct(  "rowft_to_plant",  null,              "\"CPS.Core.DB.HSQLCalc.rowFtFromBeds\"( beds_to_plant, rows_p_bed, 100 ), "
+      l.add( new ColumnStruct(  "rowft_to_plant",  null,              "\"CPS.Core.DB.HSQLCalc.rowFtFromBeds\"( beds_to_plant, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) ), "
                                                                     + "\"CPS.Core.DB.HSQLCalc.rowFtFromPlants\"( plants_needed, inrow_space )",
+//      l.add( new ColumnStruct(  "rowft_to_plant",  null,              "\"CPS.Core.DB.HSQLCalc.rowFtFromBeds\"( beds_to_plant, rows_p_bed, 100 ), "
+//                                                                    + "\"CPS.Core.DB.HSQLCalc.rowFtFromPlants\"( plants_needed, inrow_space )",
                                                                             false, true,  false, false, true,  "Row Feet to Plant",      "Rowft"  ));
       l.add( new ColumnStruct(  "inrow_space",     "space_inrow",     null, false, true,  false, false, false, "Spacing between Plants", "Plant Space"  ));
       l.add( new ColumnStruct(  "row_space",       "space_betrow",    null, false, true,  false, false, false, "Spacing between Rows",   "Row Space"  ));

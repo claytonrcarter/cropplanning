@@ -43,21 +43,29 @@ public class HSQLDBCreator {
    private HSQLDBCreator() {}
    
    // package level access
-   static void createTables( Connection con ) {
+   static void createTables( Connection con, long currentVersion ) {
       
       try {
          Statement st = con.createStatement();
       
+         st.executeUpdate( createTableDBMetaData() );
+         setLastUsedVersion( con, currentVersion );
+         
          st.executeUpdate( createTableCropPlans() );
          st.executeUpdate( createTableCropsAndVarieties() );
-         st.executeUpdate( createTablePlantingMethods() );
+//         st.executeUpdate( createTablePlantingMethods() );
          
          st.close();
          
-         createCropPlan( con, "COMMON_PLANTINGS" );
+//         createCropPlan( con, "COMMON_PLANTINGS" );
       }
       catch ( SQLException e ) { e.printStackTrace(); }
          
+   }
+   
+   protected static String createTableDBMetaData() {
+       return statementCreateTable( "CPS_METADATA", HSQLDBSchemas.cpsDbMetaDataSchema() ) + "; " +
+              "INSERT INTO CPS_METADATA ( prev_ver ) VALUES ( 0 )";
    }
    
    static void createCropPlan( Connection con, String name ) {
@@ -123,6 +131,27 @@ public class HSQLDBCreator {
       
       return "CREATE TABLE " + HSQLDB.escapeTableName( name ) + " ( " + table_def + " ) ";
    }
+   
+   
+   
+   public static void setLastUsedVersion( Connection con, long version ) {
+       
+      try {
+         
+         String sqlUpdate = "UPDATE " + HSQLDB.escapeTableName( "CPS_METADATA" ) + 
+                            " SET prev_ver = " + version;
+         
+         System.out.println("Attempting to execute: " + sqlUpdate );
+         Statement st = con.createStatement();
+         st.executeUpdate( sqlUpdate );
+         st.close();
+         
+      }
+      catch ( SQLException ex ) { ex.printStackTrace(); }
+       
+   }
+   
+   
    
    public static int insertCrop( Connection con, CPSCrop crop ) {
    
