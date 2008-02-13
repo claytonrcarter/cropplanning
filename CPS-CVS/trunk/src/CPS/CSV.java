@@ -26,20 +26,43 @@ package CPS;
 
 import CPS.Data.*;
 import CPS.Module.CPSDataModel;
+import CPS.Module.CPSExporter;
 import java.util.ArrayList;
 import javax.swing.table.TableModel;
+import com.csvreader.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 
-public class CSV extends CPSDataModel {
+public class CSV extends CPSDataModel implements CPSExporter {
 
     
    CSVTableModel ctm;
+   boolean exportOnly;
+   CPSDateValidator dateValidator;
+   
+   public CSV() {
+       setModuleName("CSV");
+       setModuleType( MOD_TYPE_DATAMODEL );
+       setModuleDescription("A CSV DataModel (for import/export only)");
+       setModuleVersion( GLOBAL_DEVEL_VERSION );
+       
+       exportOnly = true;
+       dateValidator = new CPSDateValidator();
+   }
    
    public CSV( String file ) {
-      ctm = new CSVTableModel( file );
+       this();
+       ctm = new CSVTableModel( file );
+       if ( ctm != null )
+           exportOnly = false;
    }
 
 
-   public ArrayList<CPSCrop> exportCropsAndVarieties() {
+   public ArrayList<CPSCrop> getCropsAndVarietiesAsList() {
+       if ( exportOnly )
+           return new ArrayList<CPSCrop>();
+       
       ArrayList<CPSCrop> l = new ArrayList<CPSCrop>();
       CPSCrop temp;
        
@@ -56,6 +79,9 @@ public class CSV extends CPSDataModel {
    public CPSCrop getCropInfoForRow( int selectedRow ) {
         
       CPSCrop temp = new CPSCrop();
+      
+      if ( exportOnly )
+          return temp;
          
       //"crop_name","var_name","similar_to","bot_name","fam_name",
       //"Groups","Successions","Desc","Keywords","Fudge","other_req","Notes",
@@ -95,6 +121,9 @@ public class CSV extends CPSDataModel {
    
       CPSCrop temp = new CPSCrop();
       
+      if ( exportOnly )
+          return temp;
+      
       if ( ! cropName.equals("") )
          for ( int i = 0; i < ctm.getRowCount(); i ++ ) {
             // match crop_name == cropName and var_name == ""
@@ -107,37 +136,131 @@ public class CSV extends CPSDataModel {
       
       return temp;
    }
+
+    public void exportCropPlan( String filename, String planName, ArrayList<CPSPlanting> plantings ) {
+        
+        ArrayList<CPSRecord> records = new ArrayList<CPSRecord>( plantings.size() );
+        for ( CPSPlanting p : plantings )
+            records.add( (CPSRecord) p );
+        
+        this.exportRecords( filename, "crop plan: " + planName, records );
+        
+        
+    }
+
+    public void exportCropsAndVarieties( String filename, ArrayList<CPSCrop> crops ) {
+        
+        ArrayList<CPSRecord> records = new ArrayList<CPSRecord>( crops.size() );
+        for ( CPSCrop c : crops )
+            records.add( (CPSRecord) c );
+        
+        this.exportRecords( filename, "Crops and Varieties", records );
+        
+    }
+
+    private void exportRecords( String filename, String recordType, ArrayList<CPSRecord> records ) {
+
+        final boolean EXPORT_SPARSE_DATA = true;
+        
+        CsvWriter csvOut = new CsvWriter( filename );
+        // mark text with double quotes
+        csvOut.setTextQualifier('"');
+        // set default comment character to hash
+        csvOut.setComment('#');
+        
+        try {
+            // write comment about date, time, etc
+            csvOut.writeComment( " Created by CropPlanning Software" );
+            csvOut.writeComment( " Available at http://cropplanning.googlecode.com" );
+            csvOut.writeComment( " Records exported: " + recordType );
+            csvOut.writeComment( " Exported: " + new Date().toString() );
+            
+            // collect header information
+            CPSRecord c = records.get( 0 );
+            CPSDatum d;
+            Iterator it = c.iterator();
+            HashMap<String, Integer> colMap = new HashMap<String, Integer>();
+            int columnCount = 0;
+            while ( it.hasNext() ) {
+                d = (CPSDatum) it.next();
+                colMap.put( d.getColumnName(), new Integer( columnCount++ ) );
+            }
+            
+            
+            String[] row = new String[columnCount];
+            
+            // prepare and write header
+            it = c.iterator();
+            while ( it.hasNext() ) {
+                d = (CPSDatum) it.next();
+                int colForDatum = colMap.get( d.getColumnName() ).intValue();
+                row[colForDatum] = d.getColumnName();
+            }
+            csvOut.writeRecord( row );
+            
+            // write rows
+            for ( CPSRecord record : records ) {
+                row = new String[columnCount];
+                it = record.iterator();
+                while ( it.hasNext() ) {
+                    d = (CPSDatum) it.next();
+                    int colForDatum = colMap.get( d.getColumnName() ).intValue();
+                    
+                    if ( EXPORT_SPARSE_DATA && ! d.isConcrete() ) {
+                        row[colForDatum] = "";
+                        continue;
+                    }
+                    
+                    Object o = d.getDatum();
+                    if ( o instanceof java.util.Date ||
+                         o instanceof java.sql.Date )
+                        row[colForDatum] = dateValidator.format( (Date) d.getDatum() );
+                    else
+                        row[colForDatum] = d.getDatum().toString();
+                }
+                csvOut.writeRecord( row );
+            }
+            
+            // write comment "EOF"
+            csvOut.writeComment( " End of file" );
+            
+            // close
+            csvOut.close();
+        }
+        catch ( Exception ignore ) { ignore.printStackTrace(); }
+            
+    }
+    
+    public String getExportFileDefaultExtension() {
+        return "csv";
+    }
    
-   public TableModel getCropAndVarietyList() { return null; }
+   
+   
+   
+   
+   
+   public TableModel getCropAndVarietyTable() { return null; }
    
    public ArrayList<String> getListOfCropPlans() { return null; }
-   public ArrayList<String> getCropNames() { return null; }
+   public ArrayList<String> getCropNameList() { return null; }
    
    public void createNewCropPlan(String plan_name) {}
    public void retrieveCropPlan(String plan_name) {}
    public void filterCropPlan(String plan_name, String filter) {}
-   public TableModel getCropList() { return null; }
-   public TableModel getAbbreviatedCropList() { return null; }
-   public TableModel getVarietyList() { return null; }
-   public TableModel getAbbreviatedVarietyList() { return null; }
-   public TableModel getAbbreviatedCropAndVarietyList() { return null; }
+   public TableModel getCropTable() { return null; }
+   public TableModel getVarietyTable() { return null; }
    public void shutdown() {}
    
    public void updateCrop(CPSCrop crop) {}
    public CPSCrop createCrop(CPSCrop crop) { return null; }
 
-   public TableModel getCropList(String sortCol) { return null; }
-   public TableModel getAbbreviatedCropList(String sortCol) { return null; }
-   public TableModel getVarietyList(String sortCol) { return null; }
-   public TableModel getAbbreviatedVarietyList(String sortCol) { return null; }
-   public TableModel getCropAndVarietyList(String sortCol) { return null; }
-   public TableModel getAbbreviatedCropAndVarietyList(String sortCol) { return null; }
-   public TableModel getCropList(String sortCol, CPSComplexFilter filter) { return null; }
-   public TableModel getAbbreviatedCropList(String sortCol, CPSComplexFilter filter) { return null; }
-   public TableModel getVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
-   public TableModel getAbbreviatedVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
-   public TableModel getCropAndVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
-   public TableModel getAbbreviatedCropAndVarietyList(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getCropTable(String sortCol) { return null; }
+   public TableModel getVarietyTable(String sortCol) { return null; }
+   public TableModel getCropAndVarietyTable(String sortCol) { return null; }
+   public TableModel getCropTable(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getVarietyTable(String sortCol, CPSComplexFilter filter) { return null; }
+   public TableModel getCropAndVarietyTable(String sortCol, CPSComplexFilter filter) { return null; }
 
    public CPSCrop getVarietyInfo(String cropName, String varName) { return null; }
    public CPSCrop getCropInfo(int CropID) { return null; }
@@ -162,11 +285,7 @@ public class CSV extends CPSDataModel {
       throw new UnsupportedOperationException( "Not supported yet." );
    }
    @Override
-   public ArrayList<String> getVarietyNames( String crop_name ) {
-      throw new UnsupportedOperationException( "Not supported yet." );
-   }
-   @Override
-   public ArrayList<String> getFamilyNames() {
+   public ArrayList<String> getFamilyNameList() {
       throw new UnsupportedOperationException( "Not supported yet." );
    }
    @Override
@@ -216,34 +335,22 @@ public class CSV extends CPSDataModel {
     }
 
     @Override
-    public TableModel getCropList( String columns, String sortCol, CPSComplexFilter filterString ) {
+    public TableModel getCropTable( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
+
     @Override
-    public TableModel getAbbreviatedCropList( String columns, String sortCol, CPSComplexFilter filterString ) {
+    public TableModel getVarietyTable( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
+
     @Override
-    public TableModel getVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
+    public TableModel getCropAndVarietyTable( String columns, String sortCol, CPSComplexFilter filterString ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
-    @Override
-    public TableModel getAbbreviatedVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
-        throw new UnsupportedOperationException( "Not supported yet." );
-    }
-
-    @Override
-    public TableModel getCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
-        throw new UnsupportedOperationException( "Not supported yet." );
-    }
-
-    @Override
-    public TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filterString ) {
-        throw new UnsupportedOperationException( "Not supported yet." );
-    }
 
     @Override
     public CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filterString ) {
@@ -253,5 +360,27 @@ public class CSV extends CPSDataModel {
     public ArrayList<String[]> getPlantingShortNames() {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
+
+    @Override
+    public ArrayList<String> getFieldNameList( String planName ) {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    public ArrayList<CPSPlanting> getCropPlanAsList( String planName ) {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    public ArrayList<String> getVarietyNameList( String crop_name, String cropPlan ) {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    public ArrayList<String> getFlatSizeList( String planName ) {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
    
+    
+    
 }

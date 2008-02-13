@@ -25,6 +25,8 @@ package CPS;
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 import com.csvreader.CsvReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 class CSVTableModel extends AbstractTableModel {
    
@@ -51,7 +53,10 @@ class CSVTableModel extends AbstractTableModel {
           while ( csv.readRecord() )
              lines.add( csv.getValues() );
           
-        } catch ( Exception e ) { e.printStackTrace(); }
+        } 
+       catch ( FileNotFoundException ignore ) {}
+       catch ( IOException ignore ) {}
+       
     }
     
     public int getColumnCount() {
