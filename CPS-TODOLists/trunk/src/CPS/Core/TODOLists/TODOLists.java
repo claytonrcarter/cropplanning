@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.swing.BorderFactory;
@@ -52,8 +53,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.filechooser.FileFilter;
 
 public class TODOLists extends CPSDisplayableDataUserModule implements ActionListener, ItemListener, PropertyChangeListener {
 
@@ -76,7 +75,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     public TODOLists() {
         setModuleName( "TODOLists" );
         setModuleType( "Core" );
-        setModuleVersion( "0.1" );   
+        setModuleVersion( GLOBAL_DEVEL_VERSION );   
     }
 
     @Override
@@ -139,7 +138,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 //        fldFile.setText( "ExportFile.pdf" );
         filFile = new JFileChooser();
 //        filFile.setCurrentDirectory(outputFile);
-        filFile.setSelectedFile( new File( System.getProperty( "user.dir") ) );
+        filFile.setSelectedFile( new File( getGlobalSettings().getOutputDir() ));
         filFile.setMultiSelectionEnabled(false);
         filFile.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         lblDirectory = new JLabel( filFile.getSelectedFile().getPath() );
@@ -196,7 +195,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     }
     
     private String createOutputFileName( File dir, String prefix ) {
-        return dir.getAbsolutePath() + dir.separator + 
+        return dir.getAbsolutePath() + File.separator + 
                prefix + " - " + new SimpleDateFormat( "MMM dd yyyy" ).format( new Date() ) + ".pdf";
     }
     
@@ -344,6 +343,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     public JPanel display() { return jplTodo; }
     public Dimension getSize() { return jplTodo.getSize(); }
 
+    
+    
     public void actionPerformed( ActionEvent arg0 ) {
         String action = arg0.getActionCommand();
         
@@ -378,15 +379,15 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         if ( source == rdoDateThisWeek || source == rdoDateNextWeek || source == rdoDateThisNextWeek ) {
             
             if ( source == rdoDateNextWeek )
-                temp.add( temp.WEEK_OF_YEAR, 1 );
+                temp.add( Calendar.WEEK_OF_YEAR, 1 );
             
-            temp.set( temp.DAY_OF_WEEK, temp.SUNDAY );
+            temp.set( Calendar.DAY_OF_WEEK, Calendar.SUNDAY );
             dtcDateOtherStart.setDate( temp.getTime() );
             
             if ( source == rdoDateThisNextWeek )
-                temp.add( temp.WEEK_OF_YEAR, 1 );
+                temp.add( Calendar.WEEK_OF_YEAR, 1 );
             
-            temp.set( temp.DAY_OF_WEEK, temp.SATURDAY );
+            temp.set( Calendar.DAY_OF_WEEK, Calendar.SATURDAY );
             dtcDateOtherEnd.setDate( temp.getTime() );
             
             dtcDateOtherEnd.setEnabled(false);
@@ -417,7 +418,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             if ( dtcDateOtherEnd.getDate() == null ||
                  dtcDateOtherEnd.getDate().getTime() <= dtcDateOtherStart.getDate().getTime() ) {
                 temp.setTime( dtcDateOtherStart.getDate() );
-                temp.add( temp.DAY_OF_YEAR, 1 );
+                temp.add( Calendar.DAY_OF_YEAR, 1 );
                 dtcDateOtherEnd.setDate( temp.getTime() );
             }
 //            dtcDateOtherEnd.setMinSelectableDate( dtcDateOtherStart.getDate() );
@@ -426,7 +427,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             if ( dtcDateOtherStart.getDate() == null ||
                  dtcDateOtherEnd.getDate().getTime() <= dtcDateOtherStart.getDate().getTime() ) {
                 temp.setTime( dtcDateOtherEnd.getDate() );
-                temp.add( temp.DAY_OF_YEAR, -1 );
+                temp.add( Calendar.DAY_OF_YEAR, -1 );
                 dtcDateOtherStart.setDate( temp.getTime() );
             }
 //            dtcDateOtherStart.setMaxSelectableDate( dtcDateOtherEnd.getDate() );

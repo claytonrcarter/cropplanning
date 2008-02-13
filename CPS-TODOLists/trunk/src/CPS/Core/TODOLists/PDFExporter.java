@@ -234,7 +234,7 @@ public class PDFExporter {
             super( new Phrase( s, fontTableReg ));
             setBackgroundColor( Color.WHITE );
             setHorizontalAlignment( PdfPCell.ALIGN_LEFT );
-            setBorderWidth( 1.0f );
+            setBorderWidth( .25f );
         }
     }
     
