@@ -76,25 +76,49 @@ public class CPSDateValidator {
     }
     
     public Date parse( String s ) {
-        Date d = new Date(-1);
+        if ( s.equals( "" ))
+            return null;
+        
+        Date date = new Date(-1);
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.setLenient(false);
+        
+        String dateText = s;
+        int dateShift = 0;
+        // handles addition of negative numbers
+        if ( dateText.matches( ".+\\+.+" ) ) {
+            String[] sp = dateText.split( "\\+" );
+            dateText = sp[0].trim();
+            dateShift = Integer.parseInt( sp[1].trim() );
+        }
+        // does NOT handle subtract of negative numbers
+        else if ( dateText.matches( ".+-.+" ) ) {
+            String[] sp = dateText.split( "-" );
+            // if we split into two, then there was just one -
+            if ( sp.length == 2 ) {
+                dateText = sp[0].trim();
+                dateShift = -1 * Integer.parseInt( sp[1].trim() );
+            }
+            else
+                System.err.println( "ERROR(CPSTable): Can't understand date:" + dateText + " [Too many '-'s]" );
+        }
+        
         
         for ( String format : formatList ) {
             sdf.applyPattern( format );
             try {
                 // if the date parses, then break the for loop
-                d = sdf.parse( s );
+                date = sdf.parse( dateText );
                 System.out.println("DATE MATCHED: " + format );
                 // if the matched format doesn't include a year component, 
                 // then shift the date into this year.
                 if ( format.indexOf("yy") == -1 ) {
                     GregorianCalendar c = new GregorianCalendar();
                     GregorianCalendar now = new GregorianCalendar();
-                    c.setTime( d );
+                    c.setTime( date );
                     now.setTime( new Date() );
                     c.set( GregorianCalendar.YEAR, now.get( GregorianCalendar.YEAR ) );
-                    d = c.getTime();
+                    date = c.getTime();
                 }
                 break;
             } 
@@ -103,7 +127,15 @@ public class CPSDateValidator {
             System.err.println( "ERROR parsing date: " + s );
         }
         
-        return d;
+        // if dateShift is not 0, then we should add it to the parsed date
+        if ( dateShift != 0 ) {
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime( date );
+            cal.add( GregorianCalendar.DAY_OF_YEAR, dateShift );
+            date = cal.getTime();
+        }
+        
+        return date;
     }
             
 

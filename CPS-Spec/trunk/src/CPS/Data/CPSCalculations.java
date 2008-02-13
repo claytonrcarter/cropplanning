@@ -125,23 +125,51 @@ public class CPSCalculations {
 //      return plantsToStart / (float) flatCapacity;
    }
    
-   public static int calcFlatCapacity( String flatSize ) {
-      int cap = 0;
-      try {
-         // For the case where FlatSize is eg "128" or "72"
-         cap = Integer.parseInt(flatSize);
-      } catch ( NumberFormatException ignore ) {
-         // For the case where FlatSize is eg "1020 tray (500)" or "mini (50)"
+   /**
+    * Given a flat size string, calculates a flat capacity.
+    * @param flatSize The flat size string ot parse.  
+    *        Formats accepted: <number>, <flat name + (number)>, <flat name>
+    * @return The capacity of the flat or 0 on error.
+    */
+   public static int extractFlatCapacity( String flatSize ) {
+      // TODO - Is 0 a reasonable default?  perhaps 1 would be better
+       int cap = 0;
+      
+       // For the case where FlatSize is eg "128" or "72"
+      if ( flatSize.matches( "\\d+" )) {
+          try {
+              cap = Integer.parseInt( flatSize );
+          } catch ( NumberFormatException ignore ) {}
+      }
+      // For the case where FlatSize is eg "1020 tray (500)" or "mini ( 50 )"
+      else if ( flatSize.matches( ".*\\(\\s*\\d+\\s*\\).*" )) {
          int openPar = flatSize.lastIndexOf( "(" );
          int closePar = flatSize.lastIndexOf( ")" );
-//         System.out.println( "Parsing string '" + flatSize.substring( openPar + 1, closePar ) + "'" );
+         
          try {
-            cap = Integer.parseInt( flatSize.substring( openPar + 1, closePar ) );
-         } catch ( NumberFormatException ignoreAgain ) {
+            cap = Integer.parseInt( flatSize.substring( openPar + 1, closePar ).trim() );
+         } catch ( NumberFormatException ignore ) {
             System.err.println( "ERROR: couldn't deduce the capacity of given flat size: " + flatSize );
          }
       }
       return cap;
+   }
+   
+   /**
+    * Given a field name string, extracts a bed length.
+    * @param fieldName The field name string to parse.  
+    *        Formats accepted: <blank>, <field name>, <field name + (number)>
+    * @return The bed length of that field or the default value on error.  The default value is 100.
+    */
+   public static int extractBedLength( String fieldName ) {
+       
+       int len = 100;
+       
+       // only extract a bed length if the fieldName is eg "field blah blah (100)" or "garden blah blah ( 50 )"
+       if ( fieldName != null && fieldName.matches( ".*\\(\\s*\\d+\\s*\\).*" ) )
+           len = extractFlatCapacity( fieldName );
+       
+       return len;
    }
    
    public static float calcTotalYieldFromRowFtToPlant( int rowFt, float yieldPerFt ) {

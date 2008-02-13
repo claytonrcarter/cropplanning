@@ -93,7 +93,7 @@ public class CPSPlanting extends CPSRecord {
    /* from CPSDataModelConstants: this is the highest value defined there */
    protected int lastValidProperty() { return PROP_CUSTOM5; }
    
-   private final int CONST_BED_LENGTH = 100;
+//   private final int CONST_BED_LENGTH = 100;
    private final double CONST_FUDGE = .25;
    
 //   private CPSDatum<Integer> plantingID;
@@ -464,6 +464,10 @@ public class CPSPlanting extends CPSRecord {
       CPSDatum p = getDatum( PROP_PLANTS_NEEDED );
       CPSDatum ps = getDatum( PROP_INROW_SPACE );
       
+      /* we don't care if location is valid, this will return the default 
+       * bed length if location is inValid */
+      int bedLength = CPSCalculations.extractBedLength( getLocation() );
+      
       /* if BEDS_PLANT valid, return
        * if ROWFT_PLANT and ROWS_P_BED valid
        * if PLANTS_NEEDED, ROWS_P_BED and INROW_SPACE valid 
@@ -473,7 +477,7 @@ public class CPSPlanting extends CPSRecord {
          getDatum( PROP_BEDS_PLANT ).setCalculated( true );
          return CPSCalculations.calcBedsToPlantFromRowFtToPlant( getRowFtToPlant(),
                                                                  getRowsPerBed(),
-                                                                 CONST_BED_LENGTH );
+                                                                 bedLength );
       }
       else if ( ! b.isValid() && 
                   p.isValid() && ps.isValid() && rpb.isValid() ) {
@@ -481,7 +485,7 @@ public class CPSPlanting extends CPSRecord {
          return CPSCalculations.calcBedsToPlantFromPlantsNeeded( getPlantsNeeded(),
                                                                  getInRowSpacing(),
                                                                  getRowsPerBed(),
-                                                                 CONST_BED_LENGTH );
+                                                                 bedLength );
       }
       else
          return get( PROP_BEDS_PLANT, new Float( -1.0 ) ).floatValue(); 
@@ -507,10 +511,14 @@ public class CPSPlanting extends CPSRecord {
       if ( ! p.isValid() &&
              b.isAvailable() && rpb.isAvailable() && ps.isAvailable() ) {
          getDatum( PROP_PLANTS_NEEDED ).setCalculated( true );
+          /* we don't care if location is valid, this will return the default 
+           * bed length if location is inValid */
+          int bedLength = CPSCalculations.extractBedLength( getLocation() );
+      
          return CPSCalculations.calcPlantsNeededFromBedsToPlant( getBedsToPlant(), 
                                                                  getInRowSpacing(),
                                                                  getRowsPerBed(),
-                                                                 CONST_BED_LENGTH );
+                                                                 bedLength );
       }
       else if ( ! p.isValid() && 
                   r.isAvailable() && ps.isAvailable() ) {
@@ -541,9 +549,12 @@ public class CPSPlanting extends CPSRecord {
       if ( ! r.isValid() &&
              b.isAvailable() && rpb.isAvailable() ) {
          getDatum( PROP_ROWFT_PLANT ).setCalculated( true );
+          /* we don't care if location is valid, this will return the default 
+           * bed length if location is inValid */
+          int bedLength = CPSCalculations.extractBedLength( getLocation() );
          return CPSCalculations.calcRowFtToPlantFromBedsToPlant( getBedsToPlant(),
                                                                  getRowsPerBed(),
-                                                                 CONST_BED_LENGTH );
+                                                                 bedLength );
       }
       else if ( ! r.isValid() && 
                   p.isAvailable() && ps.isAvailable() ) {
@@ -661,7 +672,7 @@ public class CPSPlanting extends CPSRecord {
 
    public String getFlatSize() { return get( PROP_FLAT_SIZE, "" ); }
    public int getFlatSizeCapacity() {
-      return CPSCalculations.calcFlatCapacity( getFlatSize() );
+      return CPSCalculations.extractFlatCapacity( getFlatSize() );
    }
    public CPSDatumState getFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
    public void setFlatSize( String i ) { setFlatSize( i, false ); }

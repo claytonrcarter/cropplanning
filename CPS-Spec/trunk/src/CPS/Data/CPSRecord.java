@@ -243,13 +243,16 @@ public abstract class CPSRecord {
 //          return this;
 //       }
        
-       CPSDatum thisDat, thatDat;
        
-       for ( Integer i : getListOfInheritableProperties() ) {
+       if ( thatRecord.getID() != -1 ){ 
+       
+           CPSDatum thisDat, thatDat;
+       
+           for ( Integer i : getListOfInheritableProperties() ) {
           
-          int prop = i.intValue();
-          thisDat = this.getDatum( prop );
-          thatDat = thatRecord.getDatum( prop );
+               int prop = i.intValue();
+               thisDat = this.getDatum( prop );
+               thatDat = thatRecord.getDatum( prop );
           
           
 //          System.out.print("DEBUG Inheriting " + thisDat.getDescriptor() );
@@ -260,16 +263,17 @@ public abstract class CPSRecord {
            * IF: this IS valid
            * THEN: ignore this datum, no inheritance needed 
            */
-          if ( thisDat.isConcrete() ) {
+               if ( thisDat.isConcrete() ) {
 //             System.out.println(" SKIPPED");
-             continue;
-          }
-          else if ( ( ! thisDat.isValid() || thisDat.isInherited() ) && thatDat.isValid() ) {
+                   continue;
+               }
+               else if ( ( !thisDat.isValid() || thisDat.isInherited() ) && thatDat.isValid() ) {
 //             System.out.println(" DONE");
-             this.inherit( prop, thatDat.getDatum() );
-          }
+                   this.inherit( prop, thatDat.getDatum() );
+               }
 //          else
 //             System.out.println(" SKIPPED FOR OTHER REASONS");
+           }
        }
        
        return this;

@@ -70,6 +70,8 @@ public abstract class CPSDataModel extends CPSModule {
    
    /* Planting methods */
    /* retrieval */
+   public abstract ArrayList<String> getFieldNameList( String planName );
+   public abstract ArrayList<String> getFlatSizeList( String planName );
    public abstract ArrayList<String> getPlantingDefaultColumns();
    public abstract ArrayList<String> getPlantingDisplayableColumns();
    public abstract ArrayList<String[]> getPlantingPrettyNames();
@@ -87,9 +89,12 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract ArrayList<String> getCropDefaultColumns();
    public abstract ArrayList<String> getCropDisplayableColumns();
    public abstract ArrayList<String[]> getCropPrettyNames();
-   public abstract ArrayList<String> getCropNames();
-   public abstract ArrayList<String> getVarietyNames( String crop_name );
-   public abstract ArrayList<String> getFamilyNames();
+   public abstract ArrayList<String> getCropNameList();
+   public ArrayList<String> getVarietyNameList() { return getVarietyNameList( null, null ); }
+   public ArrayList<String> getVarietyNameList( String crop_name ) { return getVarietyNameList( crop_name, null ); }
+   public abstract ArrayList<String> getVarietyNameList( String crop_name, String cropPlan );
+   public abstract ArrayList<String> getFamilyNameList();
+   public ArrayList<String> getFlatSizeList() { return getFlatSizeList( null ); }
    public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
    public abstract CPSCrop getVarietyInfo( String cropName, String varName );
    public abstract CPSCrop getCropInfo( int CropID );
@@ -100,33 +105,21 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract void updateCrops( CPSCrop changes, ArrayList<Integer> cropIDs );
    public abstract void deleteCrop( int cropID );
    
-   public abstract TableModel getCropList();
-   public abstract TableModel getAbbreviatedCropList();
-   public abstract TableModel getVarietyList();
-   public abstract TableModel getAbbreviatedVarietyList();
-   public abstract TableModel getCropAndVarietyList();
-   public abstract TableModel getAbbreviatedCropAndVarietyList();
-
-   public abstract TableModel getCropList( String sortCol );
-   public abstract TableModel getAbbreviatedCropList( String sortCol );
-   public abstract TableModel getVarietyList( String sortCol );
-   public abstract TableModel getAbbreviatedVarietyList( String sortCol );
-   public abstract TableModel getCropAndVarietyList( String sortCol );
-   public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol );
+   public abstract TableModel getCropTable();
+   public abstract TableModel getVarietyTable();
+   public abstract TableModel getCropAndVarietyTable();
    
-   public abstract TableModel getCropList( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getAbbreviatedCropList( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getVarietyList( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getAbbreviatedVarietyList( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getCropAndVarietyList( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getAbbreviatedCropAndVarietyList( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropTable( String sortCol );
+   public abstract TableModel getVarietyTable( String sortCol );
+   public abstract TableModel getCropAndVarietyTable( String sortCol );
    
-   public abstract TableModel getCropList( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getAbbreviatedCropList( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getVarietyList( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getAbbreviatedVarietyList( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getAbbreviatedCropAndVarietyList( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropTable( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getVarietyTable( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropAndVarietyTable( String sortCol, CPSComplexFilter filter );
+   
+   public abstract TableModel getCropTable( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropAndVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
    
    public abstract void shutdown();
    
@@ -145,6 +138,9 @@ public abstract class CPSDataModel extends CPSModule {
       for( CPSDataUser dmu : dataListeners )
          dmu.dataUpdated();
    }
+   
+   public abstract ArrayList<CPSCrop> getCropsAndVarietiesAsList();
+   public abstract ArrayList<CPSPlanting> getCropPlanAsList( String planName );
    
    public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
       ArrayList<CPSCrop> withSimilar = new ArrayList<CPSCrop>();
@@ -178,6 +174,5 @@ public abstract class CPSDataModel extends CPSModule {
       if ( crops.size() > 0 )
          importCropsAndVarieties( crops );
    }
-   public abstract ArrayList<CPSCrop> exportCropsAndVarieties();
    
 }
