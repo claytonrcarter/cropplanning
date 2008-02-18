@@ -11,13 +11,13 @@ Omit the `-r <rev>` if tagging HEAD
     * _Mac_: use Jar Bundler to create an App Bundle containing the main class jar and all dependency jars.
     * _Windows_: use Lauch4J to create a jar launcher (not a wrapper) the will reside next to the main .jar and includes the ./lib dir in its classpath.
   # Create folder structures for distributed archives:
-    * create folder(s): `CropPlanning/CropPlanning`
+    * create folder: `CropPlanning`
     * _All Platforms_: include:
       * license (`gpl-3.0.txt`)
       * release notes (see ReleaseNotesTemplate)
     * _Mac_: copy app bundle into `CropPlanning` folder
     * _Windows_: copy exe, main jar and lib directory into `CropPlanning` folder
-  # Create archives such that the user will open the archive and see a folder `CropPlanning`:
-    * _Mac_: use Disk Utility to create a disk image from the first `CropPlanning` folder which CONTAINS the second `CropPlanning` folder
-    * _Windows_: right click on second `CropPlanning` folder and select "7-Zip > Add to archive..."
+  # Create archives such that the user will open the archive and see:
+    * _Mac_: the application and other files.  Use Disk Utility to create a disk image from the `CropPlanning` folder 
+    * _Windows_:  a folder `CropPlanning`, which contains the application, jars and other files.  Right click on `CropPlanning` folder and select "7-Zip > Add to archive..."
   # Upload...
