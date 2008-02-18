@@ -23,13 +23,11 @@
 package CPS.Core.DB;
 
 import CPS.Data.*;
-import CPS.Module.CPSConfigurable;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import javax.swing.JPanel;
 import javax.swing.table.TableModel;
 import org.hsqldb.*;
 import resultsettablemodel.*;
@@ -65,14 +63,8 @@ public class HSQLDB extends CPSDataModel {
                
        localSettings = new HSQLSettings();
        
-   }
-   
-   public HSQLDB( CPSGlobalSettings gs ) {
-       this();
-       receiveGlobalSettings( gs );
-       
        if ( true || localSettings.getUseGlobalDir() )
-           dbDir = getGlobalSettings().getOutputDir();
+           dbDir = CPSGlobalSettings.getDataOutputDir();
        else
            dbDir = localSettings.getCustomOutDir();
        
@@ -253,7 +245,7 @@ public class HSQLDB extends CPSDataModel {
       rsListCache = query.storeQuery( t, col, cond, sort, filter );
 //      rsListCache.get
       // return query.getCachedResultsAsTable();
-      return query.tableResults( this, rsListCache );
+      return HSQLQuerier.tableResults( this, rsListCache );
    }
    
    /*
@@ -467,47 +459,59 @@ public class HSQLDB extends CPSDataModel {
             crop.setID( rs.getInt( "id" ));
             crop.setCropName( captureString( rs.getString( "crop_name" ) ));            
             crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
-            crop.setBotanicalName( captureString( rs.getString( "bot_name" ) ) );
             crop.setFamilyName( captureString( rs.getString( "fam_name" ) ));
-            crop.setCropDescription( captureString( rs.getString("description") ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
             
-            crop.setMaturityDays( captureInt( rs.getInt( "maturity" )));
-            crop.setMaturityAdjust( captureInt( rs.getInt( "mat_adjust" )));
+            crop.setMaturityDays( getInt( rs, "maturity" ));
+            crop.setMaturityAdjust( getInt( rs, "mat_adjust" ));
 //            crop.setSuccessions( rs.getBoolean("successions") );
             
-            crop.setGroups( captureString( rs.getString( "groups" ) ));
-            crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
-            crop.setKeywords( captureString( rs.getString( "keywords" ) ));
-            crop.setNotes( captureString( rs.getString( "notes" ) ));
+            crop.setTimeToTP( getInt( rs, "time_to_tp" ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
 
-            crop.setTimeToTP( captureInt( rs.getInt( "time_to_tp" )));
-            crop.setRowsPerBed( captureInt( rs.getInt( "rows_p_bed" )));
-            crop.setSpaceInRow( captureInt( rs.getInt( "space_inrow" )));
-            crop.setSpaceBetweenRow( captureInt( rs.getInt( "space_betrow" )));
+            crop.setRowsPerBed( getInt( rs, "rows_p_bed" ));
+            crop.setSpaceInRow( getInt( rs, "space_inrow" ));
+            crop.setSpaceBetweenRow( getInt( rs, "space_betrow" ));
             crop.setFlatSize( captureString( rs.getString( "flat_size" )));
             crop.setPlanter( captureString( rs.getString( "planter" )));
             crop.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
-            crop.setYieldPerFoot( captureFloat( rs.getFloat( "yield_p_foot" )));
-            crop.setYieldNumWeeks( captureInt( rs.getInt( "yield_num_weeks" )));
-            crop.setYieldPerWeek( captureInt( rs.getInt( "yield_p_week" )));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
+            
+            crop.setYieldPerFoot( getFloat( rs, "yield_p_foot" ));
+            crop.setYieldNumWeeks( getInt( rs, "yield_num_weeks" ));
+            crop.setYieldPerWeek( getInt( rs, "yield_p_week" ));
             crop.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
-            crop.setCropUnitValue( captureFloat( rs.getFloat( "crop_unit_value" )));
+            crop.setCropUnitValue( getFloat( rs, "crop_unit_value" ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
 
+            crop.setGroups( captureString( rs.getString( "groups" ) ));
+            crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
+            crop.setKeywords( captureString( rs.getString( "keywords" ) ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
+
+            crop.setBotanicalName( captureString( rs.getString( "bot_name" ) ) );
+            crop.setCropDescription( captureString( rs.getString("description") ));
+            crop.setNotes( captureString( rs.getString( "notes" ) ));
             
-            /* Now handle the data inheritance */
-//            crop.setSimilarCrop( captureString( rs.getString("similar_to") ));
-//   
-//            CPSCrop similarCrop = getCropInfo( crop.getSimilarCrop() );            
-//            crop.inheritFrom( similarCrop );
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         
+          /* for varieties, inherit info from their crop, too */
+          if ( !crop.getVarietyName().equals( "" ) ) {
+              CPSCrop superCrop = getCropInfo( crop.getCropName() );
+              crop.inheritFrom( superCrop );            
+          }
             
-            /* for varieties, inherit info from their crop, too */
-            if ( ! crop.getVarietyName().equals("") ) {
-               CPSCrop superCrop = getCropInfo( crop.getCropName() );
-               crop.inheritFrom( superCrop );            
-            }
-            
-            
-         }  catch ( SQLException e ) { e.printStackTrace(); }
       }
       
       return crop;
@@ -626,61 +630,69 @@ public class HSQLDB extends CPSDataModel {
             p.setVarietyName( captureString( rs.getString( "var_name" ) ));
 
             p.setLocation( captureString( rs.getString( "location" )));
-           
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {           
             p.setDateToPlant( captureDate( rs.getDate( "date_plant" )));
             p.setDateToTP( captureDate( rs.getDate( "date_tp" )));
             p.setDateToHarvest( captureDate( rs.getDate( "date_harvest" )));
 
-          } catch ( SQLException ignore ) {}
-//          } catch ( SQLException ignore ) { System.out.println("WARNING(HSQLDB.java): column not found (mess 1)"); }
-         
-         // these are used for the plan summing function
-         try {
-            p.setBedsToPlant( captureFloat( rs.getFloat( "beds_to_plant") ));
-            p.setPlantsNeeded( captureInt( rs.getInt( "plants_needed") ));
-            p.setPlantsToStart( captureInt( rs.getInt( "plants_to_start") ));
-            p.setRowFtToPlant( captureInt( rs.getInt( "rowft_to_plant") ));
-            p.setFlatsNeeded( captureFloat( rs.getFloat( "flats_needed") ));
-            
-          } catch ( SQLException ignore ) { System.out.println("WARNING(HSQLDB.java): column not found (mess 2)"); }
+            p.setDonePlanting( rs.getBoolean( "done_plant" ) );
+            p.setDoneTP( rs.getBoolean( "done_TP" ));
+            p.setDoneHarvest( rs.getBoolean( "done_harvest" ));
+//          } catch ( SQLException ignore ) {}
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
          
          try {
-            p.setMaturityDays( captureInt( rs.getInt("maturity") ));
+            p.setBedsToPlant( getFloat( rs, "beds_to_plant") );
+            p.setPlantsNeeded( getInt( rs, "plants_needed") );
+            p.setPlantsToStart( getInt( rs, "plants_to_start") );
+            p.setRowFtToPlant( getInt( rs, "rowft_to_plant") );
+            p.setFlatsNeeded( getFloat( rs, "flats_needed") );
             
-            p.setGroups( captureString( rs.getString( "groups" ) ));
-            p.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
-            p.setKeywords( captureString( rs.getString( "keywords" ) ));
-            p.setNotes( captureString( rs.getString( "notes" ) ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
+            p.setMaturityDays( getInt( rs, "maturity") );
+            p.setMatAdjust( getInt( rs, "mat_adjust" ));
+            p.setPlantingAdjust( getInt( rs, "planting_adjust" ));
+            p.setMiscAdjust( getInt( rs, "misc_adjust" ) );
             
-            p.setMatAdjust( captureInt( rs.getInt( "mat_adjust" )));
-            p.setPlantingAdjust( captureInt( rs.getInt( "planting_adjust" )));
-            p.setMiscAdjust( captureInt( rs.getInt( "misc_adjust" ) ) );
- 
-            p.setTimeToTP( captureInt( rs.getInt( "time_to_tp" )));
-            p.setRowsPerBed( captureInt( rs.getInt( "rows_p_bed" )));
-            p.setInRowSpacing( captureInt( rs.getInt( "inrow_space" ) ) );
-            p.setRowSpacing( captureInt( rs.getInt( "row_space" )));
+            p.setTimeToTP( getInt( rs, "time_to_tp" ));
+            p.setRowsPerBed( getInt( rs, "rows_p_bed" ));
+            p.setInRowSpacing( getInt( rs, "inrow_space" ) );
+            p.setRowSpacing( getInt( rs, "row_space" ));
             
             p.setFlatSize( captureString( rs.getString( "flat_size" )));
             p.setPlanter( captureString( rs.getString( "planter" )));
             p.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
 
-            p.setYieldPerFoot( captureFloat( rs.getFloat( "yield_p_foot" ) ) );
-            p.setTotalYield( captureFloat( rs.getFloat( "total_yield" )));
-            p.setYieldNumWeeks( captureInt( rs.getInt( "yield_num_weeks" )));
-            p.setYieldPerWeek( captureFloat( rs.getFloat( "yield_p_week" )));
-            p.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
-            p.setCropYieldUnitValue( captureFloat( rs.getFloat( "crop_unit_value" )));
+         } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
 
-            p.setDonePlanting( rs.getBoolean( "done_plant" ) );
-            p.setDoneTP( rs.getBoolean( "done_TP" ));
-            p.setDoneHarvest( rs.getBoolean( "done_harvest" ));
-            
+            p.setYieldPerFoot( getFloat( rs, "yield_p_foot" ) ) ;
+            p.setTotalYield( getFloat( rs, "total_yield" ));
+            p.setYieldNumWeeks( getInt( rs, "yield_num_weeks" ));
+            p.setYieldPerWeek( getFloat( rs, "yield_p_week" ));
+            p.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
+            p.setCropYieldUnitValue( getFloat( rs, "crop_unit_value" ));
+
+            p.setGroups( captureString( rs.getString( "groups" ) ));
+            p.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
+            p.setKeywords( captureString( rs.getString( "keywords" ) ));
+            p.setNotes( captureString( rs.getString( "notes" ) ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {            
             p.setCustomField1( rs.getString( "custom1" ));
             p.setCustomField2( rs.getString( "custom2" ));
             p.setCustomField3( rs.getString( "custom3" ));
             p.setCustomField4( rs.getString( "custom4" ));
             p.setCustomField5( rs.getString( "custom5" ));
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+         
+         try {
             
             /* handle data inheritance */
             // we have to call a get* method before we can call wasNull
@@ -688,8 +700,8 @@ public class HSQLDB extends CPSDataModel {
             if ( ! rs.wasNull() )
                  p.inheritFrom( getCropInfo( cid ) );
             
-          } catch ( SQLException ignore ) {}
-//          } catch ( SQLException ignore ) { System.out.println("WARNING(HSQLDB.java): column not found (mess 3)"); }
+//          } catch ( SQLException ignore ) {}
+          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
       }
       
       return p;
@@ -809,15 +821,36 @@ public class HSQLDB extends CPSDataModel {
          return d;
    }
    
+   public static float getFloat( ResultSet rs, String columnName ) throws SQLException {
+       
+       float f = rs.getFloat( columnName );
+       
+       if ( rs.wasNull() )
+           f = -1f;
+       return captureFloat( f );
+   }
+   
    public static float captureFloat( float f ) {
-      if ( f <= 0 )
+//      if ( f <= 0 )
+      if ( f == -1 )
          return (float) -1.0;
       else
          return f;
    }
    
+   
+   public static int getInt( ResultSet rs, String columnName ) throws SQLException {
+//       captureInt( rs.getInt( "time_to_tp" ) );
+       int i = rs.getInt( columnName );
+       
+       if ( rs.wasNull() )
+           i = -1;
+       return captureInt( i );
+   }
+   
    public static int captureInt( int i ) {
-      if ( i <= 0 )
+//      if ( i <= 0 )
+      if ( i == -1 )
          return -1;
       else
          return i;
@@ -862,6 +895,8 @@ public class HSQLDB extends CPSDataModel {
        
        if ( filterString == null )
            filterString = "";
+       
+       System.out.println("DEBUG(HSQLDB): Using text filter string: " + filterString );
        
        if ( filter != null && filter.isViewLimited() ) {
           
@@ -934,6 +969,8 @@ public class HSQLDB extends CPSDataModel {
       // loop over the filter string (seperated by spaces)
       for ( String filt : filterString.split(" ") ) {
           
+          String innerExp = "";
+                  
           // for cases where just spaces or double spaces are entered
           if ( filt.length() == 0 )
               continue;
@@ -942,11 +979,11 @@ public class HSQLDB extends CPSDataModel {
           for ( String col : colList ) {
               if ( col.startsWith("date") )
                   col = "MONTHNAME( " + col + " )";
-              exp += "LOWER( " + col + " ) LIKE " +
-                      escapeValue( "%" + filt + "%" ) + " OR ";
+              innerExp += "LOWER( " + col + " ) LIKE " +
+                          escapeValue( "%" + filt + "%" ) + " OR ";
           }
           // remove the last " OR " and tack on an " AND "
-          exp = " ( " + exp.substring( 0, exp.lastIndexOf( " OR " )) + " ) AND ";
+          exp += " ( " + innerExp.substring( 0, innerExp.lastIndexOf( " OR " )) + " ) AND ";
       }
 
       // strip off the final " AND "

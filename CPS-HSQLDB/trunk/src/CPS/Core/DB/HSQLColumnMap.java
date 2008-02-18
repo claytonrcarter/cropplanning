@@ -109,7 +109,7 @@ public class HSQLColumnMap {
         
         /* now just collect the column names from the sorted list  */
         ArrayList<String[]> als = new ArrayList();
-        for ( ColumnStruct cs : m )
+        for ( ColumnStruct cs : l )
             if ( cs.displayable )
                 if ( cs.shortColumnName == null )
                     als.add( new String[]{ cs.columnName, cs.prettyColumnName } );
@@ -151,7 +151,7 @@ public class HSQLColumnMap {
         
         /* now just collect the column names from the sorted list  */
         ArrayList<String[]> als = new ArrayList();
-        for ( ColumnStruct cs : m )
+        for ( ColumnStruct cs : l )
             if ( cs.displayable )
                 als.add( new String[] { cs.columnName, cs.prettyColumnName } );
         
@@ -289,7 +289,7 @@ public class HSQLColumnMap {
         l.add( new ColumnStruct( "keywords",       "keywords",        null, false, true,  true,  false, false, "Keywords" ) );
 //        l.add( new ColumnStruct( "status",       null, null ) );
         l.add( new ColumnStruct( "other_req",      "other_req",       null, false, true,  true,  false, false, "Other Requirements" ) );
-        l.add( new ColumnStruct( "notes",          null,              null, false, false, true,  false, false, "Notes" ) );
+        l.add( new ColumnStruct( "notes",          null,              null, false, true, true,  false, false, "Notes" ) );
         l.add( new ColumnStruct( "maturity",       "maturity",        null, false, true,  false, true,  true,  "Maturity Days",     "Mat." ) );
         l.add( new ColumnStruct( "mat_adjust",     "mat_adjust",      null, false, true,  false, false, false, "Mat. Adjustment",   "Mat +/-" ) );
       l.add( new ColumnStruct(  "planting_adjust", null,              null, false, true,  false, false, false, "Mat. Adjustment for Planting" ));
@@ -298,14 +298,20 @@ public class HSQLColumnMap {
       l.add( new ColumnStruct(  "time_to_tp",      "time_to_tp",      null, false, true,  false, false, true,  "Time in GH (weeks)", "Weeks in GH"   ));
       l.add( new ColumnStruct(  "misc_adjust",     "misc_adjust",     null, false, true,  false, false, false, "Misc. Mat. Adjustment"  ));
 
-      l.add( new ColumnStruct(  "date_plant",      null,              "\"CPS.Core.DB.HSQLCalc.plantFromHarvest\"( date_harvest, maturity ), "
-                                                                    + "\"CPS.Core.DB.HSQLCalc.plantFromTP\"( date_tp, time_to_tp )",
+                                                                      // the order of these calculations, or at least the order in which they
+                                                                      // appear in the COALESCE statement, is important to ensure that values
+                                                                      // are calculated from the proper ... other values -- since the the other
+                                                                      // values might have to be filled in as we go
+      l.add( new ColumnStruct(  "date_plant",      null,              "\"CPS.Core.DB.HSQLCalc.plantFromTP\"( date_tp, time_to_tp ), "
+                                                                    + "\"CPS.Core.DB.HSQLCalc.plantFromHarvest\"( date_harvest, maturity, mat_adjust, time_to_tp ) ",
                                                                             false, true,  true,  true,  true,  "Planting Date",       "Plant" ));
       l.add( new ColumnStruct(  "done_plant",      null,              null, false, true,  false, true,  true,  "Planted?"  ));
-      l.add( new ColumnStruct(  "date_tp",         null,              "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp )",
+      l.add( new ColumnStruct(  "date_tp",         null,              "\"CPS.Core.DB.HSQLCalc.TPFromPlant\"( date_plant, time_to_tp ),"
+                                                                    + "\"CPS.Core.DB.HSQLCalc.TPFromHarvest\"( date_harvest, maturity, mat_adjust, time_to_tp ) ",
                                                                             false, true,  true,  true, true,  "Transplant Date",      "TP" ));
       l.add( new ColumnStruct(  "done_tp",         null,              null, false, true,  false, true, true,  "Transplanted?"  ));
-      l.add( new ColumnStruct(  "date_harvest",    null,              "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity ) ",
+      l.add( new ColumnStruct(  "date_harvest",    null,              "\"CPS.Core.DB.HSQLCalc.harvestFromTP\"( date_tp, maturity, mat_adjust ), "
+                                                                    + "\"CPS.Core.DB.HSQLCalc.harvestFromPlant\"( date_plant, maturity, mat_adjust, time_to_tp ) ",
                                                                             false, true,  true,  true,  true,  "Harvest Date",         "Pick" ));
       l.add( new ColumnStruct(  "done_harvest",    null,              null, false, true,  false, true,  true,  "Picked?"  ));
 

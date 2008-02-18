@@ -131,6 +131,7 @@ public class HSQLConnect {
                                 " (code: " + status + ") while connecting to " +
                                 db );
             ex.printStackTrace();
+            // TODO exit gracefully, or perhaps prompt user?
          }
          con = null;
       }

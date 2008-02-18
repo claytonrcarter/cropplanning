@@ -35,6 +35,7 @@ public class HSQLTableModel extends ResultSetTableModel {
     private static final boolean DEBUG = true;
     
    private boolean idInResults = false;
+   private int nullsLastColNum = -2;
    private String tableName = null;
    
    private CPSDateValidator dateValidator;
@@ -47,8 +48,13 @@ public class HSQLTableModel extends ResultSetTableModel {
       if ( results.getConcurrency() != ResultSet.CONCUR_READ_ONLY )
          throw new SQLException( "RSTableModel only accepts ResultSets of CONCUR_READ_ONLY" );
       
-      if ( metadata.getColumnLabel( 1 ).equalsIgnoreCase( "id" ) )
-         idInResults = true;
+      for ( int col = 1; col <= metadata.getColumnCount(); col++ ) {
+          String colName = metadata.getColumnLabel( col );
+          if ( colName.equalsIgnoreCase( "id" ) )
+              idInResults = true;
+          else if ( colName.equalsIgnoreCase( "nulls_last" ))
+              nullsLastColNum = col;
+      }
       
       dateValidator = new CPSDateValidator();
       dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
@@ -86,19 +92,22 @@ public class HSQLTableModel extends ResultSetTableModel {
     public int getColumnCount() {
        int cols = super.getColumnCount();
        if ( idInResults )
-          return cols - 1;
+           if ( nullsLastColNum != -2 )
+               return cols - 2;
+           else
+               return cols - 1;
        else
           return cols;
     }
     
     public String getColumnName( int column ) {
-       if ( idInResults )
+       if ( idInResults || column == nullsLastColNum )
           column++;
        return super.getColumnName( column );
     }
     
     public Object getValueAt( int r, int c ) {
-       if ( idInResults )
+       if ( idInResults || c == nullsLastColNum )
           c++;
 //       return super.getValueAt( r, c );
        // this was yanked and reworked from superclass; it was just converting
@@ -113,7 +122,7 @@ public class HSQLTableModel extends ResultSetTableModel {
     
     public void setValueAt(Object value, int row, int column) {
     
-       if ( idInResults )
+       if ( idInResults || column == nullsLastColNum )
           column++;
        
        
@@ -167,7 +176,7 @@ public class HSQLTableModel extends ResultSetTableModel {
    
     @Override
    public Class getColumnClass( int column ) {
-       if ( idInResults )
+       if ( idInResults || column == nullsLastColNum )
           column++;
        
        String type = null;

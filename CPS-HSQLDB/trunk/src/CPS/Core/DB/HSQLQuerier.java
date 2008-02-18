@@ -115,12 +115,17 @@ public class HSQLQuerier {
          s += " ) ";
       }
       
-      /* TODO: if sort != crop_name, then make crop_name secondary sort
-       * if sort == crop_name, then make var_name secondary sort
-       * unless already includes secondary sort 
+      /* if sort doesn't include crop_name, then make crop_name secondary sort
+       * if sort does include crop_name, then make var_name secondary sort
        */
-      if ( sort != null && sort.length() > 0 )
-         s += " ORDER BY " + sort;
+      if ( sort != null && sort.length() > 0 ) {
+          if ( sort.indexOf( "crop_name" ) == -1 )
+              sort += ", crop_name";
+          else if ( sort.indexOf( "var_name" ) == -1 )
+              sort += ", var_name";
+          
+          s += " ORDER BY " + sort;
+      }
       
       return s;
    }
@@ -135,7 +140,15 @@ public class HSQLQuerier {
        
        table = HSQLDB.escapeTableName( table );
        
-      ResultSet rs;
+      if ( sort != null && sort.length() > 0 ) {
+          String[] tok = sort.split( " " );
+          columns += ", CASE WHEN " + tok[0] + " IS NULL ";
+          columns +=        "THEN -1 ELSE 1 END ";
+          columns += " AS nulls_last ";
+          
+          sort = "nulls_last DESC, " + sort;
+      }
+          
       String query = "SELECT " + columns + " FROM " + table;
       query += putTogetherConditionalSortAndFilterString( conditional, sort, filter );
       
@@ -145,7 +158,10 @@ public class HSQLQuerier {
    public static synchronized ResultSet submitRawQuery( Connection con, String query, boolean prepared ) {
       ResultSet rs;
       
-      System.out.println("DEBUG Submitting query: " + query );
+      if ( query.length() < 500 )
+           System.out.println( "DEBUG Submitting query: " + query );
+      else
+           System.out.println( "DEBUG Submitting query: " + query.substring( 0 , 500 ) + " ... (truncated)" );
       
       try {
          if ( prepared ) {
@@ -264,14 +280,14 @@ public class HSQLQuerier {
          query += "MIN( SELECT ";
          query += "( CASE WHEN count(*)=1 ";
          query += "THEN MIN( " + col + " ) ELSE null END ) ";
-         query += "FROM( SELECT DISTINCT " + col + " FROM " + table + " ";
+         query += "FROM( SELECT DISTINCT " + col + " FROM " + HSQLDB.escapeTableName( table ) + " ";
          query += "WHERE id IN ( " + idString + " ) ) ) AS " + col + ", "; 
       }
       query = query.substring( 0, query. lastIndexOf( ", " ));
       
       query += " FROM " + HSQLDB.escapeTableName( table );
       
-      System.out.println("DEBUG Submitting query: " + query );
+      System.out.println("\n DEBUG(COMMON INFO query):\n" + query );
       
       return submitRawQuery( con, query, false );
    }
@@ -321,25 +337,35 @@ public class HSQLQuerier {
        
        int CROP_COL = 0;
        int MAP_COL = 1;
-        
+       
+       String cropFillInQuery, varietySelect, cropSelect;
        /* This string represents the query which will fill in the "static" fields
         * in each crop (w/ variety) from the corresponding fields in the crop (w/o variety) */
-       String cropFillInQuery = " SELECT ";
+       varietySelect = cropSelect = " SELECT ";
        for ( String[] s : colMap ) {
+           cropSelect += s[CROP_COL] + ", ";
            if ( s[MAP_COL] == null ) {
-               cropFillInQuery += "v." + s[CROP_COL] + ", ";
+               varietySelect += "v." + s[CROP_COL] + ", ";
                continue;
            }
-           cropFillInQuery += "COALESCE( v." + s[CROP_COL] + ", ";
-           cropFillInQuery += "c." + s[CROP_COL] + " ) AS " + s[CROP_COL];
-           cropFillInQuery += ", ";
+           varietySelect += "COALESCE( v." + s[CROP_COL] + ", ";
+           varietySelect += "c." + s[CROP_COL] + " ) AS " + s[CROP_COL];
+           varietySelect += ", ";
        }
-       cropFillInQuery = cropFillInQuery.substring( 0, cropFillInQuery.lastIndexOf( ", " ) );
+       varietySelect = varietySelect.substring( 0, varietySelect.lastIndexOf( ", " ) );
+       cropSelect = cropSelect.substring( 0, cropSelect.lastIndexOf( ", " ) );
+       
 //       cropFillInQuery += " FROM crops_varieties AS v, crops_varieties AS c ";
-       cropFillInQuery += " FROM        crops_varieties                                        AS v ";
-       cropFillInQuery += " LEFT JOIN ( SELECT * FROM crops_varieties WHERE var_name IS NULL ) AS c ";
-//       cropFillInQuery += " WHERE v.crop_name = c.crop_name";
-       cropFillInQuery += " ON v.crop_name = c.crop_name";
+//       cropFillInQuery += " FROM        crops_varieties                                        AS v ";
+       
+       cropFillInQuery  = varietySelect;
+       cropFillInQuery += " FROM      ( SELECT * FROM crops_varieties WHERE var_name IS NOT NULL ) AS v ";
+       cropFillInQuery += " LEFT JOIN ( SELECT * FROM crops_varieties WHERE var_name IS     NULL ) AS c ";
+       cropFillInQuery += " ON v.crop_name = c.crop_name ";
+       cropFillInQuery += " UNION " + cropSelect;
+       cropFillInQuery += " FROM       ( SELECT * FROM crops_varieties WHERE var_name IS NOT NULL ) AS v ";
+       cropFillInQuery += " RIGHT JOIN ( SELECT * FROM crops_varieties WHERE var_name IS     NULL ) AS c ";
+       cropFillInQuery += " ON v.crop_name = c.crop_name ";
        
        return cropFillInQuery;
         
@@ -370,9 +396,13 @@ public class HSQLQuerier {
            plantingFillInQuery += ", ";
        }
        plantingFillInQuery = plantingFillInQuery.substring( 0, plantingFillInQuery.lastIndexOf( ", " ) );
-       plantingFillInQuery += " FROM " + planName + " AS p, ( " + cropFillInQuery + " ) AS c ";
-       plantingFillInQuery += "WHERE p.crop_id = c.id ";
+//       plantingFillInQuery += " FROM " + planName + " AS p, ( " + cropFillInQuery + " ) AS c ";
+       plantingFillInQuery += " FROM " + planName + " AS p "; 
+       plantingFillInQuery += " LEFT JOIN ( " + cropFillInQuery + " ) AS c ";
+//       plantingFillInQuery += " WHERE p.crop_id = c.id ";
+       plantingFillInQuery += " ON p.crop_id = c.id ";
 
+       
        String passQuery = "SELECT ";
        for ( String[] s : plantColMap ) {
            if ( s[CALC] == null )
