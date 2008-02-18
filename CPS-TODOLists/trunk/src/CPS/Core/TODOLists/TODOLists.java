@@ -26,6 +26,7 @@ package CPS.Core.TODOLists;
 import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDisplayableDataUserModule;
+import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.LayoutAssist;
@@ -138,7 +139,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 //        fldFile.setText( "ExportFile.pdf" );
         filFile = new JFileChooser();
 //        filFile.setCurrentDirectory(outputFile);
-        filFile.setSelectedFile( new File( getGlobalSettings().getOutputDir() ));
+        filFile.setSelectedFile( new File( CPSGlobalSettings.getDocumentOutputDir() ));
         filFile.setMultiSelectionEnabled(false);
         filFile.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         lblDirectory = new JLabel( filFile.getSelectedFile().getPath() );
