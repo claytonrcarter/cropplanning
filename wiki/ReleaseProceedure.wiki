@@ -16,7 +16,7 @@ Omit the `-r <rev>` if tagging HEAD
       * create bundle named 'CropPlanning'
     * _Windows_: use Lauch4J to create a jar launcher (not a wrapper) the will reside next to the main .jar and includes the ./lib dir in its classpath.
       * set output filename to 'CropPlanning.exe'
-      * set the next field to './'
+      * set the jar file to 'CropPlaning.jar', this should be relative to the location of the above executable
       * check "don't wrap, just launch"
       * under JRE, set min JVM to '1.5.0'
       * Under "Classpath", add the main jar and it should auto-add all of the jars in ./lib
