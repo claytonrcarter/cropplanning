@@ -3,7 +3,7 @@
 
   # Determine SVN revision number to release and then "tag" that revision as the release name: 
 {{{
-svn cp -r <rev> <repos>/<module>/trunk <repos>/<module>/tags/<tag name>
+svn cp -m <commit message> -r <rev> <repos>/<module>/trunk <repos>/<module>/tags/<tag name>
 }}} 
 Omit the `-r <rev>` if tagging HEAD
   #2 "Switch to" the tag in Netbeans, clean and build.
