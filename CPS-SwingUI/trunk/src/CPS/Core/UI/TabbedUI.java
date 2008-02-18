@@ -23,8 +23,10 @@
 package CPS.Core.UI;
 
 import CPS.Module.CPSConfigurable;
+import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSExportable;
+import CPS.Module.CPSModule;
 import CPS.Module.CPSUI;
 
 import javax.swing.*;
@@ -65,7 +67,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
     protected JMenu exportMenu = null;
     protected ArrayList<CPSExportable> exportables;
     
-    private ArrayList<ModuleListElement> moduleList;
+    private ArrayList<CPSModule> moduleList;
     private boolean modulesUpdated;
 
     // To debug or not to debug, that is the question
@@ -83,7 +85,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
        setModuleVersion( GLOBAL_DEVEL_VERSION );
        
        fm = new FrameManager();
-       moduleList = new ArrayList<ModuleListElement>();
+       moduleList = new ArrayList<CPSModule>();
        setModulesUpdated( false );
        
        exportables = new ArrayList<CPSExportable>();
@@ -120,6 +122,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
     }
     
     public void addModule( CPSDisplayableDataUserModule mod ) {
+        moduleList.add( mod );
         addModule( mod.getModuleName(), mod.display() );
         if ( mod instanceof CPSExportable ) {
             System.out.println("DEBUG(TabbedUI): Found exportable module: " + mod.getModuleName() );
@@ -138,7 +141,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
 
 	content.setBorder( BorderFactory.createTitledBorder( name ));
         
-        moduleList.add( new ModuleListElement( name, content ));
+//        moduleList.add( new ModuleListElement( name, content ));
         setModulesUpdated( true );
         
         addModules();
@@ -154,13 +157,15 @@ public class TabbedUI extends CPSUI implements ActionListener {
           return;
        
        Iterator i = moduleList.iterator();
-       ModuleListElement mle;
+       Object mle;
           
        tabbedpane.removeAll();
           
        while ( i.hasNext() ) {
-          mle = (ModuleListElement) i.next();
-          tabbedpane.addTab( mle.getName(), mle.getContent() );
+          mle = i.next();
+          if ( mle instanceof  CPSDisplayableDataUserModule ) 
+               tabbedpane.addTab( ((CPSDisplayableDataUserModule) mle).getModuleName(),
+                                  ((CPSDisplayableDataUserModule) mle).display() );
        }
 
        finishAddingTabs();
@@ -277,6 +282,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
       }
       else if ( action.equalsIgnoreCase( MENU_ITEM_SETTINGS )) {
          settings.setVisible(true);
+         dataChanged();
       }
       else if ( action.equalsIgnoreCase( MENU_ITEM_EXIT )) {
          // TODO, save data, settings, etc
@@ -285,15 +291,23 @@ public class TabbedUI extends CPSUI implements ActionListener {
       
    }
    
+   private void dataChanged() {
+       for ( Object c : moduleList ) {
+           if ( c instanceof CPSDataModelUser )
+               ((CPSDataModelUser) c).dataUpdated();
+       }
+   }
+   
    public void uiChanged() {
       Dimension maxDim = new Dimension( 0, 0 );
       
-      for ( ModuleListElement mle : moduleList ) {
-        Dimension d = mle.getContent().getPreferredSize();
+      for ( Object mle : moduleList ) {
+          if ( mle instanceof CPSDisplayableDataUserModule ) {
+              Dimension d = ((CPSDisplayableDataUserModule) mle).display().getPreferredSize();
         
-        maxDim.setSize( Math.max( maxDim.getWidth(),  d.getWidth() ),
-                        Math.max( maxDim.getHeight(), d.getHeight() ));
-        
+              maxDim.setSize( Math.max( maxDim.getWidth(), d.getWidth() ),
+                              Math.max( maxDim.getHeight(), d.getHeight() ) );
+          }
       }
          
       // TODO calculate the size of this tabbed pane to automatically include the tabs, which
