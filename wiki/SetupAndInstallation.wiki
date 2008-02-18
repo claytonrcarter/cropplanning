@@ -44,11 +44,13 @@ This software requires Java version 1.5 (aka Java 5) or greater.  Java is availa
 
 *Step 4*: Copy/Install Program (_Optional_)
 
-    This step is _optional_.  You should be able to run the program from the mounted disk image or the file archive with no problems.  If you have trouble doing so, or you just want the program to reside in a particular place on your computer, then proceed with this step.  With the archive opened and displayed in a window, simply:
+    This step is _optional_.  You should be able to run the program from the mounted disk image or the file archive with no problems.  If you have trouble doing so, or you just want the program to reside in a particular place on your computer, then proceed with this step.
+
+    With the archive opened and displayed in a window, simply:
 
        _Mac_: drag the program file (`CropPlanning`) from the archive to a folder or directory in which want to "install" the program.  For now, do *not* put the program in the 'Applications' folder.
 
-       _Windows_: You will need to keep the program and it's files together.  To install, just drag the folder `CropPlanning` from the archive to a suitable location, such as your desktop.
+       _Windows_: You will need to keep the program and it's files together; this means that you cannot just move the '.exe' file, you must keep it in the same directory as the '.jar' file and 'lib' directory.  To install, just drag the folder `CropPlanning` from the archive to a suitable location, such as your desktop.
 
 
 *Step 6*: Open the program
