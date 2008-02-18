@@ -153,7 +153,7 @@ public class CropPlanInfo extends CPSDetailView {
         // TODO  tfldStatus;
    
         setStatus("");
-        if ( displayedPlanting.getCommonIDs().size() > 0 ) {
+        if ( ! displayedPlanting.isSingleRecord() ) {
            String ids = "";
            for ( Integer i : displayedPlanting.getCommonIDs() )
               ids += i.toString() + ", ";
@@ -180,7 +180,7 @@ public class CropPlanInfo extends CPSDetailView {
        }
        
        System.out.println("DEBUG(CPInfo): changes found (Valid id) ... attempting to save changes");    
-       if ( displayedPlanting.getCommonIDs().size() > 0 )
+       if ( ! displayedPlanting.isSingleRecord() )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
        else
           getDataSource().updatePlanting( selectedPlan, diff );

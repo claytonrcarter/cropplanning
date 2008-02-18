@@ -42,12 +42,18 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 // package access
-class CropPlanList extends CPSMasterView implements ActionListener {
+class CropPlanList extends CPSMasterView implements ActionListener,
+                                                    ItemListener {
    
     private JLabel lblPlanName;
     private JComboBox cmbxPlanList, cmbxCropList, cmbxFieldList;
     private JButton btnNewPlan;
     
+    private JComboBox cmbxLimit;
+    protected static final String LIMIT_ALL = "all";
+    protected static final String LIMIT_DS = "just DS";
+    protected static final String LIMIT_TP = "just TP";
+    protected static final String LIMIT_CUSTOM = "custom..."; // TODO, this is a terrible name
     private JButton btnLimit;
     private CPSComplexFilterDialog dlgFilter;
     
@@ -73,7 +79,7 @@ class CropPlanList extends CPSMasterView implements ActionListener {
        return getDataSource().getCommonInfoForPlantings( getDisplayedTableName(), ids );
     }
     
-   
+   @Override
     public void setDataSource( CPSDataModel dm ) {
         super.setDataSource(dm);
         updateListOfPlans();
@@ -207,11 +213,22 @@ class CropPlanList extends CPSMasterView implements ActionListener {
     protected JPanel buildFilterComponent() {
         initFilterPanel();
         
-        btnLimit = new JButton( "Limit View" );
-        btnLimit.setMargin( new Insets( 1, 1, 1, 1 ));
-        btnLimit.addActionListener(this);
+//        btnLimit = new JButton( "Limit View" );
+//        btnLimit.setMargin( new Insets( 1, 1, 1, 1 ));
+//        btnLimit.addActionListener(this);
         
-        jplFilter.add( btnLimit );
+        cmbxLimit = new JComboBox();
+        cmbxLimit.addItem( LIMIT_ALL );
+        cmbxLimit.addItem( LIMIT_DS );
+        cmbxLimit.addItem( LIMIT_TP );
+        cmbxLimit.addItem( LIMIT_CUSTOM );
+//        cmbxLimit.setSelectedIndex(0);
+        cmbxLimit.addItemListener(this);
+        
+        jplFilter.add( new JLabel( "Show" ));
+//        jplFilter.add( btnLimit );
+        jplFilter.add( cmbxLimit );
+        jplFilter.add( new JLabel( "matching"));
         
         return super.buildFilterComponent( false );
     }
@@ -222,28 +239,6 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         super.updateFilter();
     }
     
-    
-    
-    public void actionPerformed(ActionEvent actionEvent) {
-        String action = actionEvent.getActionCommand();
-
-        System.out.println("DEBUG Action performed in CropPlanList: " + action);
-
-       if ( action.equalsIgnoreCase( btnNewPlan.getActionCommand() ) ) {
-            if ( ! isDataAvailable() ) {
-                System.err.println("ERROR: cannot create new plan, no data available" );
-                return;
-            }
-            createNewCropPlan( getSelectedPlanName() );
-        }
-       else if ( action.equalsIgnoreCase( btnLimit.getText() )) {
-           dlgFilter.setVisible( true );
-           updateFilter();
-       }
-        else
-            super.actionPerformed( actionEvent );    
-        
-    }
     
     public class CropPlanBoxActionListener implements ActionListener {
       public void actionPerformed( ActionEvent actionEvent ) {
@@ -356,5 +351,48 @@ class CropPlanList extends CPSMasterView implements ActionListener {
         
         
     }
+
+    
+    
+    public void itemStateChanged( ItemEvent arg0 ) {
+        Object source = arg0.getSource();
+        
+        if ( source == cmbxLimit ) {
+            String s = (String) cmbxLimit.getSelectedItem();
+            if      ( s.equalsIgnoreCase( LIMIT_DS ))
+                dlgFilter.setFilter( CPSComplexPlantingFilter.directSeededFilter() );
+            else if ( s.equalsIgnoreCase( LIMIT_TP ))
+                dlgFilter.setFilter( CPSComplexPlantingFilter.transplantedFilter() );
+            else if ( s.equalsIgnoreCase( LIMIT_CUSTOM ))
+                dlgFilter.setVisible( true );
+            else // if ( s.equalsIgnoreCase( LIMIT_ALL ))
+                dlgFilter.resetFilter();
+            updateFilter();
+        }
+    }
+    
+    
+    public void actionPerformed(ActionEvent actionEvent) {
+        String action = actionEvent.getActionCommand();
+
+        System.out.println("DEBUG Action performed in CropPlanList: " + action);
+
+       if ( action.equalsIgnoreCase( btnNewPlan.getActionCommand() ) ) {
+            if ( ! isDataAvailable() ) {
+                System.err.println("ERROR: cannot create new plan, no data available" );
+                return;
+            }
+            createNewCropPlan( getSelectedPlanName() );
+        }
+//       else if ( action.equalsIgnoreCase( btnLimit.getText() )) {
+//           dlgFilter.setVisible( true );
+//           updateFilter();
+//       }
+        else
+            super.actionPerformed( actionEvent );    
+        
+    }
+    
+    
     
 }

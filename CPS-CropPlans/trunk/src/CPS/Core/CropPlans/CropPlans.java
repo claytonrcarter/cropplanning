@@ -50,7 +50,7 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
         if ( isDataAvailable() ) {
             CPSExporter exp = new CSV();
             String planName = this.getMasterTableName();
-            String fileName = getGlobalSettings().getOutputDir() + 
+            String fileName = CPSGlobalSettings.getDocumentOutputDir() + 
                               System.getProperty( "file.separator" ) +
                               "ExportedCropPlan - " + planName + "." + exp.getExportFileDefaultExtension(); 
             exp.exportCropPlan( fileName, planName, getDataSource().getCropPlanAsList( planName ));
