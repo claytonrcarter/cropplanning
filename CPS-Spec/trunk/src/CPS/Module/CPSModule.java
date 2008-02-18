@@ -19,13 +19,13 @@ public abstract class CPSModule {
    protected int ModuleVersion_Minor;
    protected int ModuleVersion_Revision;
    
-   protected CPSGlobalSettings globalSettings = null;
+//   protected CPSGlobalSettings globalSettings = null;
    
    public String getModuleName() { return ModuleName; }
    public String getModuleType() { return ModuleType; }
    public String getModuleDescription() { return ModuleDescription; }
    
-   public CPSGlobalSettings getGlobalSettings() { return globalSettings; }
+//   public CPSGlobalSettings getGlobalSettings() { return globalSettings; }
    
    public String getModuleVersion() { return ModuleVersion; }
    public String getModuleVersionMajor() { return "" + ModuleVersion_Major; }
@@ -89,9 +89,7 @@ public abstract class CPSModule {
    
    }
    
-   public void receiveGlobalSettings( CPSGlobalSettings gs ) {
-       globalSettings = gs;
-   }
+//   public void receiveGlobalSettings( CPSGlobalSettings gs ) { globalSettings = gs; }
    
 
    public boolean verifyVersion( String ver ) {

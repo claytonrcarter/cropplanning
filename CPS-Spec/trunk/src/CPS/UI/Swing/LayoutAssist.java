@@ -239,6 +239,11 @@ public class LayoutAssist {
 	
         JScrollPane sp = new JScrollPane( ta );
         
+        // make the scrollpane ignore focus on the scroll bar
+        // from http://forum.java.sun.com/thread.jspa?forumID=57&threadID=609727
+        // also made changes in CPSTextArea
+        sp.getVerticalScrollBar().setFocusable(false);
+        
 	p.add( sp, c );
 //	p.add( ta, c );
 

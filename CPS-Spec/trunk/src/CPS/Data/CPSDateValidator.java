@@ -85,22 +85,45 @@ public class CPSDateValidator {
         
         String dateText = s;
         int dateShift = 0;
+        int shiftBy = GregorianCalendar.DAY_OF_YEAR;
+        
         // handles addition of negative numbers
-        if ( dateText.matches( ".+\\+.+" ) ) {
-            String[] sp = dateText.split( "\\+" );
-            dateText = sp[0].trim();
-            dateShift = Integer.parseInt( sp[1].trim() );
-        }
-        // does NOT handle subtract of negative numbers
-        else if ( dateText.matches( ".+-.+" ) ) {
-            String[] sp = dateText.split( "-" );
-            // if we split into two, then there was just one -
-            if ( sp.length == 2 ) {
-                dateText = sp[0].trim();
-                dateShift = -1 * Integer.parseInt( sp[1].trim() );
+        if ( dateText.matches( ".+\\+.+" ) || dateText.matches( ".+-.+" ) ) {
+            String[] sp = new String[] { "", "" };
+            int shiftFactor = 1;
+            
+            if ( dateText.matches( ".+\\+.+" )) {
+                sp = dateText.split( "\\+" );    
+                shiftFactor = 1;
             }
-            else
-                System.err.println( "ERROR(CPSTable): Can't understand date:" + dateText + " [Too many '-'s]" );
+            // does NOT handle subtract of negative numbers
+            else if ( dateText.matches( ".+-.+" ) ) {
+                sp = dateText.split( "-" );
+                shiftFactor = -1;
+                // if we split into two, then there was just one -
+                if ( sp.length != 2 )
+                    System.err.println( "ERROR(CPSDateValidator): Can't understand date:" +
+                                        dateText + " [Too many '-'s]" );
+            }
+            // trim off leading and trailing whitespace
+            dateText = sp[0].trim();
+            
+            String dateShiftString = sp[1].trim();
+            if ( dateShiftString.matches( ".+[dwm]" )) {
+                
+                // we match on w or m; trailing whitespace was already trimmed
+                // d isn't necessary since it's default
+                if ( dateShiftString.matches( ".+w" ))
+                    shiftBy = GregorianCalendar.WEEK_OF_YEAR;
+                else if ( dateShiftString.matches( ".+m" ))
+                    shiftBy = GregorianCalendar.MONTH;
+                
+                // trim off the trailing character (the d, w or m)
+                dateShiftString = dateShiftString.substring( 0, dateShiftString.length() - 1 );
+                
+            }
+                
+            dateShift = shiftFactor * Integer.parseInt( dateShiftString );
         }
         
         
@@ -131,12 +154,11 @@ public class CPSDateValidator {
         if ( dateShift != 0 ) {
             GregorianCalendar cal = new GregorianCalendar();
             cal.setTime( date );
-            cal.add( GregorianCalendar.DAY_OF_YEAR, dateShift );
+            cal.add( shiftBy, dateShift );
             date = cal.getTime();
         }
         
         return date;
     }
-            
 
 }

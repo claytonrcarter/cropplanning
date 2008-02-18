@@ -31,19 +31,11 @@ public class CPSComplexFilter {
         setFilterString("");
     }
 
-    public CPSComplexFilter( String filterString ) {
-        setFilterString(filterString);
-    }
+    public CPSComplexFilter( String filterString ) { setFilterString(filterString); }
     
-    
-    
-    public String getFilterString() {
-        return filterString;
-    }
+    public String getFilterString() { return filterString; }
 
-    public void setFilterString( String filterString ) {
-        this.filterString = filterString;
-    }
+    public void setFilterString( String filterString ) { this.filterString = filterString; }
 
     
     

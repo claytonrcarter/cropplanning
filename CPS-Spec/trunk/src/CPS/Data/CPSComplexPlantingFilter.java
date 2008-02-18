@@ -79,129 +79,84 @@ public class CPSComplexPlantingFilter extends CPSComplexFilter {
     }
     
     
-    public boolean isViewLimited() {
-        return metaViewLimited;
-    }
-    public void setViewLimited( boolean b ) {
-        metaViewLimited = b;
-    }
+    public boolean isViewLimited() { return metaViewLimited; }
+    public void setViewLimited( boolean b ) { metaViewLimited = b; }
     
-    public boolean isDirectSeeded() { return directSeeded; }
-    public boolean isTransplanted() { return ! isDirectSeeded(); }
-    public boolean setDirectSeeded( boolean b ) { return directSeeded = b; }
-    public boolean setTransplanted( boolean b ) { return setDirectSeeded( ! b ); }
-    
+    /*
+     * PLANTING METHOD
+     */
     public boolean filterOnPlantingMethod() { return filterOnPlantingMeth; }
     public boolean setFilterOnPlantingMethod( boolean b ) { return filterOnPlantingMeth = b; }
     
+    public boolean isDirectSeeded() { return directSeeded; }
+    public boolean setDirectSeeded( boolean b ) { return directSeeded = b; }
     
-//    public void setDirectSeeded( boolean directSeeded ) {
-//        this.directSeeded = directSeeded;
-//    }
+    public boolean isTransplanted() { return ! isDirectSeeded(); }
+    public boolean setTransplanted( boolean b ) { return setDirectSeeded( ! b ); }
+    
+    /*
+     * PLANTING/TP/HARVEST COMPLETED
+     */
+    public boolean setFilterOnPlanting( boolean filterOnPlanting ) { return this.filterOnPlanting = filterOnPlanting; }
+    public boolean setFilterOnTransplanting( boolean filterOnTransplanting ) { return this.filterOnTransplanting = filterOnTransplanting; }
+    public boolean setFilterOnHarvest( boolean filterOnHarvest ) { return this.filterOnHarvest = filterOnHarvest; }
+    
+    public boolean filterOnPlanting() { return filterOnPlanting; }
+    public boolean filterOnTransplanting() { return filterOnTransplanting; }
+    public boolean filterOnHarvest() { return filterOnHarvest; }
+    
+    public void setDonePlanting( boolean donePlanting ) { this.donePlanting = donePlanting; }
+    public void setDoneTransplanting( boolean doneTransplanting ) { this.doneTransplanting = doneTransplanting; }
+    public void setDoneHarvesting( boolean doneHarvesting ) { this.doneHarvesting = doneHarvesting; }
+    
+    public boolean isDonePlanting() { return donePlanting; }
+    public boolean isDoneTransplanting() { return doneTransplanting; }
+    public boolean isDoneHarvesting() { return doneHarvesting; }
+    
 
-    public void setDonePlanting( boolean donePlanting ) {
-        this.donePlanting = donePlanting;
-    }
-    public void setDoneTransplanting( boolean doneTransplanting ) {
-        this.doneTransplanting = doneTransplanting;
-    }
-    public void setDoneHarvesting( boolean doneHarvesting ) {
-        this.doneHarvesting = doneHarvesting;
-    }
+    /*
+     * DATES
+     */
+    public boolean setFilterOnPlantingDate( boolean filterOnPlantingDate ) { return this.filterOnPlantingDate = filterOnPlantingDate; }
+    public boolean setFilterOnTPDate( boolean filterOnTPDate ) { return this.filterOnTPDate = filterOnTPDate; }
+    public boolean setFilterOnHarvestDate( boolean filterOnHarvestDate ) { return this.filterOnHarvestDate = filterOnHarvestDate; }
 
-    public boolean setFilterOnPlanting( boolean filterOnPlanting ) {
-        return this.filterOnPlanting = filterOnPlanting;
-    }
-    public boolean setFilterOnTransplanting( boolean filterOnTransplanting ) {
-        return this.filterOnTransplanting = filterOnTransplanting;
-    }
-    public boolean setFilterOnHarvest( boolean filterOnHarvest ) {
-        return this.filterOnHarvest = filterOnHarvest;
-    }
+    public void setPlantingRangeStart( Date plantingRangeStart ) { this.plantingRangeStart = plantingRangeStart; }
+    public void setPlantingRangeEnd( Date plantingRangeEnd ) { this.plantingRageEnd = plantingRangeEnd; }
+    public void setTpRangeStart( Date tpRangeStart ) { this.tpRangeStart = tpRangeStart; }
+    public void setTpRangeEnd( Date tpRangeEnd ) { this.tpRangeEnd = tpRangeEnd; }
+    public void setHarvestDateStart( Date harvestDateStart ) { this.harvestRangeStart = harvestDateStart; }
+    public void setHarvestDateEnd( Date harvestDateEnd ) { this.harvestRangeEnd = harvestDateEnd; }
 
-    public boolean setFilterOnPlantingDate( boolean filterOnPlantingDate ) {
-        return this.filterOnPlantingDate = filterOnPlantingDate;
-    }
-    public boolean setFilterOnTPDate( boolean filterOnTPDate ) {
-        return this.filterOnTPDate = filterOnTPDate;
-    }
-    public boolean setFilterOnHarvestDate( boolean filterOnHarvestDate ) {
-        return this.filterOnHarvestDate = filterOnHarvestDate;
-    }
+    public boolean filterOnPlantingDate() { return filterOnPlantingDate; }
+    public boolean filterOnTPDate() { return filterOnTPDate; }
+    public boolean filterOnHarvestDate() { return filterOnHarvestDate; }
 
-    public void setPlantingRangeStart( Date plantingRangeStart ) {
-        this.plantingRangeStart = plantingRangeStart;
-    }
-    public void setPlantingRangeEnd( Date plantingRangeEnd ) {
-        this.plantingRageEnd = plantingRangeEnd;
-    }
-    public void setTpRangeStart( Date tpRangeStart ) {
-        this.tpRangeStart = tpRangeStart;
-    }
-    public void setTpRangeEnd( Date tpRangeEnd ) {
-        this.tpRangeEnd = tpRangeEnd;
-    }
-    public void setHarvestDateStart( Date harvestDateStart ) {
-        this.harvestRangeStart = harvestDateStart;
-    }
-    public void setHarvestDateEnd( Date harvestDateEnd ) {
-        this.harvestRangeEnd = harvestDateEnd;
-    }
-
+    public Date getPlantingRangeStart() { return plantingRangeStart; }
+    public Date getPlantingRangeEnd() { return plantingRageEnd; }
+    public Date getTpRangeStart() { return tpRangeStart; }
+    public Date getTpRangeEnd() { return tpRangeEnd; }
+    public Date getHarvestDateStart() { return harvestRangeStart; }
+    public Date getHarvestDateEnd() { return harvestRangeEnd; }
     
     
-    
-//    public boolean isDirectSeeded() {
-//        return directSeeded;
-//    }
-
-    public boolean filterOnPlanting() {
-        return filterOnPlanting;
-    }
-    public boolean filterOnTransplanting() {
-        return filterOnTransplanting;
-    }
-    public boolean filterOnHarvest() {
-        return filterOnHarvest;
+    /*
+     * STATIC methods for default "filters"
+     * 
+     */
+    public static CPSComplexPlantingFilter directSeededFilter() {
+        CPSComplexPlantingFilter ds = new CPSComplexPlantingFilter();
+        ds.setViewLimited(true);
+        ds.setFilterOnPlantingMethod(true);
+        ds.setDirectSeeded(true);
+        return ds;
     }
     
-    public boolean isDonePlanting() {
-        return donePlanting;
+    public static CPSComplexPlantingFilter transplantedFilter() {
+        CPSComplexPlantingFilter tp = new CPSComplexPlantingFilter();
+        tp.setViewLimited(true);
+        tp.setFilterOnPlantingMethod(true);
+        tp.setTransplanted(true);
+        return tp;
     }
-    public boolean isDoneTransplanting() {
-        return doneTransplanting;
-    }
-    public boolean isDoneHarvesting() {
-        return doneHarvesting;
-    }
-
-    public boolean filterOnPlantingDate() {
-        return filterOnPlantingDate;
-    }
-    public boolean filterOnTPDate() {
-        return filterOnTPDate;
-    }
-    public boolean filterOnHarvestDate() {
-        return filterOnHarvestDate;
-    }
-
-    public Date getPlantingRangeStart() {
-        return plantingRangeStart;
-    }
-    public Date getPlantingRangeEnd() {
-        return plantingRageEnd;
-    }
-    public Date getTpRangeStart() {
-        return tpRangeStart;
-    }
-    public Date getTpRangeEnd() {
-        return tpRangeEnd;
-    }
-    public Date getHarvestDateStart() {
-        return harvestRangeStart;
-    }
-    public Date getHarvestDateEnd() {
-        return harvestRangeEnd;
-    }
-    
 }

@@ -92,6 +92,15 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         return savedFilter;
     }
     
+    public void resetFilter() {
+        savedFilter = new CPSComplexPlantingFilter();
+    }
+    
+    public void setFilter( CPSComplexPlantingFilter f ) {
+        savedFilter = f;
+        // TODO, update the state of the dialog to display this filter
+    }
+    
     
     private CPSComplexPlantingFilter asFilter() {
         

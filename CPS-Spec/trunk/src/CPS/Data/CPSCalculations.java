@@ -23,6 +23,7 @@
 
 package CPS.Data;
 
+import CPS.Module.CPSGlobalSettings;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -40,34 +41,39 @@ public class CPSCalculations {
     * @param maturityDays Approx. days from planting to harvest.
     * @return A planting date.
     */
-   public static Date calcDatePlantFromDateHarvest( Date dateHarvest, int maturityDays ) {
+   public static Date calcDatePlantFromDateHarvest( Date dateHarvest, int maturityDays, int matAdjust ) {
       GregorianCalendar c = new GregorianCalendar();
       c.setTime( dateHarvest );
       // -1 ==> subtract
-      c.add( GregorianCalendar.DAY_OF_YEAR, -1 * maturityDays );
+      c.add( GregorianCalendar.DAY_OF_YEAR, -1 * ( maturityDays + matAdjust ) );
       return c.getTime();
    }
    
    public static Date calcDatePlantFromDateTP( Date dateTP, int weeksInGH ) {
       /* tricky tricky or smarty smarty? */
-      return calcDatePlantFromDateHarvest( dateTP, weeksInGH * 7 );
+      return calcDatePlantFromDateHarvest( dateTP, weeksInGH * 7, 0 );
    }
    
    public static Date calcDateTPFromDatePlant( Date datePlant, int weeksInGH ) {
-      return calcDateHarvestFromDatePlant( datePlant, weeksInGH * 7 );
+      return calcDateHarvestFromDatePlant( datePlant, weeksInGH * 7, 0 );
    }
    
-   public static Date calcDateHarvestFromDatePlant( Date datePlant, int maturityDays ) {
+   public static Date calcDateTPFromDateHarvest( Date dateHarvest, int maturityDays, int matAdjust ) {
+       return calcDatePlantFromDateHarvest( dateHarvest, maturityDays, matAdjust );
+   }
+   
+   public static Date calcDateHarvestFromDatePlant( Date datePlant, int maturityDays, int matAdjust ) {
       GregorianCalendar c = new GregorianCalendar();
       c.setTime( datePlant );
-      c.add( GregorianCalendar.DAY_OF_YEAR, maturityDays );
+      c.add( GregorianCalendar.DAY_OF_YEAR, maturityDays + matAdjust );
       return c.getTime();
    }
    
    public static Date calcDateHarvestFromDateTP( Date dateTP, 
                                                  int maturityDays,
-                                                 int weeksInGH ) {
-      return calcDateHarvestFromDatePlant( calcDatePlantFromDateTP( dateTP, weeksInGH ), maturityDays );
+                                                 int matAdjust ) {
+       return calcDateHarvestFromDatePlant( dateTP, maturityDays, matAdjust );
+//      return calcDateHarvestFromDatePlant( calcDatePlantFromDateTP( dateTP, weeksInGH ), maturityDays );
    }
    
    
@@ -87,6 +93,16 @@ public class CPSCalculations {
       return ( rowFt / rowsPerBed ) / bedLength;
    }
 
+   public static float calcBedsToPlantFromTotalYield( float totalYield,
+                                                      float yieldPerFt,
+                                                      int rowsPerBed,
+                                                      int bedLength ) {
+       return calcBedsToPlantFromRowFtToPlant( calcRowFtToPlantFromTotalYield( totalYield, 
+                                                                               yieldPerFt ),
+                                               rowsPerBed, 
+                                               bedLength );
+   }
+   
    public static int calcPlantsNeededFromBedsToPlant( float bedsToPlant,
                                                       int inRowSpacing,
                                                       int rowsPerBed,
@@ -104,6 +120,14 @@ public class CPSCalculations {
       // TODO Math.ceil()
       return (int) ( rowFt * ( 12.0 / inRowSpacing ) );
    }
+   
+   public static int calcPlantsNeededFromTotalYield( float totalYield,
+                                                     float yieldPerFt,
+                                                     int inRowSpacing ) {
+       return calcPlantsNeededFromRowFtToPlant( calcRowFtToPlantFromTotalYield( totalYield, 
+                                                                                yieldPerFt ),
+                                                inRowSpacing );
+   }
  
    public static int calcRowFtToPlantFromBedsToPlant( float bedsToPlant, int rowsPerBed, int bedLength ) {
       /* rowft = beds * rowsPerBed * BED_LENGTH */
@@ -114,6 +138,10 @@ public class CPSCalculations {
       /* rowFt = plants_needed * ft/plant */
       /* plants/ft = inRowSpace / 12 */
       return (int) ( plantsNeeded * ( inRowSpacing / 12.0 ) );
+   }
+   
+   public static int calcRowFtToPlantFromTotalYield( float totalYield, float yieldPerFt ) {
+       return (int) ( totalYield / yieldPerFt );
    }
    
    public static int calcPlantsToStart( int plantsNeeded, double fudgeFactor ) {
@@ -163,7 +191,7 @@ public class CPSCalculations {
     */
    public static int extractBedLength( String fieldName ) {
        
-       int len = 100;
+       int len = CPSGlobalSettings.getBedLength();
        
        // only extract a bed length if the fieldName is eg "field blah blah (100)" or "garden blah blah ( 50 )"
        if ( fieldName != null && fieldName.matches( ".*\\(\\s*\\d+\\s*\\).*" ) )

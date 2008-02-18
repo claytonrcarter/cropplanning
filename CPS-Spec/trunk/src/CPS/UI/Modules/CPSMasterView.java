@@ -27,6 +27,7 @@ import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import CPS.UI.Swing.CPSTable;
+import CPS.UI.Swing.CPSSearchField;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -34,10 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -58,7 +56,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -84,10 +81,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected JPopupMenu pupColumnList;
 //    private ColumnHeaderToolTips headerToolTips = new ColumnHeaderToolTips();
     private String sortColumn;
-    private JTextField tfldFilter;
+//    private JTextField tfldFilter;
+    private CPSSearchField tfldFilter;
 //    private String filterString;
     
-    private JButton btnFilterClear;
+//    private JButton btnFilterClear;
 
     private JButton btnNewRecord, btnDupeRecord, btnDeleteRecord;
     
@@ -285,7 +283,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     protected JPanel buildFilterComponent( boolean init ) {
         
-        tfldFilter = new JTextField(10);
+//        tfldFilter = new JTextField(10);
+        tfldFilter = new CPSSearchField("Filter");
         tfldFilter.setMaximumSize(tfldFilter.getPreferredSize());
         // HACK! TODO, improve this; possibly by implementing a delay?
         // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
@@ -295,20 +294,20 @@ public abstract class CPSMasterView extends CPSDataModelUser
             public void changedUpdate(DocumentEvent evt) {}
        });
        
-       btnFilterClear = new JButton( "X" );
-       btnFilterClear.setMargin( new Insets( 0, 0, 0, 0 ));
-//       btnFilterClear.setMaximumSize( new Dimension( 20, btnFilterClear.getSize().height ));
-       btnFilterClear.setContentAreaFilled(false);
-       btnFilterClear.setFocusPainted(false);
-       btnFilterClear.setBorderPainted(false);
-       btnFilterClear.addActionListener(this);
-       btnFilterClear.setToolTipText("Clear filter");
+//       btnFilterClear = new JButton( "X" );
+//       btnFilterClear.setMargin( new Insets( 0, 0, 0, 0 ));
+////       btnFilterClear.setMaximumSize( new Dimension( 20, btnFilterClear.getSize().height ));
+//       btnFilterClear.setContentAreaFilled(false);
+//       btnFilterClear.setFocusPainted(false);
+//       btnFilterClear.setBorderPainted(false);
+//       btnFilterClear.addActionListener(this);
+//       btnFilterClear.setToolTipText("Clear filter");
        
        if ( init )
            initFilterPanel();
        
        jplFilter.add( tfldFilter );
-       jplFilter.add( btnFilterClear );
+//       jplFilter.add( btnFilterClear );
        return jplFilter;
        
     }
@@ -525,11 +524,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
         /*
          * FILTER BUTTON CLEAR
          */
-        if (action.equalsIgnoreCase(btnFilterClear.getText())) {
-            tfldFilter.setText("");
-            tfldFilter.requestFocus();
-            return;
-        }
+//        if (action.equalsIgnoreCase(btnFilterClear.getText())) {
+//            tfldFilter.setText("");
+//            tfldFilter.requestFocus();
+//            return;
+//        }
         
         /*
          * COLUMN SELECTION POPUP WINDOW

@@ -60,6 +60,10 @@ public abstract class CPSRecord {
           set( recordID, new Integer( i )); 
     } 
    
+   public boolean isSingleRecord() {
+       return ! ( getCommonIDs().size() > 0 );
+   }
+   
    /**
     * Retrieves the lists of IDs that this record represents.  If this record only represents a single
     * record, then this will return an empty list, or whatever is the default value of the commonIDs field.
@@ -121,7 +125,7 @@ public abstract class CPSRecord {
       return f.floatValue();
    }
    public String formatFloat( float f ) {
-      if ( f < 0 )
+      if ( f == -1f )
          return "";
       else
          return "" + f;
@@ -199,7 +203,7 @@ public abstract class CPSRecord {
        while ( thisIt.hasNext() && thatIt.hasNext() && deltIt.hasNext() ) {
           thi = thisIt.next();
           that = thatIt.next();
-          delta = deltIt.next();
+//          delta = deltIt.next();
           
           /*
            * if this is CALCULATED and that IS NOT VALID, then skip
@@ -215,9 +219,12 @@ public abstract class CPSRecord {
           else if ( ( ! thi.isValid() && that.isValid() ) ||
                     ( thi.isValid() && that.isValid() ) &&
                     ! thi.getDatum().equals( that.getDatum() ) ) {
-             diffs.set( delta.getPropertyNum(), that.getDatum() );
-             if ( ! delta.isValid() )
-                diffs.set( delta.getPropertyNum(), that.getDefaultValue(), true );
+             diffs.set( that.getPropertyNum(), that.getDatum() );
+//              System.out.println( "Recording difference for datum: " + that.getColumnName() + " = " + that.getDatum() );
+              // why are we checking to see if delta is valid?
+//             if ( ! delta.isValid() )
+             if ( ! diffs.getDatum( that.getPropertyNum() ).isValid() )
+                diffs.set( that.getPropertyNum(), that.getDefaultValue(), true );
              diffsExists = true;
           }
        }
@@ -225,7 +232,7 @@ public abstract class CPSRecord {
        // by default, a cropID of -1 means no differences.
        if ( diffsExists ) {
           System.out.println("Differences EXIST: " + diffs.toString() );
-          if ( this.getCommonIDs().size() > 0 )
+          if ( ! this.isSingleRecord() )
              diffs.setID( 1 );
           else
              diffs.setID( this.getID() );
@@ -330,8 +337,8 @@ public abstract class CPSRecord {
               // can be considered null as long as the "force" param is not set.
            ! force && ( v instanceof String && ( v.equals("") || ((String) v).equalsIgnoreCase("null") )) ||
 //           ! force   && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
-           ! force && ( v instanceof Integer && ((Integer) v).intValue() <= -1 ) ||
-           ! force && ( v instanceof Float   && ((Float) v).floatValue() <= -1.0 ) ||
+           ! force && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) ||
+           ! force && ( v instanceof Float   && ((Float) v).floatValue() == -1.0 ) ||
            ! force && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
          d.setDatum( null );
       else

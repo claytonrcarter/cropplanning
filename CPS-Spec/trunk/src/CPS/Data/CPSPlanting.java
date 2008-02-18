@@ -370,20 +370,31 @@ public class CPSPlanting extends CPSRecord {
        CPSDatum h = getDatum( PROP_DATE_HARVEST );
        CPSDatum t = getDatum( PROP_DATE_TP );
        CPSDatum w = getDatum( PROP_TIME_TO_TP );
+       CPSDatum a = getDatum( PROP_MAT_ADJUST );
        
        /* Only calculate the planting date if:
         * DATE_PLANT is *NOT* valid AND
         * DATE_HARVEST AND MATURITY *ARE* valid 
         * otherwise just return the planting date or a default */
-       if ( ! p.isValid() && 
-              h.isValid() && m.isValid() ) {
-          getDatum( PROP_DATE_PLANT ).setCalculated( true );
-          return CPSCalculations.calcDatePlantFromDateHarvest( getDateToHarvest(), getMaturityDays() );
-       }
-       else if ( ! p.isValid() && 
-                   t.isValid() && w.isValid() ) {
+       if ( this.isSingleRecord() &&
+            ! p.isValid() && 
+              t.isValid() && w.isValid() ) {
           getDatum( PROP_DATE_PLANT ).setCalculated( true );
           return CPSCalculations.calcDatePlantFromDateTP( getDateToTP(), getTimeToTP() );
+       }
+       else if ( this.isSingleRecord() &&
+                 ! p.isValid() && 
+                   h.isValid() && m.isValid() ) {
+          getDatum( PROP_DATE_PLANT ).setCalculated( true );
+          int matAdjust = getMatAdjust();
+          if ( matAdjust == -1 )
+              matAdjust = 0;
+          int mat = getMaturityDays();
+          if ( w.isValid() )
+              mat += getTimeToTP() * 7;
+          return CPSCalculations.calcDatePlantFromDateHarvest( getDateToHarvest(), 
+                                                               mat,
+                                                               matAdjust );
        }
        else
            return get( PROP_DATE_PLANT, new Date(0) ); 
@@ -399,7 +410,9 @@ public class CPSPlanting extends CPSRecord {
    public Date getDateToTP() { 
       CPSDatum p = getDatum( PROP_DATE_PLANT );
       CPSDatum t = getDatum( PROP_DATE_TP );
+      CPSDatum h = getDatum( PROP_DATE_HARVEST );
       CPSDatum w = getDatum( PROP_TIME_TO_TP );
+      CPSDatum m = getDatum( PROP_MATURITY );
       
       /* If DATE_TP valid, return
        * If DATE_PLANT valid
@@ -408,10 +421,23 @@ public class CPSPlanting extends CPSRecord {
        * Else return null
        * LATER throw DATE_HARVEST into the mix
        */
-      if ( ! t.isValid() &&
+      if ( this.isSingleRecord() &&
+           ! t.isValid() &&
              p.isValid() && w.isValid() ) {
          getDatum( PROP_DATE_TP ).setCalculated( true );
          return CPSCalculations.calcDateTPFromDatePlant( getDateToPlant(), getTimeToTP() );
+      }
+      else if ( this.isSingleRecord() &&
+                ! t.isValid() && 
+                  w.isValid() &&
+                  h.isValid() && m.isValid() ) {
+         getDatum( PROP_DATE_TP ).setCalculated( true );
+         int matAdjust = getMatAdjust();
+         if ( matAdjust == -1 )
+             matAdjust = 0;
+         return CPSCalculations.calcDateTPFromDateHarvest( getDateToHarvest(),
+                                                           getMaturityDays(),
+                                                           matAdjust );
       }
       else
          return get( PROP_DATE_TP, new Date(0) );
@@ -435,17 +461,30 @@ public class CPSPlanting extends CPSRecord {
         * DATE_HARVEST is *NOT* valid AND
         * DATE_PLANTING AND MATURITY *ARE* valid 
         * otherwise just return the harvest date or a default */
-       if ( ! h.isValid() && 
-              p.isValid() && m.isValid() ) {
-           getDatum( PROP_DATE_HARVEST ).setCalculated( true );
-           return CPSCalculations.calcDateHarvestFromDatePlant( getDateToPlant(), getMaturityDays() );
-       }
-       else if ( ! h.isValid() && 
-                   t.isValid() && m.isValid() && w.isValid() ) {
+       if ( this.isSingleRecord() &&
+            ! h.isValid() && 
+              t.isValid() && m.isValid() && w.isValid() ) {
           getDatum( PROP_DATE_HARVEST ).setCalculated( true );
+          int matAdjust = getMatAdjust();
+          if ( matAdjust == -1 )
+              matAdjust = 0;
           return CPSCalculations.calcDateHarvestFromDateTP( getDateToTP(), 
                                                             getMaturityDays(),
-                                                            getTimeToTP() );
+                                                            matAdjust );
+       }
+       else if ( this.isSingleRecord() &&
+                 ! h.isValid() && 
+                   p.isValid() && m.isValid() ) {
+           getDatum( PROP_DATE_HARVEST ).setCalculated( true );
+           int matAdjust = getMatAdjust();
+           if ( matAdjust == -1 )
+               matAdjust = 0;
+           int mat = getMaturityDays();
+           if ( w.isValid() )
+               mat += getTimeToTP() * 7;
+           return CPSCalculations.calcDateHarvestFromDatePlant( getDateToPlant(), 
+                                                                mat, 
+                                                                matAdjust );
        }
        else
            return get(PROP_DATE_HARVEST, new Date(0));
@@ -463,6 +502,8 @@ public class CPSPlanting extends CPSRecord {
       CPSDatum rpb = getDatum( PROP_ROWS_P_BED );
       CPSDatum p = getDatum( PROP_PLANTS_NEEDED );
       CPSDatum ps = getDatum( PROP_INROW_SPACE );
+      CPSDatum ty = getDatum( PROP_TOTAL_YIELD );
+      CPSDatum yf = getDatum( PROP_YIELD_P_FOOT );
       
       /* we don't care if location is valid, this will return the default 
        * bed length if location is inValid */
@@ -473,7 +514,7 @@ public class CPSPlanting extends CPSRecord {
        * if PLANTS_NEEDED, ROWS_P_BED and INROW_SPACE valid 
        */
       if ( ! b.isValid() &&
-             r.isValid() && rpb.isValid() ) {
+             r.isAvailable() && rpb.isAvailable() ) {
          getDatum( PROP_BEDS_PLANT ).setCalculated( true );
          return CPSCalculations.calcBedsToPlantFromRowFtToPlant( getRowFtToPlant(),
                                                                  getRowsPerBed(),
@@ -486,6 +527,15 @@ public class CPSPlanting extends CPSRecord {
                                                                  getInRowSpacing(),
                                                                  getRowsPerBed(),
                                                                  bedLength );
+      }
+      else if ( ! b.isValid() &&
+                  ty.isValid() && yf.isValid() &&
+                  rpb.isValid() ) {
+          getDatum( PROP_BEDS_PLANT ).setCalculated( true );
+         return CPSCalculations.calcBedsToPlantFromTotalYield( getTotalYield(),
+                                                               getYieldPerFoot(),
+                                                               getRowsPerBed(),
+                                                               bedLength );
       }
       else
          return get( PROP_BEDS_PLANT, new Float( -1.0 ) ).floatValue(); 
@@ -503,13 +553,15 @@ public class CPSPlanting extends CPSRecord {
       CPSDatum b = getDatum( PROP_BEDS_PLANT );
       CPSDatum r = getDatum( PROP_ROWFT_PLANT );
       CPSDatum rpb = getDatum( PROP_ROWS_P_BED );
+      CPSDatum ty = getDatum( PROP_TOTAL_YIELD );
+      CPSDatum yf = getDatum( PROP_YIELD_P_FOOT );
       
       /* if PLANTS_NEEDED valid, return
        * if BEDS_PLANT, ROWS_P_BED, INROW_SPACE valid
        * if ROWFT_PLANT and INROW_SPACE valid 
        */
       if ( ! p.isValid() &&
-             b.isAvailable() && rpb.isAvailable() && ps.isAvailable() ) {
+             b.isValid() && rpb.isValid() && ps.isValid() ) {
          getDatum( PROP_PLANTS_NEEDED ).setCalculated( true );
           /* we don't care if location is valid, this will return the default 
            * bed length if location is inValid */
@@ -521,9 +573,16 @@ public class CPSPlanting extends CPSRecord {
                                                                  bedLength );
       }
       else if ( ! p.isValid() && 
-                  r.isAvailable() && ps.isAvailable() ) {
+                  r.isValid() && ps.isValid() ) {
          getDatum( PROP_PLANTS_NEEDED ).setCalculated( true );
          return CPSCalculations.calcPlantsNeededFromRowFtToPlant( getRowFtToPlant(), getInRowSpacing() );
+      }
+      else if ( ! p.isValid() &&
+                  ty.isValid() && yf.isValid() && ps.isValid() ) {
+          getDatum( PROP_PLANTS_NEEDED ).setCalculated( true );
+         return CPSCalculations.calcPlantsNeededFromTotalYield( getTotalYield(),
+                                                                getYieldPerFoot(),
+                                                                getInRowSpacing() );
       }
       else
          return get( PROP_PLANTS_NEEDED, new Integer( -1 ) ).intValue();
@@ -541,13 +600,15 @@ public class CPSPlanting extends CPSRecord {
       CPSDatum p = getDatum( PROP_PLANTS_NEEDED );
       CPSDatum ps = getDatum( PROP_INROW_SPACE );
       CPSDatum b = getDatum( PROP_BEDS_PLANT );
+      CPSDatum ty = getDatum( PROP_TOTAL_YIELD );
+      CPSDatum yf = getDatum( PROP_YIELD_P_FOOT );
       
       /* if ROWFT_PLANT valid, return
        * if BEDS_PLANT and ROWS_P_BED valid
        * if PLANTS_NEEDED and INROW_SPACE valid 
        */
       if ( ! r.isValid() &&
-             b.isAvailable() && rpb.isAvailable() ) {
+             b.isValid() && rpb.isValid() ) {
          getDatum( PROP_ROWFT_PLANT ).setCalculated( true );
           /* we don't care if location is valid, this will return the default 
            * bed length if location is inValid */
@@ -557,10 +618,16 @@ public class CPSPlanting extends CPSRecord {
                                                                  bedLength );
       }
       else if ( ! r.isValid() && 
-                  p.isAvailable() && ps.isAvailable() ) {
+                  p.isValid() && ps.isValid() ) {
          getDatum( PROP_ROWFT_PLANT ).setCalculated( true );
          return CPSCalculations.calcRowFtToPlantFromPlantsNeeded( getPlantsNeeded(),
                                                                   getInRowSpacing() );
+      }
+      else if ( ! r.isValid() && 
+                  ty.isValid() && yf.isValid() ) {
+         getDatum( PROP_ROWFT_PLANT ).setCalculated( true );
+         return CPSCalculations.calcRowFtToPlantFromTotalYield( getTotalYield(),
+                                                                getYieldPerFoot() ); 
       }
       else
          return get( PROP_ROWFT_PLANT, new Integer( -1 )).intValue();

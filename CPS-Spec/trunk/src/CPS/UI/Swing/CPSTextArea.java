@@ -24,6 +24,7 @@ package CPS.UI.Swing;
 
 import CPS.Data.CPSDatum.CPSDatumState;
 import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -43,6 +44,11 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
         setWrapStyleWord( false );
         this.getDocument().addDocumentListener( new CPSDocumentChangeListener(this) );
         
+        // these are taken from http://forum.java.sun.com/thread.jspa?forumID=57&threadID=609727
+        // also make a change in LayoutAssist, set ScrollPane to not focusable
+        this.setFocusTraversalKeys( KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        this.setFocusTraversalKeys( KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null );
+
         // Add actions to make TAB move focus
 //        this.getActionMap().put( nextFocusAction.getValue( Action.NAME ), nextFocusAction );
 //        this.getActionMap().put( prevFocusAction.getValue( Action.NAME ), prevFocusAction );
