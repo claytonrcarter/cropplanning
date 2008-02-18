@@ -18,6 +18,6 @@ Omit the `-r <rev>` if tagging HEAD
     * _Mac_: copy app bundle into `CropPlanning` folder
     * _Windows_: copy exe, main jar and lib directory into `CropPlanning` folder
   # Create archives such that the user will open the archive and see:
-    * _Mac_: the application and other files.  Use Disk Utility to create a disk image from the `CropPlanning` folder 
-    * _Windows_:  a folder `CropPlanning`, which contains the application, jars and other files.  Right click on `CropPlanning` folder and select "7-Zip > Add to archive..."
+    * _Mac_: the application and other files.  *Use Disk Utility* to create a disk image from the `CropPlanning` folder 
+    * _Windows_:  a folder `CropPlanning`, which contains the application, jars and other files.  *Right click* on `CropPlanning` folder and select "7-Zip > Add to archive..."
   # Upload...
