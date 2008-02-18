@@ -8,8 +8,19 @@ svn cp -m <commit message> -r <rev> <repos>/<module>/trunk <repos>/<module>/tags
 Omit the `-r <rev>` if tagging HEAD
   #2 "Switch to" the tag in Netbeans, clean and build.
   # Package files in local CropPlanning/trunk/dist:
-    * _Mac_: use Jar Bundler to create an App Bundle containing the main class jar and all dependency jars.
+    * _Mac_: use Jar Bundler to create an App Bundle containing the main class jar and all dependency jars
+      * set main class
+      * check "Use Mac menubar" (though this seems to not do anything)
+      * set JVM to "1.5+"
+      * under "Classpath and Files", use "Add" to add JARs in lib folder
+      * create bundle named 'CropPlanning'
     * _Windows_: use Lauch4J to create a jar launcher (not a wrapper) the will reside next to the main .jar and includes the ./lib dir in its classpath.
+      * set output filename to 'CropPlanning.exe'
+      * set the next field to './'
+      * check "don't wrap, just launch"
+      * under JRE, set min JVM to '1.5.0'
+      * Under "Classpath", add the main jar and it should auto-add all of the jars in ./lib
+      * if you feel motivated, you can fill out the version information under the "Version Info" tab
   # Create folder structures for distributed archives:
     * create folder: `CropPlanning`
     * _All Platforms_: include:
