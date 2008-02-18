@@ -43,14 +43,16 @@ public class CropPlanning implements Runnable {
        
        mm = new ModuleManager();
 
-       GlobalSettings globSet = mm.getGlobalSettings();
+       CPSGlobalSettings globSet = mm.getGlobalSettings();
        CPSUI ui = mm.getUI();
        ui.addModuleConfiguration( globSet );
        
-       // even with ambiguous references, the setOutputDir saves to the
-       // "backing store" and will be queried whenever another module asks for it
+       // TODO This is no good.  We need to work on a way for modules to 
+       // initialize seperately, possibly we should tell them to via an init()
+       // and they should signal us with an error
        if ( globSet.getFirstTimeRun() )
-           globSet.setOutputDir( ui.showFirstRunDialog( globSet.getOutputDir() ));
+           globSet.setOutputDir( ui.showFirstRunDialog( globSet.getDataOutputDir() ));
+       
        
        CPSDataModel dm = mm.getDM();
        // TODO test to see if data is available and then send a dialog to user if not
@@ -63,7 +65,7 @@ public class CropPlanning implements Runnable {
           CPSDisplayableDataUserModule cm2 = mm.getCoreModule(i);
           System.out.println("DRIVER: Initializing module: " + cm2.getModuleName() );
           // apply global settings
-           cm2.receiveGlobalSettings( mm.getGlobalSettings() );
+//           cm2.receiveGlobalSettings( mm.getGlobalSettings() );
           // apply data source
           cm2.setDataSource(dm);
           // add it to the UI

@@ -32,18 +32,18 @@ public class ModuleManager {
    ArrayList<CPSDataModel>  dmMods;
    ArrayList<CPSDisplayableDataUserModule> coreMods;
    
-   GlobalSettings globalSettings;
+   CPSGlobalSettings globalSettings;
    
    public ModuleManager() {
       uiMods   = new ArrayList<CPSUI>();
       dmMods   = new ArrayList<CPSDataModel>();
       coreMods = new ArrayList<CPSDisplayableDataUserModule>();
       
-      globalSettings = new GlobalSettings();
+      globalSettings = new CPSGlobalSettings();
       
    }
 
-   public GlobalSettings getGlobalSettings() {
+   public CPSGlobalSettings getGlobalSettings() {
        return globalSettings;
    }
    
@@ -53,7 +53,7 @@ public class ModuleManager {
    }
    
    public CPSDataModel getDM() {
-      dmMods.add( (CPSDataModel) loadPlugin( "CPS.Core.DB." + "HSQLDB", getGlobalSettings() ) );
+      dmMods.add( (CPSDataModel) loadPlugin( "CPS.Core.DB." + "HSQLDB" ) );
       return dmMods.get(0);
    }
    
