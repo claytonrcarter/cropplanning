@@ -51,7 +51,7 @@ public class CropDB extends CPSMasterDetailModule implements CPSExportable {
     public void exportData() {
         if ( isDataAvailable() ) {
             CPSExporter exp = new CSV();
-            String fileName = getGlobalSettings().getOutputDir() + 
+            String fileName = CPSGlobalSettings.getDocumentOutputDir() + 
                               System.getProperty( "file.separator" ) +
                               "ExportedCropsAndVars." + exp.getExportFileDefaultExtension();
             exp.exportCropsAndVarieties( fileName, getDataSource().getCropsAndVarietiesAsList() );

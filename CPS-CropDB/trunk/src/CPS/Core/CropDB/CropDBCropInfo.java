@@ -317,7 +317,7 @@ public class CropDBCropInfo extends CPSDetailView {
        if ( diff.getID() == -1 )
           return; // no differences!
        
-       if ( displayedCrop.getCommonIDs().size() > 0 )
+       if ( ! displayedCrop.isSingleRecord() )
           getDataSource().updateCrops( diff, displayedCrop.getCommonIDs() );
        else
           getDataSource().updateCrop( diff );
