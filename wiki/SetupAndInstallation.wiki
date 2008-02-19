@@ -53,8 +53,9 @@ This software requires Java version 1.5 (aka Java 5) or greater.  Java is availa
        _Windows_: You will need to keep the program and it's files together; this means that you cannot just move the '.exe' file, you must keep it in the same directory as the '.jar' file and 'lib' directory.  To install, just drag the folder `CropPlanning` from the archive to a suitable location, such as your desktop.
 
 
-*Step 6*: Open the program
+*Step 7*: Open the program
 
-    Open up the archive, disk image or folder on your hard drive/desktop that contains the program file.  On _Windows_, the program file is `CropPlanning.exe` and on _Mac_ the program file is `CropPlanning`.  Just double click on the program icon!
+    Open up the archive, disk image or folder on your hard drive/desktop that contains the program file.  On _Windows_, the program file is `CropPlanning.exe` and on _Mac_ the program file is `CropPlanning`.  Just double click on the program icon!  (On platforms other than Mac or Windows, you'll have to manually start the program: open a command line, change to the extracted archive directory and issue the command `java -jar CropPlanning.jar`.)
+
 
 For a brief intro on how to use the program, check out the page ProgramUsageIntroduction.
