@@ -1,5 +1,5 @@
 #summary A series of examples and screenshots from the program.  Explanations included.
-#labels Phase-Support,Target-Users
+#labels Phase-Support,Target-Users,Featured
 
 = Examples, Demonstrations and Screenshots =
 
