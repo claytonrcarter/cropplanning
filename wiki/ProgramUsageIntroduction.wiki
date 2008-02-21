@@ -82,7 +82,7 @@ The 'TODOLists' module allows you to create ready-to-print PDF files for *GH see
 
 == Simple Date Adjustments ==
 
-After any date, you can type in a '+' or '-' expression to add or subtract a few days, weeks or months to that date.  Stick a 'd', 'w' or 'm' at the end of the expression to specify *d*ay, *w*eek or *m*onth.
+After any date, you can type in a '+' or '-' expression to add or subtract a few days, weeks or months to that date.  Stick a 'd', 'w' or 'm' at the end of the expression to specify *d* ay, *w* eek or *m* onth.
 
 Examples:
  * "+1" and "+1d" both add one day
