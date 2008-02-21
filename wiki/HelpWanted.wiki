@@ -7,6 +7,18 @@ This project is written BY farmers FOR farmers.  It is free software and, as suc
 
 = Details =
 
+== Testing ==
+
+_Technical skill required:_ low
+
+Anyone with a critical eye and an investigative nature can help out here.  Download and run the software, taking notes about bugs and other things that don't seem to work.  Be sure to keep track of how to "replicate" the problem, or how to make it happen again and again so that we can double check.  Sign up for an account at gmail code and 
+[http://code.google.com/p/cropplanning/issues/list submit issues] for us to work on.
+
+It's *extremely* helpful if you just send in your general impressions: what _do_ you like, what _don't_ you like, what features do you think are *really important*, etc etc.
+
+Also, you can [mailto:cropplanning@gmail.com send us] copies of your digital crop plans (Excel, OpenOffice, or otherwise; they will be kept confidential) and/or descriptions of how you do your crop planning.  This feedback will help us to focus our work on the parts of the program that people really care about.  The more "votes" we get for something, the quicker it will work it's way into the program.
+
+
 == Coding ==
 
 _Technical skill required:_ high
@@ -19,12 +31,6 @@ _Technical skill required:_ medium
 
 We need help creating and maintaining a website.
 
-== Testing ==
-
-_Technical skill required:_ low
-
-Anyone with a critical eye and an investigative nature can help out here.  Download and run the software, taking notes about bugs and other things that don't seem to work.  Be sure to keep track of how to "replicate" the problem, or how to make it happen again and again so that we can double check.  Sign up for an account at gmail code and 
-[http://code.google.com/p/cropplanning/issues/list submit issues] for us to work on.
 
 == Artwork ==
 
