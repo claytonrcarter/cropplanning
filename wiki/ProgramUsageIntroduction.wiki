@@ -1,14 +1,6 @@
 #summary A quick introduction on how to use the program.
 #labels Featured,Phase-Deploy,Target-Users
 
-= Introduction =
-
-This write up covers the program in its early development stages.  Later releases will (hopefully) have more of the rough edges smoothed out and will -- ideally -- not require this sort of walkthrough.
-
-= Requirements =
-
-The program requires the Java Runtime Environment version 1.5 or later.  Any computer than can run Java 1.5 (and the includes most computers) will be able to run this program.
-
 = Caveats =
 
 Remember, this is VERY EARLY release software.  Expect it to crash, lose your data and slit your throat while your sleep.  Any problems that exist will not be fixed unless we hear about them.  Testing is important and WE NEED YOUR HELP to test this software.  Also remember that we have an extensive of improvements that we hope to add sooner AND later and that anything you don't see in here is either on the way or overlooked.  Please [mailto:cropplanning@gmail.com let us know] what you think.
