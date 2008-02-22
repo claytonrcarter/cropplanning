@@ -1,23 +1,18 @@
 #summary A quick introduction on how to use the program.
 #labels Featured,Phase-Deploy,Target-Users
 
-= Caveats =
-
-Remember, this is VERY EARLY release software.  Expect it to crash, lose your data and slit your throat while your sleep.  Any problems that exist will not be fixed unless we hear about them.  Testing is important and WE NEED YOUR HELP to test this software.  Also remember that we have an extensive of improvements that we hope to add sooner AND later and that anything you don't see in here is either on the way or overlooked.  Please [mailto:cropplanning@gmail.com let us know] what you think.
-
-
 = Using the Program =
 
 To learn about how data is "inherited" or shared between crops, varieties and plantings in the program, see the section titled [#Concepts Concepts].
 
 In order to start using the program, you must do three things after opening the program:
 
-== Step 1: Define Crops ==
+== Step 1: Define Crops (_optional_)==
 
 Select "CropDB" from the list of tabs at the top of the window.  Click "New" and enter some data about a crop: its name, rows/bed, row and plant spacing, etc etc.  Click "Save" and you will notice that the crop shows up in the table at the top of the window.
 
 
-== Step 2: Define Varieties ==
+== Step 2: Define Varieties (_optional_)==
 
 Click "New" again.  Now punch in the name of the crop you just defined.  Note that it should automatically complete the name when you start typing it.  Then enter a name for the variety in the "Variety Name" box.  Go ahead and click "Save".  You should see that any data you had entered into the crop will be displayed as part of the variety.  At this point, enter any information that is specific to this variety.  (Perhaps it differs from the data you had entered for the crop.)  This might include maturity days and other information.
 
