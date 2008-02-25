@@ -37,25 +37,29 @@ This software requires Java version 1.5 (aka Java 5) or greater.  Java is availa
 
     _Mac_: The Mac version is distributed as a disk image (a .dmg file).  To open the file, just double click on the .dmg file.  This will open the archive and "mount" it on your desktop as though it were a CD, DVD or hard drive.  Double click on the mounted drive to view the files in the archive.
 
-    _Windows_: The Windows version is distributed as a file archive.  Inside the archive is a directory which contains the "important" files.  There are two options for opening this archive:
+    _Windows_: The Windows version is distributed as a file archive (a .zip file).  Inside the archive is a directory which contains the "important" files.  There are two options for opening this archive:
         # modern Windows computers can simply double click on the .zip file to open it up and view the contents.
         # older Windows computers might not be able to do the double click trick and will have to use a 3rd party archive utility to open the file.  We suggest [http://www.7-zip.org/ 7-Zip].  Open the archive (the .zip file) in 7-Zip and proceed to the next step.
 
 
-*Step 4*: Copy/Install Program (_Optional_)
-
-    This step is _optional_.  You should be able to run the program from the mounted disk image or the file archive with no problems.  If you have trouble doing so, or you just want the program to reside in a particular place on your computer, then proceed with this step.
+*Step 4*: Copy/Install Program (_Optional_ for Macs)
 
     With the archive opened and displayed in a window, simply:
 
-       _Mac_: drag the program file (`CropPlanning`) from the archive to a folder or directory in which want to "install" the program.  For now, do *not* put the program in the 'Applications' folder.
+       _*Mac*_: drag the program file (`CropPlanning`) from the mounted disk image to a folder or directory in which want to "install" the program.
 
-       _Windows_: You will need to keep the program and it's files together; this means that you cannot just move the '.exe' file, you must keep it in the same directory as the '.jar' file and 'lib' directory.  To install, just drag the folder `CropPlanning` from the archive to a suitable location, such as your desktop.
+       For now, do *not* put the program in the 'Applications' folder.  _Note that_ this step is _optional_ for Mac users.  You should be able to run the program from the mounted disk image with no problems.  If you have trouble doing so, or you just want the program to reside in a particular place on your computer, then this step is for you.
+
+       _*Windows*_: just drag the folder `CropPlanning` from the archive to a suitable location, such as your desktop.
+
+       You will need to keep the program and it's files together; this means that you cannot just move the '.exe' file, you must keep it in the same directory as the '.jar' file and 'lib' directory.  (If you didn't understand what I just said, don't worry; just follow the instructions above and you'll be fine.)
 
 
-*Step 7*: Open the program
+*Step 5*: Open the program
 
-    Open up the archive, disk image or folder on your hard drive/desktop that contains the program file.  On _Windows_, the program file is `CropPlanning.exe` and on _Mac_ the program file is `CropPlanning`.  Just double click on the program icon!  (On platforms other than Mac or Windows, you'll have to manually start the program: open a command line, change to the extracted archive directory and issue the command `java -jar CropPlanning.jar`.)
+    Open up the disk image (if you did NOT do Step 4 on a _Mac_) or folder on your hard drive/desktop (if you did Step 4 on either _Mac_ or _Windows_) that contains the program file.  On _Windows_, the program file is `CropPlanning.exe` and on _Mac_ the program file is `CropPlanning`.  Just double click on the program icon!  
+
+   For non-Mac or -Windows users: you'll have to manually start the program.  Open a command line, change to the extracted archive directory and issue the command `java -jar CropPlanning.jar`.
 
 
 For a brief intro on how to use the program, check out the page ProgramUsageIntroduction.
