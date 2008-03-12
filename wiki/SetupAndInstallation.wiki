@@ -62,4 +62,4 @@ This software requires Java version 1.5 (aka Java 5) or greater.  Java is availa
    For non-Mac or -Windows users: you'll have to manually start the program.  Open a command line, change to the extracted archive directory and issue the command `java -jar CropPlanning.jar`.
 
 
-For a brief intro on how to use the program, check out the page ProgramUsageIntroduction.
+For a brief intro on how to use the program, check out the page ProgramUsageIntroduction.  As always, let us know if you have any questions!
