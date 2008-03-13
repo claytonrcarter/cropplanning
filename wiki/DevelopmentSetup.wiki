@@ -1,10 +1,23 @@
-#summary How to get setup to start working w/ the project source code.
-
+#summary Getting set up to work w/ the project source code.
+#labels Target-Developers,Phase-Requirements,Phase-Implementation
 
 
 == Introduction ==
 
-The project has been developed under Netbeans, though it does not require Netbeans to run.  The source is structured as a number of "modules", many of which of which depend on each other.
+The project has been developed under Netbeans, though it does not require Netbeans to run.  The source is structured as a number of "modules", many of which of which depend upon each other.
+
+=== Module List ===
+ 
+|| *Module Name* || *Description* ||
+|| CPS-CVS [_sic_] || Provides incomplete access to CSV files for data storage.  Currently only for import and export. ||
+|| CPS-CropDB || A front-end for creating and modifying entries in the "CropDB" ||
+|| CPS-CropPlans || A front-end for creating and modifying crop plans.  Also provides some at-a-glance statistics. ||
+|| CPS-HSQLDB || Implements a database "back end" for data storage. ||
+|| CPS-Spec || The core APIs and utility classes for the program. ||
+|| CPS-SwingUI || A tabbed UI implemented in Swing. ||
+|| CPS-TODOLists || A simple planting list generator (w/ UI) providing PDF export. ||
+|| CropPlanning || The core or driver of the program.  Very small and simple. ||
+|| TableUtil || Some utility classes relating to tables. ||
 
 
 
@@ -12,13 +25,19 @@ The project has been developed under Netbeans, though it does not require Netbea
 
 === Checking Out Source ===
  
-  The instructions at [http://code.google.com/p/cropplanning/source/checkout the Source page] are incorrect (and we cannot change them).  Please follow these directions:
+  The instructions at [http://code.google.com/p/cropplanning/source/checkout the Source page] are incorrect (and we cannot change them).  Please use this information:
 
+  * For general *checkout*, the repository root path is `http://cropplanning.googlecode.com/svn`
+  * For write access, use the same URL except with `https` instead of `http`.
+  * You will have to checkout _each_ module from the repository.  The URL would be `http://cropplanning.googlecode.com/svn/<module-name>/trunk`
 
+=== Netbeans ===
+
+  If Netbeans is setup properly w/ SVN, you should be able to connect to the repository, select all of the "modules" and check them all out at once.  The trunk branch of each module contains Netbeans project files which can be opened in the Netbeans IDE.  You will probably have to fix some dependencies since I'm still trying to figure out how NB handles all of that and some (perhaps many) of the settings that *I* use might not work for you.
 
 === Module Dependencies ===
 
-When these modules are said to "depend on", we mean that those dependencies need to be listed in the "libraries" section of that projects properties. Right click on the project, select "properties", then "libraries".
+When these modules are said to "depend on", we mean that those dependencies need to be listed in the "libraries" section of that projects properties. Right click on the project, select "properties", then "libraries".  *Note: This list is currently OUT OF DATE.*
 
   * CPS-CVS [_sic_] - Depends on CPS-Spec and javacsv.jar
   * CPS-CropDB - Depends on CPS-Spec and CPS-SwingUI
@@ -31,8 +50,13 @@ When these modules are said to "depend on", we mean that those dependencies need
 
 === External Libraries ===
 
-  * JavaCSV
-  * HSQLDB
-  * iText
-  * JCalendar
-  * JFreeChart
+  * JavaCSV (http://javacsv.sourceforge.net/) - Library for reading and writing CSV text.
+  * HSQLDB (http://hsqldb.org/) - Very fast, embeddable SQL db.
+  * iText (http://www.lowagie.com/iText/) - Library for creating PDF files.
+  * JCalendar (http://www.toedter.com/en/jcalendar/) - Calendar widgets and date choosers.
+  * JFreeChart (http://www.jfree.org/jfreechart/) - Robust charting library.  (Not yet used in program.)
+
+=== Utilities/Misc ===
+
+  * Netbeans (http://www.netbeans.org/) - Unbelievably useful IDE for Java, among others.
+  * Subversion (aka SVN) (http://subversion.tigris.org/) - Version control software.  Needed to work with the code for this project.
