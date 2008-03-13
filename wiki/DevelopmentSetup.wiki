@@ -40,6 +40,8 @@ The project has been developed under Netbeans, though it does not require Netbea
 
 *Notes:* All modules depend upon *CPS-Spec* for the core APIs.  The *CropPlanning* module depends upon *CPS-Spec* as well as _all other modules_.  This is sort of a Netbeans funkiness: all dependencies are copied to the `dist/` folder upon build, so by listing all of the modules here (even though the *CropPlanning* module doesn't technically depend upon all of them) everything will sort of shake out politely upon build and put all of the requisite modules and libraries in the right place.
 
+*Note:* After checkout, module *CropPlanning* must be set as the main project in Netbeans.
+
 || *Module Name* || *Module Dependencies* || *Library Deps* ||
 || CPS-CVS [_sic_] || CPS-Spec || JavaCSV ||
 || CPS-CropDB || CPS-Spec and CPS-CVS || _none_ ||
