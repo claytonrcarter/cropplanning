@@ -1,7 +1,6 @@
 #summary Getting set up to work w/ the project source code.
 #labels Target-Developers,Phase-Requirements,Phase-Implementation
 
-
 == Introduction ==
 
 The project has been developed under Netbeans, though it does not require Netbeans to run.  The source is structured as a number of "modules", many of which of which depend upon each other.
@@ -37,24 +36,34 @@ The project has been developed under Netbeans, though it does not require Netbea
 
 === Module Dependencies ===
 
-When these modules are said to "depend on", we mean that those dependencies need to be listed in the "libraries" section of that projects properties. Right click on the project, select "properties", then "libraries".  *Note: This list is currently OUT OF DATE.*
+  Because of the modular nature in which we've designed this program, many of the modules depend on other modules.  If you're not developing in Netbeans, you need to make sure that these modules all appear in your CLASSPATH.  If you are using Netbeans, these dependencies need to be listed in the "libraries" section of each project's properties.  (Right click on the project, select "properties", then "libraries".)
 
-  * CPS-CVS [_sic_] - Depends on CPS-Spec and javacsv.jar
-  * CPS-CropDB - Depends on CPS-Spec and CPS-SwingUI
-  * CPS-CropPlans? - Depends on CPS-Spec and CPS-SwingUI
-  * CPS-HSQLDB - Depends on TableUtil?, CPS-Spec, CPS-CSV and hsqldb.jar
-  * CPS-Spec - No dependencies
-  * CPS-SwingUI - Depends on CPS-Spec
-  * CropPlanning? - Depends on TableUtil?, CPS-SwingUI, CPS-CropDB, CPS-CropPlans?, CPS-HSQL, CPS-Spec and CPS-CSV
-  * TableUtil? - No dependencies 
+*Notes:* All modules depend upon *CPS-Spec* for the core APIs.  The *CropPlanning* module depends upon *CPS-Spec* as well as _all other modules_.  This is sort of a Netbeans funkiness: all dependencies are copied to the `dist/` folder upon build, so by listing all of the modules here (even though the *CropPlanning* module doesn't technically depend upon all of them) everything will sort of shake out politely upon build and put all of the requisite modules and libraries in the right place.
+
+|| *Module Name* || *Module Dependencies* || *Library Deps* ||
+|| CPS-CVS [_sic_] || CPS-Spec || JavaCSV ||
+|| CPS-CropDB || CPS-Spec and CPS-CVS || _none_ ||
+|| CPS-CropPlans || CPS-Spec and CPS-CVS || _none_ ||
+|| CPS-HSQLDB || TableUtil, CPS-Spec and CPS-CVS || HSQLDB ||
+|| CPS-Spec || _none_ || JCalendar and SwingX ||
+|| CPS-SwingUI || CPS-Spec || SwingX ||
+|| CPS-TODOLists || CPS-Spec || iText and JCalendar ||
+|| CropPlanning || *_all_* || *_all_* ||
+|| TableUtil || _none_ || _none_ ||
+
+
 
 === External Libraries ===
 
-  * JavaCSV (http://javacsv.sourceforge.net/) - Library for reading and writing CSV text.
-  * HSQLDB (http://hsqldb.org/) - Very fast, embeddable SQL db.
-  * iText (http://www.lowagie.com/iText/) - Library for creating PDF files.
-  * JCalendar (http://www.toedter.com/en/jcalendar/) - Calendar widgets and date choosers.
-  * JFreeChart (http://www.jfree.org/jfreechart/) - Robust charting library.  (Not yet used in program.)
+|| *Lib Name* || *URL* || *Description* ||
+|| JavaCSV || http://javacsv.sourceforge.net/ || Library for reading and writing CSV text. ||
+|| HSQLDB || http://hsqldb.org/ || Very fast, embeddable SQL db. ||
+|| iText || http://www.lowagie.com/iText/ || Library for creating PDF files. ||
+|| JCalendar || http://www.toedter.com/en/jcalendar/ || Calendar widgets and date choosers. ||
+|| JFreeChart || http://www.jfree.org/jfreechart/ || Robust charting library.  (Not yet used in program.) ||
+|| SwingX || http://swinglabs.org/ || Numerous new, refined and enhanced Swing components. ||
+
+
 
 === Utilities/Misc ===
 
