@@ -11,6 +11,12 @@ package CPS.Module;
  */
 public class CPSDataModelConstants {
 
+   public static final int RECORD_TYPE_CROP     = 0;
+   public static final int RECORD_TYPE_PLANTING = 1;
+   
+   /*
+    *  PROPERTIES
+    */
    
    /* General info */
    public static final int PROP_CROP_ID = 10;
@@ -52,6 +58,8 @@ public class CPSDataModelConstants {
    public static final int PROP_SPACE_INROW = 51;
    public static final int PROP_SPACE_BETROW = 52;
    public static final int PROP_FLAT_SIZE = 53;
+   public static final int PROP_DIRECT_SEED = 54;
+   public static final int PROP_FROST_HARDY = 55;
 
    /* planting amount info */
    public static final int PROP_BEDS_PLANT    = 60;
@@ -79,5 +87,10 @@ public class CPSDataModelConstants {
    public static final int PROP_CUSTOM3 = 92;
    public static final int PROP_CUSTOM4 = 93;
    public static final int PROP_CUSTOM5 = 94;
+
+   
+   /*
+    * 
+    */
    
 }

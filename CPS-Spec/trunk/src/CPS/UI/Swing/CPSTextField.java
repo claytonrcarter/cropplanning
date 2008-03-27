@@ -85,7 +85,7 @@ public class CPSTextField extends JTextField implements CPSComponent {
        setInitialText(s);
        if      ( c.isInherited() ) {
           this.setBackgroundInherited();
-          this.setToolTipText( "Inherited" );
+          this.setToolTipText( "Inherited from CropDB" );
        }
        else if ( c.isCalculated() ) {
           this.setBackgroundCalculated();

@@ -106,7 +106,7 @@ public class CPSDatum<T> {
       if ( datum == null || ! ( datum instanceof Boolean ))
          return false;
       else 
-         return ((Boolean) datum).booleanValue();
+         return ((CPSBoolean) datum).booleanValue();
    }
    
    public int getDatumAsInt() {

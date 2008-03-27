@@ -21,6 +21,9 @@ package CPS.Module;
 import java.util.ArrayList;
 import javax.swing.table.TableModel;
 import CPS.Data.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  *
@@ -28,6 +31,8 @@ import CPS.Data.*;
  */
 public abstract class CPSDataModel extends CPSModule {
 
+   public abstract int propNumFromPropName( int recordType, String propertyName );
+   public abstract String propNameFromPropNum( int recordType, int propertyNum );
    
    /* Crop Plan methods */
    /* retrieval */
@@ -49,7 +54,8 @@ public abstract class CPSDataModel extends CPSModule {
     * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
     * @see getCropPlan( String plan_name )
     */
-   public abstract TableModel getCropPlan( String plan_name, String sortCol );
+   protected abstract TableModel getCropPlan( String plan_name, String sortCol );
+   public abstract TableModel getCropPlan( String plan_name, int sortProperty );
    /**
     * Same as getCropPlan( String plan_name, String sortCol ) except that
     * the tabular data retrieved is filtered to match a particular character string.  The fields 
@@ -61,19 +67,31 @@ public abstract class CPSDataModel extends CPSModule {
     * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
     * @see getCropPlan( String plan_name, String sortCol )
     */
-   public abstract TableModel getCropPlan( String plan_name, String sortCol, CPSComplexPlantingFilter filter );
-   public abstract TableModel getCropPlan( String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filter );
+   protected abstract TableModel getCropPlan( String plan_name, String sortCol, CPSComplexPlantingFilter filter );
+   public abstract TableModel getCropPlan( String plan_name, int sortProp, CPSComplexPlantingFilter filter );
+   protected abstract TableModel getCropPlan( String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filter );
+   public abstract TableModel getCropPlan( String plan_name, ArrayList<Integer> properties, int sortProp, CPSComplexPlantingFilter filter );
    public abstract CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filter );
    /* create and update */ 
-   public abstract void createCropPlan(String plan_name);
-   public abstract void updateCropPlan( String plan_name );
+   public void createCropPlan( String plan_name ) { 
+      GregorianCalendar gc = new GregorianCalendar();
+      gc.setTime( new Date() );
+      createCropPlan( plan_name, gc.get( Calendar.YEAR ), "" ); 
+   }
+   public abstract void createCropPlan( String planName, int year, String desc );
+   public abstract void updateCropPlan( String planName, int year, String desc );
+   public abstract void deleteCropPlan( String planName );
+   public abstract int getCropPlanYear( String planName );
+   public abstract String getCropPlanDescription( String planName );
    
    /* Planting methods */
    /* retrieval */
    public abstract ArrayList<String> getFieldNameList( String planName );
    public abstract ArrayList<String> getFlatSizeList( String planName );
-   public abstract ArrayList<String> getPlantingDefaultColumns();
-   public abstract ArrayList<String> getPlantingDisplayableColumns();
+   public abstract ArrayList<String> getPlantingDefaultPropertyNames();
+   public abstract ArrayList<Integer> getPlantingDefaultProperties();
+   public abstract ArrayList<String> getPlantingDisplayablePropertyNames();
+   public abstract ArrayList<Integer> getPlantingDisplayableProperties();
    public abstract ArrayList<String[]> getPlantingPrettyNames();
    public abstract ArrayList<String[]> getPlantingShortNames();
    public abstract CPSPlanting getPlanting( String planName, int PlantingID );
@@ -86,8 +104,10 @@ public abstract class CPSDataModel extends CPSModule {
    
    /* Crop and Variety methods */
    /* retrieval */
-   public abstract ArrayList<String> getCropDefaultColumns();
-   public abstract ArrayList<String> getCropDisplayableColumns();
+   public abstract ArrayList<String> getCropDefaultPropertyNames();
+   public abstract ArrayList<String> getCropDisplayablePropertyNames();
+   public abstract ArrayList<Integer> getCropDefaultProperties();
+   public abstract ArrayList<Integer> getCropDisplayableProperties();
    public abstract ArrayList<String[]> getCropPrettyNames();
    public abstract ArrayList<String> getCropNameList();
    public ArrayList<String> getVarietyNameList() { return getVarietyNameList( null, null ); }
@@ -109,19 +129,27 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract TableModel getVarietyTable();
    public abstract TableModel getCropAndVarietyTable();
    
-   public abstract TableModel getCropTable( String sortCol );
-   public abstract TableModel getVarietyTable( String sortCol );
-   public abstract TableModel getCropAndVarietyTable( String sortCol );
+   protected abstract TableModel getCropTable( String sortCol );
+   protected abstract TableModel getVarietyTable( String sortCol );
+   protected abstract TableModel getCropAndVarietyTable( String sortCol );
+   public abstract TableModel getCropTable( int sortProp );
+   public abstract TableModel getVarietyTable( int sortProp );
+   public abstract TableModel getCropAndVarietyTable( int sortProp );
    
-   public abstract TableModel getCropTable( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getVarietyTable( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getCropAndVarietyTable( String sortCol, CPSComplexFilter filter );
+   protected abstract TableModel getCropTable( String sortCol, CPSComplexFilter filter );
+   protected abstract TableModel getVarietyTable( String sortCol, CPSComplexFilter filter );
+   protected abstract TableModel getCropAndVarietyTable( String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropTable( int sortProp, CPSComplexFilter filter );
+   public abstract TableModel getVarietyTable( int sortProp, CPSComplexFilter filter );
+   public abstract TableModel getCropAndVarietyTable( int sortProp, CPSComplexFilter filter );
    
-   public abstract TableModel getCropTable( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getCropAndVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
+   protected abstract TableModel getCropTable( String columns, String sortCol, CPSComplexFilter filter );
+   protected abstract TableModel getVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
+   protected abstract TableModel getCropAndVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
+   public abstract TableModel getCropTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter );
+   public abstract TableModel getVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter );
+   public abstract TableModel getCropAndVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter );
    
-   public abstract void shutdown();
    
    /** An ArrayList of CPSDataModelUsers which will be notified when the database has changed or been updated. */
    protected ArrayList<CPSDataUser> dataListeners = new ArrayList();

@@ -88,11 +88,11 @@ public class CPSComplexPlantingFilter extends CPSComplexFilter {
     public boolean filterOnPlantingMethod() { return filterOnPlantingMeth; }
     public boolean setFilterOnPlantingMethod( boolean b ) { return filterOnPlantingMeth = b; }
     
-    public boolean isDirectSeeded() { return directSeeded; }
-    public boolean setDirectSeeded( boolean b ) { return directSeeded = b; }
+    public boolean filterMethodDirectSeed() { return directSeeded; }
+    public boolean setFilterMethodDirectSeed( boolean b ) { return directSeeded = b; }
     
-    public boolean isTransplanted() { return ! isDirectSeeded(); }
-    public boolean setTransplanted( boolean b ) { return setDirectSeeded( ! b ); }
+    public boolean filterMethodTransplant() { return ! filterMethodDirectSeed(); }
+    public boolean setFilterMethodTransplant( boolean b ) { return setFilterMethodDirectSeed( ! b ); }
     
     /*
      * PLANTING/TP/HARVEST COMPLETED
@@ -148,7 +148,7 @@ public class CPSComplexPlantingFilter extends CPSComplexFilter {
         CPSComplexPlantingFilter ds = new CPSComplexPlantingFilter();
         ds.setViewLimited(true);
         ds.setFilterOnPlantingMethod(true);
-        ds.setDirectSeeded(true);
+        ds.setFilterMethodDirectSeed(true);
         return ds;
     }
     
@@ -156,7 +156,32 @@ public class CPSComplexPlantingFilter extends CPSComplexFilter {
         CPSComplexPlantingFilter tp = new CPSComplexPlantingFilter();
         tp.setViewLimited(true);
         tp.setFilterOnPlantingMethod(true);
-        tp.setTransplanted(true);
+        tp.setFilterMethodTransplant(true);
         return tp;
     }
+    
+    public static CPSComplexPlantingFilter allUnplantedFilter() {
+       CPSComplexPlantingFilter f = new CPSComplexPlantingFilter();
+       f.setViewLimited(true);
+       f.setFilterOnPlanting(true);
+       f.setDonePlanting(false);
+       // not sure about the logic of this next call; I guess it's correct
+       f.setDoneTransplanting(false);
+       return f;
+    }
+    
+    public static CPSComplexPlantingFilter DSUnplantedFilter() {
+       CPSComplexPlantingFilter f = allUnplantedFilter();
+       f.setFilterOnPlantingMethod(true);
+       f.setFilterMethodDirectSeed(true);
+       return f;
+    }
+    
+    public static CPSComplexPlantingFilter TPUnplantedFilter() {
+       CPSComplexPlantingFilter f = allUnplantedFilter();
+       f.setFilterOnPlantingMethod(true);
+       f.setFilterMethodTransplant(true);
+       return f;
+    }
+    
 }

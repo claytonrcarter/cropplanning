@@ -37,7 +37,7 @@ public class CPSDateValidator {
     public static String DATE_FORMAT_SQL = "yyyy-MM-dd";
     
     private ArrayList<String> formatList;
-    private String defaultFormat = DATE_FORMAT_FULLYEAR;
+    private static String defaultFormat = DATE_FORMAT_FULLYEAR;
     
     public CPSDateValidator() {
         formatList = new ArrayList();
@@ -68,11 +68,28 @@ public class CPSDateValidator {
         defaultFormat = f;
     }
     
-    public String format( Date d ) {
+    public static String format( Date d ) {
+       return format( d, defaultFormat );
+    }
+    
+    public static String format( Date d, String format ) {
         if ( d == null )
             return "";
         else
-            return new SimpleDateFormat( defaultFormat ).format( d );
+            return new SimpleDateFormat( format ).format( d );
+    }
+    
+    public static Date simpleParse( String s ) {
+        if ( s.equals( "" ))
+            return null;
+        else
+            try {
+                return new SimpleDateFormat( defaultFormat ).parse( s );
+            }
+            catch ( Exception e ) {
+                e.printStackTrace();
+                return null;
+            }
     }
     
     public Date parse( String s ) {

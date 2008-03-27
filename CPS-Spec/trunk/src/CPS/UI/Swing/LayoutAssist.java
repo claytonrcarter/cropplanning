@@ -56,6 +56,9 @@ public class LayoutAssist {
    
    
    public static void addComponent( JPanel p, int col, int row, JComponent jc ) {
+       addComponent( p, col, row, jc, GridBagConstraints.FIRST_LINE_START );
+   }
+   public static void addComponent( JPanel p, int col, int row, JComponent jc, int align ) {
        
       Insets i = new Insets( 0, 2, 2, 5 );
       GridBagConstraints c = new GridBagConstraints();
@@ -64,12 +67,14 @@ public class LayoutAssist {
       c.gridy = row;
 //      c.gridwidth  = colSpan;
 //       c.gridheight = rowSpan;
-      c.anchor = GridBagConstraints.FIRST_LINE_START;
+      c.anchor = align;
       c.insets = i;
 	
       p.add( jc, c );
       
    }
+   
+   
    
    public static void addButton( JPanel p, int col, int row, AbstractButton b ) {
        addButton( p, col, row, 1, 1, b );

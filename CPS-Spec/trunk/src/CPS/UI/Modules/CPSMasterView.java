@@ -25,6 +25,7 @@ package CPS.UI.Modules;
 import CPS.Data.CPSComplexFilter;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
+import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDataModelUser;
 import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.CPSSearchField;
@@ -36,6 +37,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -47,7 +51,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -69,6 +72,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
                                                MouseListener, 
                                                TableModelListener {
 
+    protected static final String KEY_DISPLAYED_COLUMNS = "DISPLAYED_COLUMNS";
+    protected static final String KEY_DISPLAYED_TABLE = "DISPLAYED_TABLE";
+    
+    
     private JPanel masterListPanel = null;
     protected JPanel jplAboveList = null;
     private JPanel jplList = null;
@@ -80,7 +87,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected CPSTable masterTable;
     protected JPopupMenu pupColumnList;
 //    private ColumnHeaderToolTips headerToolTips = new ColumnHeaderToolTips();
-    private String sortColumn;
+    private int sortColumn = 0;
 //    private JTextField tfldFilter;
     private CPSSearchField tfldFilter;
 //    private String filterString;
@@ -104,10 +111,28 @@ public abstract class CPSMasterView extends CPSDataModelUser
        uiManager = ui;
        filter = new CPSComplexFilter();
 //       filterString = "";
-       setSortColumn( "" );
+//       setSortColumn( CPSDataModelConstants.PROP_ );
        
        buildMainPanel( null );
     }
+    
+//    public abstract int init();
+    public int init() { return 0; }
+    protected int saveState() {
+       getPrefs().put( KEY_DISPLAYED_COLUMNS, getDisplayedColumnListAsString() );
+       getPrefs().put( KEY_DISPLAYED_TABLE, getDisplayedTableName() );
+       return 0;
+    }
+    public int shutdown() {
+       saveState();
+       try {
+          getPrefs().flush();
+       } catch ( Exception e ) { e.printStackTrace(); }
+       return 0;
+    }
+    
+    protected Preferences getPrefs() { return uiManager.getPrefs(); }
+    
     
     protected abstract String getDisplayedTableName();
     protected abstract CPSRecord getDetailsForID( int id );
@@ -284,7 +309,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected JPanel buildFilterComponent( boolean init ) {
         
 //        tfldFilter = new JTextField(10);
-        tfldFilter = new CPSSearchField("Filter");
+       tfldFilter = new CPSSearchField( "Filter" );
+       tfldFilter.setToolTipText( "Only show records matching ALL of these terms.  Leave blank to show everything." );
         tfldFilter.setMaximumSize(tfldFilter.getPreferredSize());
         // HACK! TODO, improve this; possibly by implementing a delay?
         // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
@@ -293,15 +319,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
             public void removeUpdate(DocumentEvent e) { updateFilter(); }
             public void changedUpdate(DocumentEvent evt) {}
        });
-       
-//       btnFilterClear = new JButton( "X" );
-//       btnFilterClear.setMargin( new Insets( 0, 0, 0, 0 ));
-////       btnFilterClear.setMaximumSize( new Dimension( 20, btnFilterClear.getSize().height ));
-//       btnFilterClear.setContentAreaFilled(false);
-//       btnFilterClear.setFocusPainted(false);
-//       btnFilterClear.setBorderPainted(false);
-//       btnFilterClear.addActionListener(this);
-//       btnFilterClear.setToolTipText("Clear filter");
        
        if ( init )
            initFilterPanel();
@@ -353,16 +370,29 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     protected abstract ArrayList<String[]> getColumnPrettyNameMap();
     protected abstract ArrayList<String> getDisplayableColumnList();
-    protected abstract ArrayList<String> getDefaultDisplayableColumnList();
+    protected abstract ArrayList<Integer> getDefaultDisplayableColumnList();
     protected void buildColumnListPopUpMenu() {
        pupColumnList = new JPopupMenu();
       
+       ArrayList<Integer> defaultCols;
+       String savedCols = getPrefs().get( KEY_DISPLAYED_COLUMNS, "" );
+       if ( savedCols.equals( "" ) )
+           defaultCols = getDefaultDisplayableColumnList();
+       else {
+          List<String> tempCols = Arrays.asList( savedCols.trim().split( ", " ) );
+          defaultCols = new ArrayList<Integer>();
+          for ( String s : tempCols )
+//             defaultCols.add( getDataSource().propNumFromPropName( getTypeOfDisplayedRecord(),
+//                                                                   s ));
+             defaultCols.add( new Integer( s ) );
+       }
+
+       
        ArrayList<String[]> columnNames = getColumnPrettyNameMap();
-       ArrayList<String> defaultCols = getDefaultDisplayableColumnList();
        
        // retrieve list of columns, build tuple list w/ column and ISSELECTED
        for ( String[] s : columnNames ) {
-          if ( defaultCols.contains( s[0] ) )
+          if ( defaultCols.contains( getDataSource().propNumFromPropName( getTypeOfDisplayedRecord(), s[0] ) ))
              columnList.add( new ColumnNameStruct( s[0], s[1], true ) );
           else
              columnList.add( new ColumnNameStruct( s[0], s[1], false ) );
@@ -410,14 +440,42 @@ public abstract class CPSMasterView extends CPSDataModelUser
        
     }
     
+    protected void selectColumnForDisplay( String selectedCol ) {
+        for ( ColumnNameStruct c : columnList ) {
+            if ( selectedCol.equalsIgnoreCase( c.columnName ) ) {
+                c.selected = true;
+                break;
+            }
+        } 
+    }
+    
+    protected void toggleColumnForDisplay( String selectedCol ) {
+        
+        for ( ColumnNameStruct c : columnList ) {
+            if ( selectedCol.equalsIgnoreCase( c.columnName ) ) {
+                c.selected = ! c.selected;
+                break;
+            }
+        } 
+        
+    }
     
     
-    protected String getDisplayedColumnList() {
-       String s = "";
+    
+    protected ArrayList<Integer> getDisplayedColumnList() {
+       ArrayList<Integer> l = new ArrayList<Integer>();
        for ( ColumnNameStruct c : columnList ) {
           if ( c.selected )
-             s += c.columnName + ", ";
+             l.add( getDataSource().propNumFromPropName( getTypeOfDisplayedRecord(),
+                                                         c.columnName ) );
        }
+       return l;
+    }
+    protected String getDisplayedColumnListAsString() {
+       String s = "";
+       ArrayList<Integer> l = getDisplayedColumnList();
+       for ( Integer i : l )
+          s += i.intValue() + ", ";
        s = s.substring( 0, s.lastIndexOf(", ") );
        return s;
     }
@@ -456,18 +514,18 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // JTable to display.  Overriding class should do the fancy work of
     // figuring out which table to query, etc.  Returns a TableModel.
     protected abstract TableModel getMasterListData();
-    protected void setSortColumn( String s ) { 
-       if ( s == null ) s = ""; 
-       sortColumn = s.toLowerCase(); 
+    protected void setSortColumn( int prop ) { 
+//       if ( s == null ) s = ""; 
+       sortColumn = prop;
     }
-    protected String getSortColumn() { return sortColumn; }
+    protected int getSortColumn() { return sortColumn; }
     protected CPSComplexFilter getFilter() { return filter; }
     protected void updateFilter() {
         filter.setFilterString( tfldFilter.getText() ); 
         dataUpdated();
     }
 
-    
+    protected abstract int getTypeOfDisplayedRecord();
     public void mouseClicked(MouseEvent evt) {
         JTable table = ((JTableHeader) evt.getSource()).getTable();
         TableColumnModel colModel = table.getColumnModel();
@@ -483,18 +541,25 @@ public abstract class CPSMasterView extends CPSDataModelUser
             return;
         
         if ( evt.getButton() == evt.BUTTON1 && ! evt.isControlDown() ) {
+           if ( getSortColumn() != 0 ) {
+              int propOfClickedColumn = getDataSource().propNumFromPropName( getTypeOfDisplayedRecord(),
+                                                                             table.getColumnName( vColIndex ) );
+              if ( Math.abs( getSortColumn() ) == propOfClickedColumn )
+                 propOfClickedColumn *= -1;
+              setSortColumn( propOfClickedColumn );
+           }
            // TODO: modify the column header to show which column is being sorted
            //table.getTableHeader().getColumn.setBackground( Color.DARK_GRAY );
            // see: http://www.exampledepot.com/egs/javax.swing.table/CustHeadRend.html
-           if ( getSortColumn() != null &&
-                getSortColumn().indexOf( table.getColumnName(vColIndex).toLowerCase() ) != -1 ) {
-              if ( getSortColumn().indexOf( "desc" ) != -1 )
-                   setSortColumn( table.getColumnName(vColIndex) + " asc" );
-              else
-                   setSortColumn( table.getColumnName(vColIndex) + " desc" );
-           }
-           else
-              setSortColumn( table.getColumnName( vColIndex ) );
+//           if ( getSortColumn() != null &&
+//                getSortColumn().indexOf( table.getColumnName(vColIndex).toLowerCase() ) != -1 ) {
+//              if ( getSortColumn().indexOf( "desc" ) != -1 )
+//                   setSortColumn( table.getColumnName(vColIndex) + " asc" );
+//              else
+//                   setSortColumn( table.getColumnName(vColIndex) + " desc" );
+//           }
+//           else
+//              setSortColumn( table.getColumnName( vColIndex ) );
         }
         else if ( evt.getButton() == evt.BUTTON3 || // RIGHT mouse button on Windows
                   evt.getButton() == evt.BUTTON1 && evt.isControlDown() // CTRL + click on Mac
@@ -538,13 +603,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
            // remove the popup- and leave the column name
            selectedCol = selectedCol.replaceFirst( "popup-", "" );
            
-           for ( ColumnNameStruct c : columnList ) {
-              if ( selectedCol.equalsIgnoreCase( c.columnName )) {
-                 c.selected = ! c.selected;
-                 break;
-              }
-           }           
-           
+//           for ( ColumnNameStruct c : columnList ) {
+//              if ( selectedCol.equalsIgnoreCase( c.columnName )) {
+//                 c.selected = ! c.selected;
+//                 break;
+//              }
+//           }           
+           toggleColumnForDisplay( selectedCol );
            updateColumnListPopUpMenu();
            dataUpdated();
            return;
@@ -632,8 +697,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
           btnDupeRecord.setEnabled(true);
           tfldFilter.setEnabled(true);
           
-          if ( selectedIDs.size() > 0 )
+          if ( selectedIDs.size() > 0 ) {
+             // check that selected items are in table
+             // if not, clear selection and display nothing
               setStatus( null );
+          }
           else
               setStatus( "No records selected.  Select item from table above to display detailed information." );
       }

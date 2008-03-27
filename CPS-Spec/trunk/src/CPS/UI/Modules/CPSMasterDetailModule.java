@@ -25,9 +25,10 @@ package CPS.UI.Modules;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSDataModel;
-import CPS.Module.CPSDataModelUser;
+import CPS.Module.CPSModuleSettings;
 import CPS.Module.CPSUI;
 import java.awt.Dimension;
+import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
@@ -41,6 +42,8 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
     private JSplitPane splitPane;
     private CPSDetailView detail;
     private CPSMasterView master;
+    
+    protected Preferences modulePrefs;
 
     private CPSUI mainUI;
     
@@ -97,6 +100,14 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
         master.setDataSource(dm);
         detail.setDataSource(dm);
     }
+
+    protected void initPrefs( Class c ) {
+        modulePrefs = Preferences.userNodeForPackage(c);
+    }
+    
+    protected Preferences getPrefs() {
+        return modulePrefs;
+    }
     
    public Dimension getSize() {
       return splitPane.getPreferredSize();  
@@ -108,4 +119,23 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
       detail.dataUpdated();
    }
 
+   @Override
+    public int init() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    protected int saveState() {
+        master.saveState();
+        detail.saveState();
+        return 0;
+    }
+
+    @Override
+    public int shutdown() {
+        master.shutdown();
+        detail.shutdown();
+        return 0;
+    }
+    
 }

@@ -144,7 +144,8 @@ public class CPSCalculations {
        return (int) ( totalYield / yieldPerFt );
    }
    
-   public static int calcPlantsToStart( int plantsNeeded, double fudgeFactor ) {
+   public static int calcPlantsToStart( int plantsNeeded ) {
+       float fudgeFactor = CPSGlobalSettings.getFudgeFactor();
       return (int) ( plantsNeeded * ( 1 + fudgeFactor ) );
    }
    
@@ -201,8 +202,16 @@ public class CPSCalculations {
    }
    
    public static float calcTotalYieldFromRowFtToPlant( int rowFt, float yieldPerFt ) {
-      return rowFt * yieldPerFt;
+      return precision3( rowFt * yieldPerFt );
 //      return roundQuarter( rowFt * yieldPerFt );
+   }
+   
+   private static float precision3( float f ) {
+       return (float) ((int) ( f * 1000 )) / 1000f;
+   }
+   
+   private static float precision2( float f ) {
+       return (float) ((int) ( f * 100 )) / 100f;
    }
    
    private static float roundQuarter( float f ) {

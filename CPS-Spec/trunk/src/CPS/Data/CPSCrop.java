@@ -49,6 +49,8 @@ public class CPSCrop extends CPSRecord {
    public final int PROP_NOTES = CPSDataModelConstants.PROP_NOTES;
    public final int PROP_SIMILAR = CPSDataModelConstants.PROP_SIMILAR;
 
+   public final int PROP_FROST_HARDY = CPSDataModelConstants.PROP_FROST_HARDY;
+   public final int PROP_DIRECT_SEED = CPSDataModelConstants.PROP_DIRECT_SEED;
    public final int PROP_TIME_TP = CPSDataModelConstants.PROP_TIME_TO_TP;
    public final int PROP_MAT_ADJUST = CPSDataModelConstants.PROP_MAT_ADJUST;
    public final int PROP_ROWS_BED = CPSDataModelConstants.PROP_ROWS_P_BED;
@@ -87,6 +89,8 @@ public class CPSCrop extends CPSRecord {
    private CPSDatum<String> otherRequirements;
    private CPSDatum<String> notes;
    
+   private CPSDatum<CPSBoolean> directSeed;
+   private CPSDatum<CPSBoolean> frostHardy;
    private CPSDatum<Integer> timeToTP;
    private CPSDatum<Integer> maturityAdjust;
    private CPSDatum<Integer> rowsPerBed;
@@ -129,6 +133,8 @@ public class CPSCrop extends CPSRecord {
        otherRequirements = new CPSDatum<String>( "Other Requirements", PROP_OTHER_REQ, "other_req", "" );
        notes = new CPSDatum<String>( "Notes", PROP_NOTES, "notes", "" );
         
+       directSeed = new CPSDatum<CPSBoolean>( "Direct Seeded", PROP_DIRECT_SEED, "direct_seed", new CPSBoolean( null ) );
+       frostHardy = new CPSDatum<CPSBoolean>( "Frost hardy?", PROP_FROST_HARDY, "frost_hardy", new CPSBoolean( null ) );
        timeToTP = new CPSDatum<Integer>( "Time to TP", PROP_TIME_TP, "time_to_tp", new Integer(-1) );
        maturityAdjust = new CPSDatum<Integer>( "Adjust Mat.", PROP_MAT_ADJUST, "mat_adjust", new Integer(-1));
        rowsPerBed = new CPSDatum<Integer>( "Rows/Bed", PROP_ROWS_BED, "rows_p_bed", new Integer(-1) );
@@ -161,6 +167,8 @@ public class CPSCrop extends CPSRecord {
           case PROP_NOTES:           return notes;
           case PROP_OTHER_REQ:       return otherRequirements;
           case PROP_SIMILAR:         return similar;
+          case PROP_DIRECT_SEED:     return directSeed;
+          case PROP_FROST_HARDY:     return frostHardy;
           case PROP_TIME_TP:         return timeToTP;
           case PROP_MAT_ADJUST:      return maturityAdjust;
           case PROP_ROWS_BED:        return rowsPerBed;
@@ -202,6 +210,8 @@ public class CPSCrop extends CPSRecord {
        a.add( PROP_YIELD_PER_WEEK );
        a.add( PROP_CROP_UNIT );
        a.add( PROP_CROP_UNIT_VALUE );
+       a.add( PROP_DIRECT_SEED );
+       a.add( PROP_FROST_HARDY );
        return a;
    }
     
@@ -272,6 +282,32 @@ public class CPSCrop extends CPSRecord {
       set( otherRequirements, e, force );
     }
     
+    public boolean isDirectSeeded() { return get( PROP_DIRECT_SEED, new CPSBoolean(null)).booleanValue(); } 
+    public boolean isTransplanted() { return ! isDirectSeeded(); }
+    public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }   
+    public void setDirectSeeded( String s ) { 
+       if ( s != null && s.equalsIgnoreCase("true") )
+          setDirectSeeded( true );
+       else
+          setDirectSeeded( false );
+    }
+    public void setDirectSeeded( Boolean b ) { setDirectSeeded( b, false ); }
+    public void setDirectSeeded( Boolean b, boolean force ) { set( directSeed, new CPSBoolean(b), force ); }
+    
+    public boolean isFrostHardy() { return get( PROP_FROST_HARDY, new CPSBoolean(false)).booleanValue(); } 
+    public boolean isFrostTender() { return ! isFrostHardy(); }
+    public CPSDatumState getFrostHardyState() { return getStateOf( PROP_FROST_HARDY ); }   
+    public void setFrostHardy( String s ) { 
+       if ( s != null && s.equalsIgnoreCase("true") )
+          setFrostHardy( true );
+       else
+          setFrostHardy( false );
+    }
+    public void setFrostHardy( Boolean b ) { setFrostHardy( b, false ); }
+    public void setFrostHardy( Boolean b, boolean force ) { set( frostHardy, new CPSBoolean(b), force ); }
+    
+    
+    
    public int getTimeToTP() { return getInt( PROP_TIME_TP ); }
    public String getTimeToTPString() { return formatInt( getTimeToTP() ); }
    public CPSDatumState getTimeToTPState() { return getStateOf( PROP_TIME_TP ); }
@@ -328,7 +364,7 @@ public class CPSCrop extends CPSRecord {
    public void setPlanterSetting( String s, boolean force ) { set( planterSetting, s, force ); }
    
    public float getYieldPerFoot() { return getFloat( PROP_YIELD_FOOT ); }
-   public String getYieldPerFootString() { return formatFloat( getYieldPerFoot() ); }
+   public String getYieldPerFootString() { return formatFloat( getYieldPerFoot(), 3 ); }
    public CPSDatumState getYieldPerFootState() { return getStateOf( PROP_YIELD_FOOT ); }
     public void setYieldPerFoot( float f ) { setYieldPerFoot( f, false ); }
    public void setYieldPerFoot( String s ) { setYieldPerFoot( s, false ); }

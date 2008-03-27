@@ -24,6 +24,8 @@
 package CPS.UI.Swing;
 
 import CPS.Data.CPSDateValidator;
+import CPS.Data.CPSRecord;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -31,11 +33,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -44,13 +49,18 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.swingx.autocomplete.ComboBoxCellEditor;
 
 public class CPSTable extends JTable {
    
     private CPSDateValidator dateValidator;
+    private static final Color ROW_SHADE_GRAY_5 = new Color( 242, 242, 242 );
+    private static final Color ROW_SHADE_GRAY_10 = new Color( 229, 229, 229 );
+    private static final Color ROW_SHADE_GRAY = ROW_SHADE_GRAY_10;
     
     public CPSTable() {
         super();
@@ -61,7 +71,7 @@ public class CPSTable extends JTable {
        this.setRowSelectionAllowed( true );
        // allow multiple rows to be selected
        this.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-       
+       this.getTableHeader().setReorderingAllowed(false);
         
         dateValidator = new CPSDateValidator();
         dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
@@ -77,23 +87,37 @@ public class CPSTable extends JTable {
         /* reset column widths for certain column types */
         for ( int colIndex = 0; colIndex < getColumnCount(); colIndex++ ) {
            Class c = getColumnClass(colIndex);
+           
            // Boolean
            if ( c.getName().equals( new Boolean(true).getClass().getName() ) ) {
-               getColumnModel().getColumn( colIndex ).setMaxWidth( 20 );
+              getColumnModel().getColumn( colIndex ).setMaxWidth( 20 );
               getColumnModel().getColumn( colIndex ).setPreferredWidth( 20 );
            }
-           // Integer and Double
-           else if ( c.getName().equals( new Integer(0).getClass().getName() ) ||
-                     c.getName().equals( new Double(0).getClass().getName() ) )
+           // Dates
+           else if ( c.getName().equals( new Date().getClass().getName() ))
+              getColumnModel().getColumn( colIndex ).setPreferredWidth( 100 );
+           // Integer
+           else if ( c.getName().equals( new Integer(0).getClass().getName() ))
               getColumnModel().getColumn( colIndex ).setPreferredWidth( 40 );
+           // Double
+           else if ( c.getName().equals( new Double(0).getClass().getName() ) )
+              getColumnModel().getColumn( colIndex ).setPreferredWidth( 50 );
         }
         
          // install custom table renderes and editors
        for ( int i = 0 ; i < getColumnModel().getColumnCount() ; i++ ) {
+          
+//          System.out.println("CPSTab: Column " + getColumnName(i) + " is a " + getColumnClass(i).getName() );
+          
           // install date renderers and editors on all Date columns
-           if ( getColumnClass( i ).equals( new Date().getClass() ) ) {
-              getColumnModel().getColumn(i).setCellRenderer( new DateCellRenderer() );
-              getColumnModel().getColumn(i).setCellEditor(   new DateCellEditor() );
+          if ( getColumnClass( i ).equals( new Date().getClass() ) ) {
+             getColumnModel().getColumn( i ).setCellRenderer( new DateCellRenderer() );
+             getColumnModel().getColumn( i ).setCellEditor( new DateCellEditor() );
+          }
+          // floating point columns
+          else if ( getColumnClass( i ).equals( new Float( 1f ).getClass() ) ||
+                    getColumnClass( i ).equals( new Double( 1f ).getClass() ) ) {
+             getColumnModel().getColumn( i ).setCellRenderer( new FloatCellRenderer() );
           }
        }
         
@@ -156,8 +180,90 @@ public class CPSTable extends JTable {
         getTableHeader().addMouseMotionListener( tips );
     }
 
+    @Override
+    public Component prepareRenderer( TableCellRenderer renderer, int rowIndex, int vColIndex ) {
+     
+        Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
+        shadeComponentInRow( c, rowIndex );
+        return c;
+    }
     
-    private class DateCellRenderer extends JLabel implements TableCellRenderer {
+    private boolean isRowShaded( int rowIndex ) {
+        return ( (int) rowIndex / 2 ) % 2 == 0;
+    }
+    
+    private Component shadeComponentInRow( Component c, int rowIndex ) {
+      
+        if ( isRowSelected( rowIndex )) 
+            c.setBackground( getSelectionBackground() );
+        else if ( isRowShaded( rowIndex ) )
+            c.setBackground( ROW_SHADE_GRAY );
+        else
+            // If not shaded, match the table's background
+            c.setBackground( getBackground() );
+
+        return c;
+    }
+    
+    
+    private class InsetRenderer extends JLabel implements TableCellRenderer {
+        
+        public InsetRenderer() {
+            super();
+            setOpaque(true);
+            setBorder( BorderFactory.createEmptyBorder( 1, 5, 1, 5 ));
+        }
+        
+        public Component getTableCellRendererComponent( JTable table, Object value,
+                                                        boolean isSelected, boolean hasFocus, 
+                                                        int rowIndex, int vColIndex ) {
+           setText( (String) value );
+           return this;
+        }
+    }
+    
+    private class FloatCellRenderer extends JLabel implements TableCellRenderer {
+//    private class FloatCellRenderer extends InsetRenderer implements TableCellRenderer {
+        
+        public FloatCellRenderer() {
+            super();
+            setOpaque(true);
+        }
+        
+        // This method is called each time a cell in a column
+        // using this renderer needs to be rendered.
+        public Component getTableCellRendererComponent( JTable table, Object value,
+                                                        boolean isSelected, boolean hasFocus, 
+                                                        int rowIndex, int vColIndex ) {
+            // 'value' is value contained in the cell located at (rowIndex, vColIndex)
+    
+            // Configure the component with the specified value
+            // in case, we display a formated string
+           if ( value instanceof Float )
+              setText( CPSRecord.formatFloat( ((Float) value).floatValue(), 3 ) );
+           else if ( value instanceof Double )
+              setText( CPSRecord.formatFloat( ((Double) value).floatValue(), 3 ) );
+           else if ( value == null )
+              setText( "" );
+           else
+              setText( (String) value );
+           
+//            setToolTipText((String)value);
+            
+//            shadeComponentInRow( this, rowIndex );
+            
+            return this;
+        }
+    }
+    
+    private class DateCellRenderer extends InsetRenderer implements TableCellRenderer {
+//    private class DateCellRenderer extends JLabel implements TableCellRenderer {
+        
+        public DateCellRenderer() {
+            super();
+            setOpaque(true);
+        }
+        
         // This method is called each time a cell in a column
         // using this renderer needs to be rendered.
         public Component getTableCellRendererComponent( JTable table, Object value,
@@ -169,9 +275,12 @@ public class CPSTable extends JTable {
             // in case, we display a formated string
             setText( dateValidator.format( (Date) value ));
 //            setToolTipText((String)value);
+            
+//            shadeComponentInRow( this, rowIndex );
+            
             return this;
         }
-    
+        
         // The following methods override the defaults for performance reasons
         public void validate() {}
         public void revalidate() {}
@@ -179,6 +288,21 @@ public class CPSTable extends JTable {
         public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {}
     }
     
+    public static class CPSComboBoxCellEditor extends ComboBoxCellEditor implements TableCellEditor {
+        
+        public CPSComboBoxCellEditor(final JComboBox comboBox) {
+           super( comboBox );
+        }
+    
+        public boolean isCellEditable(EventObject evt) {
+            if (evt instanceof MouseEvent) {
+                // For double-click activation
+                return ((MouseEvent)evt).getClickCount() >= 2;
+            }
+            return true;
+        }
+    }
+       
     private class DateCellEditor extends AbstractCellEditor implements TableCellEditor {
         // This is the component that will handle the editing of the cell value
         JComponent component = new JTextField();
@@ -190,6 +314,7 @@ public class CPSTable extends JTable {
             // Configure the component with the specified value
             // In ths case, we accept a Date and fill the text field with a formated String.
             ( (JTextField) component ).setText( dateValidator.format( (Date) value ));
+
             return component;
         }
 
@@ -201,29 +326,16 @@ public class CPSTable extends JTable {
                 return null;
             
             String dateText = ( (JTextField) component ).getText();
-//            // handles addition of negative numbers
-//            if ( dateText.matches( ".+\\+.+") ) {
-//                String[] s = dateText.split("\\+");
-//                GregorianCalendar cal = new GregorianCalendar();
-//                cal.setTime( dateValidator.parse( s[0].trim() ) );
-//                cal.add( GregorianCalendar.DAY_OF_YEAR, Integer.parseInt( s[1].trim() ));
-//                return cal.getTime();
-//            }
-//            // does NOT handle subtract of negative numbers
-//            else if ( dateText.matches( ".+-.+") ) {
-//                String[] s = dateText.split("-");
-//                // if we split into two, then there was just one -
-//                if ( s.length == 2 ) {
-//                    GregorianCalendar cal = new GregorianCalendar();
-//                    cal.setTime( dateValidator.parse( s[0].trim() ) );
-//                    cal.add( GregorianCalendar.DAY_OF_YEAR, -1 * Integer.parseInt( s[1].trim() ) );
-//                    return cal.getTime();
-//                }
-//                else
-//                    System.err.println("ERROR(CPSTable): Can't understand date:" + dateText + " [Too many '-'s]" );
-//            }
             
             return dateValidator.parse( dateText.trim() );
+        }
+        
+        public boolean isCellEditable(EventObject evt) {
+            if (evt instanceof MouseEvent) {
+                // For double-click activation
+                return ((MouseEvent)evt).getClickCount() >= 2;
+            }
+            return true;
         }
     }
        

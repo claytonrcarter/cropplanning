@@ -67,7 +67,7 @@ public class CPSTextArea extends JTextArea implements CPSComponent {
        setInitialText(s);
        if      ( c.isInherited() ) {
           this.setBackgroundInherited();
-          this.setToolTipText( "Inherited" );
+          this.setToolTipText( "Inherited from CropDB" );
        }
        else if ( c.isCalculated() ) {
           this.setBackgroundCalculated();

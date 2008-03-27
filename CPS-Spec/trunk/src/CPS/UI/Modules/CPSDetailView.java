@@ -26,12 +26,11 @@ import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -55,7 +54,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
     protected JPanel jplDetails;
    
     private JLabel lblChanges, lblStatus = new JLabel();
-    private JButton btnSaveChanges,  btnDiscardChanges;
+    protected JButton btnSaveChanges,  btnDiscardChanges;
    
     private boolean displayRecord = false;
    
@@ -69,6 +68,13 @@ public abstract class CPSDetailView extends CPSDataModelUser
         uiManager = ui;
         buildMainPanel( title );
     }
+    
+//    public abstract int init();
+    public int init() { return 0; }
+    protected abstract int saveState();
+//    public abstract int shutdown();
+    public int shutdown() { return 0; }
+    protected Preferences getPrefs() { return uiManager.getPrefs(); }
     
     protected boolean isRecordDisplayed() { return displayRecord; }
     protected void setRecordDisplayed() { displayRecord = true; }

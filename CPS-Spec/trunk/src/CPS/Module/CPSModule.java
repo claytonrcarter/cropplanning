@@ -3,7 +3,7 @@ package CPS.Module;
 
 public abstract class CPSModule {
 
-    public static final String GLOBAL_DEVEL_VERSION = "0.1.2";
+    public static final String GLOBAL_DEVEL_VERSION = "0.1.3";
     /// handles UI experience and displays contents of modules
     protected final String MOD_TYPE_UI = "UI";
     /// provides core funtionality
@@ -18,15 +18,15 @@ public abstract class CPSModule {
    protected int ModuleVersion_Major;
    protected int ModuleVersion_Minor;
    protected int ModuleVersion_Revision;
-   
-//   protected CPSGlobalSettings globalSettings = null;
+
+   public abstract int init();
+   protected abstract int saveState();
+   public abstract int shutdown();
    
    public String getModuleName() { return ModuleName; }
    public String getModuleType() { return ModuleType; }
    public String getModuleDescription() { return ModuleDescription; }
-   
-//   public CPSGlobalSettings getGlobalSettings() { return globalSettings; }
-   
+      
    public String getModuleVersion() { return ModuleVersion; }
    public String getModuleVersionMajor() { return "" + ModuleVersion_Major; }
    public String getModuleVersionMinor() { return "" + ModuleVersion_Minor; }
@@ -88,8 +88,6 @@ public abstract class CPSModule {
            System.err.println("Module Version error: incorrect version format for module " + ModuleName + ": " + ModuleVersion );
    
    }
-   
-//   public void receiveGlobalSettings( CPSGlobalSettings gs ) { globalSettings = gs; }
    
 
    public boolean verifyVersion( String ver ) {

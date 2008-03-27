@@ -125,18 +125,25 @@ public abstract class CPSRecord {
       return f.floatValue();
    }
    public String formatFloat( float f ) {
-      if ( f == -1f )
-         return "";
-      else
-         return "" + f;
+      return formatFloat( f, -1 );
    }
-//   public String getAsString( int prop ) {
-//      CPSDatum d = getDatum( prop );
-//      if ( isNull( d ))
-//         return "";
-//      else
-//         return get( prop ).toString();
-//   }
+   public static String formatFloat( float n, int precision ) {
+      
+       if      ( n == -1f )
+           return "";
+       else if ( precision < 1 )
+           return "" + n;
+       else {
+          // prepare our multiplcation factor
+          double p = Math.pow( 10, precision );
+          // if there is NO fractional part
+          if ( Math.floor( n ) == n )
+             return "" + (int) n;
+          else
+             return "" + (float) ( (int) ( n * p ) ) / p;
+       }
+       
+   }
    
    public <T> T get( int prop ) {
       CPSDatum d = getDatum( prop );
@@ -262,7 +269,7 @@ public abstract class CPSRecord {
                thatDat = thatRecord.getDatum( prop );
           
           
-//          System.out.print("DEBUG Inheriting " + thisDat.getDescriptor() );
+//          System.out.print("DEBUG Inheriting " + thisDat.getColumnName() );
           /* 
            * IF: this IS NOT valid AND that IS valid
            * THEN: this datum will be inherited
@@ -271,15 +278,15 @@ public abstract class CPSRecord {
            * THEN: ignore this datum, no inheritance needed 
            */
                if ( thisDat.isConcrete() ) {
-//             System.out.println(" SKIPPED");
+//                   System.out.println( " SKIPPED" );
                    continue;
                }
                else if ( ( !thisDat.isValid() || thisDat.isInherited() ) && thatDat.isValid() ) {
-//             System.out.println(" DONE");
+//                   System.out.println( " DONE" );
                    this.inherit( prop, thatDat.getDatum() );
                }
-//          else
-//             System.out.println(" SKIPPED FOR OTHER REASONS");
+//               else
+//                   System.out.println( " SKIPPED FOR OTHER REASONS" );
            }
        }
        
@@ -339,7 +346,8 @@ public abstract class CPSRecord {
 //           ! force   && ( v instanceof String  && ((String) v).equalsIgnoreCase("null") ) ||
            ! force && ( v instanceof Integer && ((Integer) v).intValue() == -1 ) ||
            ! force && ( v instanceof Float   && ((Float) v).floatValue() == -1.0 ) ||
-           ! force && ( v instanceof Date    && ((Date) v).getTime() == 0 ))
+           ! force && ( v instanceof Date    && ((Date) v).getTime() == 0 ) ||
+           ! force && ( v instanceof CPSBoolean && ((CPSBoolean) v).isNull() ))
          d.setDatum( null );
       else
          // if force is true, then we could pass it along to make sure that

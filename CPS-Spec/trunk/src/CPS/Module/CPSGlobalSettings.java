@@ -23,12 +23,13 @@
 
 package CPS.Module;
 
+import CPS.Data.CPSDateValidator;
 import CPS.UI.Swing.LayoutAssist;
-import java.awt.GridBagLayout;
+import com.toedter.calendar.JDateChooser;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Date;
 import java.util.prefs.Preferences;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -53,16 +54,23 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private JComboBox cmbxPrefRowOrBed;
     private String[] prefRowOrBedOptions = new String[]{ PREF_BEDS, PREF_ROWS };
     private static String prefRowOrBedDefault = PREF_BEDS;
+    
     private static final String KEY_ROWBEDLENGTH = "BED_LENGTH";
     private JTextField tfldRowOrBedLength;
     private static int prefRowOrBedLengthDefault = 100;
+
     private static final String KEY_UNITOFLENGTH = "LENGTH_UNIT";
     private JComboBox cmbxPrefUnitLength;
     private String[] prefUnitLengthOptions = new String[]{ PREF_FEET, PREF_METERS };
     private static String prefUnitLengthDefault = PREF_FEET;
+ 
     private static final String KEY_HIGHLIGHTFIELDS = "HIGHLIGHT_FIELDS";
     private JCheckBox ckbxPrefHighlight;
     private static boolean prefHightlightDefault = true;
+    
+    private static final String KEY_FARMNAME = "FARM_NAME";
+    private JTextField tfldFarmName;
+    
     private static final String KEY_OUTPUTDIR = "OUTPUT_DIR";
     private static final String KEY_DOCS_OUTDIR = KEY_OUTPUTDIR;
     private static final String KEY_DATA_OUTDIR = KEY_OUTPUTDIR;
@@ -74,6 +82,19 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private static final String KEY_FIRSTTIME = "FIRST_TIME";
     private static final String KEY_LASTVERSION = "LAST_VERSION";
 
+    private static final String KEY_LASTFROST = "LAST_FROST";
+    private static final String KEY_FIRSTFROST = "FIRST_FROST";
+    private JDateChooser jdtcLastFrost, jdtcFirstFrost;
+    
+    private static final String KEY_FUDGE = "FUDGE_FACTOR";
+    private static final String KEY_FUDGE_HIGH = KEY_FUDGE;
+    private static final String KEY_FUDGE_LOW = KEY_FUDGE;
+    private JTextField tfldFudge, tfldFudgeHigh, tfldFudgeLow;
+    private static float prefFudgeDefault = .20f;
+    private static float prefFudgeHighDefault = prefFudgeDefault;
+    private static float prefFudgeLowDefault = prefFudgeDefault;
+    
+    
     
     public CPSGlobalSettings() {
 
@@ -88,6 +109,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         cmbxPrefUnitLength = new JComboBox( prefUnitLengthOptions );
 
         ckbxPrefHighlight = new JCheckBox();
+        
+        tfldFarmName = new JTextField( 15 );
 
         btnPrefOutputDir = new JButton( "Change Output Directory" );
         btnPrefOutputDir.addActionListener( this );
@@ -96,6 +119,13 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         flchPrefOutputDir.setMultiSelectionEnabled( false );
         flchPrefOutputDir.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 
+        jdtcLastFrost = new JDateChooser();
+        jdtcFirstFrost = new JDateChooser();
+        jdtcLastFrost.setDateFormatString( "MMMMM d" );
+        jdtcFirstFrost.setDateFormatString( "MMMMM d" );
+        
+        tfldFudge = new JTextField(5);
+        
         buildConfigPanel();
 
     }
@@ -160,6 +190,30 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         getGlobalPreferences().putLong( KEY_LASTVERSION, l );
     }
 
+    public static String getFarmName() {
+        return getGlobalPreferences().get( KEY_FARMNAME, "" );
+    }
+    
+    public static Date getLastFrostDate() {
+        return CPSDateValidator.simpleParse( getGlobalPreferences().get( KEY_LASTFROST, "" ));
+    }
+    
+    public static Date getFirstFrostDate() {
+        return CPSDateValidator.simpleParse( getGlobalPreferences().get( KEY_FIRSTFROST, "" ));
+    }
+    
+    public static float getFudgeFactor() {
+        return getGlobalPreferences().getFloat( KEY_FUDGE, prefFudgeDefault );
+    }
+    
+    public static float getFudgeFactorHigh() {
+        return getGlobalPreferences().getFloat( KEY_FUDGE_HIGH, prefFudgeHighDefault );
+    }
+    
+    public static float getFudgeFactorLow() {
+        return getGlobalPreferences().getFloat( KEY_FUDGE_LOW, prefFudgeLowDefault );
+    }
+    
     /*
      * Methods for CPSConfigurable.
      * Used for displaying a dialog to setup the settings.
@@ -182,28 +236,44 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         cmbxPrefUnitLength.setSelectedItem( getMeasurementUnit() );
         ckbxPrefHighlight.setSelected( getHighlightFields() );
         lblPrefOutputDir.setText( getOutputDir() );
+        tfldFarmName.setText( getFarmName() );
+        jdtcLastFrost.setDate( getLastFrostDate() );
+        jdtcFirstFrost.setDate( getFirstFrostDate() );
+        tfldFudge.setText( "" + 100 * getFudgeFactor() );
     }
 
     public void resetConfigurationToDefaults() {
         cmbxPrefRowOrBed.setSelectedItem( prefRowOrBedDefault );
-        tfldRowOrBedLength = new JTextField( "" + prefRowOrBedLengthDefault, 5 );
+        tfldRowOrBedLength.setText( "" + prefRowOrBedLengthDefault );
         cmbxPrefUnitLength.setSelectedItem( prefUnitLengthDefault );
         ckbxPrefHighlight.setSelected( prefHightlightDefault );
         lblPrefOutputDir = new JLabel( flchPrefOutputDir.getFileSystemView().getDefaultDirectory().getAbsolutePath() );
+        tfldFarmName.setText( "" );
+        jdtcLastFrost.setDate( null );
+        jdtcFirstFrost.setDate( null );
+        tfldFudge.setText( "" + 100 * prefFudgeDefault );
     }
 
     public void saveConfiguration() {
         getGlobalPreferences().put( KEY_ROWSORBEDS, cmbxPrefRowOrBed.getSelectedItem().toString() );
+        // TODO check this for improper input
         getGlobalPreferences().putInt( KEY_ROWBEDLENGTH, Integer.parseInt( tfldRowOrBedLength.getText() ) );
         getGlobalPreferences().put( KEY_UNITOFLENGTH, cmbxPrefUnitLength.getSelectedItem().toString() );
         getGlobalPreferences().putBoolean( KEY_HIGHLIGHTFIELDS, ckbxPrefHighlight.isSelected() );
         setOutputDir( lblPrefOutputDir.getText() );
+        getGlobalPreferences().put( KEY_FARMNAME, tfldFarmName.getText() );
+        getGlobalPreferences().put( KEY_LASTFROST, CPSDateValidator.format( jdtcLastFrost.getDate() ) );
+        getGlobalPreferences().put( KEY_FIRSTFROST, CPSDateValidator.format( jdtcFirstFrost.getDate() ));
+        getGlobalPreferences().put( KEY_FUDGE, "" + Float.parseFloat( tfldFudge.getText() ) / 100 );
     }
   
     private void buildConfigPanel() {
 
         initConfigPanel();
 
+        LayoutAssist.addLabel(     configPanel, 0, 0, new JLabel( "Farm Name" ) );
+        LayoutAssist.addTextField( configPanel, 1, 0, tfldFarmName );
+        
 //       cmbxPrefRowOrBed.setToolTipText( "Is your farm primarily based on rows or beds?" );
 //       LayoutAssist.addLabel(    configPanel, 0, 0, new JLabel( "Rows or Beds?" ) );
 //       LayoutAssist.addComboBox( configPanel, 1, 0, cmbxPrefRowOrBed );
@@ -211,6 +281,19 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
        tfldRowOrBedLength.setToolTipText( "Default row or bed length which will be used when none is specifed." );
        LayoutAssist.addLabel(     configPanel, 0, 1, new JLabel( "Default Row or Bed Length:" ) );
        LayoutAssist.addTextField( configPanel, 1, 1, tfldRowOrBedLength );
+       
+       tfldFudge.setToolTipText( "Percetage value (0-100) to add to some calculations to provide a \"margin of error\"." );
+       LayoutAssist.addLabel(     configPanel, 0, 2, new JLabel( "Fudge factor (%)" ));
+       LayoutAssist.addTextField( configPanel, 1, 2, tfldFudge );
+       
+       jdtcLastFrost.setToolTipText( "Average or working date of last spring frost." );
+       LayoutAssist.addLabel(     configPanel, 0, 3, new JLabel( "Date of last spring frost" ));
+       LayoutAssist.addComponent( configPanel, 1, 3, jdtcLastFrost );
+       
+       jdtcLastFrost.setToolTipText( "Average or working date of first fall frost." );
+       LayoutAssist.addLabel(     configPanel, 0, 4, new JLabel( "Date of first fall frost" ));
+       LayoutAssist.addComponent( configPanel, 1, 4, jdtcFirstFrost );
+       
        
 //       cmbxPrefUnitLength.setToolTipText( "Do you measure your plantings in feet or meters?" );
 //       LayoutAssist.addLabel(    configPanel, 0, 2, new JLabel( "Unit of Measure:" ) );
@@ -221,9 +304,9 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 //       ckbxPrefHighlight.setToolTipText( "Highlight fields which are \"inherited\" or \"auto-calculated\"?" );
 //       LayoutAssist.addButton( configPanel, 0, 3, 2, 1, ckbxPrefHighlight );  
 
-       LayoutAssist.addLabelLeftAlign( configPanel, 0, 4, new JLabel( "Output Directory:" ) );
-       LayoutAssist.addLabelLeftAlign( configPanel, 0, 5, 2, 1, lblPrefOutputDir );
-       LayoutAssist.addButton( configPanel,    1, 6, btnPrefOutputDir );
+       LayoutAssist.addLabelLeftAlign( configPanel, 0, 5, new JLabel( "Output Directory:" ) );
+       LayoutAssist.addLabelLeftAlign( configPanel, 0, 6, 2, 1, lblPrefOutputDir );
+       LayoutAssist.addButton( configPanel,    1, 7, btnPrefOutputDir );
 
 //        LayoutAssist.addLabelLeftAlign( configPanel, 0, 0, new JLabel( "Output Directory:" ) );
 //        LayoutAssist.addLabelLeftAlign( configPanel, 0, 1, 2, 1, lblPrefOutputDir );

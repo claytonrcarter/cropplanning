@@ -27,11 +27,14 @@ import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSDateValidator;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Component;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.BorderFactory;
@@ -45,10 +48,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-public class CPSComplexFilterDialog extends JDialog implements ItemListener, ActionListener {
+public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, ActionListener {
 
-    private JPanel jplMain, jplStatus, jplDates, jplButtons;
+    private static final String SHOW_ALL = "Show all";
+    
+    private JPanel jplStatus, jplDates;
     JRadioButton rdoNoLimit, rdoLimit; 
+    JLabel lblPlantingMethod;
+    JRadioButton rdoDS, rdoTP, rdoDSAndTP;
     JLabel lblPlanted;
     JRadioButton rdoPlantYes, rdoPlantNo, rdoPlantAll;
     JLabel lblTPed;
@@ -74,16 +81,17 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
     
     public CPSComplexFilterDialog() {
     
-        super( (JFrame) null, "Set View Limit", true );
+        super( "Set View Limit" );
+        
+        setDescription( "Use these controls to define a " +
+                        "default view filter.  View filters " + 
+                        "are used to \"limit\" the data " +
+                        "which is displayed in the main\ntable." );
         
         savedFilter = new CPSComplexPlantingFilter();
         dateValidator = new CPSDateValidator();
         
-        buildMainPanel();
         rdoNoLimit.doClick();
-//        setComponentsEnabled(false); // disable by default
-        add( jplMain );
-        pack();
         
     }
     
@@ -109,6 +117,9 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         if ( ! rdoNoLimit.isSelected() ) {
             
             f.setViewLimited(true);
+            
+            if ( f.setFilterOnPlantingMethod( ! rdoDSAndTP.isSelected() ))
+                f.setFilterMethodDirectSeed( rdoDS.isSelected() );
             
             /* status */
             if ( f.setFilterOnPlanting( ! rdoPlantAll.isSelected() ))
@@ -138,10 +149,101 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
 
     }
     
-    
-    private void buildMainPanel() {
+    private void fromFilter( CPSComplexPlantingFilter f ) {
         
-        rdoNoLimit = new JRadioButton( "Do not limit; show everything.", true );
+        boolean y, n, a;
+        y = n = a = false;
+        
+        if ( ! f.filterOnPlantingMethod() )
+            a = true;
+        else if ( f.filterMethodDirectSeed() )
+            y = true;
+        else 
+            n = true;
+        
+        rdoDSAndTP.setSelected(a);
+        rdoDS.setSelected(y);
+        rdoTP.setSelected(n);
+        
+        if ( ! f.filterOnPlanting() )
+            a = true;
+        else if ( f.isDonePlanting() )
+            y = true;
+        else
+            n = true;
+        
+        rdoPlantAll.setSelected(a);
+        rdoPlantYes.setSelected(y);
+        rdoPlantNo.setSelected(n);
+        
+        y = n = a = false;
+        if ( ! f.filterOnTransplanting() )
+            a = true;
+        else if ( f.isDoneTransplanting() )
+            y = true;
+        else
+            n = true;
+        
+        rdoTPAll.setSelected(a);
+        rdoTPYes.setSelected(y);
+        rdoTPNo.setSelected(n);
+ 
+        
+        y = n = a = false;
+        if ( ! f.filterOnHarvest() )
+            a = true;
+        else if ( f.isDoneHarvesting() )
+            y = true;
+        else
+            n = true;
+            
+        rdoHarvestAll.setSelected(a);
+        rdoHarvestYes.setSelected(y);
+        rdoHarvestNo.setSelected(n);
+        
+        if ( f.filterOnPlantingDate() ) {
+            dlgPlantRange.setDateRangeSet(true);
+            dlgPlantRange.setStartDate( f.getPlantingRangeStart() );
+            dlgPlantRange.setEndDate( f.getPlantingRangeEnd() );
+        }
+        
+        if ( f.filterOnTPDate() ) {
+            dlgTPRange.setDateRangeSet(true);
+            dlgTPRange.setStartDate( f.getTpRangeStart() );
+            dlgTPRange.setEndDate( f.getTpRangeEnd() );
+        }
+        
+        if ( f.filterOnHarvestDate() ) {
+            dlgHarvestRange.setDateRangeSet(true);
+            dlgHarvestRange.setStartDate( f.getHarvestDateStart() );
+            dlgHarvestRange.setEndDate( f.getHarvestDateEnd() );
+        }   
+        
+        if ( f.isViewLimited() )
+            rdoLimit.doClick();
+        else
+            rdoNoLimit.doClick();
+        
+    }
+
+
+    @Override
+    protected void fillButtonPanel() {
+       
+        btnSetView = new JButton( "Set View" );
+        btnCancel = new JButton( "Cancel" );
+        btnSetView.addActionListener(this);
+        btnCancel.addActionListener(this);
+        addButton( btnSetView );
+        addButton( btnCancel );
+        
+    }
+
+
+    @Override
+    protected void buildContentsPanel() {
+        
+        rdoNoLimit = new JRadioButton( "Do not limit; show everything.", false );
         rdoLimit = new JRadioButton( "<html>Limit view based upon the following<br> criteria:</html>", false );
         rdoNoLimit.addItemListener(this);
         rdoLimit.addItemListener(this);
@@ -150,13 +252,31 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         bgLimit.add( rdoLimit );
         
         
+        JPanel jplMethod = new JPanel();
+        jplMethod.setBorder( BorderFactory.createTitledBorder( "Planting Method" ));
+        jplMethod.setLayout( new GridBagLayout() );
+        
+        rdoDSAndTP = new JRadioButton( "all", true );
+        rdoDS = new JRadioButton( "direct seeded", false );
+        rdoTP = new JRadioButton( "transplanted", false );
+        ButtonGroup bgMethod = new ButtonGroup();
+        bgMethod.add( rdoDSAndTP );
+        bgMethod.add( rdoDS );
+        bgMethod.add( rdoTP );
+        
+        LayoutAssist.addLabel( jplMethod, 0, 0, new JLabel( "Show only:") );
+        LayoutAssist.addButton(jplMethod, 1, 0, rdoDS );
+        LayoutAssist.addButton(jplMethod, 1, 1, rdoTP );
+        LayoutAssist.addButton(jplMethod, 1, 2, rdoDSAndTP );
+        
+        
         jplStatus = new JPanel();
         jplStatus.setBorder( BorderFactory.createTitledBorder( "Status of Planting" ));
         jplStatus.setLayout( new GridBagLayout() );
         
-        LayoutAssist.addLabel( jplStatus, 1, 0, new JLabel("Yes") );
-        LayoutAssist.addLabel( jplStatus, 2, 0, new JLabel("No") );
-        LayoutAssist.addLabel( jplStatus, 3, 0, new JLabel("All") );
+        LayoutAssist.addComponent( jplStatus, 1, 0, new JLabel("Done"), GridBagConstraints.SOUTH );
+        LayoutAssist.addLabel( jplStatus, 2, 0, new JLabel("<html><center>Not<br>Done</center></html>") );
+        LayoutAssist.addLabel( jplStatus, 3, 0, new JLabel("<html><center>Show<br>All</center></html>") );
         
         rdoPlantYes = new JRadioButton();
         rdoPlantNo = new JRadioButton();
@@ -170,10 +290,10 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         bgPlant.add( rdoPlantNo );
         bgPlant.add( rdoPlantAll );
         
-        LayoutAssist.addLabel(  jplStatus, 0, 1, new JLabel( "Has been planted/seeded?" ));
-        LayoutAssist.addButton( jplStatus, 1, 1, rdoPlantYes );
-        LayoutAssist.addButton( jplStatus, 2, 1, rdoPlantNo );
-        LayoutAssist.addButton( jplStatus, 3, 1, rdoPlantAll );
+        LayoutAssist.addLabel(  jplStatus, 0, 1, new JLabel( "Planting" ));
+        LayoutAssist.addComponent( jplStatus, 1, 1, rdoPlantYes, GridBagConstraints.CENTER );
+        LayoutAssist.addComponent( jplStatus, 2, 1, rdoPlantNo,  GridBagConstraints.CENTER );
+        LayoutAssist.addComponent( jplStatus, 3, 1, rdoPlantAll, GridBagConstraints.CENTER );
         
         rdoTPYes = new JRadioButton();
         rdoTPNo = new JRadioButton();
@@ -187,10 +307,10 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         bgTP.add( rdoTPNo );
         bgTP.add( rdoTPAll );
         
-        LayoutAssist.addLabel(  jplStatus, 0, 2, new JLabel( "Has been transplanted?" ));
-        LayoutAssist.addButton( jplStatus, 1, 2, rdoTPYes );
-        LayoutAssist.addButton( jplStatus, 2, 2, rdoTPNo );
-        LayoutAssist.addButton( jplStatus, 3, 2, rdoTPAll );
+        LayoutAssist.addLabel(  jplStatus, 0, 2, new JLabel( "Transplanting" ));
+        LayoutAssist.addComponent( jplStatus, 1, 2, rdoTPYes, GridBagConstraints.CENTER );
+        LayoutAssist.addComponent( jplStatus, 2, 2, rdoTPNo,  GridBagConstraints.CENTER );
+        LayoutAssist.addComponent( jplStatus, 3, 2, rdoTPAll, GridBagConstraints.CENTER );
         
         rdoHarvestYes = new JRadioButton();
         rdoHarvestNo = new JRadioButton();
@@ -204,10 +324,10 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         bgHarvest.add( rdoHarvestNo );
         bgHarvest.add( rdoHarvestAll );
         
-        LayoutAssist.addLabel(  jplStatus, 0, 3, new JLabel( "Has been harvested?" ));
-        LayoutAssist.addButton( jplStatus, 1, 3, rdoHarvestYes );
-        LayoutAssist.addButton( jplStatus, 2, 3, rdoHarvestNo );
-        LayoutAssist.addButton( jplStatus, 3, 3, rdoHarvestAll );
+        LayoutAssist.addLabel(  jplStatus, 0, 3, new JLabel( "Harvest" ));
+        LayoutAssist.addComponent( jplStatus, 1, 3, rdoHarvestYes, GridBagConstraints.CENTER );
+        LayoutAssist.addComponent( jplStatus, 2, 3, rdoHarvestNo,  GridBagConstraints.CENTER );
+        LayoutAssist.addComponent( jplStatus, 3, 3, rdoHarvestAll, GridBagConstraints.CENTER );
         
         
         jplDates = new JPanel();
@@ -216,6 +336,7 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         
         lblPlantDateRange = new JLabel( "Show all" );
         btnPlantDateRange = new JButton( "Set" );
+        btnPlantDateRange.setActionCommand( btnPlantDateRange.getText() + "-Plant" );
         btnPlantDateRange.addActionListener(this);
         dlgPlantRange = new DateRangeDialog( "Planting date range" );
         LayoutAssist.addLabel(           jplDates, 0, 0, new JLabel( "Planting date:" ) );
@@ -224,6 +345,7 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         
         lblTPDateRange = new JLabel( "Show all" );
         btnTPDateRange = new JButton( "Set" );
+        btnTPDateRange.setActionCommand( btnTPDateRange.getText() + "-TP" );
         btnTPDateRange.addActionListener(this);
         dlgTPRange = new DateRangeDialog( "TP date range" );
         LayoutAssist.addLabel(           jplDates, 0, 1, new JLabel( "Transplant date:" ) );
@@ -232,45 +354,24 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         
         lblHarvestDateRange = new JLabel( "Show all" );
         btnHarvestDateRange = new JButton( "Set" );
+        btnHarvestDateRange.setActionCommand( btnHarvestDateRange.getText() + "-Harvest" );
         btnHarvestDateRange.addActionListener(this);
         dlgHarvestRange = new DateRangeDialog( "Harvest date range" );
         LayoutAssist.addLabel(           jplDates, 0, 2, new JLabel( "Harvest date:" ) );
         LayoutAssist.addLabelLeftAlign( jplDates, 1, 2, lblHarvestDateRange );
         LayoutAssist.addButton(          jplDates, 2, 2, btnHarvestDateRange );
         
-        jplButtons = new JPanel();
-        jplButtons.setLayout( new BoxLayout( jplButtons, BoxLayout.LINE_AXIS ) );
-        btnSetView = new JButton( "Set View" );
-        btnCancel = new JButton( "Cancel" );
-        btnSetView.addActionListener(this);
-        btnCancel.addActionListener(this);
-        jplButtons.add( Box.createHorizontalGlue() );
-        jplButtons.add( btnSetView );
-        jplButtons.add( btnCancel );
         
-        
-        
-        jplMain = new JPanel();
-        jplMain.setLayout( new BoxLayout( jplMain, BoxLayout.PAGE_AXIS ) );
-        
-        JLabel l = new JLabel( "<html>Use these controls to define a<br>" +
-                                 "default view filter.  View filters<br>" +
-                                 "are used to \"limit\" the data<br>" +
-                                 "which is displayed in the maine table.</html>" );
-        l.setAlignmentX(Component.LEFT_ALIGNMENT);
-        jplMain.add( l );
         rdoNoLimit.setAlignmentX(Component.LEFT_ALIGNMENT);
-        jplMain.add( rdoNoLimit );
+        add( rdoNoLimit );
         rdoLimit.setAlignmentX(Component.LEFT_ALIGNMENT);
-        jplMain.add( rdoLimit );
+        add( rdoLimit );
+        jplMethod.setAlignmentX( Component.LEFT_ALIGNMENT );
+        add( jplMethod );
         jplStatus.setAlignmentX(Component.LEFT_ALIGNMENT);
-        jplMain.add( jplStatus );
+        add( jplStatus );
         jplDates.setAlignmentX(Component.LEFT_ALIGNMENT);
-        jplMain.add( jplDates );
-        jplButtons.setAlignmentX(Component.LEFT_ALIGNMENT);
-        jplMain.add( jplButtons );
-        
-        
+        add( jplDates );
         
     }
 
@@ -284,6 +385,10 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
     }
     
     private void setComponentsEnabled( boolean enable ) {
+        rdoDSAndTP.setEnabled(enable);
+        rdoDS.setEnabled(enable);
+        rdoTP.setEnabled(enable);
+        
         rdoPlantYes.setEnabled(enable);
         rdoPlantNo.setEnabled( enable );
         rdoPlantAll.setEnabled( enable );
@@ -310,25 +415,34 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
         }
         else if ( action.equalsIgnoreCase( btnCancel.getText() )) {
             setVisible(false);
+            this.fromFilter( savedFilter );
         }
-        else if ( action.equalsIgnoreCase( btnPlantDateRange.getText() )) {
+        else if ( action.equalsIgnoreCase( btnPlantDateRange.getActionCommand() )) {
             dlgPlantRange.setVisible(true);
             if ( dlgPlantRange.isDateRangeSet() )
                 this.lblPlantDateRange.setText( dateValidator.format( dlgPlantRange.getStartDate() ) + " - " +
                                                 dateValidator.format( dlgPlantRange.getEndDate() ) );
-            // now do something w/ the dates
+            else
+                this.lblPlantDateRange.setText( SHOW_ALL );
+            this.pack();
         }
-        else if ( action.equalsIgnoreCase( btnTPDateRange.getText() )) {
+        else if ( action.equalsIgnoreCase( btnTPDateRange.getActionCommand() )) {
             dlgTPRange.setVisible(true);
-            this.lblTPDateRange.setText( dateValidator.format( dlgTPRange.getStartDate() ) + " - " +
-                                         dateValidator.format( dlgTPRange.getEndDate() ) );
-            // now do something w/ the dates
+            if ( dlgTPRange.isDateRangeSet() )
+                this.lblTPDateRange.setText( dateValidator.format( dlgTPRange.getStartDate() ) + " - " +
+                                             dateValidator.format( dlgTPRange.getEndDate() ) );
+            else
+                this.lblTPDateRange.setText( SHOW_ALL );
+            this.pack();
         }
-        else if ( action.equalsIgnoreCase( btnHarvestDateRange.getText() )) {
+        else if ( action.equalsIgnoreCase( btnHarvestDateRange.getActionCommand() )) {
             dlgHarvestRange.setVisible(true);
-            this.lblHarvestDateRange.setText( dateValidator.format( dlgHarvestRange.getStartDate() ) + " - " +
-                                              dateValidator.format( dlgHarvestRange.getEndDate() ) );
-            // now do something w/ the dates
+            if ( dlgHarvestRange.isDateRangeSet() )
+                this.lblHarvestDateRange.setText( dateValidator.format( dlgHarvestRange.getStartDate() ) + " - " +
+                                                  dateValidator.format( dlgHarvestRange.getEndDate() ) );
+            else
+                this.lblHarvestDateRange.setText( SHOW_ALL );
+            this.pack();
         }
         
     }
@@ -342,26 +456,21 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
      * 
      * 
      */
-    public class DateRangeDialog extends JDialog implements ItemListener, ActionListener {
+    public class DateRangeDialog extends CPSDialog implements ItemListener, ActionListener, PropertyChangeListener {
         
         private Date startDate, endDate;
         private boolean dateRangeSet;
-        private JPanel jplMain, jplButtons;
         private JRadioButton rdoAllDates, rdoLimitDates;
         private JDateChooser startDateChooser, endDateChooser;
         private JButton btnSetRange, btnCancel;
         
         public DateRangeDialog( String title ) {
             
-            super( (JFrame) null, title, true );
+            super( title );
             
             setDateRangeSet( false );
             
-            buildMainPanel();
             rdoAllDates.doClick();
-//            setComponentsEnabled(false);
-            add(jplMain);
-            pack();
             
         }
 
@@ -374,14 +483,19 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
 
         public void setStartDate( Date startDate ) { this.startDate = startDate; }
         private Date getStartDate() { return startDate; }
+
+        protected void fillButtonPanel() {
+            btnSetRange = new JButton( "Set Range" );
+            btnCancel = new JButton( "Cancel" );
+            btnSetRange.addActionListener( this );
+            btnCancel.addActionListener( this );
+            addButton( btnSetRange );
+            addButton( btnCancel );
+        }
         
-        
-        private void buildMainPanel() {
+        protected void buildContentsPanel() {
             
-            jplMain = new JPanel();
-            jplMain.setLayout( new GridBagLayout() );
-            
-            rdoAllDates = new JRadioButton( "Display all dates.", true );
+            rdoAllDates = new JRadioButton( "Display all dates.", false );
             rdoLimitDates = new JRadioButton( "Limit view to the following date range:", false );
             rdoAllDates.addItemListener(this);
             rdoLimitDates.addItemListener(this);
@@ -391,29 +505,22 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
             
             startDateChooser = new JDateChooser();
             endDateChooser = new JDateChooser();
+            startDateChooser.addPropertyChangeListener(this);
+            endDateChooser.addPropertyChangeListener(this);
             
-            btnSetRange = new JButton( "Set Range" );
-            btnCancel = new JButton( "Cancel" );
-            btnSetRange.addActionListener( this );
-            btnCancel.addActionListener( this );
+            JPanel jp = new JPanel();
+            jp.setLayout( new GridBagLayout() );
+
+            LayoutAssist.addButton( jp, 0, 0, 2, 1,  rdoAllDates );
+            LayoutAssist.addButton( jp, 0, 1, 2, 1, rdoLimitDates );
             
+            LayoutAssist.addLabel(    jp, 0, 2, new JLabel( "Show dates after" ));
+            LayoutAssist.addSubPanel( jp, 1, 2, 1, 1, startDateChooser );
             
-            LayoutAssist.addButton( jplMain, 0, 0, 2, 1,  rdoAllDates );
-            LayoutAssist.addButton( jplMain, 0, 1, 2, 1, rdoLimitDates );
+            LayoutAssist.addLabel(    jp, 0, 3, new JLabel( "Show dates before" ));
+            LayoutAssist.addSubPanel( jp, 1, 3, 1, 1, endDateChooser );
             
-            LayoutAssist.addLabel(    jplMain, 0, 2, new JLabel( "Show dates after" ));
-            LayoutAssist.addSubPanel( jplMain, 1, 2, 1, 1, startDateChooser );
-            
-            LayoutAssist.addLabel(    jplMain, 0, 3, new JLabel( "Show dates before" ));
-            LayoutAssist.addSubPanel( jplMain, 1, 3, 1, 1, endDateChooser );
-            
-            jplButtons = new JPanel();
-            jplButtons.setLayout( new BoxLayout( jplButtons, BoxLayout.LINE_AXIS ));
-            jplButtons.add( Box.createHorizontalGlue() );
-            jplButtons.add( btnSetRange );
-            jplButtons.add( btnCancel );
-            
-            LayoutAssist.addSubPanel( jplMain, 0, 4, 2, 1, jplButtons );
+            add(jp);
             
         }
         
@@ -443,11 +550,28 @@ public class CPSComplexFilterDialog extends JDialog implements ItemListener, Act
             }
             else if ( action.equalsIgnoreCase( btnCancel.getText() ) ) {
                 setVisible( false );
+                // TODO revert to initial state
             }
         
         }
+
+        public void propertyChange( PropertyChangeEvent arg0 ) {
+            
+            if      ( arg0.getSource() == startDateChooser ) {
+                endDateChooser.setMinSelectableDate( startDateChooser.getDate() );
+            }
+            else if ( arg0.getSource() == endDateChooser ) {
+                startDateChooser.setMaxSelectableDate( endDateChooser.getDate() );
+            }
+            
+        }
         
-        
+    }
+    
+    // For testing.
+    public static void main(String[] args) {        
+        new CPSComplexFilterDialog().setVisible(true);
+       System.exit( 0 );
     }
     
 }
