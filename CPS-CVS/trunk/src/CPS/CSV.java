@@ -245,12 +245,8 @@ public class CSV extends CPSDataModel implements CPSExporter {
    public ArrayList<String> getListOfCropPlans() { return null; }
    public ArrayList<String> getCropNameList() { return null; }
    
-   public void createNewCropPlan(String plan_name) {}
-   public void retrieveCropPlan(String plan_name) {}
-   public void filterCropPlan(String plan_name, String filter) {}
    public TableModel getCropTable() { return null; }
    public TableModel getVarietyTable() { return null; }
-   public void shutdown() {}
    
    public void updateCrop(CPSCrop crop) {}
    public CPSCrop createCrop(CPSCrop crop) { return null; }
@@ -265,8 +261,13 @@ public class CSV extends CPSDataModel implements CPSExporter {
    public CPSCrop getVarietyInfo(String cropName, String varName) { return null; }
    public CPSCrop getCropInfo(int CropID) { return null; }
 
-   public void createCropPlan(String plan_name) {}
-   public void updateCropPlan(String plan_name) {}
+   public void createCropPlan(String plan_name, int year, String desc) {}
+   public void updateCropPlan(String plan_name, int year, String desc) {}
+   public void deleteCropPlan(String plan_name) {}
+   public String getCropPlanDescription( String planName ) { return null; }
+   public int getCropPlanYear( String planName ) { return -1; }
+   
+   
    public TableModel getCropPlan(String plan_name) { return null; }
    public TableModel getCropPlan(String plan_name, String sortCol) { return null; }
    public TableModel getCropPlan(String plan_name, String sortCol, CPSComplexPlantingFilter filterString) { return null; }
@@ -305,17 +306,17 @@ public class CSV extends CPSDataModel implements CPSExporter {
     }
 
     @Override
-    public ArrayList<String> getPlantingDisplayableColumns() {
+    public ArrayList<String> getPlantingDisplayablePropertyNames() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ArrayList<String> getCropDisplayableColumns() {
+    public ArrayList<String> getCropDisplayablePropertyNames() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ArrayList<String> getPlantingDefaultColumns() {
+    public ArrayList<String> getPlantingDefaultPropertyNames() {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
@@ -325,7 +326,7 @@ public class CSV extends CPSDataModel implements CPSExporter {
     }
 
     @Override
-    public ArrayList<String> getCropDefaultColumns() {
+    public ArrayList<String> getCropDefaultPropertyNames() {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
@@ -380,6 +381,111 @@ public class CSV extends CPSDataModel implements CPSExporter {
     public ArrayList<String> getFlatSizeList( String planName ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
+
+    @Override
+    public int init() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    protected int saveState() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    public int shutdown() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+   @Override
+   public TableModel getCropAndVarietyTable( int sortProp ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropAndVarietyTable( int sortProp, CPSComplexFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropAndVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public ArrayList<Integer> getCropDefaultProperties() {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public ArrayList<Integer> getCropDisplayableProperties() {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropPlan( String plan_name, int sortProperty ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropPlan( String plan_name, int sortProp, CPSComplexPlantingFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropPlan( String plan_name, ArrayList<Integer> properties, int sortProp, CPSComplexPlantingFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropTable( int sortProp ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropTable( int sortProp, CPSComplexFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getCropTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public ArrayList<Integer> getPlantingDefaultProperties() {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public ArrayList<Integer> getPlantingDisplayableProperties() {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getVarietyTable( int sortProp ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getVarietyTable( int sortProp, CPSComplexFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public TableModel getVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public String propNameFromPropNum( int recordType, int propertyNum ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
+
+   @Override
+   public int propNumFromPropName( int recordType, String propertyName ) {
+      throw new UnsupportedOperationException( "Not supported yet." );
+   }
    
     
     
