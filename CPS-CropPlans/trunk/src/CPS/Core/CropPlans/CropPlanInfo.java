@@ -485,6 +485,15 @@ public class CropPlanInfo extends CPSDetailView {
 
       uiManager.signalUIChanged();
    }
+
+   @Override
+   protected void buildBelowDetailsPanel() {
+      super.buildBelowDetailsPanel();
+      btnSaveChanges.setText( "Save & Recalculate" );
+   }
+   
+   
+   
    
    protected void updateAutocompletionComponents() {
        tfldCropName.updateAutocompletionList( getDataSource().getCropNameList(),
@@ -505,5 +514,12 @@ public class CropPlanInfo extends CPSDetailView {
          updateAutocompletionComponents();
       }
    }
+
+    @Override
+    protected int saveState() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
     
+   
+   
 }

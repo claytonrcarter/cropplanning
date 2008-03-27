@@ -37,6 +37,8 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
       
       //addRequirment( "CPSDriver", "0.1.0" );
       
+      initPrefs( CropPlans.class );
+      
       setMasterView( new CropPlanList( this ) );
       setDetailView( new CropPlanInfo( this ) );
       
@@ -65,5 +67,4 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
         return "Selected crop plan";
     }
     
-   
 }
