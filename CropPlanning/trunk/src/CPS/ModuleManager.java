@@ -135,6 +135,11 @@ public class ModuleManager {
     }
 
    void shutdownModules() {
+      for ( CPSModule mod : coreMods )
+          try {
+              System.out.println( "Shutting down module: " + mod.getModuleName() );
+              mod.shutdown();
+          } catch ( UnsupportedOperationException ignore ) {}
       dmMods.get(0).shutdown();
    }
 }
