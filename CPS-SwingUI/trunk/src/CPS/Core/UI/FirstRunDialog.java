@@ -23,22 +23,20 @@
 
 package CPS.Core.UI;
 
+import CPS.UI.Swing.CPSDialog;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 
-public class FirstRunDialog extends JDialog implements ActionListener {
+public class FirstRunDialog extends CPSDialog implements ActionListener {
     
     String defaultDirectory;
     JPanel jplContents;
@@ -47,61 +45,59 @@ public class FirstRunDialog extends JDialog implements ActionListener {
     JButton btnChoose, btnDone;
     
     public FirstRunDialog( String title, String defaultDir ) {
-        super( (JFrame) null, title, true );
+        
+        super( title );
+        setTitle( "Welcome to Crop Planning Software" );
+        
+        setDescription( "It appears that this is your first time running " + 
+                        "this program.  Please select the folder or directory " +
+                        "where you would like this program to store it's " +
+                        "data.  (You can change this later.)  If this is " +
+                        "not the first time you've run this program, then " +
+                        "it seems that your settings (but not necessarily " +
+                        "your data) have been lost.  Just choose the folder " +
+                        "or directory you where your data files are stored.  " +
+                        "(The data files have names that start with \"CPSdb\".)" );
         
         defaultDirectory = defaultDir;
-        buildMainPanel();
+        flchOutDir.setSelectedFile( new File( defaultDirectory ));
+        lblOutDir.setText( flchOutDir.getSelectedFile().getAbsolutePath() );
         
-        add( jplContents );
-        pack();
         
     }
 
-    private void buildMainPanel() {
+    protected void buildContentsPanel() {
         
         jplContents = new JPanel();
         jplContents.setLayout( new BoxLayout( jplContents, BoxLayout.PAGE_AXIS ) );
-        jplContents.setBorder( BorderFactory.createTitledBorder( "Welcome to Crop Planning Software" ));
+        jplContents.setBorder( BorderFactory.createEmptyBorder( 0, 10, 0, 10 ) );
         
-        String s = "";
-        s += "<html><center>It appears that this is your first time running<br> ";
-        s += "this program.  Please select the <b>folder or directory</b> <br>";
-        s += "where you would like this program to store it's data. <br>";
-        s += "(<i>You can change this later.</i>)  If this is <b>not</b> the <br>";
-        s += "first time you've run this program, then it seems <br>";
-        s += "that your settings (but not necessarily your data) <br>";
-        s += "have been lost.  Just choose the folder or directory <br>";
-        s += "you where you data files are stored.  (The data files  <br>";
-        s += "have names that start with \"CPSdb\".)<br><br>";
-        s += "";
-        s += "</center></html>";
-        
-        JLabel lblWelcome = new JLabel( s );
-        lblWelcome.setAlignmentX( Component.CENTER_ALIGNMENT );
-//        lblWelcome.setMaximumSize(   new Dimension( 350, 500 ));
-//        lblWelcome.setPreferredSize( new Dimension( 350, 50 ));
-        jplContents.add( lblWelcome );
-                
         JLabel lblOutDisp = new JLabel( "Output directory:" );
         lblOutDisp.setAlignmentX( Component.RIGHT_ALIGNMENT );
         jplContents.add( lblOutDisp );
         
         flchOutDir = new JFileChooser();
         flchOutDir.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        flchOutDir.setSelectedFile( new File( defaultDirectory ));
+//        flchOutDir.setSelectedFile( new File( defaultDirectory ));
         
-        lblOutDir = new JLabel( flchOutDir.getSelectedFile().getAbsolutePath() );
+//        lblOutDir = new JLabel( flchOutDir.getSelectedFile().getAbsolutePath() );
+        lblOutDir = new JLabel();
         lblOutDir.setAlignmentX( Component.CENTER_ALIGNMENT );
         jplContents.add( lblOutDir );
         
-        btnChoose = new JButton( "Choose Output Directory" );
-        btnChoose.addActionListener( this );
-        btnChoose.setAlignmentX( Component.CENTER_ALIGNMENT );
-        jplContents.add( btnChoose );
+        add( jplContents );
         
+    }
+    
+    protected void fillButtonPanel() {
+
+        btnChoose = new JButton( "Choose Output Directory" );
         btnDone = new JButton( "Done" );
+        
+        btnChoose.addActionListener( this );
         btnDone.addActionListener( this );
-        btnDone.setAlignmentX( Component.CENTER_ALIGNMENT );
+        
+        jplContents.add( btnChoose );
         jplContents.add( btnDone );
         
     }
@@ -123,6 +119,11 @@ public class FirstRunDialog extends JDialog implements ActionListener {
         else if ( action.equalsIgnoreCase( btnDone.getText() )) {
             this.setVisible(false);
         }
+    }
+    
+    // For testing
+    public static void main(String[] args) {        
+        new FirstRunDialog( "Title", "." ).setVisible(true);
     }
     
 }

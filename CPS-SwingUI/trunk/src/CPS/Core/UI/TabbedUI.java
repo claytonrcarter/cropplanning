@@ -80,7 +80,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
      */
     public TabbedUI() {	
        
-       setModuleName( "CPS" );
+       setModuleName( "CPSTabbedUI" );
        setModuleType( "UI" );
        setModuleVersion( GLOBAL_DEVEL_VERSION );
        
@@ -99,7 +99,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
      */
     public void showUI() {
        
-       fm.getFrame().setTitle( getModuleName() );
+       fm.getFrame().setTitle( "CropPlanning" );
        
        fm.getFrame().setJMenuBar( buildMenuBar() );
        
@@ -322,6 +322,22 @@ public class TabbedUI extends CPSUI implements ActionListener {
       
    }
    
+   
+   @Override
+    public int init() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    protected int saveState() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    public int shutdown() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+    
    
 }
 
