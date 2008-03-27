@@ -39,6 +39,8 @@ public class CropDB extends CPSMasterDetailModule implements CPSExportable {
        setModuleType( "Core" );
        setModuleVersion( GLOBAL_DEVEL_VERSION );
        
+       initPrefs( CropDB.class );
+       
        setMasterView( new CropDBCropList( this ) );
        setDetailView( new CropDBCropInfo( this ) );
        
@@ -65,7 +67,6 @@ public class CropDB extends CPSMasterDetailModule implements CPSExportable {
     public String getExportName() {
         return "Crops and varieties from " + getModuleName();
     }
-    
-    
+
     
 }

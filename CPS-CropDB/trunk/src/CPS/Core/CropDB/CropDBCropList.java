@@ -40,8 +40,14 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
     CropDBCropList( CPSMasterDetailModule mdm ) {
        super(mdm);
-       setSortColumn("crop_name");
+       setSortColumn( CPSDataModelConstants.PROP_CROP_NAME );
     }
+
+   @Override
+   protected int getTypeOfDisplayedRecord() {
+      return CPSDataModelConstants.RECORD_TYPE_CROP;
+   }
+    
     
     @Override
     protected void buildAboveListPanel() {
@@ -128,12 +134,12 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
      @Override
    protected ArrayList<String> getDisplayableColumnList() {
-      return getDataSource().getCropDisplayableColumns();
+      return getDataSource().getCropDisplayablePropertyNames();
    }
    
    @Override
-   protected ArrayList<String> getDefaultDisplayableColumnList() {
-      return getDataSource().getCropDefaultColumns();
+   protected ArrayList<Integer> getDefaultDisplayableColumnList() {
+      return getDataSource().getCropDefaultProperties();
    }
    
    protected ArrayList<String[]> getColumnPrettyNameMap() {
@@ -145,7 +151,5 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
         return "";
     }
   
-   
-    
 }
 

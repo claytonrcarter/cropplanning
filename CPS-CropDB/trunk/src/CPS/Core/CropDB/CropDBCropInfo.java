@@ -22,15 +22,12 @@
 
 package CPS.Core.CropDB;
 
-import CPS.UI.Swing.LayoutAssist;
 import CPS.Data.*;
 import CPS.Module.*;
-import CPS.UI.Modules.CPSDetailView;
-import CPS.UI.Modules.CPSMasterDetailModule;
-import CPS.UI.Swing.CPSTextArea;
-import CPS.UI.Swing.CPSTextField;
+import CPS.UI.Modules.*;
+import CPS.UI.Swing.*;
+import java.awt.GridBagConstraints;
 import javax.swing.*;
-import javax.swing.table.TableModel;
 
 public class CropDBCropInfo extends CPSDetailView {
    
@@ -41,6 +38,8 @@ public class CropDBCropInfo extends CPSDetailView {
    private CPSTextField tfldYieldPerWeek, tfldYieldWeeks, tfldYieldPerFoot, tfldYieldUnits, tfldYieldUnitValue;
    private JLabel lblSimilar;
    private JComboBox cmbxSimilar = null;
+   private CPSRadioButton rdoDS, rdoTP;
+   private CPSButtonGroup jbgPlantingMethod;
    
    private CPSCrop displayedCrop;
       
@@ -89,6 +88,17 @@ public class CropDBCropInfo extends CPSDetailView {
                                   displayedCrop.getPlanterState() );
       tfldPlanterSetting.setInitialText( displayedCrop.getPlanterSetting(),
                                   displayedCrop.getPlanterSettingState() );
+      
+      if ( displayedCrop.isDirectSeeded() ) {
+          jbgPlantingMethod.setInitialSelection( rdoDS, true, displayedCrop.getDirectSeededState() );
+//          rdoDS.doInitialClick( displayedCrop.getDirectSeededState() );
+//          rdoTP.setHasChanged(false);
+      }
+      else {
+          jbgPlantingMethod.setInitialSelection( rdoTP, true, displayedCrop.getDirectSeededState() );
+//          rdoTP.doInitialClick( displayedCrop.getDirectSeededState() );
+//          rdoDS.setHasChanged(false);
+      }
       
       tfldFlatSize.setInitialText( displayedCrop.getFlatSize(),
                                   displayedCrop.getFlatSizeState() );
@@ -156,6 +166,15 @@ public class CropDBCropInfo extends CPSDetailView {
       if ( tfldYieldUnits.hasChanged() ) crop.setCropYieldUnit( tfldYieldUnits.getText(), ALLOW_NULL );
       if ( tfldYieldUnitValue.hasChanged() ) crop.setCropUnitValue( tfldYieldUnitValue.getText(), ALLOW_NULL );
       
+       if ( rdoDS.hasChanged() ) {
+           if ( rdoDS.isSelected() )
+               crop.setDirectSeeded( rdoDS.isSelected() );
+           else if ( rdoTP.isSelected() )
+               crop.setDirectSeeded( !rdoTP.isSelected() );
+           else
+               crop.setDirectSeeded( null, true );
+       }
+      
       return crop;
       
    }
@@ -190,6 +209,12 @@ public class CropDBCropInfo extends CPSDetailView {
       tfldYieldUnits = new CPSTextField( 5 );
       tfldYieldUnitValue = new CPSTextField( 3 );
       
+      rdoDS = new CPSRadioButton( "DS", false );
+      rdoTP = new CPSRadioButton( "TP", false );
+//      HERE - change this so that the buttons are exclusive but can be turned off
+      jbgPlantingMethod = new CPSButtonGroup( new AbstractButton[] { rdoDS, rdoTP } );
+      jbgPlantingMethod.setSelectionModel( CPSButtonGroup.SELECT_NONE );
+      
 //      cmbxSimilar = new JComboBox( new String[] {"None"} );
 //      updateSimilarCropsList();
       
@@ -220,38 +245,41 @@ public class CropDBCropInfo extends CPSDetailView {
       JPanel jplPlanting = initPanelWithGridBagLayout();
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 0, "Maturity Days:" );
-      LayoutAssist.addTextField( jplPlanting, 1, 0, tfldMatDays );
+      LayoutAssist.addComponent( jplPlanting, 0, 0, rdoDS, GridBagConstraints.EAST );
+      LayoutAssist.addButton(    jplPlanting, 1, 0, rdoTP );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 1, "Rows/Bed" );
-      LayoutAssist.addTextField( jplPlanting, 1, 1, tfldRowsPerBed );
+      LayoutAssist.createLabel(  jplPlanting, 0, 1, "Maturity Days:" );
+      LayoutAssist.addTextField( jplPlanting, 1, 1, tfldMatDays );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 2, "Row Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 1, 2, tfldSpaceBetRows );
+      LayoutAssist.createLabel(  jplPlanting, 0, 2, "Rows/Bed" );
+      LayoutAssist.addTextField( jplPlanting, 1, 2, tfldRowsPerBed );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 3, "Plant Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 1, 3, tfldSpaceInRow );
+      LayoutAssist.createLabel(  jplPlanting, 0, 3, "Row Spacing" );
+      LayoutAssist.addTextField( jplPlanting, 1, 3, tfldSpaceBetRows );
       
-      LayoutAssist.addSeparator( jplPlanting, 0, 4, 2);
+      LayoutAssist.createLabel(  jplPlanting, 0, 4, "Plant Spacing" );
+      LayoutAssist.addTextField( jplPlanting, 1, 4, tfldSpaceInRow );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 5, "Flat Size" );
-      LayoutAssist.addTextField( jplPlanting, 1, 5, tfldFlatSize );
+      LayoutAssist.addSeparator( jplPlanting, 0, 5, 2);
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 6, "Weeks to TP" );
-      LayoutAssist.addTextField( jplPlanting, 1, 6, tfldWeeksToTP );
+      LayoutAssist.createLabel(  jplPlanting, 0, 6, "Flat Size" );
+      LayoutAssist.addTextField( jplPlanting, 1, 6, tfldFlatSize );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 7, "Adjust Mat. Days" );
-      LayoutAssist.addTextField( jplPlanting, 1, 7, tfldMatAdjust );
+      LayoutAssist.createLabel(  jplPlanting, 0, 7, "Weeks to TP" );
+      LayoutAssist.addTextField( jplPlanting, 1, 7, tfldWeeksToTP );
       
-      LayoutAssist.addSeparator( jplPlanting, 0, 8, 2);
+      LayoutAssist.createLabel(  jplPlanting, 0, 8, "Adjust Mat. Days" );
+      LayoutAssist.addTextField( jplPlanting, 1, 8, tfldMatAdjust );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 9, "Planter:" );
-      LayoutAssist.addTextField( jplPlanting, 1, 9, tfldPlanter );
+      LayoutAssist.addSeparator( jplPlanting, 0, 9, 2);
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 10, "Planter Setting" );
-      LayoutAssist.addTextField( jplPlanting, 1, 10, tfldPlanterSetting );
+      LayoutAssist.createLabel(  jplPlanting, 0, 10, "Planter:" );
+      LayoutAssist.addTextField( jplPlanting, 1, 10, tfldPlanter );
       
-      LayoutAssist.addSubPanel(  jplDetails, 2, 1, 2, 12, jplPlanting );
+      LayoutAssist.createLabel(  jplPlanting, 0, 11, "Planter Setting" );
+      LayoutAssist.addTextField( jplPlanting, 1, 11, tfldPlanterSetting );
+      
+      LayoutAssist.addSubPanel(  jplDetails, 2, 1, 2, 13, jplPlanting );
       
       
       /* *************************************/
@@ -304,8 +332,8 @@ public class CropDBCropInfo extends CPSDetailView {
       /* BOTTOW ROW                          */
       /* *************************************/
       // Notes TextArea is set to span all remaining columns
-      LayoutAssist.createLabel(  jplDetails, 0, 13, "Notes:" );
-      LayoutAssist.addTextArea(  jplDetails, 1, 13, 7, tareNotes );
+      LayoutAssist.createLabel(  jplDetails, 0, 14, "Notes:" );
+      LayoutAssist.addTextArea(  jplDetails, 1, 14, 7, tareNotes );
       
       
       uiManager.signalUIChanged();  
@@ -324,33 +352,7 @@ public class CropDBCropInfo extends CPSDetailView {
        
        selectRecordInMasterView( displayedCrop.getID() );
     }
-     
-   
-   // query the db and populate the combobox of similar crops
-   // TODO should be called as a hook when the Master list adds a new entry
-   protected void updateSimilarCropsList() {
-      if ( cmbxSimilar == null || ! isDataAvailable() )
-          return;
-       
-      // TODO updated whenever a new crop is created.
-      // TODO should filter out blanks (done) and duplicates
-      // now fill in the SimilarTo combobox
-      TableModel tm = getDataSource().getCropTable( "crop_name" );
-      
-      int nameCol = 0;
-      // find the column storing the crop names
-      while ( ! tm.getColumnName( nameCol ).equalsIgnoreCase("crop_name") && 
-              nameCol < tm.getColumnCount() ) {
-         nameCol++;
-      }
-      // add the crop names to the combo box
-      for ( int i = 0; i < tm.getRowCount(); i++ ) {
-          String name = tm.getValueAt( i, nameCol ).toString();
-          if ( name.equals("") )
-              continue;
-          cmbxSimilar.addItem( name );
-      }      
-   }
+ 
 
     @Override
     protected void updateAutocompletionComponents() {
@@ -372,4 +374,9 @@ public class CropDBCropInfo extends CPSDetailView {
       }
    }
    
+   @Override
+   protected int saveState() {
+       throw new UnsupportedOperationException( "Not supported yet." );
+   }
+    
 }
