@@ -117,7 +117,7 @@ public class PDFExporter {
         d.addCreator( creator );
         
         // left, right, top, bottom - scale in points (~72 points/inch)
-        d.setMargins( 35, 35, 35, 35 );
+        d.setMargins( 35, 35, 35, 44 );
         
         try {
             PdfWriter writer = PdfWriter.getInstance( d, new FileOutputStream( filename ) );
@@ -194,7 +194,9 @@ public class PDFExporter {
                 if ( o == null )
                     table.addCell( new regCell( "" ) );
                 else if ( o instanceof Date )
-                    table.addCell( new regCell( dateValidator.format( (Date) o ) ) );
+//                    table.addCell( new regCell( dateValidator.format( (Date) o ) ) );
+                    table.addCell( new regCell( CPSDateValidator.format( (Date) o, 
+                                                                         CPSDateValidator.DATE_FORMAT_SHORT ) ) );
                 else if ( o instanceof Boolean )
                     if ( ( (Boolean) o ).booleanValue() )
                         table.addCell( new regCell( "yes" ) );

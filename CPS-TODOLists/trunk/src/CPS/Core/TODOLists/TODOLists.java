@@ -25,6 +25,7 @@ package CPS.Core.TODOLists;
 
 import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Module.CPSDataModel;
+import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Swing.CPSComplexFilterDialog;
@@ -42,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -61,13 +63,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private JComboBox cmbPlanName;
     private JRadioButton rdoDateThisWeek, rdoDateNextWeek, rdoDateThisNextWeek, rdoDateOther;
     private JDateChooser dtcDateOtherStart, dtcDateOtherEnd;
-    private JCheckBox cbxIncludeUncomp;
-    private JRadioButton rdoUncompLastWeek, rdoUncompAll;
+    private JRadioButton rdoUncompThisWeek, rdoUncompLastWeek, rdoUncompAll;
 //    private File outputFile;
     private JLabel lblDirectory;
 //    private JTextField fldFile;
     private JFileChooser filFile;
     private JButton btnSelectFile, btnPlantList, btnGHList;
+    
+    private GregorianCalendar tempCal;
     
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
     
@@ -76,7 +79,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     public TODOLists() {
         setModuleName( "TODOLists" );
         setModuleType( "Core" );
-        setModuleVersion( GLOBAL_DEVEL_VERSION );   
+        setModuleVersion( GLOBAL_DEVEL_VERSION );
+        
+        tempCal = new GregorianCalendar();
     }
 
     @Override
@@ -85,8 +90,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                 
         buildTODOListPanel();
         rdoDateThisWeek.doClick();
-        cbxIncludeUncomp.doClick(); // select
-        cbxIncludeUncomp.doClick(); // unselect
         
         dataUpdated();
         
@@ -123,13 +126,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         dtcDateOtherStart.addPropertyChangeListener( this );
         dtcDateOtherEnd.addPropertyChangeListener( this );
         
-        cbxIncludeUncomp = new JCheckBox( "Uncomplete plantings from:", false );
-        rdoUncompLastWeek = new JRadioButton( "Last week", true );
+        rdoUncompThisWeek = new JRadioButton( "This week only", true );
+        rdoUncompLastWeek = new JRadioButton( "This week and last week", false );
         rdoUncompAll = new JRadioButton( "All uncomplete plantings", false );
-        cbxIncludeUncomp.addItemListener(this);
+        rdoUncompThisWeek.addItemListener(this);
         rdoUncompLastWeek.addItemListener( this );
         rdoUncompAll.addItemListener( this );
         ButtonGroup bg2 = new ButtonGroup();
+        bg2.add( rdoUncompThisWeek );
         bg2.add( rdoUncompLastWeek );
         bg2.add( rdoUncompAll );
         
@@ -165,17 +169,18 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         LayoutAssist.addSubPanel( jplTodo, 3, 6, 1, 1, dtcDateOtherEnd );
         
         LayoutAssist.addLabelLeftAlign( jplTodo, 0, 7, new JLabel( "Include:" ) );
-        LayoutAssist.addButton( jplTodo, 1, 8, cbxIncludeUncomp );
-        LayoutAssist.addButton( jplTodo, 1, 9, rdoUncompLastWeek );
-        LayoutAssist.addButton( jplTodo, 1, 10, rdoUncompAll );
+        LayoutAssist.addLabelLeftAlign( jplTodo, 1, 8, 2, 1, new JLabel( "Uncompleted plantings from:" ) );
+        LayoutAssist.addButton( jplTodo, 2, 9,  rdoUncompThisWeek );
+        LayoutAssist.addButton( jplTodo, 2, 10, rdoUncompLastWeek );
+        LayoutAssist.addButton( jplTodo, 2, 11, rdoUncompAll );
                         
-        LayoutAssist.addLabelLeftAlign( jplTodo, 0, 11, 4, 1, new JLabel( "Export files to directory/folder:" ) );
-        LayoutAssist.addLabelLeftAlign( jplTodo, 1, 12, 3, 1, lblDirectory );
-        LayoutAssist.addButton(         jplTodo, 1, 13, btnSelectFile );
+        LayoutAssist.addLabelLeftAlign( jplTodo, 0, 12, 4, 1, new JLabel( "Export files to directory/folder:" ) );
+        LayoutAssist.addLabelLeftAlign( jplTodo, 1, 13, 3, 1, lblDirectory );
+        LayoutAssist.addButton(         jplTodo, 1, 14, btnSelectFile );
         
-        LayoutAssist.addLabelLeftAlign( jplTodo, 0, 14, new JLabel( "Export:" ) );
-        LayoutAssist.addButton( jplTodo, 1, 15, btnGHList );
-        LayoutAssist.addButton( jplTodo, 1, 16, btnPlantList );
+        LayoutAssist.addLabelLeftAlign( jplTodo, 0, 15, new JLabel( "Export:" ) );
+        LayoutAssist.addButton( jplTodo, 1, 16, btnGHList );
+        LayoutAssist.addButton( jplTodo, 1, 17, btnPlantList );
         
     }
     
@@ -196,17 +201,32 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     }
     
     private String createOutputFileName( File dir, String prefix ) {
+       return createOutputFileName( dir, prefix, new Date() );
+    }
+    private String createOutputFileName( File dir, String prefix, Date d ) {
         return dir.getAbsolutePath() + File.separator + 
-               prefix + " - " + new SimpleDateFormat( "MMM dd yyyy" ).format( new Date() ) + ".pdf";
+               prefix + " - " + new SimpleDateFormat( "MMM dd yyyy" ).format( d ) + ".pdf";
     }
     
     private void exportGHPlantings( String planName ) {
         
-        String cols = "date_plant, crop_name, var_name, plants_needed, plants_to_start, flat_size, flats_needed";
-        String sortCol = "date_plant";
-        
+//        String cols = "date_plant, crop_name, var_name, plants_needed, plants_to_start, flat_size, flats_needed";
+//        String sortCol = "date_plant";
+        ArrayList<Integer> props = new ArrayList<Integer>( Arrays.asList( 
+                new Integer[] { CPSDataModelConstants.PROP_DATE_PLANT,
+                                CPSDataModelConstants.PROP_CROP_NAME,
+                                CPSDataModelConstants.PROP_VAR_NAME,
+                                CPSDataModelConstants.PROP_PLANTS_NEEDED,
+                                CPSDataModelConstants.PROP_PLANTS_START,
+                                CPSDataModelConstants.PROP_FLAT_SIZE,
+                                CPSDataModelConstants.PROP_FLATS_NEEDED
+                                                 } ));
+        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
+                
 //        String filename = "GH Seeding List - " + new SimpleDateFormat( "MMM dd yyyy" ).format( dtcDateOtherStart.getDate() ) + ".pdf";
-        String filename = createOutputFileName( filFile.getSelectedFile(), "GH Seeding List");
+        String filename = createOutputFileName( filFile.getSelectedFile(),
+                                                "GH Seeding List",
+                                                dtcDateOtherStart.getDate() );
         
         
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
@@ -214,41 +234,68 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         
         // filter out all direct seeded plantings
         filter.setFilterOnPlantingMethod(true);
-        filter.setDirectSeeded(false);
-        
-        // show only plantings in the correct date range
-        filter.setFilterOnPlantingDate(true);
-        filter.setPlantingRangeStart( dtcDateOtherStart.getDate() );
-        filter.setPlantingRangeEnd( dtcDateOtherEnd.getDate() );
+        filter.setFilterMethodDirectSeed(false);
         
         // show only uncompleted plantings
         filter.setFilterOnPlanting(true);
         filter.setDonePlanting(false);
         
+        // show only plantings in the correct date range
+       filter.setFilterOnPlantingDate( true );
+       filter.setPlantingRangeEnd( dtcDateOtherEnd.getDate() );
+        
+       if ( rdoUncompLastWeek.isSelected() ) {
+          tempCal.setTime( dtcDateOtherStart.getDate() );
+          tempCal.add( Calendar.WEEK_OF_YEAR, -1 );
+          filter.setPlantingRangeStart( tempCal.getTime() );
+       }
+       else if ( rdoUncompAll.isSelected() ) {
+          tempCal.setTime( dtcDateOtherStart.getDate() );
+          tempCal.set( Calendar.WEEK_OF_YEAR, 0 );
+          filter.setPlantingRangeStart( tempCal.getTime() );
+       }
+       else // if ( rdoUncompThistWeek.isSelected() )
+          filter.setPlantingRangeStart( dtcDateOtherStart.getDate() ); 
+        
         
         CPSTable jt = new CPSTable();
-        jt.setModel( getDataSource().getCropPlan( planName, cols, sortCol, filter ) );
+        jt.setModel( getDataSource().getCropPlan( planName, props, sortProp, filter ) );
         jt.setColumnNamesAndToolTips( getDataSource().getPlantingShortNames() );
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
         
         exporter.export( jt, filename, 
-                         "Fail Better Farm", 
+                         CPSGlobalSettings.getFarmName(), 
                          "GH Seedings for " + new SimpleDateFormat( "MMM dd" ).format( dtcDateOtherStart.getDate() ) + " - "
-                                            + new SimpleDateFormat( "MMM dd, yyyy" ).format( dtcDateOtherEnd.getDate() ),
-                                            
+                                            + new SimpleDateFormat( "MMM dd, yyyy" ).format( dtcDateOtherEnd.getDate() )
+                                            + ( rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)" ),
                           "GH Seedings" );
     
     }
     
+    
+    
     private void exportFieldPlantings( String planName ) {
         
-        String cols = "date_plant, crop_name, var_name, location, beds_to_plant, rows_p_bed, rowft_to_plant";
-        cols += ", planter, planter_setting";
-        
-        String sortCol = "date_plant";
+//        String cols = "date_plant, crop_name, var_name, location, beds_to_plant, rows_p_bed, rowft_to_plant";
+//        cols += ", planter, planter_setting";
+        ArrayList<Integer> props = new ArrayList<Integer>( Arrays.asList( 
+                new Integer[] { CPSDataModelConstants.PROP_DATE_PLANT,
+                                CPSDataModelConstants.PROP_CROP_NAME,
+                                CPSDataModelConstants.PROP_VAR_NAME,
+                                CPSDataModelConstants.PROP_LOCATION,
+                                CPSDataModelConstants.PROP_BEDS_PLANT,
+                                CPSDataModelConstants.PROP_ROWS_P_BED,
+                                CPSDataModelConstants.PROP_ROWFT_PLANT,
+                                CPSDataModelConstants.PROP_PLANTER,
+                                CPSDataModelConstants.PROP_PLANTER_SETTING
+                                                  } ) );
+//        String sortCol = "date_plant";
+        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
         
 //        String filename = "Field Planting List.pdf";
-        String filename = createOutputFileName( filFile.getSelectedFile(), "Field Planting List" );
+        String filename = createOutputFileName( filFile.getSelectedFile(), 
+                                                "Field Planting List",
+                                                dtcDateOtherStart.getDate() );
         
         /*
          * Select just uncompleted, direct seeded plantings whose PLANTING date
@@ -259,28 +306,41 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         
         // filter out all NON direct seeded plantings
         filter.setFilterOnPlantingMethod(true);
-        filter.setDirectSeeded(true);
-        
-        // show only plantings in the correct date range
-        filter.setFilterOnPlantingDate( true );
-        filter.setPlantingRangeStart( dtcDateOtherStart.getDate() );
-        filter.setPlantingRangeEnd( dtcDateOtherEnd.getDate() );
+        filter.setFilterMethodDirectSeed(true);
         
         // show only uncompleted plantings
         filter.setFilterOnPlanting(true);
         filter.setDonePlanting(false);
         
+        // show only plantings in the correct date range
+        filter.setFilterOnPlantingDate( true );
+        filter.setPlantingRangeEnd( dtcDateOtherEnd.getDate() );
+        
+        if ( rdoUncompLastWeek.isSelected() ) {
+           tempCal.setTime( dtcDateOtherStart.getDate() );
+           tempCal.add( Calendar.WEEK_OF_YEAR, -1 );
+           filter.setPlantingRangeStart( tempCal.getTime() );
+        }
+        else if ( rdoUncompAll.isSelected() ) {
+           tempCal.setTime( dtcDateOtherStart.getDate() );
+           tempCal.set( Calendar.WEEK_OF_YEAR, 0 );
+           filter.setPlantingRangeStart( tempCal.getTime() );
+        }
+        else // if ( rdoUncompThistWeek.isSelected() )
+           filter.setPlantingRangeStart( dtcDateOtherStart.getDate() );
+        
+        
         CPSTable jt = new CPSTable();
-        jt.setModel( getDataSource().getCropPlan( planName, cols, sortCol, filter ) );
+        jt.setModel( getDataSource().getCropPlan( planName, props, sortProp, filter ) );
         jt.setColumnNamesAndToolTips( getDataSource().getPlantingShortNames() );
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
         
         exporter.startExport( jt, filename, 
-                              "Fail Better Farm", 
+                              CPSGlobalSettings.getFarmName(), 
                               "Field plantings for " + new SimpleDateFormat( "MMM dd" ).format( dtcDateOtherStart.getDate() ) + " - "
-                                                     + new SimpleDateFormat( "MMM dd, yyyy" ).format( dtcDateOtherEnd.getDate() ),
-                                                     
-                               "Direct Seeded Field Plantings" );
+                                                     + new SimpleDateFormat( "MMM dd, yyyy" ).format( dtcDateOtherEnd.getDate() )
+                                                     + ( rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)" ),
+                              "Direct Seeded Field Plantings" );
         
         
         /*
@@ -288,25 +348,51 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
          * is w/i range
          */
         
-        cols = "date_tp, date_plant, crop_name, var_name, location, beds_to_plant, rows_p_bed, rowft_to_plant, inrow_space";
-        sortCol = "date_tp";
+//        cols = "date_tp, date_plant, crop_name, var_name, location, beds_to_plant, rows_p_bed, rowft_to_plant, inrow_space";
+//        sortCol = "date_tp";
+        
+        props = new ArrayList<Integer>( Arrays.asList( 
+                new Integer[] { CPSDataModelConstants.PROP_DATE_TP,
+                                CPSDataModelConstants.PROP_DATE_PLANT,
+                                CPSDataModelConstants.PROP_CROP_NAME,
+                                CPSDataModelConstants.PROP_VAR_NAME,
+                                CPSDataModelConstants.PROP_LOCATION,
+                                CPSDataModelConstants.PROP_BEDS_PLANT,
+                                CPSDataModelConstants.PROP_ROWS_P_BED,
+                                CPSDataModelConstants.PROP_ROWFT_PLANT,
+                                CPSDataModelConstants.PROP_SPACE_INROW
+                               } ) );
+         sortProp = CPSDataModelConstants.PROP_DATE_TP;
         
         // filter out all direct seeded plantings
         filter.setFilterOnPlantingMethod(true);
-        filter.setDirectSeeded(false);
-        
-        // disable planting date filter, enable transplanting date filter
-        filter.setFilterOnPlantingDate( false );
-        filter.setFilterOnTPDate( true );
-        filter.setTpRangeStart( dtcDateOtherStart.getDate() );
-        filter.setTpRangeEnd( dtcDateOtherEnd.getDate() );
+        filter.setFilterMethodDirectSeed(false);
         
         // show only uncompleted transplantings
         filter.setFilterOnPlanting(false);
         filter.setFilterOnTransplanting(true);
         filter.setDoneTransplanting(false);
         
-        jt.setModel( getDataSource().getCropPlan( planName, cols, sortCol, filter ) );
+        // disable planting date filter, enable transplanting date filter
+        filter.setFilterOnPlantingDate( false );
+        filter.setFilterOnTPDate( true );
+        filter.setTpRangeEnd( dtcDateOtherEnd.getDate() );
+        
+        if ( rdoUncompLastWeek.isSelected() ) {
+           tempCal.setTime( dtcDateOtherStart.getDate() );
+           tempCal.add( Calendar.WEEK_OF_YEAR, -1 );
+           filter.setTpRangeStart( tempCal.getTime() );
+        }
+        else if ( rdoUncompAll.isSelected() ) {
+           tempCal.setTime( dtcDateOtherStart.getDate() );
+           tempCal.set( Calendar.WEEK_OF_YEAR, 0 );
+           filter.setTpRangeStart( tempCal.getTime() );
+        }
+        else // if ( rdoUncompThistWeek.isSelected() )
+           filter.setTpRangeStart( dtcDateOtherStart.getDate() );
+        
+        
+        jt.setModel( getDataSource().getCropPlan( planName, props, sortProp, filter ) );
         jt.setColumnNamesAndToolTips( getDataSource().getPlantingShortNames() );
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
         
@@ -314,26 +400,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         exporter.endExport();
     
     }
-    
-    private void exportList() {
-        
-        System.out.println("\n\nPRINTING A TABLE\n");
-                
-        CPSTable jt = new CPSTable();
-//        jt.setModel(getDataSource().getCropPlan("newplan"));
-        jt.setModel(getDataSource().getCropPlan("newplan", "crop_name, var_name, location, beds_to_plant, done_plant", null, null ) );
-        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
-        String filename = "ExportedTable.pdf";
-        
-        exporter.export( jt, filename, 
-                         "Fail Better Farm", 
-                         "List of all plantings", "" );
-        
-        
-        System.out.println("\nDONE PRINTING A TABLE\n\n");
-        
-    }
-    
    
     
     @Override
@@ -399,16 +465,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             dtcDateOtherEnd.setEnabled(true);
             dtcDateOtherStart.setEnabled(true);
         }
-        else if ( source == cbxIncludeUncomp ) {
-            if ( cbxIncludeUncomp.isSelected() ) {
-                rdoUncompAll.setEnabled(true);
-                rdoUncompLastWeek.setEnabled(true);
-            }
-            else {
-                rdoUncompAll.setEnabled(false);
-                rdoUncompLastWeek.setEnabled(false);
-            }
-        }   
+           
     }
 
     public void propertyChange( PropertyChangeEvent arg0 ) {
@@ -435,6 +492,20 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         }
     }
     
+    @Override
+    public int init() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    protected int saveState() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    public int shutdown() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
     
 
 }
