@@ -22,7 +22,6 @@
 
 package CPS.Core.DB;
 
-import CPS.Data.CPSDateValidator;
 import CPS.Module.CPSDataModel;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,7 +37,6 @@ public class HSQLTableModel extends ResultSetTableModel {
    private int nullsLastColNum = -2;
    private String tableName = null;
    
-   private CPSDateValidator dateValidator;
    private HSQLDB dataModel;
    
    public HSQLTableModel( HSQLDB dm, ResultSet resSet ) throws SQLException {
@@ -56,10 +54,6 @@ public class HSQLTableModel extends ResultSetTableModel {
               nullsLastColNum = col;
       }
       
-      dateValidator = new CPSDateValidator();
-      dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
-      dateValidator.setDefaultFormat( CPSDateValidator.DATE_FORMAT_SQL );
-              
       this.dataModel = dm;
       // TODO find boolean columns and set renderer/editor to a JCheckBox
       // TODO adjust the width of the columns downward
@@ -186,6 +180,8 @@ public class HSQLTableModel extends ResultSetTableModel {
        }
        catch ( Exception e ) { e.printStackTrace(); }
        
+//       System.out.println("TabModel: Column " + getColumnName(column-1) + " is a " + type );
+       
        if      ( type == null ||
                  type.equalsIgnoreCase("VARCHAR") )
           return new String().getClass();
@@ -193,7 +189,8 @@ public class HSQLTableModel extends ResultSetTableModel {
           return new Date().getClass();
        else if ( type.equalsIgnoreCase("INTEGER") )
           return new Integer(0).getClass();
-       else if ( type.equalsIgnoreCase("FLOAT") )
+       else if ( type.equalsIgnoreCase("FLOAT") || 
+                 type.equalsIgnoreCase("DOUBLE") )
           return new Double(0).getClass();
        else if ( type.equalsIgnoreCase("BOOLEAN") )
           return new Boolean(true).getClass();

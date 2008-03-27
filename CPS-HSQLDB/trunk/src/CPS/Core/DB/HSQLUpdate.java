@@ -27,6 +27,8 @@ import CPS.Module.CPSModule;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class HSQLUpdate {
     
@@ -69,9 +71,8 @@ public class HSQLUpdate {
                updateForV000_001_002(con);
        
            // version 0.1.3
-           if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 3 )) {
-               
-           }
+           if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 3 ))
+               updateForV000_001_003(con);
            
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
@@ -127,6 +128,57 @@ public class HSQLUpdate {
        st.executeUpdate( update );
        
        st.close();
+   }
+   
+   private static void updateForV000_001_003( Connection con ) throws java.sql.SQLException {
+       
+       System.out.println( "DEBUG(DBUpdater): Updating DB for changes in version 0.1.3" );
+       
+       Statement st = con.createStatement();
+       String update;
+       
+       // Add columns to the crop_plans table
+       update  = "ALTER TABLE crop_plans ADD COLUMN year        INTEGER; ";
+       update += "ALTER TABLE crop_plans ADD COLUMN locked      BOOLEAN DEFAULT false; ";
+       update += "ALTER TABLE crop_plans ADD COLUMN description VARCHAR; ";
+       update += "UPDATE " + HSQLDB.escapeTableName( "CROP_PLANS" ) +
+                 " SET year = " + HSQLDB.escapeValue( GregorianCalendar.getInstance().get( Calendar.YEAR ) ) +
+                 " WHERE year IS NULL; ";
+       
+       System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+       st.executeUpdate( update );
+       
+       // Add columns to the crops_varieties table
+       update  = "ALTER TABLE crops_varieties ADD COLUMN direct_seed BOOLEAN; ";
+       update += "ALTER TABLE crops_varieties ADD COLUMN frost_hardy BOOLEAN; ";
+       
+       System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+       st.executeUpdate( update );
+       
+       ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+       update = "";
+       for ( String plan : plans ) {
+          if ( plan.matches( "^\\p{Alpha}+$" ) )
+             update += "UPDATE " + HSQLDB.escapeTableName( "CROP_PLANS" ) +
+                       " SET plan_name = " + HSQLDB.escapeValue( plan.toUpperCase() ) +
+                       " WHERE plan_name = " + HSQLDB.escapeValue( plan ) + "; ";
+       }
+       if ( ! update.equals("")) {
+          System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+          st.executeUpdate( update );
+       }
+          
+       plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+       for ( String plan : plans ) {
+       
+           // Add frost_hardy column to each crop plan (direct_seed is already there)
+           update = "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN frost_hardy BOOLEAN; ";
+       
+           System.out.println("DEBUG(DBUpdater): Executing update: " + update );
+           st.executeUpdate(update);
+           
+       }
+       
    }
    
 }

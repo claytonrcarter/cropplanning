@@ -423,6 +423,54 @@ public class HSQLQuerier {
        
    }
    
+   public static ResultSet getSingleValue( Connection con,
+                                           String table, String column,
+                                           String limitColumn, String limitValue ) {
+      
+      ResultSet rs = null;
+      
+      try {
+         String query = "SELECT " + column + 
+                        " FROM " + HSQLDB.escapeTableName( table ) +
+                        " WHERE " + limitColumn + " = " + HSQLDB.escapeValue( limitValue );
+         Statement st = con.createStatement();
+
+         System.out.println("Executing query: " + query );
+         rs = st.executeQuery( query );
+      
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+      }
+      
+      return rs;
+   }
+   
+   public static int getCropPlanYear( Connection con, String planName ) {
+      try {
+         ResultSet rs = getSingleValue( con, "CROP_PLANS", "year", "plan_name", planName );
+         rs.next();
+         return rs.getInt( "year" );
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         return -1;
+      }
+   }
+   
+   public static String getCropPlanDescription( Connection con, String planName ) {
+      try {
+         ResultSet rs = getSingleValue( con, "CROP_PLANS", "description", "plan_name", planName );
+         rs.next();
+         return rs.getString( "description" );
+      }
+      catch ( SQLException e ) {
+         e.printStackTrace();
+         return "Uh Oh: Error";
+      }
+   }
+   
+   
    /**
     * Creates a new HSQLTableModel for the given ResultSet.
     * 

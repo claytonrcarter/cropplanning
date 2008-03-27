@@ -68,7 +68,7 @@ public class HSQLDBCreator {
               "INSERT INTO CPS_METADATA ( prev_ver ) VALUES ( 0 )";
    }
    
-   static void createCropPlan( Connection con, String name ) {
+   static void createCropPlan( Connection con, String name, int year, String desc ) {
       
       // TODO error if plan with name already exists
       
@@ -88,8 +88,49 @@ public class HSQLDBCreator {
          st.executeUpdate( s );
          st.close();
       }
+      catch ( SQLException e ) { e.printStackTrace(); }      
+      
+      updateCropPlan( con, name, year, desc );
+   }
+   
+   static void updateCropPlan( Connection con, String name, int year, String desc ) {
+
+      try {
+         Statement st = con.createStatement();
+      
+         // Update the plan metadata
+         String s = "UPDATE " + HSQLDB.escapeTableName( "CROP_PLANS" ) +
+                 " SET year = " + year + ", description = " +  HSQLDB.escapeValue( desc ) +
+                 " WHERE plan_name = " + HSQLDB.escapeValue( name );
+      
+         System.out.println("Executing update: " + s );
+         st.executeUpdate( s );
+         st.close();
+      }
       catch ( SQLException e ) { e.printStackTrace(); }
+   
+   }
+   
+   static void deleteCropPlan( Connection con, String name ) {
+
+      try {
+         Statement st = con.createStatement();
+   
+         // Drop the table
+         String s = "DROP TABLE " + HSQLDB.escapeTableName( name );
+         System.out.println( "Executing update: " + s );
          
+         st.executeUpdate( s );
+
+         // Remove the table record from the plan metadata table
+         s = "DELETE FROM CROP_PLANS WHERE plan_name = " + HSQLDB.escapeValue( name );
+      
+         System.out.println( "Executing update: " + s );
+         st.executeUpdate( s );
+         st.close();
+      }
+      catch ( SQLException e ) { e.printStackTrace(); }      
+   
    }
    
    public static void deleteRecord( Connection con, String table, int row ) {

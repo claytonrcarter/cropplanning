@@ -36,7 +36,9 @@ public class HSQLDBSchemas {
       
       s  = " id        INTEGER IDENTITY, ";
       s += " plan_name VARCHAR(256) ";
-      
+      s += " year      INTEGER, ";
+      s += " locked    BOOLEAN DEFAULT false, ";
+      s += " description VARCHAR ";
       return s;
       
    }
@@ -53,7 +55,6 @@ public class HSQLDBSchemas {
       s += "crop_name   VARCHAR, ";
       s += "var_name    VARCHAR, ";
       s += "groups      VARCHAR, ";
-      s += "direct_seed BOOLEAN, ";
       s += "location    VARCHAR, ";
       
       s += "keywords  VARCHAR, ";
@@ -69,6 +70,8 @@ public class HSQLDBSchemas {
       s += "season_adjust   INTEGER, ";
       s += "time_to_tp      INTEGER, ";
       s += "misc_adjust     INTEGER, ";
+      s += "direct_seed     BOOLEAN, ";
+      s += "frost_hardy     BOOLEAN, ";
       
       s += "date_plant      DATE, ";
       s += "done_plant      BOOLEAN, ";
@@ -131,9 +134,8 @@ public class HSQLDBSchemas {
       s  += "mat_adjust         INTEGER, ";
       s  += "misc_adjust        INTEGER, ";
  
-      // ==[ PASTE ]==
-      // The following columns are copied from plantingDataSchema()
-      // presumably just for testing; think we'll move these back at some point?
+      s += "direct_seed         BOOLEAN, ";
+      s += "frost_hardy         BOOLEAN, ";
       s += "time_to_tp          INTEGER, ";
       
       s += "rows_p_bed          INTEGER, ";

@@ -24,6 +24,7 @@ package CPS.Core.DB;
 
 import CPS.Data.*;
 import CPS.Module.CPSDataModel;
+import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSGlobalSettings;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -131,24 +132,7 @@ public class HSQLDB extends CPSDataModel {
    public synchronized ArrayList<String> getListOfCropPlans() {
       
        return HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
-       
-//      try {
-//         Statement st = con.createStatement();
-//         ResultSet rs = st.executeQuery( "SELECT plan_name FROM CROP_PLANS" );
-//      
-//         System.out.println("Executed query: " + "SELECT plan_name FROM CROP_PLANS" );
-         
-//         ArrayList<String> l = new ArrayList<String>();
-//         while ( rs.next() )
-//            l.add( (String) rs.getObject(1) );
-//      
-//         return l;
-//      } 
-//      catch ( SQLException e ) { 
-//         e.printStackTrace();
-//         return new ArrayList<String>();
-//      }
-      
+
    }
    
    /* COLUMN NAMES */
@@ -179,12 +163,20 @@ public class HSQLDB extends CPSDataModel {
    private ArrayList<String> getCropColumnList() {
        return columnMap.getCropColumns();
    }
+
+   public ArrayList<Integer> getCropDefaultProperties() {
+      return columnMap.getDefaultCropPropertyList();
+   }
+
+   public ArrayList<Integer> getCropDisplayableProperties() {
+      return columnMap.getCropPropertyList();
+   }
    
-   public ArrayList<String> getCropDefaultColumns() {
+   public ArrayList<String> getCropDefaultPropertyNames() {
       return columnMap.getDefaultCropColumnList();
    }
    
-   public ArrayList<String> getCropDisplayableColumns() {
+   public ArrayList<String> getCropDisplayablePropertyNames() {
       return columnMap.getCropDisplayableColumns();
    }
    public ArrayList<String[]> getCropPrettyNames() {
@@ -199,12 +191,20 @@ public class HSQLDB extends CPSDataModel {
       return columnMap.getPlantingToCropColumnMapping();
 //       return plantingCropColumnMapping;
    }
+
+   public ArrayList<Integer> getPlantingDefaultProperties() {
+      return columnMap.getDefaultPlantingPropertyList();
+   }
+
+   public ArrayList<Integer> getPlantingDisplayableProperties() {
+      return columnMap.getPlantingPropertyList();
+   }
    
-   public ArrayList<String> getPlantingDefaultColumns() {
+   public ArrayList<String> getPlantingDefaultPropertyNames() {
       return columnMap.getDefaultPlantingColumnList();
    }
    
-   public ArrayList<String> getPlantingDisplayableColumns() {
+   public ArrayList<String> getPlantingDisplayablePropertyNames() {
       return columnMap.getPlantingDisplayableColumns();
    }
    
@@ -258,12 +258,23 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getCropTable( String sortCol ) { 
       return getCropTable( sortCol, null );
    }   
+   public TableModel getCropTable( int sortProp ) { 
+      return getCropTable( sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp) );
+   }
    public TableModel getCropTable( String sortCol, CPSComplexFilter filter ) { 
       return getCropTable( getCropsColumnNames(), sortCol, filter );
+   }
+   public TableModel getCropTable( int sortProp, CPSComplexFilter filter ) { 
+      return getCropTable( sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ), filter );
    }
    public TableModel getCropTable( String columns, String sortCol, CPSComplexFilter filter ) { 
       return cachedListTableQuery( "CROPS_VARIETIES", includeMandatoryColumns(columns), "var_name IS NULL", sortCol,
                                    buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ));
+   }
+   public TableModel getCropTable( ArrayList<Integer> properties , int sortProp, CPSComplexFilter filter ) { 
+      return getCropTable( propertyNumListToColumnString( CPSDataModelConstants.RECORD_TYPE_CROP, properties),
+                           sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ),
+                           filter );
    }
    
    public TableModel getVarietyTable() {
@@ -272,8 +283,14 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getVarietyTable( String sortCol ) {
       return getVarietyTable( sortCol, null );
    }
+   public TableModel getVarietyTable( int sortProp ) { 
+      return getVarietyTable( sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ));
+   }
    public TableModel getVarietyTable( String sortCol, CPSComplexFilter filter ) {
        return getVarietyTable( getVarietiesColumnNames(), sortCol, filter );
+   }
+   public TableModel getVarietyTable( int sortProp, CPSComplexFilter filter ) { 
+      return getVarietyTable( sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ), filter );
    }
    public TableModel getVarietyTable( String columns, String sortCol, CPSComplexFilter filter ) {
       return cachedListTableQuery( "CROPS_VARIETIES", 
@@ -282,6 +299,11 @@ public class HSQLDB extends CPSDataModel {
                                    sortCol,
                                    buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ));
    }
+   public TableModel getVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter ) { 
+      return getVarietyTable( propertyNumListToColumnString( CPSDataModelConstants.RECORD_TYPE_CROP, properties),
+                              sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ),
+                              filter );
+   }
    
    public TableModel getCropAndVarietyTable() {
       return getCropAndVarietyTable( null, null );
@@ -289,30 +311,58 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getCropAndVarietyTable( String sortCol ) {
       return getCropAndVarietyTable( sortCol, null );
    }
+   public TableModel getCropAndVarietyTable( int sortProp ) { 
+      return getCropAndVarietyTable( sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ) );
+   }
    public TableModel getCropAndVarietyTable( String sortCol, CPSComplexFilter filter ) {
        return getCropAndVarietyTable( getCropsColumnNames(), sortCol, filter );
    }
+   public TableModel getCropAndVarietyTable( int sortProp, CPSComplexFilter filter ) { 
+      return getCropAndVarietyTable( sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ), filter );
+   }
    public TableModel getCropAndVarietyTable( String columns, String sortCol, CPSComplexFilter filter ) {
       return HSQLQuerier.tableResults( this, 
-                                        query.submitCalculatedCropAndVarQuery( getCropInheritanceColumnMapping(),
-                                                                               includeMandatoryColumns( columns ),
-                                                                               sortCol,
-                                                                               buildGeneralFilterExpression( getCropVarFilterColumnNames(),
-                                                                                                             filter ) ));
+                                       query.submitCalculatedCropAndVarQuery( getCropInheritanceColumnMapping(),
+                                                                              includeMandatoryColumns( columns ),
+                                                                              sortCol,
+                                                                              buildGeneralFilterExpression( getCropVarFilterColumnNames(),
+                                                                                                            filter ) ),
+                                       "CROPS_VARIETIES" );
 //      return cachedListTableQuery( "CROPS_VARIETIES", includeMandatoryColumns(columns), null, sortCol,
 //                                   buildGeneralFilterExpression( getCropVarFilterColumnNames(), filter ) );
+   }
+   public TableModel getCropAndVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter ) { 
+      return getCropAndVarietyTable( propertyNumListToColumnString( CPSDataModelConstants.RECORD_TYPE_CROP, properties),
+                                     sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_CROP, sortProp ),
+                                     filter );
    }
    
    /*
     * CROP PLAN METHODS
     */
-   public void createCropPlan( String plan_name ) {
-      HSQLDBCreator.createCropPlan( con, plan_name );
+   public void createCropPlan( String planName, int year, String desc ) {
+      HSQLDBCreator.createCropPlan( con, planName, year, desc );
       updateDataListeners();
    }
    
-   // TODO implement updateCropPlan
-   public void updateCropPlan( String plan_name ) {
+   public void updateCropPlan( String planName, int year, String desc ) {
+      HSQLDBCreator.updateCropPlan( con, planName, year, desc );
+      // TODO commented out because I can't imagine a time (yet) when 
+      // we'll need to update when a plan changes metadata
+      // updateDataListeners();
+   }
+   
+   public void deleteCropPlan( String planName ) {
+      HSQLDBCreator.deleteCropPlan( con, planName );
+      updateDataListeners();
+   }
+   
+   public int getCropPlanYear( String planName ) {
+      return HSQLQuerier.getCropPlanYear( con, planName );
+   }
+   
+   public String getCropPlanDescription( String planName ) {
+      return HSQLQuerier.getCropPlanDescription( con, planName );
    }
    
    public TableModel getCropPlan(String plan_name) {
@@ -322,9 +372,17 @@ public class HSQLDB extends CPSDataModel {
    public TableModel getCropPlan( String plan_name, String sortCol ) {
       return getCropPlan( plan_name, sortCol, null );
    }
+   public TableModel getCropPlan( String plan_name, int sortProp ) {
+      return getCropPlan( plan_name, sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_PLANTING, sortProp ) );
+   }
 
    public TableModel getCropPlan( String plan_name, String sortCol, CPSComplexPlantingFilter filter ) {
       return getCropPlan( plan_name, getAbbreviatedCropPlanColumnNames(), sortCol, filter );
+   }
+   public TableModel getCropPlan( String plan_name, int sortProp, CPSComplexPlantingFilter filter ) {
+      return getCropPlan( plan_name, 
+                          sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_PLANTING, sortProp ),
+                          filter );
    }
    
    public TableModel getCropPlan( String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filter ) {
@@ -339,7 +397,14 @@ public class HSQLDB extends CPSDataModel {
                plan_name );
       
    }
+   public TableModel getCropPlan( String plan_name, ArrayList<Integer> properties, int sortProp, CPSComplexPlantingFilter filter ) {
+      return getCropPlan( plan_name,
+                          propertyNumListToColumnString( CPSDataModelConstants.RECORD_TYPE_PLANTING, properties),
+                          sortColumnFromPropertyNum( CPSDataModelConstants.RECORD_TYPE_PLANTING, sortProp ),
+                          filter );
+   }
 
+      
    public CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filter ) {
        ArrayList<String> colsToSum = new ArrayList<String>( 4 );
        colsToSum.add( "beds_to_plant" );
@@ -347,6 +412,7 @@ public class HSQLDB extends CPSDataModel {
        colsToSum.add( "plants_needed" );
        colsToSum.add( "plants_to_start" );
        colsToSum.add( "flats_needed" ); 
+       colsToSum.add( "total_yield" );
        
        try {
            return resultSetAsPlanting( query.submitSummedCropPlanQuery( plan_name,
@@ -354,7 +420,7 @@ public class HSQLDB extends CPSDataModel {
                                                                         getCropInheritanceColumnMapping(),
                                                                         colsToSum,
                                                                         buildComplexFilterExpression( this.getCropPlanFilterColumnNames(),
-                                                                                               filter )));
+                                                                                                      filter )));
        }
        catch ( SQLException e ) {
            e.printStackTrace();
@@ -469,6 +535,21 @@ public class HSQLDB extends CPSDataModel {
 //            crop.setSuccessions( rs.getBoolean("successions") );
             
             crop.setTimeToTP( getInt( rs, "time_to_tp" ));
+            
+            // we have to go through these acrobatics because these fields
+            // are inheritable and can be null
+            boolean b = rs.getBoolean( "direct_seed" );
+            if ( rs.wasNull() )
+                 crop.setDirectSeeded( (Boolean) null );
+            else
+                 crop.setDirectSeeded( b );
+            
+            b = rs.getBoolean( "frost_hardy" );
+            if ( rs.wasNull() )
+                 crop.setFrostHardy( (Boolean) null );
+            else
+                 crop.setFrostHardy( b );
+            
           } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
          
          try {
@@ -613,6 +694,9 @@ public class HSQLDB extends CPSDataModel {
    }
    
    private CPSPlanting resultSetAsPlanting( ResultSet rs ) throws SQLException {
+      return resultSetAsPlanting( rs, false );
+   }
+   private CPSPlanting resultSetAsPlanting( ResultSet rs, boolean summedPlanting ) throws SQLException {
       
       CPSPlanting p = new CPSPlanting();
       
@@ -630,7 +714,10 @@ public class HSQLDB extends CPSDataModel {
             p.setVarietyName( captureString( rs.getString( "var_name" ) ));
 
             p.setLocation( captureString( rs.getString( "location" )));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+                System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); 
+          }
          
          try {           
             p.setDateToPlant( captureDate( rs.getDate( "date_plant" )));
@@ -641,16 +728,25 @@ public class HSQLDB extends CPSDataModel {
             p.setDoneTP( rs.getBoolean( "done_TP" ));
             p.setDoneHarvest( rs.getBoolean( "done_harvest" ));
 //          } catch ( SQLException ignore ) {}
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+         }
          
          try {
+             
+             // These are all used for the "summed" plantings
             p.setBedsToPlant( getFloat( rs, "beds_to_plant") );
             p.setPlantsNeeded( getInt( rs, "plants_needed") );
             p.setPlantsToStart( getInt( rs, "plants_to_start") );
             p.setRowFtToPlant( getInt( rs, "rowft_to_plant") );
             p.setFlatsNeeded( getFloat( rs, "flats_needed") );
+            p.setTotalYield( getFloat( rs, "total_yield" ));
             
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+         }
          
          try {
             p.setMaturityDays( getInt( rs, "maturity") );
@@ -667,12 +763,28 @@ public class HSQLDB extends CPSDataModel {
             p.setPlanter( captureString( rs.getString( "planter" )));
             p.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
 
-         } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+            // we have to go through these acrobatics because these fields
+            // are inheritable and can be null
+            boolean b = rs.getBoolean( "direct_seed" );
+            if ( rs.wasNull() )
+                 p.setDirectSeeded( (Boolean) null );
+            else
+                 p.setDirectSeeded( b );
+            
+            b = rs.getBoolean( "frost_hardy" );
+            if ( rs.wasNull() )
+                 p.setFrostHardy( (Boolean) null );
+            else
+                 p.setFrostHardy( b );
+            
+         } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+         }
          
          try {
 
             p.setYieldPerFoot( getFloat( rs, "yield_p_foot" ) ) ;
-            p.setTotalYield( getFloat( rs, "total_yield" ));
             p.setYieldNumWeeks( getInt( rs, "yield_num_weeks" ));
             p.setYieldPerWeek( getFloat( rs, "yield_p_week" ));
             p.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
@@ -682,7 +794,10 @@ public class HSQLDB extends CPSDataModel {
             p.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
             p.setKeywords( captureString( rs.getString( "keywords" ) ));
             p.setNotes( captureString( rs.getString( "notes" ) ));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+         }
          
          try {            
             p.setCustomField1( rs.getString( "custom1" ));
@@ -690,7 +805,10 @@ public class HSQLDB extends CPSDataModel {
             p.setCustomField3( rs.getString( "custom3" ));
             p.setCustomField4( rs.getString( "custom4" ));
             p.setCustomField5( rs.getString( "custom5" ));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+         }
          
          try {
             
@@ -701,7 +819,11 @@ public class HSQLDB extends CPSDataModel {
                  p.inheritFrom( getCropInfo( cid ) );
             
 //          } catch ( SQLException ignore ) {}
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { 
+            if ( !summedPlanting )
+               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+         }
+         
       }
       
       return p;
@@ -772,8 +894,12 @@ public class HSQLDB extends CPSDataModel {
       else if ( o instanceof String )
          if ( ((String) o).equalsIgnoreCase( "null" ) || ((String) o).equals( "" ) )
             return "NULL";
-         else
-            return "'" + o.toString() + "'";
+         else {
+            String val = o.toString();
+            val = val.replaceAll( "'", "''" );
+//            val = val.replaceAll( "\"", "\"\"" );
+            return "'" + val + "'";
+         }
       // if the datum is an int whose value is -1, use NULL
       else if ( o instanceof Integer && ((Integer) o).intValue() == -1 )
          return "NULL";
@@ -801,12 +927,17 @@ public class HSQLDB extends CPSDataModel {
          return o.toString();
    }
 
-   public static String escapeTableName( String t ) {
-       // if t starts with a digit, then escape it
-       if ( t.matches("^\\d.*") )
-           return "\"" + t + "\"";
-       else
+   public static String escapeTableName( String t ) {       
+       // if the "table" is an embedded select statement (enclosed in "()")
+       // then don't quote it
+       if ( t.trim().matches( "\\(.*\\)" ))
            return t;
+       else {
+           // if the string contains a quotation mark, escape all quotation marks
+           if ( t.matches( ".*\".*" ) )
+               t = t.replaceAll( "\\\"", "\"\"" );
+           return "\"" + t + "\"";
+       }
    }
    
    /** captureValue methods are opposite of escapeValue method.
@@ -875,12 +1006,61 @@ public class HSQLDB extends CPSDataModel {
       idString = idString.substring( 0, idString.lastIndexOf( ", " ));
       return idString;
    }
+   
    public static String listToCSVString( ArrayList l ) {
        String s = "";
        for ( Object o : l )
            s += o.toString() + ", ";
        s = s.substring( 0, s.lastIndexOf( ", " ));
        return s;
+   }
+
+   
+   private String sortColumnFromPropertyNum( int recordType, int prop ) {
+      String sortCol = " asc";
+      
+      if ( prop < 0 )
+         sortCol = " desc";
+              
+      if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+         sortCol = columnMap.getCropColumnNameForProperty(prop) + sortCol;
+      else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
+         sortCol = columnMap.getPlantingColumnNameForProperty(prop) + sortCol;
+      else
+         sortCol = "";
+      
+      return sortCol;
+   }
+   
+   public String propNameFromPropNum( int recordType, int propertyNum ) {
+      if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+         return columnMap.getCropColumnNameForProperty( propertyNum );
+      else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
+         return columnMap.getPlantingColumnNameForProperty( propertyNum );
+      else
+         return "UnknownProperty";
+   }
+
+   public int propNumFromPropName( int recordType, String propertyName ) {
+      if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+         return columnMap.getCropPropertyNumFromName( propertyName );
+      else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
+         return columnMap.getPlantingPropertyNumFromName( propertyName );
+      else
+         return 0;
+   }
+
+   
+   
+   public String propertyNumListToColumnString( int recordType, ArrayList<Integer> props ) {
+      String cols = "";
+      for ( Integer prop : props )
+         if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+            cols += columnMap.getCropColumnNameForProperty( prop ) + ", ";
+         else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
+            cols += columnMap.getPlantingColumnNameForProperty( prop ) + ", ";
+      cols = cols.substring( 0, cols.lastIndexOf( ", " ));
+      return cols;
    }
    
    
@@ -896,7 +1076,6 @@ public class HSQLDB extends CPSDataModel {
        if ( filterString == null )
            filterString = "";
        
-       System.out.println("DEBUG(HSQLDB): Using text filter string: " + filterString );
        
        if ( filter != null && filter.isViewLimited() ) {
           
@@ -904,7 +1083,15 @@ public class HSQLDB extends CPSDataModel {
                filterString += " AND ";
        
            if ( filter.filterOnPlantingMethod() )
-               filterString += "time_to_tp " + (( filter.isDirectSeeded() ) ? " IS " : " IS NOT " ) + " NULL AND ";
+//               filterString += "time_to_tp " + (( filter.filterMethodDirectSeed() ) ? " IS " : " IS NOT " ) + " NULL AND ";
+               filterString += "direct_seed = " + 
+                               (( filter.filterMethodDirectSeed() ) ? " TRUE " : " FALSE OR direct_seed IS NULL " ) + 
+                               " AND ";
+//              if ( filter.filterMethodDirectSeed() )
+//                 filterString += "direct_seed = TRUE AND ";
+//              else
+//                 filterString += "direct_seed = FALSE OR direct_seed IS NULL AND ";
+                 
            
            if ( filter.filterOnPlanting() )
                filterString += "done_plant = " + (( filter.isDonePlanting() ) ? "TRUE " : "FALSE " ) + " AND ";
@@ -944,6 +1131,8 @@ public class HSQLDB extends CPSDataModel {
            filterString = filterString.substring( 0, filterString.lastIndexOf( " AND " ));
        }
            
+       System.out.println("DEBUG(HSQLDB): Using filter string: " + filterString );
+       
        return filterString;
        
    }
@@ -994,7 +1183,7 @@ public class HSQLDB extends CPSDataModel {
        
    }
    
-   public void shutdown() {
+   public int shutdown() {
       try {
           // TODO check to see which which mode we're in: if server, don't do the following
          Statement st = con.createStatement();
@@ -1004,11 +1193,23 @@ public class HSQLDB extends CPSDataModel {
       catch ( SQLException ex ) {
          ex.printStackTrace();
       }
+      return 0;
    }
 
     @Override
     protected void updateDataListeners() {
         super.updateDataListeners();
+    }
+    
+    
+    @Override
+    public int init() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+
+    @Override
+    protected int saveState() {
+        throw new UnsupportedOperationException( "Not supported yet." );
     }
 
 }

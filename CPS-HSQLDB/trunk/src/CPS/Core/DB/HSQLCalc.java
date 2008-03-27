@@ -52,16 +52,17 @@ public class HSQLCalc {
    /**
     * Calculate planting date based upon a desired harvest date and an approx. maturity days.
     */
-   public static Date plantFromHarvest( Date harvest, int mat, Integer adj, Integer weeksInGH ) {
+//   public static Date plantFromHarvest( Date harvest, int mat, Integer adj, Integer weeksInGH ) {
+   public static Date plantFromHarvest( Date harvest, int mat, Integer adj, Boolean directSeed ) {
        
        if ( harvest == null )
            return null;
        if ( adj == null )
            adj = new Integer( 0 );
       
-       if ( weeksInGH != null )
-           return null;
+       if ( directSeed == null || ! directSeed.booleanValue() )
        // type IS tp
+           return null;
 //          mat += weeksInGH.intValue() * 7;
       
        return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateHarvest( harvest, mat, adj.intValue() ).getTime() );
@@ -191,8 +192,8 @@ public class HSQLCalc {
    /**
     * Calculate plants to start from plants needed and a fudge factor.
     */
-   public static int plantsToStart( int plantsNeeded, double fudgeFactor ) {
-      return CPS.Data.CPSCalculations.calcPlantsToStart( plantsNeeded, fudgeFactor );
+   public static int plantsToStart( int plantsNeeded ) {
+      return CPS.Data.CPSCalculations.calcPlantsToStart( plantsNeeded );
    }
    
    public static int bedLength( String fieldName ) {
