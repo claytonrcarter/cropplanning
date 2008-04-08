@@ -26,6 +26,9 @@ import CPS.Module.CPSConfigurable;
 import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSExportable;
+import CPS.Module.CPSExporter;
+import CPS.Module.CPSImportable;
+import CPS.Module.CPSImporter;
 import CPS.Module.CPSModule;
 import CPS.Module.CPSUI;
 
@@ -65,7 +68,12 @@ public class TabbedUI extends CPSUI implements ActionListener {
     
     protected JMenuBar menuBar;
     protected JMenu exportMenu = null;
+    protected JMenu importMenu = null;
+    
     protected ArrayList<CPSExportable> exportables;
+    protected ArrayList<CPSExporter> exporters;
+    protected ArrayList<CPSImportable> importables;
+    protected ArrayList<CPSImporter> importers;
     
     private ArrayList<CPSModule> moduleList;
     private boolean modulesUpdated;
@@ -89,6 +97,11 @@ public class TabbedUI extends CPSUI implements ActionListener {
        setModulesUpdated( false );
        
        exportables = new ArrayList<CPSExportable>();
+       exporters = new ArrayList<CPSExporter>();
+       
+       importables = new ArrayList<CPSImportable>();
+       importers = new ArrayList<CPSImporter>();
+       
        settings = new SettingsDialog();
        
     }
@@ -126,7 +139,13 @@ public class TabbedUI extends CPSUI implements ActionListener {
         addModule( mod.getModuleName(), mod.display() );
         if ( mod instanceof CPSExportable ) {
             System.out.println("DEBUG(TabbedUI): Found exportable module: " + mod.getModuleName() );
-            this.addExportMenuItem( (CPSExportable) mod );
+            exportables.add( (CPSExportable) mod );
+            rebuildExportMenu();
+        }
+        if ( mod instanceof CPSImportable ) {
+            System.out.println("DEBUG(TabbedUI): Found importable module: " + mod.getModuleName() );
+            importables.add( (CPSImportable) mod );
+            rebuildImportMenu();
         }
         if ( mod instanceof CPSConfigurable ) {
             System.out.println("DEBUG(TabbedUI): Found configurable module: " + mod.getModuleName() );
@@ -148,9 +167,23 @@ public class TabbedUI extends CPSUI implements ActionListener {
 
     }
 
+    @Override
     public void addModuleConfiguration( CPSConfigurable c ) {
         settings.addModuleConfiguration(c);
     }
+
+   @Override
+   public void addExporter( CPSExporter ex ) {
+      exporters.add(ex);
+      rebuildExportMenu();
+   }
+
+   @Override
+   public void addImporter( CPSImporter im ) {
+      importers.add(im);
+      rebuildImportMenu();
+   }
+    
     
     private void addModules() {
        if ( tabbedpane == null || ! areModulesUpdated() )
@@ -200,12 +233,16 @@ public class TabbedUI extends CPSUI implements ActionListener {
         
         if ( exportMenu == null )
             initExportMenu();
+       
+       if ( importMenu == null )
+          initImportMenu();
         
         JMenuItem exitItem = new JMenuItem( MENU_ITEM_EXIT );
         exitItem.addActionListener( this );
        
        fileMenu.add( settingsItem );
        fileMenu.add( exportMenu );
+       fileMenu.add( importMenu );
        fileMenu.add( new JSeparator() );
        fileMenu.add( exitItem );
     
@@ -223,19 +260,73 @@ public class TabbedUI extends CPSUI implements ActionListener {
         
     }
     
-    public void addExportMenuItem( CPSExportable ex ) {
+    private void rebuildExportMenu() {
+       
+       if ( exportMenu == null )
+          initExportMenu();
+       else
+          exportMenu.removeAll();
+       
+       for ( CPSExporter exER : exporters ) {
+          
+          
+          JMenu exporterMenu = new JMenu( "To " + exER.getExportFileDefaultExtension().toUpperCase() );
+          exporterMenu.setEnabled(false);
+          
+          for ( CPSExportable exABLE : exportables ) {
+             
+             JMenuItem exportItem = new JMenuItem( exABLE.getExportName() );
+             exportItem.setActionCommand( "export-" + 
+                                          exER.getExportFileDefaultExtension() + "-" +
+                                          exABLE.getExportName() );
+             exportItem.addActionListener( this );
+          
+             exporterMenu.add( exportItem );
+             exporterMenu.setEnabled( true );
+             
+          }
+          
+          exportMenu.add( exporterMenu );
+          exportMenu.setEnabled( true );
+          
+       }
+       
+    }
+    
+    private void initImportMenu() {
+     
+       importMenu = new JMenu( "Import" );
+       importMenu.setEnabled(false);
+       
+    }
+    
+    private void rebuildImportMenu() {
+       
+       initImportMenu();
+       
+       for ( CPSImporter imER : importers ) {
+          
+          JMenu importerMenu = new JMenu( "From " + imER.getImportFileDefaultExtension().toUpperCase() );
+          importerMenu.setEnabled(false);
+          
+          for ( CPSImportable imABLE : importables ) {
+             
+             JMenuItem importItem = new JMenuItem( imABLE.getImportName() );
+             importItem.setActionCommand( "import-" + 
+                                          imER.getImportFileDefaultExtension() + "-" +
+                                          imABLE.getImportName() );
+             importItem.addActionListener( this );
         
-        JMenuItem exportItem = new JMenuItem( ex.getExportName() );
-        exportItem.setActionCommand( "export-" + ex.getExportName() ); 
-        exportItem.addActionListener(this);
-        
-        exportables.add( ex );
-        
-        if ( exportMenu == null )
-            initExportMenu();
-        exportMenu.add( exportItem );
-        exportMenu.setEnabled(true);
-        
+             importerMenu.add( importItem );
+             importerMenu.setEnabled( true );
+             
+          }
+          
+          importMenu.add( importerMenu );
+          importMenu.setEnabled( true );
+          
+       }
+       
     }
     
     private class ModuleListElement {
@@ -269,16 +360,65 @@ public class TabbedUI extends CPSUI implements ActionListener {
    
    public void actionPerformed( ActionEvent ae ) {
       String action = ae.getActionCommand();
+
+      System.out.println( "DEBUG(TabbedUI): caught action: " + action );
+                
       
-      if ( action.startsWith( "export-" )) {
+      if      ( action.startsWith( "export-" )) {
+//          String exportableName = action.substring( "export-".length(), action.length() );
+//          System.out.println("DEBUG(TabbedUI): Looking up exportable: " + exportableName );
+//          for ( CPSExportable ex : exportables )
+//              if ( ex.getExportName().equalsIgnoreCase( exportableName ) ) {
+//                  // export and get out of here
+//                  ex.exportData();
+//                  return;
+//              }
+         
+          // strip off the leading "export-"
           String exportableName = action.substring( "export-".length(), action.length() );
-          System.out.println("DEBUG(TabbedUI): Looking up exportable: " + exportableName );
-          for ( CPSExportable ex : exportables )
-              if ( ex.getExportName().equalsIgnoreCase( exportableName ) ) {
-                  // export and get out of here
-                  ex.exportData();
-                  return;
-              }
+          
+          for ( CPSExporter exER : exporters ) {
+             
+             if ( exportableName.startsWith( exER.getExportFileDefaultExtension() + "-" ) ) {
+          
+                // strip off the identifier for this exporter
+                exportableName = exportableName.substring( exER.getExportFileDefaultExtension().length() + 1,
+                                                           exportableName.length() );
+                
+                // now look up the correct exportable
+                System.out.println( "DEBUG(TabbedUI): Looking up exportable: " + exportableName );
+                for ( CPSExportable exABLE : exportables )
+                   if ( exABLE.getExportName().equalsIgnoreCase( exportableName ) ) {
+                      // do the deed and get the hell out of here
+                      exABLE.exportData( exER );
+                      return;
+                   }
+             }
+          }
+      }
+      else if ( action.startsWith( "import-" )) {
+         
+          // strip off the leading "import-"
+          String importableName = action.substring( "import-".length(), action.length() );
+          
+          for ( CPSImporter imER : importers ) {
+             
+             if ( importableName.startsWith( imER.getImportFileDefaultExtension() + "-" ) ) {
+          
+                // strip off the identifier for this exporter
+                importableName = importableName.substring( imER.getImportFileDefaultExtension().length() + 1,
+                                                           importableName.length() );
+                
+                // now look up the correct importable
+                System.out.println( "DEBUG(TabbedUI): Looking up importable: " + importableName );
+                for ( CPSImportable imABLE : importables )
+                   if ( imABLE.getImportName().equalsIgnoreCase( importableName ) ) {
+                      // do the deed and get the hell out of here
+                      imABLE.importData( imER );
+                      return;
+                   }
+             }
+          }
       }
       else if ( action.equalsIgnoreCase( MENU_ITEM_SETTINGS )) {
          settings.setVisible(true);
