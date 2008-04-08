@@ -35,22 +35,34 @@ public class LayoutAssist {
    /*
     * CREATION UTILITY METHODS
     */
+   public static void addVerticalSeparator( JPanel p, int col, int rowStart, int rowSpan ) {
+      addComponent( p, col, rowStart, 1, rowSpan, 
+                    new JSeparator( JSeparator.VERTICAL ),
+                    GridBagConstraints.CENTER,
+                    GridBagConstraints.VERTICAL );
+   }
    public static void addSeparator( JPanel p, int colStart, int row, int colSpan ) {
       
-      JSeparator js = new JSeparator( JSeparator.HORIZONTAL );
-
-      /* Insets: top, left, bottom, right */
-      Insets i = new Insets( 1, 1, 3, 1 );
-      GridBagConstraints c = new GridBagConstraints();
+      addComponent( p, colStart, row, colSpan, 1, 
+                    new JSeparator( JSeparator.HORIZONTAL ), 
+                    GridBagConstraints.CENTER,
+                    GridBagConstraints.HORIZONTAL,
+                    new Insets( 1, 1, 3, 1 ));
       
-      c.gridx = colStart;
-      c.gridy = row;
-      c.gridwidth = colSpan;
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.anchor = GridBagConstraints.CENTER;
-      c.insets = i;  
-      
-      p.add( js, c );
+//      JSeparator js = new JSeparator( JSeparator.HORIZONTAL );
+//
+//      /* Insets: top, left, bottom, right */
+//      Insets i = new Insets( 1, 1, 3, 1 );
+//      GridBagConstraints c = new GridBagConstraints();
+//      
+//      c.gridx = colStart;
+//      c.gridy = row;
+//      c.gridwidth = colSpan;
+//      c.fill = GridBagConstraints.HORIZONTAL;
+//      c.anchor = GridBagConstraints.CENTER;
+//      c.insets = i;  
+//      
+//      p.add( js, c );
       
    }
    
@@ -59,14 +71,33 @@ public class LayoutAssist {
        addComponent( p, col, row, jc, GridBagConstraints.FIRST_LINE_START );
    }
    public static void addComponent( JPanel p, int col, int row, JComponent jc, int align ) {
+      addComponent( p, col, row, 1, 1, jc, align );
+   }
+   public static void addComponent( JPanel p, int col, int row, int colSpan, int rowSpan, JComponent jc ) {
+      addComponent( p, col, row, colSpan, rowSpan, jc, GridBagConstraints.FIRST_LINE_START );
+   }
+   public static void addComponent( JPanel p, int col, int row, int colSpan, int rowSpan, JComponent jc, int align ) {
+      addComponent( p, col, row, colSpan, rowSpan, jc, align, new Insets( 0, 2, 2, 5 ) );
+   }
+   public static void addComponent( JPanel p, int col, int row, int colSpan, int rowSpan, JComponent jc, int align, int fill ) {
+      addComponent( p, col, row, colSpan, rowSpan, jc, align, fill, new Insets( 0, 2, 2, 5 ) );   
+   }
+   public static void addComponent( JPanel p, int col, int row, int colSpan, int rowSpan, JComponent jc, int align, Insets i ) {
+      addComponent( p, col, row, colSpan, rowSpan, jc, align, GridBagConstraints.NONE, i );   
+   }
+   public static void addComponent( JPanel p, 
+                                    int col, int row, int colSpan, int rowSpan, 
+                                    JComponent jc, 
+                                    int align, 
+                                    int fill,
+                                    Insets i ) {
        
-      Insets i = new Insets( 0, 2, 2, 5 );
       GridBagConstraints c = new GridBagConstraints();
-
       c.gridx = col;
       c.gridy = row;
-//      c.gridwidth  = colSpan;
-//       c.gridheight = rowSpan;
+      c.gridwidth  = colSpan;
+      c.gridheight = rowSpan;
+      c.fill = fill;
       c.anchor = align;
       c.insets = i;
 	
@@ -81,18 +112,24 @@ public class LayoutAssist {
    }
    
    public static void addButton( JPanel p, int col, int row, int colSpan, int rowSpan, AbstractButton b ) {
+       addButton( p, col, row, colSpan, rowSpan, b, GridBagConstraints.FIRST_LINE_START );
+   }
+   public static void addButton( JPanel p, int col, int row, int colSpan, int rowSpan,
+                                 AbstractButton b,
+                                 int align ) {
 
-      Insets i = new Insets( 0, 2, 2, 5 );
-      GridBagConstraints c = new GridBagConstraints();
-
-      c.gridx = col;
-      c.gridy = row;
-      c.gridwidth  = colSpan;
-       c.gridheight = rowSpan;
-      c.anchor = GridBagConstraints.FIRST_LINE_START;
-      c.insets = i;
-	
-      p.add( b, c );
+      addComponent( p, col, row, colSpan, rowSpan, b, align );
+//      Insets i = new Insets( 0, 2, 2, 5 );
+//      GridBagConstraints c = new GridBagConstraints();
+//
+//      c.gridx = col;
+//      c.gridy = row;
+//      c.gridwidth  = colSpan;
+//       c.gridheight = rowSpan;
+//      c.anchor = GridBagConstraints.FIRST_LINE_START;
+//      c.insets = i;
+//	
+//      p.add( b, c );
       
    }
    
@@ -182,24 +219,36 @@ public class LayoutAssist {
    }
    
    public static void addTextField( JPanel p, 
-                                     int col, int row,
-				     JTextField tf ) {
+                                    int col, int row,
+                                    JTextField tf ) {
+      addTextField( p, col, row, 1, 1, tf );
+   }
+   public static void addTextField( JPanel p, 
+                                    int col, int row,
+                                    int colSpan, int rowSpan,
+                                    JTextField tf ) {
 
-	Insets i  = new Insets( 0, 2, 2, 5 );
-	GridBagConstraints c = new GridBagConstraints();
-
-        // TODO this needs to affect individual components, not all components
-        // tf.getKeymap().setDefaultAction( new ColorChangeAction( tf ) );        
-        
-	tf.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
-							Color.GRAY,
-							Color.WHITE ));
-	c.gridx = col;
-	c.gridy = row;
-	c.anchor = GridBagConstraints.FIRST_LINE_START;
-	c.insets = i;
-	
-	p.add( tf, c );
+      tf.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
+                                                      Color.GRAY,
+                                                      Color.WHITE ));
+      addComponent( p, col, row, colSpan, rowSpan, tf,
+                    GridBagConstraints.FIRST_LINE_START,
+                    new Insets( 0, 2, 2, 5 ) );
+//	Insets i  = new Insets( 0, 2, 2, 5 );
+//	GridBagConstraints c = new GridBagConstraints();
+//
+//        // TODO this needs to affect individual components, not all components
+//        // tf.getKeymap().setDefaultAction( new ColorChangeAction( tf ) );        
+//        
+//	tf.setBorder( BorderFactory.createEtchedBorder( EtchedBorder.RAISED,
+//							Color.GRAY,
+//							Color.WHITE ));
+//	c.gridx = col;
+//	c.gridy = row;
+//	c.anchor = GridBagConstraints.FIRST_LINE_START;
+//	c.insets = i;
+//	
+//	p.add( tf, c );
 
     }
 

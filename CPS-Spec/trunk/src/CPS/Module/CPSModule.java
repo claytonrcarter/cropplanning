@@ -94,4 +94,12 @@ public abstract class CPSModule {
       return getModuleVersion().equalsIgnoreCase( ver );
    }
     
+   
+   protected void debug( String message ) {
+      debug( this.getModuleName(), message );
+   }
+   
+   protected void debug( String module, String message ) {
+      System.out.println("DEBUG(" + module + "): " + message );
+   }
 }

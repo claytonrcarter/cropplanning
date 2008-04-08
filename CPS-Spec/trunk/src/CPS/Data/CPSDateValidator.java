@@ -31,6 +31,7 @@ import java.util.GregorianCalendar;
 public class CPSDateValidator {
     
     public static String DATE_FORMAT_SHORT = "MM/dd";
+    public static String DATE_FORMAT_SHORT_DAY_OF_WEEK = "EEE MM/dd";
     public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
     public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";
     

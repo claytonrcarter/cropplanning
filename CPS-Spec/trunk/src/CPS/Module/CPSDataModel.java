@@ -170,37 +170,49 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract ArrayList<CPSCrop> getCropsAndVarietiesAsList();
    public abstract ArrayList<CPSPlanting> getCropPlanAsList( String planName );
    
-   public void importCropsAndVarieties( ArrayList<CPSCrop> crops ) {
-      ArrayList<CPSCrop> withSimilar = new ArrayList<CPSCrop>();
-      CPSCrop temp;
-      for ( int i = 0; i < crops.size(); i ++ ) {
-         // if this crop already exists, remove it from the list and keep going
-         if ( ! getCropInfo( crops.get(i).getCropName() ).getCropName().equals("") ) {
-            System.err.println( "Crop already exists: " + crops.get(i).getCropName() );
-            crops.remove( i-- );
-         }
-         else
-            /* if this crop doesn't have a similar crop entry,
-             * or it does and that similar crop exists
-             * then we add it and remove it from the list
-             * else we just skip it
-             */
-            if ( crops.get(i).getSimilarCrop().equals("") ||
-                 ! getCropInfo( crops.get(i).getSimilarCrop() ).getCropName().equals("") ) {
-               // create the current crop, but decrement i because the ArrayList
-               // will shift all indices when we call remove
-               System.out.println("Importing data for crop: " + crops.get(i).getCropName() +
-                                  " similar to: " + crops.get(i).getSimilarCrop() );
-               createCrop( crops.remove(i--) );
-            }
-            // else leave the crop in the list to be dealt with later
+   public void importCropPlan( String planName, ArrayList<CPSPlanting> importedPlan ) {
+      int ip = 0;
+      
+      if ( getListOfCropPlans().contains(planName) ) {
+         System.err.println("Cannot import crop plan: a plan already exists with that name!" );
+         return;
       }
       
-      System.out.println("There are " + crops.size() + " remaining crops.");
+      createCropPlan(planName);
       
-      // now make another pass for crops w/ similar crops that weren't preexisting
-      if ( crops.size() > 0 )
-         importCropsAndVarieties( crops );
+      for ( CPSPlanting p : importedPlan ) {
+         createPlanting( planName, p );
+         ip++;
+      }
+      
+      System.out.println( "Imported " + ip + " plantings into crop plan " + planName );
+   }
+   
+   public void importCropsAndVarieties( ArrayList<CPSCrop> importedCrops ) {
+      int ic = 0, iv = 0;
+      int skipped = 0;
+      
+      for ( CPSCrop c : importedCrops ) {
+
+         // if the crop or var already exists, skip it
+         if ( c.isCrop()    && getCropInfo(    c.getCropName() ).getID()                     != -1 ||
+              c.isVariety() && getVarietyInfo( c.getCropName(), c.getVarietyName() ).getID() != -1 ) {
+            System.err.println( "Crop already exists: " + c.getCropName() + " " + c.getVarietyName() );
+            skipped++;
+            continue;
+         }
+         
+         System.out.println( "Importing data for crop: " + c.getCropName() + " " + c.getVarietyName() );
+         createCrop( c );
+         if ( c.isCrop() )
+            ic++;
+         else
+            iv++;
+      
+      }
+      
+      System.out.println( "Imported " + ic + " crops and " + iv + " varieties.  Skipped " + skipped + " duplicates." );
+      
    }
    
 }

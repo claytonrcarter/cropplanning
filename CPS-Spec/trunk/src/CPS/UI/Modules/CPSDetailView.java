@@ -58,8 +58,11 @@ public abstract class CPSDetailView extends CPSDataModelUser
    
     private boolean displayRecord = false;
    
-    protected CPSMasterDetailModule uiManager;
+    protected CPSMasterDetailModule uiManager = null;
    
+    /** This constructor does nothing is meant for testing only */
+    protected CPSDetailView() {}
+    
     public CPSDetailView ( CPSMasterDetailModule ui ) {
         this( ui, null );
     }

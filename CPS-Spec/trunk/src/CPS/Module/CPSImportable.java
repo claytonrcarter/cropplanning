@@ -1,4 +1,4 @@
-/* CPSExportable.java - created: Feb 5, 2008
+/* CPSImportable.java - created: Apr 3, 2008
  * Copyright (C) 2008 Clayton Carter
  * 
  * This file is part of the project "Crop Planning Software".  For more
@@ -24,14 +24,12 @@
 package CPS.Module;
 
 /**
- * A simple interface to define a way by this modules (or anything, for that matter)
- * may reveal themselves as having data to export and then to actually export
- * said data.
+ * A simple interface by which modules can "expose" themselves to importable data.
+ * @author Clayton Carter
  */
-public interface CPSExportable {
+public interface CPSImportable {
 
-    public String getExportName();
-    public void exportData();
-    public void exportData( CPSExporter ex );
+   public String getImportName();
+   public void importData( CPSImporter im );
     
 }

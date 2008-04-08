@@ -120,7 +120,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
     public int init() { return 0; }
     protected int saveState() {
        getPrefs().put( KEY_DISPLAYED_COLUMNS, getDisplayedColumnListAsString() );
-       getPrefs().put( KEY_DISPLAYED_TABLE, getDisplayedTableName() );
+       if ( getDisplayedTableName() == null )
+          getPrefs().remove( KEY_DISPLAYED_TABLE );
+       else
+          getPrefs().put( KEY_DISPLAYED_TABLE, getDisplayedTableName() );
        return 0;
     }
     public int shutdown() {

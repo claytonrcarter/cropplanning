@@ -11,5 +11,7 @@ public abstract class CPSUI extends CPSModule implements CPSUIChangeListener {
     public abstract void addModule ( String name, JPanel content );
     
     public abstract void addModuleConfiguration( CPSConfigurable config );
+    public abstract void addExporter( CPSExporter ex );
+    public abstract void addImporter( CPSImporter im );
 
 }
