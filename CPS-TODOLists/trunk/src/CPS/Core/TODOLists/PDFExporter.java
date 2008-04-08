@@ -196,7 +196,7 @@ public class PDFExporter {
                 else if ( o instanceof Date )
 //                    table.addCell( new regCell( dateValidator.format( (Date) o ) ) );
                     table.addCell( new regCell( CPSDateValidator.format( (Date) o, 
-                                                                         CPSDateValidator.DATE_FORMAT_SHORT ) ) );
+                                                                         CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK ) ) );
                 else if ( o instanceof Boolean )
                     if ( ( (Boolean) o ).booleanValue() )
                         table.addCell( new regCell( "yes" ) );
