@@ -59,13 +59,20 @@ public class CropPlanning implements Runnable {
        if ( dm instanceof CPSConfigurable )
            ui.addModuleConfiguration( (CPSConfigurable) dm );
        
+       mm.loadImportersExporters();
+       for ( CPSModule ieMod : mm.getImportersExporters() ) {
+          if ( ieMod instanceof CPSExporter )
+             ui.addExporter( (CPSExporter) ieMod );
+          if ( ieMod instanceof CPSImporter )
+             ui.addImporter( (CPSImporter) ieMod );
+       }
+       
        mm.loadCoreModules();
-       for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {
-           // get the module (which was loaded and inited by ModuleManager)
-          CPSDisplayableDataUserModule cm2 = mm.getCoreModule(i);
+//       for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {
+//           // get the module (which was loaded and inited by ModuleManager)
+//          CPSDisplayableDataUserModule cm2 = mm.getCoreModule(i);
+       for ( CPSDisplayableDataUserModule cm2 : mm.getCoreModules() ) {
           System.out.println("DRIVER: Initializing module: " + cm2.getModuleName() );
-          // apply global settings
-//           cm2.receiveGlobalSettings( mm.getGlobalSettings() );
           // apply data source
           cm2.setDataSource(dm);
           // add it to the UI

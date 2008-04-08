@@ -24,6 +24,8 @@ package CPS;
 
 import CPS.Module.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 public class ModuleManager {
@@ -31,6 +33,7 @@ public class ModuleManager {
    ArrayList<CPSUI>   uiMods;
    ArrayList<CPSDataModel>  dmMods;
    ArrayList<CPSDisplayableDataUserModule> coreMods;
+   ArrayList<CPSModule> importExportMods;
    
    CPSGlobalSettings globalSettings;
    
@@ -38,6 +41,7 @@ public class ModuleManager {
       uiMods   = new ArrayList<CPSUI>();
       dmMods   = new ArrayList<CPSDataModel>();
       coreMods = new ArrayList<CPSDisplayableDataUserModule>();
+      importExportMods = new ArrayList<CPSModule>();
       
       globalSettings = new CPSGlobalSettings();
       
@@ -57,12 +61,24 @@ public class ModuleManager {
       return dmMods.get(0);
    }
    
+   public void loadImportersExporters() {
+      importExportMods.add( (CPSModule) loadPlugin( "CPS." + "CSV.CSV" ));
+   }
+   
+   public List<CPSModule> getImportersExporters() {
+      return Collections.unmodifiableList( importExportMods );
+   }
+   
    /* Perhaps we should do more error checking here?  What about unfound core modules? */
    public void loadCoreModules() {
       coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
       coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
       coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "TODOLists.TODOLists" ) );
       
+   }
+   
+   public List<CPSDisplayableDataUserModule> getCoreModules() {
+      return Collections.unmodifiableList( coreMods );
    }
    
    public int getNumCoreModules() {
