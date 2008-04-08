@@ -35,7 +35,7 @@ public class HSQLDBSchemas {
       String s;
       
       s  = " id        INTEGER IDENTITY, ";
-      s += " plan_name VARCHAR(256) ";
+      s += " plan_name VARCHAR(256), ";
       s += " year      INTEGER, ";
       s += " locked    BOOLEAN DEFAULT false, ";
       s += " description VARCHAR ";
