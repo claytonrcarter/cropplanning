@@ -20,7 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package CPS;
+package CPS.CSV;
 
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
