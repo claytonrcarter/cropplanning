@@ -24,9 +24,11 @@
 package CPS.Core.TODOLists;
 
 import CPS.Data.CPSDateValidator;
+import CPS.Data.CPSRecord;
 import CPS.UI.Swing.CPSTable;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
@@ -49,6 +51,7 @@ public class PDFExporter {
     
     private Font fontTableReg = FontFactory.getFont( FontFactory.HELVETICA, 10 );
     private Font fontTableHead = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 10 );
+    private Font fontTableItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 10 );
     
     private Font fontPageHeader = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 14 );
         
@@ -175,48 +178,110 @@ public class PDFExporter {
      * @param args the command line arguments
      */
     public PdfPTable convertJTable( JTable jtable ) {
-   
-        PdfPTable table = new PdfPTable( jtable.getColumnCount() );
-//            table.setTotalWidth( document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin()  );
+
+       boolean tableIncludesNotes = false;
+       boolean rowHasNotes = false;
+       String notesValue = "";
+       int notesIndex = -1;
+       
+       // find Notes column (if there is one)
+       for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
+          String headName;
+          if ( jtable instanceof CPSTable )
+             headName = jtable.getColumnModel().getColumn( col ).getHeaderValue().toString();
+          else
+             headName = jtable.getColumnName( col );
+          if ( headName.equalsIgnoreCase( "notes" ) ) {
+//             TODOLists.debug( "PDFExporter", "found notes column; col number " + col );
+             // do not add the notes header
+             tableIncludesNotes = true;
+             notesIndex = col;
+          }
+       }
+
+       int colCount = (tableIncludesNotes) ? jtable.getColumnCount() - 1 : jtable.getColumnCount();
+       PdfPTable table = new PdfPTable( colCount );
 
         // create header row
-        for ( int col = 0; col < jtable.getColumnCount(); col++ )
+        for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
+           String headName;
             if ( jtable instanceof CPSTable )
-                table.addCell( new headCell( jtable.getColumnModel().getColumn(col).getHeaderValue().toString() ) );
+                headName = jtable.getColumnModel().getColumn(col).getHeaderValue().toString();
             else
-                table.addCell( new headCell( jtable.getColumnName( col ) ) );
+                headName = jtable.getColumnName( col );
+           if ( ! tableIncludesNotes || col != notesIndex )
+              table.addCell( new headCell( headName ) );
+        }
         table.setHeaderRows( 1 );
-
+        
         // now fill in the rest of the table
-        for ( int row = 0; row < jtable.getRowCount(); row++ )
-            for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
+        for ( int row = 0; row < jtable.getRowCount(); row++ ) {
+           rowHasNotes = false;
+           
+           for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
                 Object o = jtable.getValueAt( row, col );
-                if ( o == null )
+//               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
+//               TODOLists.debug( "PDFExporter", "Value is " + o.toString() );
+                if ( o == null ) {
+                   if ( ! tableIncludesNotes || col != notesIndex )
                     table.addCell( new regCell( "" ) );
+                }
                 else if ( o instanceof Date )
-//                    table.addCell( new regCell( dateValidator.format( (Date) o ) ) );
                     table.addCell( new regCell( CPSDateValidator.format( (Date) o, 
-                                                                         CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK ) ) );
+                                                                         CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK )));
                 else if ( o instanceof Boolean )
                     if ( ( (Boolean) o ).booleanValue() )
                         table.addCell( new regCell( "yes" ) );
                     else
                         table.addCell( new regCell( "" ) );
-                else
-                    table.addCell( new regCell( o.toString() ) );
+                else if ( o instanceof Float )
+                    table.addCell( new regCell( CPSRecord.formatFloat( ((Float) o).floatValue(), 3) ));
+                else if ( o instanceof Double )
+                    table.addCell( new regCell( CPSRecord.formatFloat( ((Double) o).floatValue(), 3) ));
+                else {
+//                   String cellValue = o.toString();
+                   
+                   if ( tableIncludesNotes && col == notesIndex ) {
+                      if ( o == null )
+                         rowHasNotes = false;
+                      else {
+                         rowHasNotes = true;
+                         notesValue = o.toString();
+                      }
+                   }
+                   else
+                      table.addCell( new regCell( o.toString() ) );
+                }
             }
+           
+           // now deal w/ the Notes data
+           if ( tableIncludesNotes && rowHasNotes ) {
+//              TODOLists.debug( "PDFExporter", "Adding notes entry." );
+              table.addCell( new noteCell() );
+              regCell c = new regCell( notesValue );
+              // reset the font to be smaller
+//              c.getPhrase().setFont(fontHeadFootReg);
+              c.setPhrase( new Phrase( notesValue, fontHeadFootReg ));
+              c.setColspan( colCount - 1 );
+              table.addCell( c );
+           }
+//           else
+//              TODOLists.debug( "PDFExporter", "No notes entry for this row." );
+        }
             
-        float[] widths = new float[jtable.getColumnCount()];
-        for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
-//            System.out.println( "Column " + jtable.getColumnName( col ) + " is of type " + jtable.getColumnClass( col ).toString() );
-            if      ( jtable.getColumnClass(col).equals( new Boolean(true).getClass() ))
-                widths[col] = 3f;
-            else if ( jtable.getColumnClass( col ).equals( new Integer( 0 ).getClass() ) ||
-                      jtable.getColumnClass( col ).equals( new Double( 0 ).getClass() ) ||
-                      jtable.getColumnClass( col ).equals( new Float( 0 ).getClass() ) )
-                widths[col] = 5f;
-            else // String, Date, etc
-                widths[col] = 10f;
+        // set the widths for the columns
+        float[] widths = new float[colCount];
+        for ( int col = 0; col < colCount; col++ ) {
+           if ( tableIncludesNotes && col == notesIndex )
+              continue;
+           else if ( jtable.getColumnClass( col ).equals( new Boolean( true ).getClass() ) )
+              widths[col] = 3f;
+           else if ( jtable.getColumnClass( col ).equals( new Integer( 0 ).getClass() ) ||
+                     jtable.getColumnClass( col ).equals( new Double( 0 ).getClass() ) ||
+                     jtable.getColumnClass( col ).equals( new Float( 0 ).getClass() ) )
+              widths[col] = 5f;
+           else // String, Date, etc
+              widths[col] = 10f;
         }
         
         try {
@@ -250,5 +315,15 @@ public class PDFExporter {
         }
     }
     
+    public class noteCell extends  PdfPCell {
+       public noteCell() {
+            super( new Phrase( "Notes:", fontHeadFootItal ));
+            setBackgroundColor( Color.WHITE );
+            setHorizontalAlignment( PdfPCell.ALIGN_RIGHT );
+            disableBorderSide( Rectangle.LEFT );
+            disableBorderSide( Rectangle.BOTTOM );
+            setBorderWidth( .25f );
+        }
+    }
     
 }

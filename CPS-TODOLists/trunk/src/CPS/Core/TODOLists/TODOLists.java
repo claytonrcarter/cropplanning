@@ -126,9 +126,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         dtcDateOtherStart.addPropertyChangeListener( this );
         dtcDateOtherEnd.addPropertyChangeListener( this );
         
-        rdoUncompThisWeek = new JRadioButton( "This week only", true );
+        rdoUncompThisWeek = new JRadioButton( "This week only", false );
         rdoUncompLastWeek = new JRadioButton( "This week and last week", false );
-        rdoUncompAll = new JRadioButton( "All uncomplete plantings", false );
+        rdoUncompAll = new JRadioButton( "All uncomplete plantings", true );
         rdoUncompThisWeek.addItemListener(this);
         rdoUncompLastWeek.addItemListener( this );
         rdoUncompAll.addItemListener( this );
@@ -221,6 +221,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                                 CPSDataModelConstants.PROP_FLAT_SIZE,
                                 CPSDataModelConstants.PROP_FLATS_NEEDED
                                                  } ));
+        // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
                 
 //        String filename = "GH Seeding List - " + new SimpleDateFormat( "MMM dd yyyy" ).format( dtcDateOtherStart.getDate() ) + ".pdf";
@@ -286,8 +287,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                                 CPSDataModelConstants.PROP_BEDS_PLANT,
                                 CPSDataModelConstants.PROP_ROWS_P_BED,
                                 CPSDataModelConstants.PROP_ROWFT_PLANT,
-                                CPSDataModelConstants.PROP_PLANTER,
-                                CPSDataModelConstants.PROP_PLANTER_SETTING
+                                CPSDataModelConstants.PROP_PLANT_NOTES,
+//                                CPSDataModelConstants.PROP_PLANTER_SETTING
                                                   } ) );
 //        String sortCol = "date_plant";
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
@@ -358,9 +359,10 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                                 CPSDataModelConstants.PROP_VAR_NAME,
                                 CPSDataModelConstants.PROP_LOCATION,
                                 CPSDataModelConstants.PROP_BEDS_PLANT,
-                                CPSDataModelConstants.PROP_ROWS_P_BED,
                                 CPSDataModelConstants.PROP_ROWFT_PLANT,
-                                CPSDataModelConstants.PROP_SPACE_INROW
+                                CPSDataModelConstants.PROP_ROWS_P_BED,
+                                CPSDataModelConstants.PROP_SPACE_INROW,
+                                CPSDataModelConstants.PROP_PLANT_NOTES
                                } ) );
          sortProp = CPSDataModelConstants.PROP_DATE_TP;
         
@@ -368,8 +370,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         filter.setFilterOnPlantingMethod(true);
         filter.setFilterMethodDirectSeed(false);
         
-        // show only uncompleted transplantings
-        filter.setFilterOnPlanting(false);
+        // show only uncompleted transplantings that have been seeded
+        filter.setFilterOnPlanting(true);
+        filter.setDonePlanting(true);
         filter.setFilterOnTransplanting(true);
         filter.setDoneTransplanting(false);
         
