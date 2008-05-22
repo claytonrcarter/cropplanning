@@ -30,6 +30,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+/**
+ * A class to handle updating the database between versions.
+ * 
+ * @author Clayton Carter
+ */
 public class HSQLUpdate {
     
    protected static void updateDB( Connection con, long currentVersion ) {
@@ -40,7 +45,7 @@ public class HSQLUpdate {
            // if the previously used version was so old as to not even
            // have the CPS_METADATA table
            if ( ! HSQLConnect.tableExists( con, "CPS_METADATA" ) ) {
-               System.out.println("DEBUG(DBUpdater): Metadata table DNE, attempting to create");
+               CPSModule.debug( "HSQLUpdate", "Metadata table DNE, attempting to create");
                Statement st = con.createStatement();
                st.executeUpdate( HSQLDBCreator.createTableDBMetaData() );
                HSQLDBCreator.setLastUsedVersion( con, 0 );
@@ -61,7 +66,7 @@ public class HSQLUpdate {
            }
            
            if ( previousVersion == currentVersion ) {
-               System.out.println("DEBug(DBUpdater): DB is up to date!");
+               CPSModule.debug( "HSQLUpdate", "DB is up to date!");
                // nothing to do
                return;
            }
@@ -74,6 +79,9 @@ public class HSQLUpdate {
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 3 ))
                updateForV000_001_003(con);
            
+           if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 4 ))
+             updateForV000_001_004( con );
+           
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
        
@@ -84,7 +92,7 @@ public class HSQLUpdate {
    
    private static void updateForV000_001_002( Connection con ) throws java.sql.SQLException {
        
-       System.out.println( "DEBUG(DBUpdater): Updating DB for changes in version 0.1.2" );
+       CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.2" );
        
        ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
        Statement st = con.createStatement();
@@ -111,20 +119,20 @@ public class HSQLUpdate {
            // rename working table to old table
            update += "ALTER TABLE " + HSQLDB.escapeTableName( tempPlan ) + 
                      " RENAME TO " + HSQLDB.escapeTableName( plan ) + "; ";
-           System.out.println("DEBUG(DBUpdater): Executing update: " + update );
+           CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
            st.executeUpdate(update);
            
        }
        
        // DELETE unused table PLANTING_METHODS
        update = "DROP TABLE planting_methods";
-       System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+       HSQLDB.debug( "DBUpdater", "Executing update: " + update );
        st.executeUpdate( update );
        
        // DELETE "common_plantings" table and remove it from list of crop plans
        update  = "DROP TABLE common_plantings; ";
        update += "DELETE FROM crop_plans WHERE LOWER( plan_name ) = 'common_plantings'";      
-       System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+       CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
        st.executeUpdate( update );
        
        st.close();
@@ -132,7 +140,7 @@ public class HSQLUpdate {
    
    private static void updateForV000_001_003( Connection con ) throws java.sql.SQLException {
        
-       System.out.println( "DEBUG(DBUpdater): Updating DB for changes in version 0.1.3" );
+       CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.3" );
        
        Statement st = con.createStatement();
        String update;
@@ -145,14 +153,14 @@ public class HSQLUpdate {
                  " SET year = " + HSQLDB.escapeValue( GregorianCalendar.getInstance().get( Calendar.YEAR ) ) +
                  " WHERE year IS NULL; ";
        
-       System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+       CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
        st.executeUpdate( update );
        
        // Add columns to the crops_varieties table
        update  = "ALTER TABLE crops_varieties ADD COLUMN direct_seed BOOLEAN; ";
        update += "ALTER TABLE crops_varieties ADD COLUMN frost_hardy BOOLEAN; ";
        
-       System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+       CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
        st.executeUpdate( update );
        
        ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
@@ -164,7 +172,7 @@ public class HSQLUpdate {
                        " WHERE plan_name = " + HSQLDB.escapeValue( plan ) + "; ";
        }
        if ( ! update.equals("")) {
-          System.out.println( "DEBUG(DBUpdater): Executing update: " + update );
+          CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
           st.executeUpdate( update );
        }
           
@@ -174,11 +182,87 @@ public class HSQLUpdate {
            // Add frost_hardy column to each crop plan (direct_seed is already there)
            update = "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN frost_hardy BOOLEAN; ";
        
-           System.out.println("DEBUG(DBUpdater): Executing update: " + update );
+           CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
            st.executeUpdate(update);
            
        }
        
+   }
+   
+   private static void updateForV000_001_004( Connection con ) throws java.sql.SQLException {
+    
+      CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.4" );
+      
+      Statement st = con.createStatement();
+      String update;
+       
+      // alter columns in the CropDB for enhanced tracking of DS/TP info
+      // add and rename columns
+      update  = "ALTER TABLE crops_varieties ALTER COLUMN misc_adjust  RENAME TO ds_mat_adjust; ";
+      
+      CPSModule.debug( "DBUpdater", "Executing update: " + update );
+      st.executeUpdate( update );
+      
+      update  = "ALTER TABLE crops_varieties ADD   COLUMN ds_rows_p_bed  INTEGER; ";
+      update += "ALTER TABLE crops_varieties ADD   COLUMN ds_row_space   FLOAT; ";
+      update += "ALTER TABLE crops_varieties ADD   COLUMN ds_plant_notes VARCHAR; ";
+      
+      update += "ALTER TABLE crops_varieties ADD   COLUMN transplant     BOOLEAN; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN mat_adjust   RENAME TO tp_mat_adjust; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN rows_p_bed   RENAME TO tp_rows_p_bed; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN space_betrow RENAME TO tp_row_space; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN space_inrow  RENAME TO tp_inrow_space; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN time_to_tp   RENAME TO tp_time_in_gh; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN flat_size    RENAME TO tp_flat_size; ";
+      update += "ALTER TABLE crops_varieties ADD   COLUMN tp_pot_up           BOOLEAN; ";
+      update += "ALTER TABLE crops_varieties ADD   COLUMN tp_pot_up_notes     VARCHAR; ";
+      update += "ALTER TABLE crops_varieties ALTER COLUMN planter      RENAME TO tp_plant_notes; ";
+
+      CPSModule.debug( "DBUpdater", "Executing update: " + update );
+      st.executeUpdate( update );
+           
+      
+      // save info from column planter_setting before deleting it
+      update  = "UPDATE crops_varieties " +
+                " SET tp_plant_notes = CONCAT( tp_plant_notes, CONCAT( '; ', planter_setting )) " +
+                " WHERE tp_plant_notes IS NOT NULL OR planter_setting IS NOT NULL; ";
+      update += "ALTER TABLE crops_varieties DROP COLUMN planter_setting; ";
+      
+      CPSModule.debug( "DBUpdater", "Executing update: " + update );
+      st.executeUpdate( update );
+
+
+      ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+      update = "";
+      for ( String plan : plans ) {
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ignore              BOOLEAN; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN date_plant_actual   DATE; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN date_tp_actual      DATE; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN date_harvest_actual DATE; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ALTER COLUMN date_plant   RENAME TO date_plant_plan; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ALTER COLUMN date_tp      RENAME TO date_tp_plan; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ALTER COLUMN date_harvest RENAME TO date_harvest_plan; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN ds_adjust; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN planting_adjust; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN season_adjust; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN misc_adjust; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN plant_notes_spec VARCHAR; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN pot_up           BOOLEAN; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN pot_up_notes     VARCHAR; ";
+         
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ALTER COLUMN planter RENAME TO plant_notes_inh; ";
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET plant_notes_inh = CONCAT( plant_notes_inh, CONCAT( '; ', planter_setting )) " +
+                   " WHERE plant_notes_inh IS NOT NULL OR planter_setting IS NOT NULL; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN planter_setting; ";
+      
+      }
+      if ( ! update.equals( "" ) ) {
+         CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
+         st.executeUpdate( update );
+      }
+
+      
    }
    
 }

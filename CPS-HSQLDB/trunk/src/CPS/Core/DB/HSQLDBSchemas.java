@@ -65,32 +65,39 @@ public class HSQLDBSchemas {
       
       s += "maturity        INTEGER, ";
       s += "mat_adjust      INTEGER, ";
-      s += "planting_adjust INTEGER, ";
-      s += "ds_adjust       INTEGER, ";
-      s += "season_adjust   INTEGER, ";
+//      s += "planting_adjust INTEGER, ";
+//      s += "ds_adjust       INTEGER, ";
+//      s += "season_adjust   INTEGER, ";
       s += "time_to_tp      INTEGER, ";
-      s += "misc_adjust     INTEGER, ";
+//      s += "misc_adjust     INTEGER, ";
       s += "direct_seed     BOOLEAN, ";
       s += "frost_hardy     BOOLEAN, ";
+      s += "ignore          BOOLEAN, ";
       
-      s += "date_plant      DATE, ";
-      s += "done_plant      BOOLEAN, ";
-      s += "date_tp         DATE, ";
-      s += "done_tp         BOOLEAN, ";
-      s += "date_harvest    DATE, ";
-      s += "done_harvest    BOOLEAN, ";
+      s += "date_plant_plan     DATE, ";
+      s += "done_plant          BOOLEAN, ";
+      s += "date_plant_actual   DATE, ";
+      s += "date_tp_plan        DATE, ";
+      s += "done_tp             BOOLEAN, ";
+      s += "date_tp_actual      DATE, ";
+      s += "date_harvest_plan   DATE, ";
+      s += "done_harvest        BOOLEAN, ";
+      s += "date_harvest_actual DATE, ";
       
-      s += "beds_to_plant   FLOAT, ";
-      s += "rows_p_bed      INTEGER, ";
-      s += "plants_needed   INTEGER, ";
-      s += "rowft_to_plant  INTEGER, ";
-      s += "inrow_space     FLOAT, ";
-      s += "row_space       FLOAT, ";
-      s += "plants_to_start INTEGER, ";
-      s += "flat_size       VARCHAR, ";
-      s += "flats_needed    FLOAT, ";
-      s += "planter         VARCHAR, ";
-      s += "planter_setting VARCHAR, ";
+      s += "beds_to_plant    FLOAT, ";
+      s += "rows_p_bed       INTEGER, ";
+      s += "plants_needed    INTEGER, ";
+      s += "rowft_to_plant   INTEGER, ";
+      s += "inrow_space      FLOAT, ";
+      s += "row_space        FLOAT, ";
+      s += "plants_to_start  INTEGER, ";
+      s += "flat_size        VARCHAR, ";
+      s += "flats_needed     FLOAT, ";
+      s += "plant_notes_inh  VARCHAR, ";
+      s += "plant_notes_spec VARCHAR, ";
+      s += "pot_up           BOOLEAN, ";
+      s += "pot_up_notes     VARCHAR, ";
+//      s += "planter_setting VARCHAR, ";
       
       s += "yield_p_foot    FLOAT, ";
       s += "total_yield     FLOAT, ";
@@ -115,37 +122,53 @@ public class HSQLDBSchemas {
       
       String s;
       
-      s   = "id                 INTEGER IDENTITY PRIMARY KEY, ";
-      s  += "crop_name          VARCHAR(256), ";
-      s  += "var_name           VARCHAR, ";
-      s  += "similar_to         VARCHAR, ";
-      s  += "bot_name           VARCHAR, ";
-      s  += "fam_name           VARCHAR, ";
-      s  += "groups             VARCHAR, ";
-      s  += "successions        BOOLEAN, ";
+      s  = "id                 INTEGER IDENTITY PRIMARY KEY, ";
+      s += "crop_name          VARCHAR(256), ";
+      s += "var_name           VARCHAR, ";
+      s += "similar_to         VARCHAR, ";
+      s += "bot_name           VARCHAR, ";
+      s += "fam_name           VARCHAR, ";
+      s += "groups             VARCHAR, ";
+      s += "successions        BOOLEAN, ";
       
-      s  += "description        VARCHAR, ";
-      s  += "keywords           VARCHAR, ";
-      s  += "fudge              FLOAT, ";
-      s  += "other_req          VARCHAR, ";
-      s  += "notes              VARCHAR, ";
+      s += "description        VARCHAR, ";
+      s += "keywords           VARCHAR, ";
+      s += "fudge              FLOAT, ";
+      s += "other_req          VARCHAR, ";
+      s += "notes              VARCHAR, ";
       
-      s  += "maturity           INTEGER, ";
-      s  += "mat_adjust         INTEGER, ";
-      s  += "misc_adjust        INTEGER, ";
- 
-      s += "direct_seed         BOOLEAN, ";
-      s += "frost_hardy         BOOLEAN, ";
-      s += "time_to_tp          INTEGER, ";
-      
-      s += "rows_p_bed          INTEGER, ";
-      s += "space_inrow         FLOAT, ";
-      s += "space_betrow        FLOAT, ";
-      
-      s += "flat_size           VARCHAR, ";
-      s += "planter             VARCHAR, ";
-      s += "planter_setting     VARCHAR, ";
+      s += "maturity           INTEGER, ";
 
+      s += "direct_seed         BOOLEAN, ";
+      s += "ds_mat_adjust       INTEGER, ";
+      s += "ds_rows_p_bed       INTEGER, ";
+      s += "ds_row_space        FLOAT, ";
+      s += "ds_plant_notes      VARCHAR, ";
+      
+      s += "transplant          BOOLEAN, ";
+      s += "tp_mat_adjust       INTEGER, ";
+      s += "tp_rows_p_bed       INTEGER, ";
+      s += "tp_row_space        FLOAT, ";
+      s += "tp_inrow_space      FLOAT, ";
+      s += "tp_time_in_gh       INTEGER, ";
+      s += "tp_flat_size        VARCHAR, ";
+      s += "tp_pot_up           BOOLEAN, ";
+      s += "tp_pot_up_notes     VARCHAR, ";
+      s += "tp_plant_notes      VARCHAR, ";
+
+//      s += "direct_seed         BOOLEAN, ";
+//      s += "mat_adjust          INTEGER, ";
+//      s += "misc_adjust         INTEGER, ";
+//      s += "rows_p_bed          INTEGER, ";
+//      s += "space_inrow         FLOAT, ";
+//      s += "space_betrow        FLOAT, ";
+//      s += "flat_size           VARCHAR, ";
+//      s += "planter             VARCHAR, ";
+//      s += "planter_setting     VARCHAR, ";
+//      s += "time_to_tp          INTEGER, ";
+      
+      s += "frost_hardy         BOOLEAN, ";
+      
       s += "yield_p_foot        FLOAT, ";
       s += "yield_num_weeks     INTEGER, ";
       s += "yield_p_week        FLOAT, ";
@@ -153,9 +176,9 @@ public class HSQLDBSchemas {
       s += "crop_unit_value     FLOAT, ";
       // ==[ DONE ]==
       
-      s  += "seeds_sources      VARCHAR, "; // TODO remove; factor out
-      s  += "seeds_item_code    VARCHAR, "; // TODO remove; factor out
-      s  += "seeds_unit_size    VARCHAR, "; // TODO remove; factor out
+      s += "seeds_sources      VARCHAR, "; // TODO remove; factor out
+      s += "seeds_item_code    VARCHAR, "; // TODO remove; factor out
+      s += "seeds_unit_size    VARCHAR, "; // TODO remove; factor out
       
       s += "custom1         VARCHAR, ";
       s += "custom2         VARCHAR, ";

@@ -22,7 +22,7 @@
 
 package CPS.Core.DB;
 
-import CPS.CSV;
+import CPS.CSV.CSV;
 import CPS.Data.CPSCrop;
 import CPS.Module.CPSDataModel;
 import java.sql.Connection;
@@ -95,8 +95,8 @@ public class HSQLDBPopulator {
       }
    } 
 
-   public static CPSDataModel loadDefaultCropList( String dir ) {
+//   public static CPSDataModel loadDefaultCropList( String dir ) {
       
-      return new CSV( dir + System.getProperty("file.separator") + "CropVarList.csv");
-   }
+//      return new CSV( dir + System.getProperty("file.separator") + "CropVarList.csv");
+//   }
 }

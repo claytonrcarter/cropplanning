@@ -23,6 +23,7 @@
 
 package CPS.Core.DB;
 
+import CPS.Module.CPSModule;
 import CPS.Module.CPSModuleSettings;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -52,7 +53,7 @@ public class HSQLSettings extends CPSModuleSettings implements ActionListener,
     
     public HSQLSettings() {
         super( HSQLDB.class );
-        System.out.println("DEBUG(HSQLSettings): using pref node:" + HSQLDB.class.toString() );
+        CPSModule.debug( "HSQLSettings", "using pref node:" + HSQLDB.class.toString() );
         
         rdoUseGlobalDir = new JRadioButton( "Use global output directory", false );
         rdoUseGlobalDir.addItemListener(this);

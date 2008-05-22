@@ -29,6 +29,8 @@ import CPS.Module.CPSGlobalSettings;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.table.TableModel;
 import org.hsqldb.*;
 import resultsettablemodel.*;
@@ -92,37 +94,64 @@ public class HSQLDB extends CPSDataModel {
       query = new HSQLQuerier( con );
       columnMap = new HSQLColumnMap();
 
-      if ( false && newDB ) {
-         this.importCropsAndVarieties( HSQLDBPopulator.loadDefaultCropList( dbDir )
-                                                      .getCropsAndVarietiesAsList() );
-      } 
+//      if ( false && newDB ) {
+//         this.importCropsAndVarieties( HSQLDBPopulator.loadDefaultCropList( dbDir )
+//                                                      .getCropsAndVarietiesAsList() );
+//      } 
        
    }
    
    public synchronized ArrayList<String> getFlatSizeList( String planName ) {
-       return getDistinctValsFromCVAndPlan( planName, "flat_size" );
+       return getDistinctValsFromCVAndPlan( planName, CPSDataModelConstants.PROP_FLAT_SIZE );
+//       return getDistinctValsFromCVAndPlan( planName, "flat_size" );
    }
    
    public synchronized ArrayList<String> getFieldNameList( String planName ) {
        // TODO should this query all crop plans, or just one.  Just one for now.
-       return HSQLQuerier.getDistinctValuesForColumn( con, planName,  "location" );
+       return HSQLQuerier.getDistinctValuesForColumn( con, planName, propNameFromPropNum( CPSDataModelConstants.RECORD_TYPE_PLANTING,
+                                                                                          CPSDataModelConstants.PROP_LOCATION ));
+//       return HSQLQuerier.getDistinctValuesForColumn( con, planName,  "location" );
    }
    
    public synchronized ArrayList<String> getCropNameList() {
-      return HSQLQuerier.getDistinctValuesForColumn( con, "CROPS_VARIETIES", "crop_name" );
+      return HSQLQuerier.getDistinctValuesForColumn( con, "CROPS_VARIETIES", propNameFromPropNum( CPSDataModelConstants.RECORD_TYPE_CROP,
+                                                                                                  CPSDataModelConstants.PROP_CROP_NAME ));
+//      return HSQLQuerier.getDistinctValuesForColumn( con, "CROPS_VARIETIES", "crop_name" );
    }
    
    public synchronized ArrayList<String> getVarietyNameList( String crop_name, String cropPlan ) {
-      return getDistinctValsFromCVAndPlan( cropPlan, "var_name" );
+      return getDistinctValsFromCVAndPlan( cropPlan, CPSDataModelConstants.PROP_VAR_NAME );
+//      return getDistinctValsFromCVAndPlan( cropPlan, "var_name" );
    }
    
-   private synchronized ArrayList<String> getDistinctValsFromCVAndPlan( String planName, String column ) {
-       ArrayList<String> tables = new ArrayList<String>();
-       if ( planName != null )
-           tables.add( planName );
-       tables.add( "CROPS_VARIETIES" );
+   private synchronized ArrayList<String> getDistinctValsFromCVAndPlan( String planName, int propNum ) {
+       ArrayList<String> l = new ArrayList<String>();
+       Set set = new HashSet();
        
-       return HSQLQuerier.getDistinctValuesForColumn( con, tables, column );
+       if ( planName != null )
+           l.addAll( HSQLQuerier.getDistinctValuesForColumn( con,
+                                                             planName,
+                                                             propNameFromPropNum( CPSDataModelConstants.RECORD_TYPE_PLANTING,
+                                                                                  propNum ) ) );
+       l.addAll( HSQLQuerier.getDistinctValuesForColumn( con,
+                                                         "CROPS_VARIETIES",
+                                                         propNameFromPropNum( CPSDataModelConstants.RECORD_TYPE_CROP,
+                                                                              propNum ) ) );
+       // list now contains all values, possibly some duplicates
+       // this ensures that the values are unique
+       set.addAll ( l  );
+       l.clear();
+       l.addAll( set );
+      
+       return l;
+       
+//       ArrayList<String> tables = new ArrayList<String>();
+//       if ( planName != null )
+//           tables.add( planName );
+//       tables.add( "CROPS_VARIETIES" );
+//       
+//       return HSQLQuerier.getDistinctValuesForColumn( con, tables, column );
+   
    }
    
    public synchronized ArrayList<String> getFamilyNameList() {
@@ -526,15 +555,15 @@ public class HSQLDB extends CPSDataModel {
             crop.setCropName( captureString( rs.getString( "crop_name" ) ));            
             crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
             crop.setFamilyName( captureString( rs.getString( "fam_name" ) ));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
             
             crop.setMaturityDays( getInt( rs, "maturity" ));
-            crop.setMaturityAdjust( getInt( rs, "mat_adjust" ));
+            crop.setTPMaturityAdjust( getInt( rs, "tp_mat_adjust" ));
 //            crop.setSuccessions( rs.getBoolean("successions") );
             
-            crop.setTimeToTP( getInt( rs, "time_to_tp" ));
+            crop.setTPTimeInGH( getInt( rs, "tp_time_in_gh" ));
             
             // we have to go through these acrobatics because these fields
             // are inheritable and can be null
@@ -550,17 +579,17 @@ public class HSQLDB extends CPSDataModel {
             else
                  crop.setFrostHardy( b );
             
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
 
-            crop.setRowsPerBed( getInt( rs, "rows_p_bed" ));
-            crop.setSpaceInRow( getInt( rs, "space_inrow" ));
-            crop.setSpaceBetweenRow( getInt( rs, "space_betrow" ));
-            crop.setFlatSize( captureString( rs.getString( "flat_size" )));
-            crop.setPlanter( captureString( rs.getString( "planter" )));
-            crop.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+            crop.setTPRowsPerBed( getInt( rs, "tp_rows_p_bed" ));
+            crop.setTPSpaceInRow( getInt( rs, "tp_inrow_space" ));
+            crop.setTPSpaceBetweenRow( getInt( rs, "tp_row_space" ));
+            crop.setTPFlatSize( captureString( rs.getString( "tp_flat_size" )));
+            crop.setTPPlantNotes( captureString( rs.getString( "tp_plant_notes" )));
+//            crop.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
+          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
             
@@ -569,14 +598,14 @@ public class HSQLDB extends CPSDataModel {
             crop.setYieldPerWeek( getInt( rs, "yield_p_week" ));
             crop.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
             crop.setCropUnitValue( getFloat( rs, "crop_unit_value" ));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
 
             crop.setGroups( captureString( rs.getString( "groups" ) ));
             crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
             crop.setKeywords( captureString( rs.getString( "keywords" ) ));
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
 
@@ -584,7 +613,7 @@ public class HSQLDB extends CPSDataModel {
             crop.setCropDescription( captureString( rs.getString("description") ));
             crop.setNotes( captureString( rs.getString( "notes" ) ));
             
-          } catch ( SQLException ignore ) { System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); }
+          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          
           /* for varieties, inherit info from their crop, too */
@@ -599,17 +628,17 @@ public class HSQLDB extends CPSDataModel {
    }
 
    public void updateCrop( CPSCrop crop ) {
-      HSQLDBCreator.updateCrop( con, crop );
+      HSQLDBCreator.updateCrop( con, columnMap, crop );
       updateDataListeners();
    }
    
    public void updateCrops( CPSCrop changes, ArrayList<Integer> ids ) {
-      HSQLDBCreator.updateCrops( con, changes, ids );
+      HSQLDBCreator.updateCrops( con, columnMap, changes, ids );
       updateDataListeners();
    }
 
    public CPSCrop createCrop(CPSCrop crop) {
-      int newID = HSQLDBCreator.insertCrop( con, crop );
+      int newID = HSQLDBCreator.insertCrop( con, columnMap, crop );
       // TODO is this really a good idea?
       updateDataListeners();
       if ( newID == -1 )
@@ -632,7 +661,7 @@ public class HSQLDB extends CPSDataModel {
    // the "cropID" is not valid
    public CPSPlanting createPlanting( String planName, CPSPlanting planting ) {
       int cropID = getVarietyInfo( planting.getCropName(), planting.getVarietyName() ).getID();
-      int newID = HSQLDBCreator.insertPlanting( con, planName, planting, cropID );
+      int newID = HSQLDBCreator.insertPlanting( con, columnMap, planName, planting, cropID );
       updateDataListeners();
       if ( newID == -1 )
          return new CPSPlanting();
@@ -689,7 +718,7 @@ public class HSQLDB extends CPSDataModel {
          cropIDs.add( new Integer( cropID  ));
       }
       
-      HSQLDBCreator.updatePlantings( con, planName, changes, changedIDs, cropIDs );
+      HSQLDBCreator.updatePlantings( con, columnMap, planName, changes, changedIDs, cropIDs );
       updateDataListeners();
    }
    
@@ -716,13 +745,13 @@ public class HSQLDB extends CPSDataModel {
             p.setLocation( captureString( rs.getString( "location" )));
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-                System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() ); 
+                HSQLDB.debug( "HSQLDB", ignore.getMessage() ); 
           }
          
          try {           
-            p.setDateToPlant( captureDate( rs.getDate( "date_plant" )));
-            p.setDateToTP( captureDate( rs.getDate( "date_tp" )));
-            p.setDateToHarvest( captureDate( rs.getDate( "date_harvest" )));
+            p.setDateToPlant( captureDate( rs.getDate( "date_plant_plan" )));
+            p.setDateToTP( captureDate( rs.getDate( "date_tp_plan" )));
+            p.setDateToHarvest( captureDate( rs.getDate( "date_harvest_plan" )));
 
             p.setDonePlanting( rs.getBoolean( "done_plant" ) );
             p.setDoneTP( rs.getBoolean( "done_TP" ));
@@ -730,7 +759,7 @@ public class HSQLDB extends CPSDataModel {
 //          } catch ( SQLException ignore ) {}
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
          try {
@@ -745,14 +774,14 @@ public class HSQLDB extends CPSDataModel {
             
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
          try {
             p.setMaturityDays( getInt( rs, "maturity") );
             p.setMatAdjust( getInt( rs, "mat_adjust" ));
-            p.setPlantingAdjust( getInt( rs, "planting_adjust" ));
-            p.setMiscAdjust( getInt( rs, "misc_adjust" ) );
+//            p.setPlantingAdjust( getInt( rs, "planting_adjust" ));
+//            p.setMiscAdjust( getInt( rs, "misc_adjust" ) );
             
             p.setTimeToTP( getInt( rs, "time_to_tp" ));
             p.setRowsPerBed( getInt( rs, "rows_p_bed" ));
@@ -760,8 +789,8 @@ public class HSQLDB extends CPSDataModel {
             p.setRowSpacing( getInt( rs, "row_space" ));
             
             p.setFlatSize( captureString( rs.getString( "flat_size" )));
-            p.setPlanter( captureString( rs.getString( "planter" )));
-            p.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
+            p.setPlanter( captureString( rs.getString( "plant_notes_inh" )));
+//            p.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
 
             // we have to go through these acrobatics because these fields
             // are inheritable and can be null
@@ -779,7 +808,7 @@ public class HSQLDB extends CPSDataModel {
             
          } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
          try {
@@ -796,7 +825,7 @@ public class HSQLDB extends CPSDataModel {
             p.setNotes( captureString( rs.getString( "notes" ) ));
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
          try {            
@@ -807,7 +836,7 @@ public class HSQLDB extends CPSDataModel {
             p.setCustomField5( rs.getString( "custom5" ));
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
          try {
@@ -821,7 +850,7 @@ public class HSQLDB extends CPSDataModel {
 //          } catch ( SQLException ignore ) {}
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
-               System.out.println( "WARNING(HSQLDB.java): " + ignore.getMessage() );
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
       }
@@ -1019,8 +1048,10 @@ public class HSQLDB extends CPSDataModel {
    private String sortColumnFromPropertyNum( int recordType, int prop ) {
       String sortCol = " asc";
       
-      if ( prop < 0 )
+      if ( prop < 0 ) {
          sortCol = " desc";
+         prop = -1 * prop;
+      }
               
       if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
          sortCol = columnMap.getCropColumnNameForProperty(prop) + sortCol;
@@ -1082,56 +1113,98 @@ public class HSQLDB extends CPSDataModel {
            if ( ! filterString.equals( "" ) )
                filterString += " AND ";
        
-           if ( filter.filterOnPlantingMethod() )
+           // operator <> means not equal
+           if ( true )
+//              filterString += " ignore <> TRUE ";
+              filterString += " ( ignore = FALSE OR ignore IS NULL )";
+           filterString += " AND ";
+           
+           if ( filter.filterOnPlantingMethod() ) {
 //               filterString += "time_to_tp " + (( filter.filterMethodDirectSeed() ) ? " IS " : " IS NOT " ) + " NULL AND ";
-               filterString += "direct_seed = " + 
-                               (( filter.filterMethodDirectSeed() ) ? " TRUE " : " FALSE OR direct_seed IS NULL " ) + 
-                               " AND ";
-//              if ( filter.filterMethodDirectSeed() )
-//                 filterString += "direct_seed = TRUE AND ";
-//              else
-//                 filterString += "direct_seed = FALSE OR direct_seed IS NULL AND ";
-                 
+//               filterString += "direct_seed = " + 
+//                               (( filter.filterMethodDirectSeed() ) ? " TRUE " : " FALSE OR direct_seed IS NULL " ) + 
+//                               " AND ";
+              if ( filter.filterMethodDirectSeed() )
+                 filterString += " direct_seed = TRUE ";
+              else
+//                 filterString += " direct_seed <> TRUE ";
+                 filterString += " ( direct_seed = FALSE OR direct_seed IS NULL )";
+              filterString += " AND ";
+           }
            
-           if ( filter.filterOnPlanting() )
-               filterString += "done_plant = " + (( filter.isDonePlanting() ) ? "TRUE " : "FALSE " ) + " AND ";
-           if ( filter.filterOnTransplanting() )
-               filterString += "done_tp = " + (( filter.isDoneTransplanting() ) ? "TRUE " : "FALSE " ) + " AND ";
-           if ( filter.filterOnHarvest() )
-               filterString += "done_harvest = " + (( filter.isDoneHarvesting() ) ? "TRUE " : "FALSE " ) + " AND ";
-       
-           // TODO add date filters
-           if ( filter.filterOnPlantingDate() )
+           // TODO use the propNumToPropName method to abstract out the column names
+           
+           if ( filter.filterOnPlanting() ) {
+//               filterString += "done_plant = " + (( filter.isDonePlanting() ) ? "TRUE " : "FALSE " ) + " AND ";
+              if ( filter.isDonePlanting() )
+                 filterString += "done_plant = TRUE ";
+              else
+                 filterString += " ( done_plant = FALSE OR done_plant IS NULL ) ";
+              filterString += " AND ";
+           }
+           if ( filter.filterOnTransplanting() ) {
+//               filterString += "done_tp = " + (( filter.isDoneTransplanting() ) ? "TRUE " : "FALSE " ) + " AND ";
+              if ( filter.isDoneTransplanting() )
+                 filterString += "done_tp = TRUE ";
+              else
+                 filterString += " ( done_tp = FALSE OR done_tp IS NULL ) ";
+              filterString += " AND ";
+           }
+           if ( filter.filterOnHarvest() ) {
+//               filterString += "done_harvest = " + (( filter.isDoneHarvesting() ) ? "TRUE " : "FALSE " ) + " AND ";
+                if ( filter.isDoneHarvesting() )
+                 filterString += "done_harvest = TRUE ";
+              else
+                 filterString += " ( done_harvest = FALSE OR done_harvest IS NULL ) ";
+              filterString += " AND ";
+           }
+           
+           if ( filter.filterOnPlantingDate() ) {
                if      ( filter.getPlantingRangeEnd() == null )
-                   filterString += "date_plant >= " + escapeValue( filter.getPlantingRangeStart() ) + " AND ";
+//                   filterString += "date_plant_plan >= " + escapeValue( filter.getPlantingRangeStart() );
+                   filterString += "date_plant >= " + escapeValue( filter.getPlantingRangeStart() );
                else if ( filter.getPlantingRangeStart() == null )
-                   filterString += "date_plant <= " + escapeValue( filter.getPlantingRangeEnd() ) + " AND ";
+//                   filterString += "date_plant_plan <= " + escapeValue( filter.getPlantingRangeEnd() );
+                   filterString += "date_plant <= " + escapeValue( filter.getPlantingRangeEnd() );
                else // both != null
+//                   filterString += "date_plant_plan BETWEEN " + escapeValue( filter.getPlantingRangeStart() ) + " AND " +
                    filterString += "date_plant BETWEEN " + escapeValue( filter.getPlantingRangeStart() ) + " AND " +
-                                                           escapeValue( filter.getPlantingRangeEnd() ) + " AND ";
+                                                                escapeValue( filter.getPlantingRangeEnd() );
+               filterString += " AND ";
+           }
            
-           if ( filter.filterOnTPDate() )
+           if ( filter.filterOnTPDate() ) {
                if      ( filter.getTpRangeEnd() == null )
-                   filterString += "date_tp >= " + escapeValue( filter.getTpRangeStart() ) + " AND ";
+//                   filterString += "date_tp_plan >= " + escapeValue( filter.getTpRangeStart() );
+                   filterString += "date_tp >= " + escapeValue( filter.getTpRangeStart() );
                else if ( filter.getTpRangeStart() == null )
-                   filterString += "date_tp <= " + escapeValue( filter.getTpRangeEnd() ) + " AND ";
+//                   filterString += "date_tp_plan <= " + escapeValue( filter.getTpRangeEnd() );
+                   filterString += "date_tp <= " + escapeValue( filter.getTpRangeEnd() );
                else // both != null
+//                   filterString += "date_tp_plan BETWEEN " + escapeValue( filter.getTpRangeStart() ) + " AND " +
                    filterString += "date_tp BETWEEN " + escapeValue( filter.getTpRangeStart() ) + " AND " +
-                                                        escapeValue( filter.getTpRangeEnd() ) + " AND ";
+                                                             escapeValue( filter.getTpRangeEnd() );
+               filterString += " AND ";
+           }
            
-           if ( filter.filterOnHarvestDate() )
+           if ( filter.filterOnHarvestDate() ) {
                if      ( filter.getHarvestDateEnd() == null )
-                   filterString += "date_harvest >= " + escapeValue( filter.getHarvestDateStart() ) + " AND ";
+//                   filterString += "date_harvest_plan >= " + escapeValue( filter.getHarvestDateStart() );
+                   filterString += "date_harvest >= " + escapeValue( filter.getHarvestDateStart() );
                else if ( filter.getHarvestDateStart() == null )
-                   filterString += "date_harvest <= " + escapeValue( filter.getHarvestDateEnd() ) + " AND ";
+//                   filterString += "date_harvest_plan <= " + escapeValue( filter.getHarvestDateEnd() );
+                   filterString += "date_harvest <= " + escapeValue( filter.getHarvestDateEnd() );
                else // both != null
+//                   filterString += "date_harvest_plan BETWEEN " + escapeValue( filter.getHarvestDateStart() ) + " AND " +
                    filterString += "date_harvest BETWEEN " + escapeValue( filter.getHarvestDateStart() ) + " AND " +
-                                                             escapeValue( filter.getHarvestDateEnd() ) + " AND ";
+                                                             escapeValue( filter.getHarvestDateEnd() );
+               filterString += " AND ";
+           }
            
            filterString = filterString.substring( 0, filterString.lastIndexOf( " AND " ));
        }
            
-       System.out.println("DEBUG(HSQLDB): Using filter string: " + filterString );
+       debug( "Using filter string: " + filterString );
        
        return filterString;
        

@@ -159,9 +159,9 @@ public class HSQLQuerier {
       ResultSet rs;
       
       if ( query.length() < 500 )
-           System.out.println( "DEBUG Submitting query: " + query );
+           HSQLDB.debug( "HSQLQuerier", "Submitting query: " + query );
       else
-           System.out.println( "DEBUG Submitting query: " + query.substring( 0 , 500 ) + " ... (truncated)" );
+           HSQLDB.debug( "HSQLQuerier", "Submitting query: " + query.substring( 0 , 500 ) + " ... (truncated)" );
       
       try {
          if ( prepared ) {
@@ -380,6 +380,7 @@ public class HSQLQuerier {
        int PLANT_COL = 0;
        int CROP_COL = 1;
        int CALC = 2;
+       int PSEUDO = 3;
       
        String cropFillInQuery = createCoalescedCropAndVarQueryString( cropColMap );
        
@@ -387,13 +388,49 @@ public class HSQLQuerier {
         * in each planting from the corresponding fields in the crop */
        String plantingFillInQuery = "SELECT ";
        for ( String[] s : plantColMap ) {
-           if ( s[CROP_COL] == null )
-               plantingFillInQuery += "p." + s[PLANT_COL];
-           else {
-               plantingFillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
-               plantingFillInQuery += "c." + s[CROP_COL] + " ) AS " + s[PLANT_COL];
-           }
-           plantingFillInQuery += ", ";
+           Boolean pseudo = new Boolean( s[PSEUDO] );
+
+           // if this is a "pseudo" column
+          if ( s[PSEUDO].equalsIgnoreCase( "true" ) ) {
+             HSQLDB.debug( "HSQLQuerier", "using query for pseduocolumn: " + s[CALC] + " AS " + s[PLANT_COL] );
+             plantingFillInQuery += s[CALC] + " AS " + s[PLANT_COL];
+          }
+           // if there is no correlated crop column
+          else if ( s[CROP_COL] == null )
+             plantingFillInQuery += "p." + s[PLANT_COL];
+           // otherwise, there is a column to inherit from
+          else {
+             // start the inherit clause (via COALESCE)
+             plantingFillInQuery += "COALESCE( p." + s[PLANT_COL] + ", ";
+             // if the "crop column" contains commas, then we split it on those commas
+             // and assume that:
+             // index 0 is a boolen column (from planting)
+             // index 1 is the column to inherit if true
+             // index 2 is the column to inherit if false
+             if ( s[CROP_COL].matches( ".*,.*" ) ) {
+                String[] cols = s[CROP_COL].split( "," );
+                String temp = " CASE WHEN p." + cols[0].trim();
+                
+                // if the first column is "NULL", then omit the "c."
+                if ( cols[1].trim().equalsIgnoreCase("null") )
+                   temp += "      THEN " + cols[1].trim();
+                else 
+                   temp += "      THEN c." + cols[1].trim();
+                
+                temp += "      ELSE c." + cols[2].trim();
+                temp += " END ";
+                plantingFillInQuery += temp;
+                HSQLDB.debug( "HSQLQuerier", "using query for conditional inherit: " + temp + " for column " + s[PLANT_COL] );
+             }
+             else 
+                // otherwise (no commas) just use the entry as is
+                plantingFillInQuery += "c." + s[CROP_COL] + " ";
+             
+             // finish the statement
+             plantingFillInQuery += ") AS " + s[PLANT_COL];
+             
+          }
+          plantingFillInQuery += ", ";
        }
        plantingFillInQuery = plantingFillInQuery.substring( 0, plantingFillInQuery.lastIndexOf( ", " ) );
 //       plantingFillInQuery += " FROM " + planName + " AS p, ( " + cropFillInQuery + " ) AS c ";
@@ -405,7 +442,10 @@ public class HSQLQuerier {
        
        String passQuery = "SELECT ";
        for ( String[] s : plantColMap ) {
-           if ( s[CALC] == null )
+           if ( s[PSEUDO].equalsIgnoreCase( "true" ) ) {
+              passQuery += s[CALC] + " AS " + s[PLANT_COL];
+           }
+           else if ( s[CALC] == null )
                passQuery += s[PLANT_COL];
            else {
                passQuery += "COALESCE( " + s[PLANT_COL] + ", ";
@@ -435,7 +475,7 @@ public class HSQLQuerier {
                         " WHERE " + limitColumn + " = " + HSQLDB.escapeValue( limitValue );
          Statement st = con.createStatement();
 
-         System.out.println("Executing query: " + query );
+         HSQLDB.debug( "HSQLQuerier", "Executing query: " + query );
          rs = st.executeQuery( query );
       
       }

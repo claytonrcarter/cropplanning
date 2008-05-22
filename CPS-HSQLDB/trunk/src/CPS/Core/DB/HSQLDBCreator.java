@@ -26,6 +26,7 @@ import CPS.Data.CPSCrop;
 import CPS.Data.CPSDatum;
 import CPS.Data.CPSPlanting;
 import CPS.Data.CPSRecord;
+import CPS.Module.CPSDataModelConstants;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -194,7 +195,7 @@ public class HSQLDBCreator {
    
    
    
-   public static int insertCrop( Connection con, CPSCrop crop ) {
+   public static int insertCrop( Connection con, HSQLColumnMap map, CPSCrop crop ) {
    
       try {
          
@@ -209,7 +210,8 @@ public class HSQLDBCreator {
             c = i.next();
             if ( c.isValid() || isEmpty ) {
                // System.out.println(" Processing datum: " + c.getColumnName() );
-               cols += c.getColumnName() + ", ";
+//               cols += c.getColumnName() + ", ";
+               cols += map.getCropColumnNameForProperty( c.getPropertyNum() ) + ", ";
                if ( c.isInherited() )
                   vals += HSQLDB.escapeValue( "null" ) + ", ";
                else 
@@ -252,17 +254,18 @@ public class HSQLDBCreator {
       }
    }
    
-   public static void updateCrop( Connection con, CPSCrop crop ) {
+   public static void updateCrop( Connection con, HSQLColumnMap map, CPSCrop crop ) {
       ArrayList<Integer> id = new ArrayList<Integer>();
       id.add( new Integer( crop.getID() ));
-      updateCrops( con, crop, id );
+      updateCrops( con, map, crop, id );
    }
    
-   public static void updateCrops( Connection con, CPSCrop changes, ArrayList<Integer> ids ) {
-      updateRecords( con, "CROPS_VARIETIES", changes, ids, null );
+   public static void updateCrops( Connection con, HSQLColumnMap map, CPSCrop changes, ArrayList<Integer> ids ) {
+      updateRecords( con, CPSDataModelConstants.RECORD_TYPE_CROP, map, "CROPS_VARIETIES", changes, ids, null );
    }
    
    public static int insertPlanting( Connection con, 
+                                     HSQLColumnMap map,
                                      String planName,
                                      CPSPlanting planting,
                                      int cropID ) {
@@ -281,7 +284,8 @@ public class HSQLDBCreator {
             if ( c.isConcrete() || isEmpty ) {
 //            if ( c.isValid() || isEmpty ) {
                // System.out.println(" Processing datum: " + c.getColumnName() );
-               cols += c.getColumnName() + ", ";
+//               cols += c.getColumnName() + ", "; 
+               cols += map.getPlantingColumnNameForProperty( c.getPropertyNum() ) + ", ";
                // This would be the place to check for data inheritance and insert "escape" data for it
                vals += HSQLDB.escapeValue(c.getDatum()) + ", ";
             }
@@ -325,21 +329,23 @@ public class HSQLDBCreator {
    /* TODO updatePlanting and updateCrop could be conflated into an updateRecord
     * method that takes a String tableName and a CPSRecord.  Everything else is
     * identical. Perhaps same thing for insertCrop and insertPlanting */
-   public static void updatePlanting( Connection con, String planName, CPSPlanting p, int cropID ) {
+   public static void updatePlanting( Connection con, HSQLColumnMap map, String planName, CPSPlanting p, int cropID ) {
       ArrayList<Integer> id = new ArrayList();
       ArrayList<Integer> cID = new ArrayList();
       
       id.add( new Integer( p.getID() ) );
       cID.add( new Integer( cropID ) );
       
-      updatePlantings( con, planName, p, id, cID );
+      updatePlantings( con, map, planName, p, id, cID );
    }
    
-   public static void updatePlantings( Connection con, String planName, 
+   public static void updatePlantings( Connection con, 
+                                       HSQLColumnMap map,
+                                       String planName,
                                        CPSPlanting changes, 
                                        ArrayList<Integer> ids,
                                        ArrayList<Integer> cropIDs ) {
-      updateRecords( con, planName, changes, ids, cropIDs );
+      updateRecords( con, CPSDataModelConstants.RECORD_TYPE_PLANTING, map, planName, changes, ids, cropIDs );
    }
    
    /**
@@ -354,7 +360,10 @@ public class HSQLDBCreator {
     *                "null" when CPSPlantings are being updated.  The list must correspond in length
     *                and order to the list of records to be updated.
     */
-   private static void updateRecords( Connection con, String tableName,
+   private static void updateRecords( Connection con, 
+                                      int recordType,
+                                      HSQLColumnMap map,
+                                      String tableName,
                                       CPSRecord changes, 
                                       ArrayList<Integer> changedIDs,
                                       ArrayList<Integer> cropIDs ) {
@@ -370,8 +379,14 @@ public class HSQLDBCreator {
          CPSDatum c;
          while ( iter.hasNext() ) {
             c = iter.next();
-            if ( c.isValid() )
-               sqlChanges += c.getColumnName() + " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
+            if ( c.isValid() ) {
+               if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+                  sqlChanges += map.getCropColumnNameForProperty( c.getPropertyNum() );
+               else // if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
+                  sqlChanges += map.getPlantingColumnNameForProperty( c.getPropertyNum() );
+                  
+               sqlChanges += " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
+            }
          }
          sqlChanges = sqlChanges.substring( 0, sqlChanges.lastIndexOf( ", " ) );
 

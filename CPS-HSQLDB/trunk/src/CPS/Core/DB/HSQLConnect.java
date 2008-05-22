@@ -22,6 +22,7 @@
 
 package CPS.Core.DB;
 
+import CPS.Module.CPSModule;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -42,6 +43,7 @@ public class HSQLConnect {
 
    public static Connection getConnection( String dir, String dbFilename, String driver ) {
       loadDriver( driver );
+      CPSModule.debug("HSQLConnect", "Loading db from file: " + buildDBConnectionString( dir, dbFilename ) );
       return establishConnection( buildDBConnectionString( dir, dbFilename ));
    }
    

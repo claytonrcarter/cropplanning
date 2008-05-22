@@ -53,84 +53,86 @@ public class HSQLCalc {
     * Calculate planting date based upon a desired harvest date and an approx. maturity days.
     */
 //   public static Date plantFromHarvest( Date harvest, int mat, Integer adj, Integer weeksInGH ) {
-   public static Date plantFromHarvest( Date harvest, int mat, Integer adj, Boolean directSeed ) {
+   public static Date plantFromHarvest( Date d, int mat, Integer adj, Integer weeksInGH, Boolean ds ) {
        
-       if ( harvest == null )
+       if ( d == null )
            return null;
+      
        if ( adj == null )
            adj = new Integer( 0 );
+       
+       if ( ds != null && weeksInGH != null && ! ds.booleanValue() )
+         // type IS tp
+         mat += weeksInGH.intValue() * 7;
       
-       if ( directSeed == null || ! directSeed.booleanValue() )
-       // type IS tp
-           return null;
-//          mat += weeksInGH.intValue() * 7;
-      
-       return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateHarvest( harvest, mat, adj.intValue() ).getTime() );
+       return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateHarvest( d, mat, adj.intValue() ).getTime() );
    }
    
    /**
     * Calculate planting date based upon a desired TP date and the number of weeks seedlings are
     * in the GH.
     */
-   public static Date plantFromTP( Date dateTP, int weeksInGH ) {
-      if ( dateTP == null )
+   public static Date plantFromTP( Date d, int weeksInGH, Boolean ds ) {
+      if ( d == null || ds != null && ds.booleanValue() )
          return null;
       
-      return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateTP( dateTP, weeksInGH ).getTime() );
+      return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateTP( d, weeksInGH ).getTime() );
    }
    
    /**
     * Calculate an approx transplanting date based upon a planting date and the number of weeks 
     * that seedlings are in the greenhouse.
     */
-   public static Date TPFromPlant( Date datePlant, int weeksInGH ) {
-      if ( datePlant == null )
+   public static Date TPFromPlant( Date d, int weeksInGH, Boolean ds ) {
+      if ( d == null || ds != null && ds.booleanValue() )
          return null;
       
-//      System.out.println("\nTP from PLANT: " + datePlant + " + " + weeksInGH + " * 7 \n");
-      
-      return new Date( CPS.Data.CPSCalculations.calcDateTPFromDatePlant( datePlant, weeksInGH ).getTime() );
+      return new Date( CPS.Data.CPSCalculations.calcDateTPFromDatePlant( d, weeksInGH ).getTime() );
    }
    
    // we have to include weeksInGH here; currently, the db is set so that planting is TP type
    // iff weekInGH is NOT null.  HSQL will not call this method if the parameter we're
    // trying to pass in is null; so if we're trying to passing time_to_tp, this is sort of our way
    // (stupid as it is) of saying "if type IS tp"
-   public static Date TPFromHarvest( Date dateHarvest, int mat, Integer adj, int weeksInGH ) {
-       if ( dateHarvest == null )
+   public static Date TPFromHarvest( Date d, int mat, Integer adj, Boolean ds ) {
+       if ( d == null || ds != null && ds.booleanValue() )
          return null;
+       
       if ( adj == null )
          adj = new Integer( 0 );
        
-//      System.out.println("\nTP from HARVEST: " + dateHarvest + " + " + mat + " + " + adj + "\n");
-      
-      return new Date( CPS.Data.CPSCalculations.calcDateTPFromDateHarvest( dateHarvest, mat, adj.intValue() ).getTime() );
+      return new Date( CPS.Data.CPSCalculations.calcDateTPFromDateHarvest( d, mat, adj.intValue() ).getTime() );
    }
    
    /**
     * Calculate an approx harvest date based upon a planting date and maturity days.
     */
-   public static Date harvestFromPlant( Date plant, int mat, Integer adj, Integer weeksInGH ) {
-      if ( plant == null ) 
+   public static Date harvestFromPlant( Date d, int mat, Integer adj, Integer weeksInGH, Boolean ds ) {
+      if ( d == null ) 
          return null;
+      
       if ( adj == null )
          adj = new Integer( 0 );
       
-      if ( weeksInGH != null )
-       // type IS tp
-          mat += weeksInGH.intValue() * 7;
+      if ( ds != null && weeksInGH != null && ! ds.booleanValue() )
+         // type IS tp
+         mat += weeksInGH.intValue() * 7;
        
-      return new Date( CPS.Data.CPSCalculations.calcDateHarvestFromDatePlant( plant, mat, adj.intValue() ).getTime() );
+      return new Date( CPS.Data.CPSCalculations.calcDateHarvestFromDatePlant( d, mat, adj.intValue() ).getTime() );
    }
    
-   public static Date harvestFromTP( Date tp, int mat, Integer adj ) {
-       if ( tp == null )
+   public static Date harvestFromTP( Date d, int mat, Integer adj, Boolean ds ) {
+      if ( d == null || ds != null && ds.booleanValue() )
          return null;
+      
       if ( adj == null )
          adj = new Integer( 0 );
       
-      return new Date( CPS.Data.CPSCalculations.calcDateHarvestFromDateTP( tp, mat, adj.intValue() ).getTime() );
+      return new Date( CPS.Data.CPSCalculations.calcDateHarvestFromDateTP( d, mat, adj.intValue() ).getTime() );
    }
+   
+   
+   
    
    
    /**
