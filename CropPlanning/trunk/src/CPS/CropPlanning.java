@@ -35,7 +35,12 @@ public class CropPlanning implements Runnable {
    
     public static void main(String[] args) {
 
-	new CropPlanning();
+       // parse arguments
+       for ( String s : args )
+          if ( s.equalsIgnoreCase( "-debug" ))
+             CPSGlobalSettings.setDebug(true);
+       
+       new CropPlanning();
 
     }
 
@@ -72,7 +77,7 @@ public class CropPlanning implements Runnable {
 //           // get the module (which was loaded and inited by ModuleManager)
 //          CPSDisplayableDataUserModule cm2 = mm.getCoreModule(i);
        for ( CPSDisplayableDataUserModule cm2 : mm.getCoreModules() ) {
-          System.out.println("DRIVER: Initializing module: " + cm2.getModuleName() );
+          CPSModule.debug( "DRIVER", "Initializing module: " + cm2.getModuleName() );
           // apply data source
           cm2.setDataSource(dm);
           // add it to the UI
@@ -91,6 +96,8 @@ public class CropPlanning implements Runnable {
     
    public void run() {
       mm.shutdownModules();
+      // always disable debug on exit
+      CPSGlobalSettings.setDebug(false);
    }
 
     
