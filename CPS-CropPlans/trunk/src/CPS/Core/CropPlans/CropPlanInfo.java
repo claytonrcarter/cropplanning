@@ -29,7 +29,7 @@ import CPS.Data.CPSPlanting;
 import CPS.Module.*;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.*;
-import CPS.UI.Swing.autocomplete.AutoCompleteDecorator;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public class CropPlanInfo extends CPSDetailView {
@@ -55,6 +55,9 @@ public class CropPlanInfo extends CPSDetailView {
       super( mdm, "Planting Info" );
    }
 
+   /** this constructor does nothing and is meant for testing purposes only */
+   private CropPlanInfo() {}
+   
     public CPSRecord getDisplayedRecord() {
        // TODO we should do some double checking in case the displayed info has changed but
        // has not been saved
@@ -84,10 +87,10 @@ public class CropPlanInfo extends CPSDetailView {
                                    displayedPlanting.getMaturityDaysState() );
        tfldMatAdjust.setInitialText( displayedPlanting.getMatAdjustString(),
                                    displayedPlanting.getMatAdjustState() );
-       tfldMatAdjustPlanting.setInitialText( displayedPlanting.getPlantingAdjustString(),
-                                   displayedPlanting.getPlantingAdjustState() );
-       tfldMatAdjustMisc.setInitialText( displayedPlanting.getMiscAdjustString(),
-                                   displayedPlanting.getMiscAdjustState() );
+//       tfldMatAdjustPlanting.setInitialText( displayedPlanting.getPlantingAdjustString(),
+//                                   displayedPlanting.getPlantingAdjustState() );
+//       tfldMatAdjustMisc.setInitialText( displayedPlanting.getMiscAdjustString(),
+//                                   displayedPlanting.getMiscAdjustState() );
         
         tfldDatePlant.setInitialText(displayedPlanting.getDateToPlantString(),
                                    displayedPlanting.getDateToPlantState() );
@@ -120,8 +123,8 @@ public class CropPlanInfo extends CPSDetailView {
                                    displayedPlanting.getFlatSizeState() );
        tfldPlanter.setInitialText( displayedPlanting.getPlanter(),
                                    displayedPlanting.getPlanterState() );
-       tfldPlanterSetting.setInitialText( displayedPlanting.getPlanterSetting(),
-                                   displayedPlanting.getPlanterSettingState() );
+//       tfldPlanterSetting.setInitialText( displayedPlanting.getPlanterSetting(),
+//                                   displayedPlanting.getPlanterSettingState() );
        
        tfldYieldPerFt.setInitialText( displayedPlanting.getYieldPerFootString(),
                                    displayedPlanting.getYieldPerFootState() );
@@ -215,8 +218,8 @@ public class CropPlanInfo extends CPSDetailView {
          
        if ( tfldDateTP.hasChanged() ) p.setDateToTP( tfldDateTP.getText(), ALLOW_NULL );
        if ( tfldMatAdjust.hasChanged() ) p.setMatAdjust( tfldMatAdjust.getText(), ALLOW_NULL );       
-       if ( tfldMatAdjustPlanting.hasChanged() ) p.setPlantingAdjust( tfldMatAdjustPlanting.getText(), ALLOW_NULL );
-       if ( tfldMatAdjustMisc.hasChanged() ) p.setMiscAdjust( tfldMatAdjustMisc.getText(), ALLOW_NULL );
+//       if ( tfldMatAdjustPlanting.hasChanged() ) p.setPlantingAdjust( tfldMatAdjustPlanting.getText(), ALLOW_NULL );
+//       if ( tfldMatAdjustMisc.hasChanged() ) p.setMiscAdjust( tfldMatAdjustMisc.getText(), ALLOW_NULL );
        if ( tfldBedsToPlant.hasChanged() ) p.setBedsToPlant( tfldBedsToPlant.getText(), ALLOW_NULL );
        if ( tfldRowFtToPlant.hasChanged() ) p.setRowFtToPlant( tfldRowFtToPlant.getText(), ALLOW_NULL );
        if ( tfldPlantsNeeded.hasChanged() ) p.setPlantsNeeded( tfldPlantsNeeded.getText(), ALLOW_NULL );
@@ -228,7 +231,7 @@ public class CropPlanInfo extends CPSDetailView {
        if ( tfldBetRowSpace.hasChanged() ) p.setRowSpacing( tfldBetRowSpace.getText(), ALLOW_NULL );
        if ( tfldFlatSize.hasChanged() ) p.setFlatSize( tfldFlatSize.getText(), ALLOW_NULL );
        if ( tfldPlanter.hasChanged() ) p.setPlanter( tfldPlanter.getText(), ALLOW_NULL );
-       if ( tfldPlanterSetting.hasChanged() ) p.setPlanterSetting( tfldPlanterSetting.getText(), ALLOW_NULL );
+//       if ( tfldPlanterSetting.hasChanged() ) p.setPlanterSetting( tfldPlanterSetting.getText(), ALLOW_NULL );
        if ( tfldYieldPerFt.hasChanged() ) p.setYieldPerFoot( tfldYieldPerFt.getText(), ALLOW_NULL );
        
        if ( tfldTotalYield.hasChanged() ) p.setTotalYield( tfldTotalYield.getText(), ALLOW_NULL );
@@ -248,17 +251,18 @@ public class CropPlanInfo extends CPSDetailView {
    
    protected void buildDetailsPanel() {
        
-        tfldCropName = new CPSTextField( FIELD_LEN_LONG,
-                                         getDataSource().getCropNameList(),
-                                         CPSTextField.MATCH_STRICT );
+      ArrayList<String> names = new ArrayList<String>();
+      if ( isDataAvailable() )
+         names = getDataSource().getCropNameList();
+      tfldCropName = new CPSTextField( FIELD_LEN_LONG, names, CPSTextField.MATCH_STRICT );
         
         tfldVarName = new CPSTextField( FIELD_LEN_LONG );
         tfldMatDays = new CPSTextField( FIELD_LEN_SHORT );
         tfldDatePlant = new CPSTextField( FIELD_LEN_LONG );
         tfldDateHarvest = new CPSTextField( FIELD_LEN_LONG );
-        tareGroups = new CPSTextArea( 3, FIELD_LEN_LONG );
-        tareKeywords = new CPSTextArea( 3, FIELD_LEN_MED );
-        tareOtherReq = new CPSTextArea( 3, FIELD_LEN_MED );
+        tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+        tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+        tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
         tareNotes = new CPSTextArea( 5, 40);
 
       tfldDateTP = new CPSTextField( FIELD_LEN_LONG );
@@ -483,7 +487,8 @@ public class CropPlanInfo extends CPSDetailView {
       LayoutAssist.addSubPanel( jplDetails, 2, 0, 1, 1, columnThree );
       LayoutAssist.addSubPanel( jplDetails, 3, 0, 1, 1, columnFour );
 
-      uiManager.signalUIChanged();
+      if ( uiManager != null )
+         uiManager.signalUIChanged();
    }
 
    @Override
@@ -521,5 +526,17 @@ public class CropPlanInfo extends CPSDetailView {
     }
     
    
-   
+   /* for testing only */
+   public static void main( String[] args ) {
+      // "test" construtor  
+      CropPlanInfo ci = new CropPlanInfo();
+      ci.buildDetailsPanel();
+      
+     JFrame frame = new JFrame();
+     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+     frame.setContentPane( ci.getDetailsPanel() );
+     frame.setTitle( "CropPlan Info Layout" );
+     frame.pack();
+     frame.setVisible(true);
+   }
 }

@@ -22,12 +22,12 @@
 
 package CPS.Core.CropPlans;
 
-import CPS.CSV;
+import CPS.CSV.CSV;
 import CPS.Module.*;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import javax.swing.JPanel;
 
-public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
+public class CropPlans extends CPSMasterDetailModule implements CPSExportable, CPSImportable {
    
    public CropPlans() {
       
@@ -49,8 +49,12 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
    }
  
    public void exportData() {
+      exportData( new CSV() );
+   }
+   
+   public void exportData( CPSExporter exp ) {
         if ( isDataAvailable() ) {
-            CPSExporter exp = new CSV();
+//            CPSExporter exp = new CSV();
             String planName = this.getMasterTableName();
             String fileName = CPSGlobalSettings.getDocumentOutputDir() + 
                               System.getProperty( "file.separator" ) +
@@ -66,5 +70,20 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable {
     public String getExportName() {
         return "Selected crop plan";
     }
+
+   public String getImportName() {
+      return "Exported crop plan";
+   }
+
+   public void importData( CPSImporter im ) {
+      if ( isDataAvailable() ) {
+         String fileName = CPSGlobalSettings.getDocumentOutputDir() +
+                           System.getProperty( "file.separator" ) +
+                           "ExportedCropPlan - 2008.csv";
+         getDataSource().importCropPlan( "newplan", im.importCropPlan( fileName ) );
+      }
+   }
+    
+    
     
 }

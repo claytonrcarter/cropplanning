@@ -24,6 +24,7 @@
 package CPS.Core.CropPlans;
 
 import CPS.Module.CPSDataModel;
+import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSDialog;
 import CPS.UI.Swing.LayoutAssist;
 import java.awt.Dimension;
@@ -31,8 +32,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,7 +54,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    private JSpinner spnYear;
    private GregorianCalendar tempCal;
    
-   private String selectedPlan, oldSelection;
+   private String selectedPlan = null, oldSelection;
    private ArrayList<String> listOfValidCropPlans;
    private CPSDataModel dm = null;
    
@@ -81,8 +80,10 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    
    public void selectPlan( String planName ) {
-      cmboPlanList.setSelectedItem( planName );
-      selectedPlan = getCurrentSelection();
+      if ( listOfValidCropPlans.contains(planName) ) {
+         cmboPlanList.setSelectedItem( planName );
+         selectedPlan = getCurrentSelection();
+      }
    }
    public String getSelectedPlanName() {
       return selectedPlan;
@@ -119,7 +120,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
            listOfValidCropPlans.contains( selected ) )
          cmboPlanList.setSelectedItem( selected );
       else
-         cmboPlanList.setSelectedIndex(0);
+         cmboPlanList.setSelectedIndex(-1);
       
    }
    
@@ -233,7 +234,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
       String action = arg0.getActionCommand();
       Object source = arg0.getSource();
       
-      System.out.println("PlanMan: Action Performed: " + action );
+      CPSModule.debug( "PlanMan", "Action Performed: " + action );
       
       if      ( source == btnNew )    { createPlan(); }
       else if ( source == btnDelete ) { deletePlan(); }

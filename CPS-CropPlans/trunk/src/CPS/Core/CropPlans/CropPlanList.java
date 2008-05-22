@@ -300,7 +300,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
       public void actionPerformed( ActionEvent actionEvent ) {
          String action = actionEvent.getActionCommand();
 
-         System.out.println( "DEBUG Action registered in CropBoxInTable: " + action );
+         CPSModule.debug( "CropBoxInTable", "Action registered: " + action );
 
          if ( action.equalsIgnoreCase( "comboBoxEdited" ) ) {
          // What do we do here? create a new crop?
@@ -308,14 +308,14 @@ class CropPlanList extends CPSMasterView implements ActionListener,
          else if ( action.equalsIgnoreCase( "comboBoxChanged" ) ) {
             String s = (String) cmbxCropList.getSelectedItem();
             // update mesh this planting w/ the crop selected, but for now just ...
-            System.out.println( "Crop name: selected " + s );
+//            CPSModule.debug( "CropBoxInTable", "Crop name: selected " + s );
             if ( listOfValidCrops.contains( s ) ) {
                CPSCrop crop = getDataSource().getCropInfo( (String) cmbxCropList.getSelectedItem() );
-               System.out.println( "Retrieved info for crop " + crop.getCropName() );
+//               CPSModule.debug( "CropBoxInTable", "Retrieved info for crop " + crop.getCropName() );
             }
             else {
                // TODO handle selection of non-existing crop
-               System.err.println("ERROR: Selected non existent crop, what to do?  Create?  For now, nothing." );
+               CPSModule.debug( "CropBoxInTable", "ERROR: Selected non existent crop, what to do?  Create?  For now, nothing." );
             }
          }
        }   
@@ -397,11 +397,20 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        return s;
     }
     
+    protected void updateSelectedPlanLabel() {
+       String plan = getSelectedPlanName();
+       
+       if ( plan == null )
+          plan = "<i>No Plan Selected!<i>";
+       
+       lblPlanName.setText( "<html>Plan Name: " + plan + "</html>  " );
+    }
+    
     @Override
     public void dataUpdated() {
         super.dataUpdated();
         
-        lblPlanName.setText( "Plan Name: " + getSelectedPlanName() + "  " );
+        updateSelectedPlanLabel();
         
         if ( getSelectedPlanName() == null ) {
             setStatus( "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one." );
@@ -431,7 +440,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         Object source = arg0.getSource();
         
         if ( source == cmbxLimit ) {
-            System.out.println("DEBUG(CPList): view limit combobox changed to: " + cmbxLimit.getSelectedItem() );
+            CPSModule.debug( "CropPlanList", "view limit combobox changed to: " + cmbxLimit.getSelectedItem() );
             String s = (String) cmbxLimit.getSelectedItem();
             if      ( s.equalsIgnoreCase( LIMIT_ALL_UNP ))
                 dlgFilter.setFilter( CPSComplexPlantingFilter.allUnplantedFilter() );
@@ -456,11 +465,11 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
 
-        System.out.println( "DEBUG Action performed in CropPlanList: " + action );
+        CPSModule.debug( "CropPlanList", "Action performed in CropPlanList: " + action );
 
        if ( action.equalsIgnoreCase( btnChangePlans.getActionCommand() ) ) {
             if ( ! isDataAvailable() ) {
-                System.err.println("ERROR: cannot create new plan, no data available" );
+                CPSModule.debug( "CropPlanList", "ERROR: cannot create new plan, no data available" );
                 return;
             }
 //            createNewCropPlan( getSelectedPlanName() );
