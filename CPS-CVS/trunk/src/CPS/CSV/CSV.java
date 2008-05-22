@@ -100,7 +100,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
      temp.setCropName( ctm.getStringAt( selectedRow, col++ ) );
      temp.setVarietyName( ctm.getStringAt( selectedRow, col++ ));
 
-     temp.setSimilarCrop( ctm.getStringAt( selectedRow, col++ ) );
+//     temp.setSimilarCrop( ctm.getStringAt( selectedRow, col++ ) );
 
      temp.setBotanicalName( ctm.getStringAt( selectedRow, col++ ));
      temp.setFamilyName( ctm.getStringAt( selectedRow, col++ ));
@@ -151,7 +151,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
        for ( CPSPlanting p : plantings )
            records.add( (CPSRecord) p );
 
-       this.exportRecords( filename, "crop plan: " + planName, records );
+       this.exportRecords( filename, CPSDataModelConstants.RECORD_TYPE_PLANTING, "crop plan: " + planName, records );
 
 
    }
@@ -162,11 +162,11 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
        for ( CPSCrop c : crops )
            records.add( (CPSRecord) c );
 
-       this.exportRecords( filename, "Crops and Varieties", records );
+       this.exportRecords( filename, CPSDataModelConstants.RECORD_TYPE_CROP, "Crops and Varieties", records );
 
    }
 
-   private void exportRecords( String filename, String recordType, ArrayList<CPSRecord> records ) {
+   private void exportRecords( String filename, int recordType, String recordTypeDesc, ArrayList<CPSRecord> records ) {
 
        final boolean EXPORT_SPARSE_DATA = true;
 
@@ -180,7 +180,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
            // write comment about date, time, etc
            csvOut.writeComment( " Created by CropPlanning Software" );
            csvOut.writeComment( " Available at http://cropplanning.googlecode.com" );
-           csvOut.writeComment( " Records exported: " + recordType );
+           csvOut.writeComment( " Records exported: " + recordTypeDesc );
            csvOut.writeComment( " Exported: " + new Date().toString() );
 
            // collect header information
@@ -191,7 +191,11 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
            int columnCount = 0;
            while ( it.hasNext() ) {
                d = (CPSDatum) it.next();
-               colMap.put( d.getColumnName(), new Integer( columnCount++ ) );
+               if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+                 colMap.put( columnMap.getCropColumnNameForProperty( d.getPropertyNum() ), new Integer( columnCount++ ) );
+               else 
+                 colMap.put( columnMap.getPlantingColumnNameForProperty( d.getPropertyNum() ), new Integer( columnCount++ ) );
+                 
            }
 
 
@@ -201,8 +205,13 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
            it = c.iterator();
            while ( it.hasNext() ) {
                d = (CPSDatum) it.next();
-               int colForDatum = colMap.get( d.getColumnName() ).intValue();
-               row[colForDatum] = d.getColumnName();
+               String colName = "";
+               if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+                 colName = columnMap.getCropColumnNameForProperty( d.getPropertyNum() );
+               else 
+                 colName = columnMap.getPlantingColumnNameForProperty( d.getPropertyNum() );
+               int colForDatum = colMap.get( colName ).intValue();
+               row[colForDatum] = colName;
            }
            csvOut.writeRecord( row );
 
@@ -212,7 +221,13 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
                it = record.iterator();
                while ( it.hasNext() ) {
                    d = (CPSDatum) it.next();
-                   int colForDatum = colMap.get( d.getColumnName() ).intValue();
+                   String colName = "";
+                   if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+                     colName = columnMap.getCropColumnNameForProperty( d.getPropertyNum() );
+                   else
+                     colName = columnMap.getPlantingColumnNameForProperty( d.getPropertyNum() );
+               
+                   int colForDatum = colMap.get( colName ).intValue();
 
                    if ( EXPORT_SPARSE_DATA && ! d.isConcrete() ) {
                        row[colForDatum] = "";
