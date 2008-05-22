@@ -138,17 +138,17 @@ public class TabbedUI extends CPSUI implements ActionListener {
         moduleList.add( mod );
         addModule( mod.getModuleName(), mod.display() );
         if ( mod instanceof CPSExportable ) {
-            System.out.println("DEBUG(TabbedUI): Found exportable module: " + mod.getModuleName() );
+            debug( "Found exportable module: " + mod.getModuleName() );
             exportables.add( (CPSExportable) mod );
             rebuildExportMenu();
         }
         if ( mod instanceof CPSImportable ) {
-            System.out.println("DEBUG(TabbedUI): Found importable module: " + mod.getModuleName() );
+            debug( "Found importable module: " + mod.getModuleName() );
             importables.add( (CPSImportable) mod );
             rebuildImportMenu();
         }
         if ( mod instanceof CPSConfigurable ) {
-            System.out.println("DEBUG(TabbedUI): Found configurable module: " + mod.getModuleName() );
+            debug( "Found configurable module: " + mod.getModuleName() );
             this.addModuleConfiguration( (CPSConfigurable) mod );
         }
     }
@@ -361,7 +361,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
    public void actionPerformed( ActionEvent ae ) {
       String action = ae.getActionCommand();
 
-      System.out.println( "DEBUG(TabbedUI): caught action: " + action );
+      debug( "caught action: " + action );
                 
       
       if      ( action.startsWith( "export-" )) {
@@ -386,7 +386,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
                                                            exportableName.length() );
                 
                 // now look up the correct exportable
-                System.out.println( "DEBUG(TabbedUI): Looking up exportable: " + exportableName );
+                debug( "Looking up exportable: " + exportableName );
                 for ( CPSExportable exABLE : exportables )
                    if ( exABLE.getExportName().equalsIgnoreCase( exportableName ) ) {
                       // do the deed and get the hell out of here
@@ -410,7 +410,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
                                                            importableName.length() );
                 
                 // now look up the correct importable
-                System.out.println( "DEBUG(TabbedUI): Looking up importable: " + importableName );
+                debug( "Looking up importable: " + importableName );
                 for ( CPSImportable imABLE : importables )
                    if ( imABLE.getImportName().equalsIgnoreCase( importableName ) ) {
                       // do the deed and get the hell out of here
