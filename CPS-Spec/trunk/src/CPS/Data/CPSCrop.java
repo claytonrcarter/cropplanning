@@ -32,33 +32,37 @@ import java.util.*;
  */
 public class CPSCrop extends CPSRecord {
 
-   // Fields from schema that are as-of-yet unimplemented:
-   // "Fudge", "mat_adjust", "misc_adjust", 
-   // "seeds_sources","seeds_item_codes","seeds_unit_size"
-   
    public final int PROP_CROP_NAME = CPSDataModelConstants.PROP_CROP_NAME;
    public final int PROP_CROP_DESC = CPSDataModelConstants.PROP_CROP_DESC;
    public final int PROP_VAR_NAME = CPSDataModelConstants.PROP_VAR_NAME;
    public final int PROP_FAM_NAME = CPSDataModelConstants.PROP_FAM_NAME;
    public final int PROP_BOT_NAME = CPSDataModelConstants.PROP_BOT_NAME;
-   // public final int PROP_SUCCESSIONS = 6;
+
    public final int PROP_MATURITY = CPSDataModelConstants.PROP_MATURITY;
    public final int PROP_GROUPS = CPSDataModelConstants.PROP_GROUPS;
    public final int PROP_KEYWORDS = CPSDataModelConstants.PROP_KEYWORDS;
    public final int PROP_OTHER_REQ = CPSDataModelConstants.PROP_OTHER_REQ;
    public final int PROP_NOTES = CPSDataModelConstants.PROP_NOTES;
-   public final int PROP_SIMILAR = CPSDataModelConstants.PROP_SIMILAR;
 
    public final int PROP_FROST_HARDY = CPSDataModelConstants.PROP_FROST_HARDY;
+   
    public final int PROP_DIRECT_SEED = CPSDataModelConstants.PROP_DIRECT_SEED;
-   public final int PROP_TIME_TP = CPSDataModelConstants.PROP_TIME_TO_TP;
-   public final int PROP_MAT_ADJUST = CPSDataModelConstants.PROP_MAT_ADJUST;
-   public final int PROP_ROWS_BED = CPSDataModelConstants.PROP_ROWS_P_BED;
-   public final int PROP_SPACE_INROW = CPSDataModelConstants.PROP_SPACE_INROW;
-   public final int PROP_SPACE_BETROW = CPSDataModelConstants.PROP_SPACE_BETROW;
+   public final int PROP_DS_MAT_ADJUST = CPSDataModelConstants.PROP_DS_MAT_ADJUST;
+   public final int PROP_DS_ROWS_P_BED = CPSDataModelConstants.PROP_DS_ROWS_P_BED;
+   public final int PROP_DS_SPACE_BETROW = CPSDataModelConstants.PROP_DS_SPACE_BETROW;
+   public final int PROP_DS_PLANT_NOTES = CPSDataModelConstants.PROP_DS_PLANT_NOTES;
+   
+   public final int PROP_TRANSPLANT = CPSDataModelConstants.PROP_TRANSPLANT;
+   public final int PROP_TP_MAT_ADJUST = CPSDataModelConstants.PROP_TP_MAT_ADJUST;
+   public final int PROP_TP_ROWS_BED = CPSDataModelConstants.PROP_TP_ROWS_P_BED;
+   public final int PROP_TP_SPACE_BETROW = CPSDataModelConstants.PROP_TP_SPACE_BETROW;
+   public final int PROP_TP_SPACE_INROW = CPSDataModelConstants.PROP_TP_SPACE_INROW;
+   public final int PROP_TP_TIME_IN_GH = CPSDataModelConstants.PROP_TP_TIME_IN_GH;
    public final int PROP_FLAT_SIZE = CPSDataModelConstants.PROP_FLAT_SIZE;
-   public final int PROP_PLANTER = CPSDataModelConstants.PROP_PLANTER;
-   public final int PROP_PLANTER_SETTING = CPSDataModelConstants.PROP_PLANTER_SETTING;
+   public final int PROP_TP_PLANT_NOTES = CPSDataModelConstants.PROP_TP_PLANT_NOTES;
+   public final int PROP_POT_UP = CPSDataModelConstants.PROP_TP_POT_UP;
+   public final int PROP_POT_UP_NOTES = CPSDataModelConstants.PROP_TP_POT_UP_NOTES;
+   
    public final int PROP_YIELD_FOOT = CPSDataModelConstants.PROP_YIELD_P_FOOT;
    public final int PROP_YIELD_WEEKS = CPSDataModelConstants.PROP_YIELD_NUM_WEEKS;
    public final int PROP_YIELD_PER_WEEK = CPSDataModelConstants.PROP_YIELD_P_WEEK;
@@ -70,10 +74,6 @@ public class CPSCrop extends CPSRecord {
     * @return the last (ie highest) property supported by this CPSRecords iterator
     */
    protected int lastValidProperty() { return PROP_YIELD_PER_WEEK; }
-    
-//   private CPSDatum<Integer> cropID;
-   // private CPSCrop similar;
-   private CPSDatum<String> similar;
    
    private CPSDatum<String> cropName;
    private CPSDatum<String> cropDescription;
@@ -89,22 +89,30 @@ public class CPSCrop extends CPSRecord {
    private CPSDatum<String> otherRequirements;
    private CPSDatum<String> notes;
    
-   private CPSDatum<CPSBoolean> directSeed;
    private CPSDatum<CPSBoolean> frostHardy;
-   private CPSDatum<Integer> timeToTP;
-   private CPSDatum<Integer> maturityAdjust;
-   private CPSDatum<Integer> rowsPerBed;
-   private CPSDatum<Integer> spaceInRow;
-   private CPSDatum<Integer> spaceBetweenRow;
-   private CPSDatum<String> flatSize;
-   private CPSDatum<String> planter;
-   private CPSDatum<String> planterSetting;
+   
+   private CPSDatum<CPSBoolean> directSeed;
+   private CPSDatum<Integer> dsMatAdjust;
+   private CPSDatum<Integer> dsRowsPerBed;
+   private CPSDatum<Integer> dsRowSpace;
+   private CPSDatum<String>  dsPlantNotes;
+   
+   private CPSDatum<CPSBoolean> transplant;
+   private CPSDatum<Integer> tpMatAdjust;
+   private CPSDatum<Integer> tpRowsPerBed;
+   private CPSDatum<Integer> tpRowSpace;
+   private CPSDatum<Integer> tpInRowSpace;
+   private CPSDatum<Integer> tpTimeInGH;
+   private CPSDatum<String> tpFlatSize;
+   private CPSDatum<String> tpPlantNotes;
+   private CPSDatum<CPSBoolean> tpPotUp;
+   private CPSDatum<String> tpPotUpNotes;
+   
    private CPSDatum<Float> yieldPerFoot;
    private CPSDatum<Integer> yieldNumWeeks;
    private CPSDatum<Integer> yieldPerWeek;
    private CPSDatum<String> cropYieldUnit;
    private CPSDatum<Float> cropUnitValue;
-   
    
 
    /**
@@ -113,41 +121,46 @@ public class CPSCrop extends CPSRecord {
    public CPSCrop() {
        
        setRepresentsSingleRecord();
-       recordID = new CPSDatum<Integer>( "Unique ID", PROP_ID, "id", new Integer(-1) );
-       commonIDs = new CPSDatum<ArrayList<Integer>>( "Crop IDs represented", PROP_COMMON_ID, "column_DNE", new ArrayList() );
+       recordID = new CPSDatum<Integer>( "Unique ID", PROP_ID, new Integer(-1) );
+       commonIDs = new CPSDatum<ArrayList<Integer>>( "Crop IDs represented", PROP_COMMON_ID, new ArrayList() );
        
-       similar = new CPSDatum<String>( "Similar to", PROP_SIMILAR, "similar_to", "" );
+       cropName = new CPSDatum<String>( "Crop name", PROP_CROP_NAME, "" );
+       cropDescription = new CPSDatum<String>( "Crop description", PROP_CROP_DESC, "" );
+       varName = new CPSDatum<String>( "Variety", PROP_VAR_NAME, "" );
+       familyName = new CPSDatum<String>( "Family name", PROP_FAM_NAME, "" );
+       botanicalName = new CPSDatum<String>( "Botanical name", PROP_BOT_NAME, "" );
+        
+       maturityDays = new CPSDatum<Integer>( "Days to maturity", PROP_MATURITY, new Integer(-1) );
+        
+       groups = new CPSDatum<String>( "Groups", PROP_GROUPS, "" );
+       keywords = new CPSDatum<String>( "Keywords", PROP_KEYWORDS, "" );
+       otherRequirements = new CPSDatum<String>( "Other Requirements", PROP_OTHER_REQ, "" );
+       notes = new CPSDatum<String>( "Notes", PROP_NOTES, "" );
+        
+       frostHardy = new CPSDatum<CPSBoolean>( "Frost hardy?", PROP_FROST_HARDY, new CPSBoolean( null ) );
        
-       cropName = new CPSDatum<String>( "Crop name", PROP_CROP_NAME, "crop_name", "" );
-       cropDescription = new CPSDatum<String>( "Crop description", PROP_CROP_DESC, "description", "" );
-       varName = new CPSDatum<String>( "Variety", PROP_VAR_NAME, "var_name", "" );
-       familyName = new CPSDatum<String>( "Family name", PROP_FAM_NAME, "fam_name", "" );
-       botanicalName = new CPSDatum<String>( "Botanical name", PROP_BOT_NAME, "bot_name", "" );
-        
-       // successions = new CPSDatum<Boolean>( "Succession?", PROP_SUCCESSIONS, "successions", new Boolean(false) );
-        
-       maturityDays = new CPSDatum<Integer>( "Days to maturity", PROP_MATURITY, "maturity", new Integer(-1) );
-        
-       groups = new CPSDatum<String>( "Groups", PROP_GROUPS, "groups", "" );
-       keywords = new CPSDatum<String>( "Keywords", PROP_KEYWORDS, "keywords", "" );
-       otherRequirements = new CPSDatum<String>( "Other Requirements", PROP_OTHER_REQ, "other_req", "" );
-       notes = new CPSDatum<String>( "Notes", PROP_NOTES, "notes", "" );
-        
-       directSeed = new CPSDatum<CPSBoolean>( "Direct Seeded", PROP_DIRECT_SEED, "direct_seed", new CPSBoolean( null ) );
-       frostHardy = new CPSDatum<CPSBoolean>( "Frost hardy?", PROP_FROST_HARDY, "frost_hardy", new CPSBoolean( null ) );
-       timeToTP = new CPSDatum<Integer>( "Time to TP", PROP_TIME_TP, "time_to_tp", new Integer(-1) );
-       maturityAdjust = new CPSDatum<Integer>( "Adjust Mat.", PROP_MAT_ADJUST, "mat_adjust", new Integer(-1));
-       rowsPerBed = new CPSDatum<Integer>( "Rows/Bed", PROP_ROWS_BED, "rows_p_bed", new Integer(-1) );
-       spaceInRow = new CPSDatum<Integer>( "In-Row Spacing", PROP_SPACE_INROW, "space_inrow", new Integer(-1) );
-       spaceBetweenRow = new CPSDatum<Integer>( "Row Spacing", PROP_SPACE_BETROW, "space_betrow", new Integer(-1));
-       flatSize = new CPSDatum<String>( "Flat Size", PROP_FLAT_SIZE, "flat_size", "" );
-       planter = new CPSDatum<String>( "Use Planter", PROP_PLANTER, "planter", "" );
-       planterSetting = new CPSDatum<String>( "Planter Setting", PROP_PLANTER_SETTING, "planter_setting", "" );
-       yieldPerFoot = new CPSDatum<Float>( "Yield/Foot", PROP_YIELD_FOOT, "yield_p_foot", new Float(-1.0) );
-       yieldNumWeeks = new CPSDatum<Integer>( "Yield for Weeks", PROP_YIELD_WEEKS, "yield_num_weeks", new Integer(-1) );
-       yieldPerWeek = new CPSDatum<Integer>( "Yield/Week", PROP_YIELD_PER_WEEK, "yield_p_week", new Integer(-1) );
-       cropYieldUnit = new CPSDatum<String>( "Yield Unit", PROP_CROP_UNIT, "crop_unit", "" );
-       cropUnitValue = new CPSDatum<Float>( "Value/Unit", PROP_CROP_UNIT_VALUE, "crop_unit_value", new Float(-1.0) );       
+       directSeed = new CPSDatum<CPSBoolean>( "Direct Seeded", PROP_DIRECT_SEED, new CPSBoolean( null ) );
+       dsMatAdjust = new CPSDatum<Integer>( "Adjust Mat. (DS)", PROP_DS_MAT_ADJUST, new Integer(-1));
+       dsRowsPerBed = new CPSDatum<Integer>( "Rows/Bed (DS)", PROP_DS_ROWS_P_BED, new Integer(-1)  );
+       dsRowSpace = new CPSDatum<Integer>( "Row Spacing (DS)", PROP_DS_SPACE_BETROW, new Integer(-1));
+       dsPlantNotes = new CPSDatum<String>( "Notes for DS", PROP_DS_PLANT_NOTES, ""  );
+
+       transplant = new CPSDatum<CPSBoolean>( "Transplant", PROP_TRANSPLANT, new CPSBoolean( null ) );
+       tpMatAdjust = new CPSDatum<Integer>( "Adjust Mat. (TP)", PROP_TP_MAT_ADJUST, new Integer(-1));
+       tpRowsPerBed = new CPSDatum<Integer>( "Rows/Bed (TP)", PROP_TP_ROWS_BED, new Integer(-1)  );
+       tpRowSpace = new CPSDatum<Integer>( "Row Spacing (TP)", PROP_TP_SPACE_BETROW, new Integer(-1));
+       tpInRowSpace = new CPSDatum<Integer>( "In-Row Spacing (TP)", PROP_TP_SPACE_INROW, new Integer(-1)  );
+       tpTimeInGH = new CPSDatum<Integer>( "Time to TP", PROP_TP_TIME_IN_GH, new Integer(-1)  );
+       tpFlatSize = new CPSDatum<String>( "Flat Size", PROP_FLAT_SIZE, "" );
+       tpPlantNotes = new CPSDatum<String>( "Notes for TP", PROP_TP_PLANT_NOTES, ""  );
+       tpPotUp = new CPSDatum<CPSBoolean>( "Pot Up", PROP_POT_UP, new CPSBoolean( null ) );
+       tpPotUpNotes = new CPSDatum<String>( "Notes for Potting Up", PROP_POT_UP_NOTES, "" );
+       
+       yieldPerFoot = new CPSDatum<Float>( "Yield/Foot", PROP_YIELD_FOOT, new Float(-1.0) );
+       yieldNumWeeks = new CPSDatum<Integer>( "Yield for Weeks", PROP_YIELD_WEEKS, new Integer(-1) );
+       yieldPerWeek = new CPSDatum<Integer>( "Yield/Week", PROP_YIELD_PER_WEEK, new Integer(-1) );
+       cropYieldUnit = new CPSDatum<String>( "Yield Unit", PROP_CROP_UNIT, "" );
+       cropUnitValue = new CPSDatum<Float>( "Value/Unit", PROP_CROP_UNIT_VALUE, new Float(-1.0) );       
         
     }
 
@@ -160,23 +173,33 @@ public class CPSCrop extends CPSRecord {
           case PROP_VAR_NAME:        return varName;
           case PROP_FAM_NAME:        return familyName;
           case PROP_BOT_NAME:        return botanicalName;
-          // case PROP_SUCCESSIONS:     return successions;
+          
           case PROP_MATURITY:        return maturityDays;
+          
           case PROP_GROUPS:          return groups;
           case PROP_KEYWORDS:        return keywords;
-          case PROP_NOTES:           return notes;
           case PROP_OTHER_REQ:       return otherRequirements;
-          case PROP_SIMILAR:         return similar;
-          case PROP_DIRECT_SEED:     return directSeed;
+          case PROP_NOTES:           return notes;
+          
           case PROP_FROST_HARDY:     return frostHardy;
-          case PROP_TIME_TP:         return timeToTP;
-          case PROP_MAT_ADJUST:      return maturityAdjust;
-          case PROP_ROWS_BED:        return rowsPerBed;
-          case PROP_SPACE_INROW:     return spaceInRow;
-          case PROP_SPACE_BETROW:    return spaceBetweenRow;
-          case PROP_FLAT_SIZE:       return flatSize;
-          case PROP_PLANTER:         return planter;
-          case PROP_PLANTER_SETTING: return planterSetting;
+          
+          case PROP_DIRECT_SEED:     return directSeed;
+          case PROP_DS_MAT_ADJUST:   return dsMatAdjust;
+          case PROP_DS_ROWS_P_BED:   return dsRowsPerBed;
+          case PROP_DS_SPACE_BETROW: return dsRowSpace;
+          case PROP_DS_PLANT_NOTES:  return dsPlantNotes;
+          
+          case PROP_TRANSPLANT:      return transplant;
+          case PROP_TP_MAT_ADJUST:   return tpMatAdjust;
+          case PROP_TP_ROWS_BED:     return tpRowsPerBed;
+          case PROP_TP_SPACE_BETROW: return tpRowSpace;
+          case PROP_TP_SPACE_INROW:  return tpInRowSpace;
+          case PROP_TP_TIME_IN_GH:   return tpTimeInGH;
+          case PROP_FLAT_SIZE:       return tpFlatSize;
+          case PROP_TP_PLANT_NOTES:  return tpPlantNotes;
+          case PROP_POT_UP:          return tpPotUp;
+          case PROP_POT_UP_NOTES:    return tpPotUpNotes;
+          
           case PROP_YIELD_FOOT:      return yieldPerFoot;
           case PROP_YIELD_WEEKS:     return yieldNumWeeks;
           case PROP_YIELD_PER_WEEK:  return yieldPerWeek;
@@ -191,27 +214,38 @@ public class CPSCrop extends CPSRecord {
 
     public ArrayList<Integer> getListOfInheritableProperties() {
        ArrayList<Integer> a = new ArrayList<Integer>();
+
        a.add( PROP_VAR_NAME );
        a.add( PROP_FAM_NAME );
        a.add( PROP_BOT_NAME );
        a.add( PROP_MATURITY );
        a.add( PROP_GROUPS );
        a.add( PROP_OTHER_REQ );
-       a.add( PROP_TIME_TP );
-       a.add( PROP_MAT_ADJUST );
-       a.add( PROP_ROWS_BED );
-       a.add( PROP_SPACE_INROW );
-       a.add( PROP_SPACE_BETROW );
+       a.add( PROP_FROST_HARDY );
+       
+       a.add( PROP_DIRECT_SEED );
+       a.add( PROP_DS_MAT_ADJUST  );
+       a.add( PROP_DS_ROWS_P_BED  );
+       a.add( PROP_DS_SPACE_BETROW  );
+       a.add( PROP_DS_PLANT_NOTES  );
+       
+       a.add( PROP_TRANSPLANT );
+       a.add( PROP_TP_MAT_ADJUST  );
+       a.add( PROP_TP_ROWS_BED  );
+       a.add( PROP_TP_SPACE_BETROW  );
+       a.add( PROP_TP_SPACE_INROW  );
+       a.add( PROP_TP_TIME_IN_GH  );
        a.add( PROP_FLAT_SIZE );
-       a.add( PROP_PLANTER );
-       a.add( PROP_PLANTER_SETTING );
+       a.add( PROP_TP_PLANT_NOTES  );
+       a.add( PROP_POT_UP );
+       a.add( PROP_POT_UP_NOTES );
+       
        a.add( PROP_YIELD_FOOT );
        a.add( PROP_YIELD_WEEKS );
        a.add( PROP_YIELD_PER_WEEK );
        a.add( PROP_CROP_UNIT );
        a.add( PROP_CROP_UNIT_VALUE );
-       a.add( PROP_DIRECT_SEED );
-       a.add( PROP_FROST_HARDY );
+
        return a;
    }
     
@@ -225,11 +259,6 @@ public class CPSCrop extends CPSRecord {
     public void setCropDescription( String s ) { setCropDescription( s, false ); }
     public void setCropDescription( String s, boolean force  ) { set( cropDescription, s, force ); }
 
-    public String getSimilarCrop() { return get( PROP_SIMILAR ); }
-    public CPSDatumState getSimilarCropState() { return getStateOf( PROP_SIMILAR ); }
-    public void setSimilarCrop( String c ) { setSimilarCrop( c, false); }
-    public void setSimilarCrop( String c, boolean force  ) { set( similar, c, force ); }
-    
     public String getVarietyName() { return get( PROP_VAR_NAME ); }
     public CPSDatumState getVarietyNameState() { return getStateOf( PROP_VAR_NAME ); }
     public void setVarietyName( String s ) { setVarietyName( s, false ); }
@@ -245,9 +274,6 @@ public class CPSCrop extends CPSRecord {
     public void setBotanicalName( String e) { setBotanicalName( e, false ); }
     public void setBotanicalName( String e, boolean force ) { set( botanicalName, e, force ); }
 
-    // public boolean getSuccessions() { return getBoolean( PROP_SUCCESSIONS ); }
-    // public void setSuccessions( boolean b ) { set( successions, new Boolean(b) ); }
-    
     public int getMaturityDays() { return getInt( PROP_MATURITY ); }
     public String getMaturityDaysString() { return formatInt( getMaturityDays() ); }
     public CPSDatumState getMaturityDaysState() { return getStateOf( PROP_MATURITY ); }
@@ -282,18 +308,6 @@ public class CPSCrop extends CPSRecord {
       set( otherRequirements, e, force );
     }
     
-    public boolean isDirectSeeded() { return get( PROP_DIRECT_SEED, new CPSBoolean(null)).booleanValue(); } 
-    public boolean isTransplanted() { return ! isDirectSeeded(); }
-    public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }   
-    public void setDirectSeeded( String s ) { 
-       if ( s != null && s.equalsIgnoreCase("true") )
-          setDirectSeeded( true );
-       else
-          setDirectSeeded( false );
-    }
-    public void setDirectSeeded( Boolean b ) { setDirectSeeded( b, false ); }
-    public void setDirectSeeded( Boolean b, boolean force ) { set( directSeed, new CPSBoolean(b), force ); }
-    
     public boolean isFrostHardy() { return get( PROP_FROST_HARDY, new CPSBoolean(false)).booleanValue(); } 
     public boolean isFrostTender() { return ! isFrostHardy(); }
     public CPSDatumState getFrostHardyState() { return getStateOf( PROP_FROST_HARDY ); }   
@@ -306,62 +320,130 @@ public class CPSCrop extends CPSRecord {
     public void setFrostHardy( Boolean b ) { setFrostHardy( b, false ); }
     public void setFrostHardy( Boolean b, boolean force ) { set( frostHardy, new CPSBoolean(b), force ); }
     
+    /*
+     * DIRECT SEEDING STATS
+     */
+    public boolean isDirectSeeded() { return get( PROP_DIRECT_SEED, new CPSBoolean(null)).booleanValue(); } 
+    public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }   
+    public void setDirectSeeded( String s ) { 
+       if ( s != null && s.equalsIgnoreCase("true") )
+          setDirectSeeded( true );
+       else
+          setDirectSeeded( false );
+    }
+    public void setDirectSeeded( Boolean b ) { setDirectSeeded( b, false ); }
+    public void setDirectSeeded( Boolean b, boolean force ) { set( directSeed, new CPSBoolean(b), force ); }
     
+    public int getDSMaturityAdjust() { return getInt( PROP_DS_MAT_ADJUST  ); }
+    public String getDSMaturityAdjustString() { return formatInt( getDSMaturityAdjust() ); }
+    public CPSDatumState getDSMaturityAdjustState() { return getStateOf( PROP_DS_MAT_ADJUST  ); }
+    public void setDSMaturityAdjust( int i ) { setDSMaturityAdjust( i, false ); }
+    public void setDSMaturityAdjust( String s ) { setDSMaturityAdjust( s, false ); }
+    public void setDSMaturityAdjust( String s, boolean force ) { setDSMaturityAdjust( parseInt(s), force ); }
+    public void setDSMaturityAdjust( int i, boolean force ) { set( dsMatAdjust, i, force ); }
+   
+    public int getDSRowsPerBed() { return getInt( PROP_DS_ROWS_P_BED  ); }
+    public String getDSRowsPerBedString() { return formatInt( getDSRowsPerBed() ); }
+    public CPSDatumState getDSRowsPerBedState() { return getStateOf( PROP_DS_ROWS_P_BED  ); }
+    public void setDSRowsPerBed( int i ) { setDSRowsPerBed( i, false ); }
+    public void setDSRowsPerBed( String s ) { setTPRowsPerBed( s, false ); }
+    public void setDSRowsPerBed( String s, boolean force ) { setDSRowsPerBed( parseInt(s), force ); }
+    public void setDSRowsPerBed( int i, boolean force ) { set( dsRowsPerBed, i, force ); }
+
+    public int getDSSpaceBetweenRow() { return getInt( PROP_DS_SPACE_BETROW  ); }
+    public String getDSSpaceBetweenRowString() { return formatInt( getDSSpaceBetweenRow() ); }
+    public CPSDatumState getDSSpaceBetweenRowState() { return getStateOf( PROP_DS_SPACE_BETROW  ); }
+    public void setDSSpaceBetweenRow( int i ) { setDSSpaceBetweenRow( i, false ); }
+    public void setDSSpaceBetweenRow( String s ) { setDSSpaceBetweenRow( s, false ); }
+    public void setDSSpaceBetweenRow( String s, boolean force ) { setDSSpaceBetweenRow( parseInt(s), force ); }
+    public void setDSSpaceBetweenRow( int i, boolean force ) { set( dsRowSpace, i, force ); }
+   
+    public String getDSPlantNotes() { return get( PROP_DS_PLANT_NOTES  ); }
+    public CPSDatumState getDSPlantNotesState() { return getStateOf( PROP_DS_PLANT_NOTES  ); }
+    public void setDSPlantNotes( String s ) { setDSPlantNotes( s, false ); }
+    public void setDSPlantNotes( String s, boolean force ) { set( dsPlantNotes, s, force ); }
     
-   public int getTimeToTP() { return getInt( PROP_TIME_TP ); }
-   public String getTimeToTPString() { return formatInt( getTimeToTP() ); }
-   public CPSDatumState getTimeToTPState() { return getStateOf( PROP_TIME_TP ); }
-    public void setTimeToTP( int i ) { setTimeToTP( i, false ); }
-   public void setTimeToTP( String s ) { setTimeToTP( s, false ); }
-   public void setTimeToTP( String s, boolean force ) { setTimeToTP( parseInt(s), force ); }
-   public void setTimeToTP( int i, boolean force ) { set( timeToTP, i, force ); }
+    /* 
+     * TRANSPLANT STATS
+     */
+    public boolean isTransplanted() { return get( PROP_TRANSPLANT, new CPSBoolean(null)).booleanValue(); } 
+    public CPSDatumState getTransplantedState() { return getStateOf( PROP_TRANSPLANT ); }   
+    public void setTransplanted( String s ) { 
+       if ( s != null && s.equalsIgnoreCase("true") )
+          setTransplanted( true );
+       else
+          setTransplanted( false );
+    }
+    public void setTransplanted( Boolean b ) { setTransplanted( b, false ); }
+    public void setTransplanted( Boolean b, boolean force ) { set( transplant, new CPSBoolean(b), force ); }
+
+    public int getTPMaturityAdjust() { return getInt( PROP_TP_MAT_ADJUST  ); }
+    public String getTPMaturityAdjustString() { return formatInt( getTPMaturityAdjust() ); }
+    public CPSDatumState getTPMaturityAdjustState() { return getStateOf( PROP_TP_MAT_ADJUST  ); }
+    public void setTPMaturityAdjust( int i ) { setTPMaturityAdjust( i, false ); }
+    public void setTPMaturityAdjust( String s ) { setTPMaturityAdjust( s, false ); }
+    public void setTPMaturityAdjust( String s, boolean force ) { setTPMaturityAdjust( parseInt(s), force ); }
+    public void setTPMaturityAdjust( int i, boolean force ) { set( tpMatAdjust, i, force ); }
    
-   public int getMaturityAdjust() { return getInt( PROP_MAT_ADJUST ); }
-   public String getMaturityAdjustString() { return formatInt( getMaturityAdjust() ); }
-   public CPSDatumState getMaturityAdjustState() { return getStateOf( PROP_MAT_ADJUST ); }
-    public void setMaturityAdjust( int i ) { setMaturityAdjust( i, false ); }
-   public void setMaturityAdjust( String s ) { setMaturityAdjust( s, false ); }
-   public void setMaturityAdjust( String s, boolean force ) { setMaturityAdjust( parseInt(s), force ); }
-   public void setMaturityAdjust( int i, boolean force ) { set( maturityAdjust, i, force ); }
+    public int getTPRowsPerBed() { return getInt( PROP_TP_ROWS_BED  ); }
+    public String getTPRowsPerBedString() { return formatInt( getTPRowsPerBed() ); }
+    public CPSDatumState getTPRowsPerBedState() { return getStateOf( PROP_TP_ROWS_BED  ); }
+    public void setTPRowsPerBed( int i ) { setTPRowsPerBed( i, false ); }
+    public void setTPRowsPerBed( String s ) { setTPRowsPerBed( s, false ); }
+    public void setTPRowsPerBed( String s, boolean force ) { setTPRowsPerBed( parseInt(s), force ); }
+    public void setTPRowsPerBed( int i, boolean force ) { set( tpRowsPerBed, i, force ); }
    
-   public int getRowsPerBed() { return getInt( PROP_ROWS_BED ); }
-   public String getRowsPerBedString() { return formatInt( getRowsPerBed() ); }
-   public CPSDatumState getRowsPerBedState() { return getStateOf( PROP_ROWS_BED ); }
-    public void setRowsPerBed( int i ) { setRowsPerBed( i, false ); }
-   public void setRowsPerBed( String s ) { setRowsPerBed( s, false ); }
-   public void setRowsPerBed( String s, boolean force ) { setRowsPerBed( parseInt(s), force ); }
-   public void setRowsPerBed( int i, boolean force ) { set( rowsPerBed, i, force ); }
+    public int getTPSpaceBetweenRow() { return getInt( PROP_TP_SPACE_BETROW  ); }
+    public String getTPSpaceBetweenRowString() { return formatInt( getTPSpaceBetweenRow() ); }
+    public CPSDatumState getTPSpaceBetweenRowState() { return getStateOf( PROP_TP_SPACE_BETROW  ); }
+    public void setTPSpaceBetweenRow( int i ) { setTPSpaceBetweenRow( i, false ); }
+    public void setTPSpaceBetweenRow( String s ) { setTPSpaceBetweenRow( s, false ); }
+    public void setTPSpaceBetweenRow( String s, boolean force ) { setTPSpaceBetweenRow( parseInt(s), force ); }
+    public void setTPSpaceBetweenRow( int i, boolean force ) { set( tpRowSpace, i, force ); }
+    
+    public int getTPSpaceInRow() { return getInt( PROP_TP_SPACE_INROW  ); }
+    public String getTPSpaceInRowString() { return formatInt( getTPSpaceInRow() ); }
+    public CPSDatumState getTPSpaceInRowState() { return getStateOf( PROP_TP_SPACE_INROW  ); }
+    public void setTPSpaceInRow( int i ) { setTPSpaceInRow( i, false ); }
+    public void setTPSpaceInRow( String s ) { setTPSpaceInRow( s, false ); }
+    public void setTPSpaceInRow( String s, boolean force ) { setTPSpaceInRow( parseInt(s), force ); }
+    public void setTPSpaceInRow( int i, boolean force ) { set( tpInRowSpace, i, force ); }
    
-   public int getSpaceInRow() { return getInt( PROP_SPACE_INROW ); }
-   public String getSpaceInRowString() { return formatInt( getSpaceInRow() ); }
-   public CPSDatumState getSpaceInRowState() { return getStateOf( PROP_SPACE_INROW ); }
-    public void setSpaceInRow( int i ) { setSpaceInRow( i, false ); }
-   public void setSpaceInRow( String s ) { setSpaceInRow( s, false ); }
-   public void setSpaceInRow( String s, boolean force ) { setSpaceInRow( parseInt(s), force ); }
-   public void setSpaceInRow( int i, boolean force ) { set( spaceInRow, i, force ); }
+    public int getTPTimeInGH() { return getInt( PROP_TP_TIME_IN_GH  ); }
+    public String getTPTimeInGHString() { return formatInt( getTPTimeInGH() ); }
+    public CPSDatumState getTPTimeInGHState() { return getStateOf( PROP_TP_TIME_IN_GH  ); }
+    public void setTPTimeInGH( int i ) { setTPTimeInGH( i, false ); }
+    public void setTPTimeInGH( String s ) { setTPTimeInGH( s, false ); }
+    public void setTPTimeInGH( String s, boolean force ) { setTPTimeInGH( parseInt(s), force ); }
+    public void setTPTimeInGH( int i, boolean force ) { set( tpTimeInGH, i, force ); }
    
-   public int getSpaceBetweenRow() { return getInt( PROP_SPACE_BETROW ); }
-   public String getSpaceBetweenRowString() { return formatInt( getSpaceBetweenRow() ); }
-   public CPSDatumState getSpaceBetweenRowState() { return getStateOf( PROP_SPACE_BETROW ); }
-    public void setSpaceBetweenRow( int i ) { setSpaceBetweenRow( i, false ); }
-   public void setSpaceBetweenRow( String s ) { setSpaceBetweenRow( s, false ); }
-   public void setSpaceBetweenRow( String s, boolean force ) { setSpaceBetweenRow( parseInt(s), force ); }
-   public void setSpaceBetweenRow( int i, boolean force ) { set( spaceBetweenRow, i, force ); }
+    public String getTPFlatSize() { return get( PROP_FLAT_SIZE ); }
+    public CPSDatumState getTPFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
+    public void setTPFlatSize( String s ) { setTPFlatSize( s, false ); }
+    public void setTPFlatSize( String s, boolean force ) { set( tpFlatSize, s, force ); }
    
-   public String getFlatSize() { return get( PROP_FLAT_SIZE ); }
-   public CPSDatumState getFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
-    public void setFlatSize( String s ) { setFlatSize( s, false ); }
-   public void setFlatSize( String s, boolean force ) { set( flatSize, s, force ); }
+    public String getTPPlantNotes() { return get( PROP_TP_PLANT_NOTES  ); }
+    public CPSDatumState getTPPlantNotesState() { return getStateOf( PROP_TP_PLANT_NOTES  ); }
+    public void setTPPlantNotes( String s ) { setTPPlantNotes( s, false ); }
+    public void setTPPlantNotes( String s, boolean force ) { set( tpPlantNotes, s, force ); }
+      
+    public boolean isPottedUp() { return get( PROP_POT_UP, new CPSBoolean(false)).booleanValue(); } 
+    public CPSDatumState getTPPottedUpState() { return getStateOf( PROP_POT_UP); }   
+    public void setTPPottedUp( String s ) { 
+       if ( s != null && s.equalsIgnoreCase("true") )
+          setTPPottedUp( true );
+       else
+          setTPPottedUp( false );
+    }
+    public void setTPPottedUp( Boolean b ) { setTPPottedUp( b, false ); }
+    public void setTPPottedUp( Boolean b, boolean force ) { set( tpPotUp, new CPSBoolean(b), force ); }
+    
+    public String getTPPotUpNotes() { return get( PROP_POT_UP_NOTES  ); }
+    public CPSDatumState getTPPotUpNotesState() { return getStateOf( PROP_POT_UP_NOTES ); }
+    public void setTPPotUpNotes( String s ) { setTPPotUpNotes( s, false ); }
+    public void setTPPotUpNotes( String s, boolean force ) { set( tpPotUpNotes, s, force ); }
+      
    
-   public String getPlanter() { return get( PROP_PLANTER ); }
-   public CPSDatumState getPlanterState() { return getStateOf( PROP_PLANTER ); }
-    public void setPlanter( String s ) { setPlanter( s, false ); }
-   public void setPlanter( String s, boolean force ) { set( planter, s, force ); }
-   
-   public String getPlanterSetting() { return get( PROP_PLANTER_SETTING ); }
-   public CPSDatumState getPlanterSettingState() { return getStateOf( PROP_PLANTER_SETTING ); }
-    public void setPlanterSetting( String s ) { setPlanterSetting( s, false ); }
-   public void setPlanterSetting( String s, boolean force ) { set( planterSetting, s, force ); }
    
    public float getYieldPerFoot() { return getFloat( PROP_YIELD_FOOT ); }
    public String getYieldPerFootString() { return formatFloat( getYieldPerFoot(), 3 ); }

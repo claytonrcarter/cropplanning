@@ -94,6 +94,9 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private static float prefFudgeHighDefault = prefFudgeDefault;
     private static float prefFudgeLowDefault = prefFudgeDefault;
     
+    private static final String KEY_DEBUG = "DEBUG";
+    private JCheckBox chkDebug;
+    private static boolean prefDebugDefault = false;
     
     
     public CPSGlobalSettings() {
@@ -125,6 +128,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         jdtcFirstFrost.setDateFormatString( "MMMMM d" );
         
         tfldFudge = new JTextField(5);
+        
+        chkDebug = new JCheckBox();
         
         buildConfigPanel();
 
@@ -186,7 +191,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
 
     public void setLastVersionUsed( long l ) {
-        System.out.println("Setting last version used to " + l );
+        CPSModule.debug( "GlobalSettings", "Setting last version used to " + l );
         getGlobalPreferences().putLong( KEY_LASTVERSION, l );
     }
 
@@ -212,6 +217,14 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     
     public static float getFudgeFactorLow() {
         return getGlobalPreferences().getFloat( KEY_FUDGE_LOW, prefFudgeLowDefault );
+    }
+    
+    public static boolean getDebug() {
+       return getGlobalPreferences().getBoolean( KEY_DEBUG, prefDebugDefault );
+    }
+    
+    public static void setDebug( boolean debug ) {
+       getGlobalPreferences().putBoolean( KEY_DEBUG, debug );
     }
     
     /*
@@ -240,6 +253,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         jdtcLastFrost.setDate( getLastFrostDate() );
         jdtcFirstFrost.setDate( getFirstFrostDate() );
         tfldFudge.setText( "" + 100 * getFudgeFactor() );
+        chkDebug.setSelected( getDebug() );
     }
 
     public void resetConfigurationToDefaults() {
@@ -252,6 +266,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         jdtcLastFrost.setDate( null );
         jdtcFirstFrost.setDate( null );
         tfldFudge.setText( "" + 100 * prefFudgeDefault );
+        chkDebug.setSelected( prefDebugDefault );
     }
 
     public void saveConfiguration() {
@@ -265,6 +280,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         getGlobalPreferences().put( KEY_LASTFROST, CPSDateValidator.format( jdtcLastFrost.getDate() ) );
         getGlobalPreferences().put( KEY_FIRSTFROST, CPSDateValidator.format( jdtcFirstFrost.getDate() ));
         getGlobalPreferences().put( KEY_FUDGE, "" + Float.parseFloat( tfldFudge.getText() ) / 100 );
+        getGlobalPreferences().putBoolean( KEY_DEBUG, chkDebug.isSelected() );
     }
   
     private void buildConfigPanel() {

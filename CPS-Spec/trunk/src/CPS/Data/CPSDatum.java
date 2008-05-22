@@ -43,12 +43,13 @@ public class CPSDatum<T> {
       setDatum(d);
    }
    
-   public CPSDatum( String n, int p, String c, T def ) {
+//   public CPSDatum( String n, int p, String c, T def ) {
+   public CPSDatum( String n, int p, T def ) {
       setDescriptor(n);
       setDefaultValue(def);
       setDatum( getDefaultValue() );
       setProperty(p);
-      setColumnName(c);
+//      setColumnName(c);
       setInherited(false);
       setCalculated(false);
       invalidate();
@@ -57,8 +58,8 @@ public class CPSDatum<T> {
    public String getDescriptor() { return descriptor; }
    public void setDescriptor( String name ) { this.descriptor = name; }
    
-   protected void setColumnName( String c ) { columnName = c; }
-   public String getColumnName() { return columnName; }
+//   protected void setColumnName( String c ) { columnName = c; }
+//   public String getColumnName() { return columnName; }
    
    protected void setProperty( int p ) { property = p; }
    public int getPropertyNum() { return property; }

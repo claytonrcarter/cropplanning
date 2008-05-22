@@ -3,7 +3,7 @@ package CPS.Module;
 
 public abstract class CPSModule {
 
-    public static final String GLOBAL_DEVEL_VERSION = "0.1.3";
+    public static final String GLOBAL_DEVEL_VERSION = "0.1.4";
     /// handles UI experience and displays contents of modules
     protected final String MOD_TYPE_UI = "UI";
     /// provides core funtionality
@@ -99,7 +99,8 @@ public abstract class CPSModule {
       debug( this.getModuleName(), message );
    }
    
-   protected void debug( String module, String message ) {
-      System.out.println("DEBUG(" + module + "): " + message );
+   public static void debug( String module, String message ) {
+      if ( CPSGlobalSettings.getDebug() )
+         System.out.println( "DEBUG(" + module + "): " + message );
    }
 }

@@ -25,8 +25,8 @@ package CPS.UI.Modules;
 import CPS.Data.CPSComplexFilter;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
-import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDataModelUser;
+import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.CPSSearchField;
 import java.awt.BorderLayout;
@@ -587,7 +587,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
 
-        System.out.println("DEBUG Action performed in CPSMasterView: " + action);
+        CPSModule.debug( "CPSMasterView", "Action performed: " + action);
 
         /*
          * FILTER BUTTON CLEAR

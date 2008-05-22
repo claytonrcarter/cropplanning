@@ -24,6 +24,7 @@
 package CPS.Data;
 
 import CPS.Module.CPSGlobalSettings;
+import CPS.Module.CPSModule;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -88,7 +89,7 @@ public class CPSCalculations {
                                                         int inRowSpacing, 
                                                         int rowsPerBed,
                                                         int bedLength ) {
-      float rowFt = plantsNeeded * ( inRowSpacing / 12 ); // LATER 12 is a little too English-unit-centric
+      float rowFt = plantsNeeded * ( inRowSpacing / 12f ); // LATER 12 is a little too English-unit-centric
       // LATER when we implement calculation of rowFtNeeded, we could just call that here
       return ( rowFt / rowsPerBed ) / bedLength;
    }

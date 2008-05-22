@@ -159,15 +159,18 @@ public class CPSTable extends JTable {
 //        ArrayList<String[]> prettyNames = getColumnPrettyNameMap();
         int COLNAME = 0;
         int PRETTYNAME = 1;
+        int EDITABLE = 2;
         
         // Assign a tooltip for each of the columns
         for ( int c = 0; c < getColumnCount(); c++ ) {
             String colName = getColumnModel().getColumn( c ).getHeaderValue().toString().toLowerCase();
             String s = null;
+            Boolean editable = new Boolean( true ); // default to true
             
             for ( int l = 0; l < prettyNames.size(); l++ )
                 if ( colName.equals( prettyNames.get(l)[COLNAME]) ) {
                     s = prettyNames.get(l)[PRETTYNAME];
+                    editable = new Boolean( prettyNames.get(l)[EDITABLE] );
                     break;
                 }
             
@@ -176,6 +179,13 @@ public class CPSTable extends JTable {
                 getColumnModel().getColumn( c ).setHeaderValue( s );
             // set the tool tip to the "pretty name"
             tips.setToolTip( getColumnModel().getColumn( c ), s );
+            
+            // HACK!
+            // if the column is labeled as uneditable, then install an "uneditable" cell editor
+            if ( ! editable.booleanValue() ) {
+               getColumnModel().getColumn( c ).setCellEditor( new UneditableCellEditor() );
+            }
+            
         }
         getTableHeader().addMouseMotionListener( tips );
     }
@@ -273,7 +283,7 @@ public class CPSTable extends JTable {
     
             // Configure the component with the specified value
             // in case, we display a formated string
-            setText( dateValidator.format( (Date) value ));
+            setText( CPSDateValidator.format( (Date) value ));
 //            setToolTipText((String)value);
             
 //            shadeComponentInRow( this, rowIndex );
@@ -337,6 +347,39 @@ public class CPSTable extends JTable {
             }
             return true;
         }
+    }
+       
+    private class UneditableCellEditor extends AbstractCellEditor implements TableCellEditor {
+        // This is the component that will handle the editing of the cell value
+        JComponent component = new InsetRenderer();
+        
+        // This method is called when a cell value is edited by the user.
+        // 'value' is value contained in the cell located at (rowIndex, vColIndex)
+        public Component getTableCellEditorComponent( JTable table, Object value,
+                                                      boolean isSelected, int rowIndex, int vColIndex ) {
+            // Configure the component with the specified value
+            // In ths case, we accept a Date and fill the text field with a formated String.
+            ( (JLabel) component ).setText( CPSDateValidator.format( (Date) value ));
+
+            return component;
+        }
+
+        // This method is called when editing is completed.
+        // It must return the new value to be stored in the cell.
+        // In this case, we return a Date
+        public Object getCellEditorValue() {
+            if ( ((JLabel) component ).getText().equals( "" ))
+                return null;
+            
+            String dateText = ( (JLabel) component ).getText();
+            
+            return dateValidator.parse( dateText.trim() );
+        }
+        
+       @Override
+       public boolean isCellEditable( EventObject evt ) {
+          return false;
+       }
     }
        
     private class ColumnHeaderToolTips extends MouseMotionAdapter {

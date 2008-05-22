@@ -267,8 +267,7 @@ public abstract class CPSRecord {
                int prop = i.intValue();
                thisDat = this.getDatum( prop );
                thatDat = thatRecord.getDatum( prop );
-          
-          
+                       
 //          System.out.print("DEBUG Inheriting " + thisDat.getColumnName() );
           /* 
            * IF: this IS NOT valid AND that IS valid
@@ -277,7 +276,7 @@ public abstract class CPSRecord {
            * IF: this IS valid
            * THEN: ignore this datum, no inheritance needed 
            */
-               if ( thisDat.isConcrete() ) {
+               if ( thisDat.isConcrete() || thatDat == null ) {
 //                   System.out.println( " SKIPPED" );
                    continue;
                }
