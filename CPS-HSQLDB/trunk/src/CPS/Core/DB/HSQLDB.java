@@ -1159,48 +1159,61 @@ public class HSQLDB extends CPSDataModel {
               filterString += " AND ";
            }
            
-           if ( filter.filterOnPlantingDate() ) {
-               if      ( filter.getPlantingRangeEnd() == null )
-//                   filterString += "date_plant_plan >= " + escapeValue( filter.getPlantingRangeStart() );
-                   filterString += "date_plant >= " + escapeValue( filter.getPlantingRangeStart() );
-               else if ( filter.getPlantingRangeStart() == null )
-//                   filterString += "date_plant_plan <= " + escapeValue( filter.getPlantingRangeEnd() );
-                   filterString += "date_plant <= " + escapeValue( filter.getPlantingRangeEnd() );
-               else // both != null
-//                   filterString += "date_plant_plan BETWEEN " + escapeValue( filter.getPlantingRangeStart() ) + " AND " +
-                   filterString += "date_plant BETWEEN " + escapeValue( filter.getPlantingRangeStart() ) + " AND " +
-                                                                escapeValue( filter.getPlantingRangeEnd() );
-               filterString += " AND ";
+           if ( filter.filterOnAnyDate() ) {
+               if      ( filter.getAnyDateRangeEnd() == null )
+                   filterString += " ( date_plant   >= " + escapeValue( filter.getAnyDateRangeStart() ) + " OR " +
+                                   "   date_tp      >= " + escapeValue( filter.getAnyDateRangeStart() ) + " OR " +
+                                   "   date_harvest >= " + escapeValue( filter.getAnyDateRangeStart() ) + " ) ";
+               else if ( filter.getAnyDateRangeStart() == null )
+                   filterString += " ( date_plant   <= " + escapeValue( filter.getAnyDateRangeEnd() ) + " OR " +
+                                   "   date_tp      <= " + escapeValue( filter.getAnyDateRangeEnd() ) + " OR " +
+                                   "   date_harvest <= " + escapeValue( filter.getAnyDateRangeEnd() ) + " ) ";
+               else { // both != null
+                   filterString += " ( date_plant   BETWEEN " + escapeValue( filter.getAnyDateRangeStart() ) + " AND " +
+                                                                escapeValue( filter.getAnyDateRangeEnd() )   + " OR ";
+                   filterString += "   date_tp      BETWEEN " + escapeValue( filter.getAnyDateRangeStart() ) + " AND " +
+                                                                escapeValue( filter.getAnyDateRangeEnd() )   + " OR ";
+                   filterString += "   date_harvest BETWEEN " + escapeValue( filter.getAnyDateRangeStart() ) + " AND " +
+                                                                escapeValue( filter.getAnyDateRangeEnd() )   + " ) ";
+               }
+              filterString += " AND ";
+           }
+           else {
+              if ( filter.filterOnPlantingDate() ) {
+                 if ( filter.getPlantingRangeEnd() == null )
+                    filterString += "date_plant >= " + escapeValue( filter.getPlantingRangeStart() );
+                 else if ( filter.getPlantingRangeStart() == null )
+                    filterString += "date_plant <= " + escapeValue( filter.getPlantingRangeEnd() );
+                 else // both != null
+                    filterString += "date_plant BETWEEN " + escapeValue( filter.getPlantingRangeStart() ) + " AND " +
+                                                            escapeValue( filter.getPlantingRangeEnd() );
+                 filterString += " AND ";
+              }
+           
+              if ( filter.filterOnTPDate() ) {
+                 if ( filter.getTpRangeEnd() == null )
+                    filterString += "date_tp >= " + escapeValue( filter.getTpRangeStart() );
+                 else if ( filter.getTpRangeStart() == null )
+                    filterString += "date_tp <= " + escapeValue( filter.getTpRangeEnd() );
+                 else // both != null
+                    filterString += "date_tp BETWEEN " + escapeValue( filter.getTpRangeStart() ) + " AND " +
+                                                         escapeValue( filter.getTpRangeEnd() );
+                 filterString += " AND ";
+              }
+           
+              if ( filter.filterOnHarvestDate() ) {
+                 if ( filter.getHarvestDateEnd() == null )
+                    filterString += "date_harvest >= " + escapeValue( filter.getHarvestDateStart() );
+                 else if ( filter.getHarvestDateStart() == null )
+                    filterString += "date_harvest <= " + escapeValue( filter.getHarvestDateEnd() );
+                 else // both != null
+                    filterString += "date_harvest BETWEEN " + escapeValue( filter.getHarvestDateStart() ) + " AND " +
+                                                              escapeValue( filter.getHarvestDateEnd() );
+                 filterString += " AND ";
+              }
            }
            
-           if ( filter.filterOnTPDate() ) {
-               if      ( filter.getTpRangeEnd() == null )
-//                   filterString += "date_tp_plan >= " + escapeValue( filter.getTpRangeStart() );
-                   filterString += "date_tp >= " + escapeValue( filter.getTpRangeStart() );
-               else if ( filter.getTpRangeStart() == null )
-//                   filterString += "date_tp_plan <= " + escapeValue( filter.getTpRangeEnd() );
-                   filterString += "date_tp <= " + escapeValue( filter.getTpRangeEnd() );
-               else // both != null
-//                   filterString += "date_tp_plan BETWEEN " + escapeValue( filter.getTpRangeStart() ) + " AND " +
-                   filterString += "date_tp BETWEEN " + escapeValue( filter.getTpRangeStart() ) + " AND " +
-                                                             escapeValue( filter.getTpRangeEnd() );
-               filterString += " AND ";
-           }
-           
-           if ( filter.filterOnHarvestDate() ) {
-               if      ( filter.getHarvestDateEnd() == null )
-//                   filterString += "date_harvest_plan >= " + escapeValue( filter.getHarvestDateStart() );
-                   filterString += "date_harvest >= " + escapeValue( filter.getHarvestDateStart() );
-               else if ( filter.getHarvestDateStart() == null )
-//                   filterString += "date_harvest_plan <= " + escapeValue( filter.getHarvestDateEnd() );
-                   filterString += "date_harvest <= " + escapeValue( filter.getHarvestDateEnd() );
-               else // both != null
-//                   filterString += "date_harvest_plan BETWEEN " + escapeValue( filter.getHarvestDateStart() ) + " AND " +
-                   filterString += "date_harvest BETWEEN " + escapeValue( filter.getHarvestDateStart() ) + " AND " +
-                                                             escapeValue( filter.getHarvestDateEnd() );
-               filterString += " AND ";
-           }
-           
+           // remove the last instance of " AND ", which is at the end of the string
            filterString = filterString.substring( 0, filterString.lastIndexOf( " AND " ));
        }
            
