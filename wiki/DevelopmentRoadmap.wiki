@@ -12,7 +12,7 @@
 == 1.0 ==
 === Beta ===
  
- *Feature Freeze*
+*Feature Freeze*
 
  
 
