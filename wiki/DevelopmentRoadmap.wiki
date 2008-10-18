@@ -1,0 +1,24 @@
+#summary Outline of where we've come from and where we're going
+#labels Target-Developers,Phase-Requirements
+
+
+= Future Work =
+== 1.5 ==
+== 2.0 == 
+
+
+= Current Work =
+
+== 1.0 ==
+=== Beta ===
+ 
+ *Feature Freeze*
+
+ 
+
+= Past Work = 
+
+== 1.0 ==
+=== Alpha (including "PreAlpha" releases) ===
+
+ Implement basic program structure, features.  Very usable, if you're willing to tolerate the funkiness.
