@@ -1,4 +1,5 @@
 #summary Lays out how we handle release planning
+#labels Phase-Design,Target-Developers
 
 = Issues =
 
@@ -25,4 +26,3 @@ _Priority_ helps us judge how important an issue is.  It may be left unspecified
  * Blocking: of vital importance; the release cannot proceed w/o it; in an old release, the bug must be fixed immediately
  * Wanted: normal priority; highly desirable fixes/features, but a release can proceed w/o a fix
  * WouldBeNice: lowest priority; it would be great if we could handle these issues for the targeted release, but we can't make any guarantees
-
