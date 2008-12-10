@@ -1,6 +1,22 @@
 #summary Getting set up to work w/ the project source code.
 #labels Target-Developers,Phase-Requirements,Phase-Implementation
 
+== Access to Source Code ==
+
+=== Browse Source Code ===
+
+ * [http://code.google.com/p/cropplanning/source/browse/ Browse the source code]
+ * [http://code.google.com/p/cropplanning/source/list View recent changes to the source code]
+
+=== Download Source Code ===
+_(aka check out source code)_
+
+  * You will need [http://subversion.tigris.org/ SVN] to access the code.
+  * For general *checkout*, the repository root path is `http://cropplanning.googlecode.com/svn`
+  * For write access, use the same URL except with *`https`* instead of *`http`*.
+  * You will have to checkout _each_ module from the repository.  The URL would be `http://cropplanning.googlecode.com/svn/<module-name>/trunk` where `<module-name>` is the _case sensitive_ name from the table below.
+
+
 == Introduction ==
 
 The project has been developed under Netbeans, though it does not require Netbeans to run.  The source is structured as a number of "modules", many of which of which depend upon each other.
@@ -22,13 +38,7 @@ The project has been developed under Netbeans, though it does not require Netbea
 
 == Setup ==
 
-=== Checking Out Source ===
- 
-  The instructions at [http://code.google.com/p/cropplanning/source/checkout the Source page] are incorrect (and we cannot change them).  Please use this information:
 
-  * For general *checkout*, the repository root path is `http://cropplanning.googlecode.com/svn`
-  * For write access, use the same URL except with `https` instead of `http`.
-  * You will have to checkout _each_ module from the repository.  The URL would be `http://cropplanning.googlecode.com/svn/<module-name>/trunk` where `<module-name>` is the _case sensitive_ name from the table above.
 
 === Netbeans ===
 
