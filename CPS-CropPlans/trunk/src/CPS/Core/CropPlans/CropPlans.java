@@ -35,8 +35,6 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable, C
       setModuleType( "Core" );
       setModuleVersion( GLOBAL_DEVEL_VERSION );
       
-      //addRequirment( "CPSDriver", "0.1.0" );
-      
       initPrefs( CropPlans.class );
       
       setMasterView( new CropPlanList( this ) );
@@ -83,7 +81,5 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable, C
          getDataSource().importCropPlan( "newplan", im.importCropPlan( fileName ) );
       }
    }
-    
-    
-    
+       
 }

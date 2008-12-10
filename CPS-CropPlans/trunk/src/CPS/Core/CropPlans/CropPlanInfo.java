@@ -22,33 +22,44 @@
 
 package CPS.Core.CropPlans;
 
+import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSDetailView;
-import CPS.UI.Swing.LayoutAssist;
 import CPS.Data.CPSPlanting;
-import CPS.Module.*;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import javax.swing.*;
 
-public class CropPlanInfo extends CPSDetailView {
-   
-   private CPSTextField tfldCropName, tfldVarName;
+public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemListener {
+
+   private CPSTextField tfldCropName, tfldVarName, tfldMatDays, tfldLocation;
+   private JComboBox cmbDates;
+//   private CPSRadioButton rdoDateEff, rdoDatePlan, rdoDateAct;
    private CPSTextField tfldDatePlant, tfldDateTP, tfldDateHarvest;
-   private CPSTextField tfldMatDays, tfldMatAdjust, tfldMatAdjustPlanting, tfldMatAdjustMisc;
+   private CPSCheckBox chkDonePlant, chkDoneTP, chkDoneHarvest, chkIgnore, chkFrostHardy;
+   private CPSRadioButton rdoDS, rdoTP;
+   private JLabel lblDateTP, lblTimeToTP, lblFlatSize, lblFlatsNeeded, lblPlantsToStart;
+   private CPSTextField tfldMatAdjust, tfldTimeToTP, tfldRowsPerBed, tfldInRowSpace, tfldBetRowSpace,
+                        tfldFlatSize, tfldPlantingNotesCrop, tfldPlantingNotes;
    private CPSTextField tfldBedsToPlant, tfldRowFtToPlant, tfldPlantsNeeded,
-                      tfldPlantsToStart, tfldFlatsNeeded;
-   private CPSTextField tfldTimeToTP, tfldRowsPerBed, tfldInRowSpace, tfldBetRowSpace,
-                        tfldFlatSize, tfldPlanter, tfldPlanterSetting;
+                        tfldPlantsToStart, tfldFlatsNeeded;
    private CPSTextField tfldYieldPerFt, tfldTotalYield, tfldYieldNumWeeks, tfldYieldPerWeek,
                         tfldCropYieldUnit, tfldCropYieldUnitValue;
    private CPSTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
-   private CPSTextField tfldLocation, tfldStatus;
-   
-//   private CPSDatum<String> status;
-//   private CPSCheckBox cbCompleted;
-   
+   private CPSTextField tfldCustom1, tfldCustom2, tfldCustom3, tfldCustom4, tfldCustom5;
+
+   private CPSButtonGroup /* bgDates, */ bgSeedMethod;
+   private ArrayList<JLabel> anonLabels = new ArrayList<JLabel>();
+
+   private final String DATE_EFFECTIVE = "Effective Dates";
+   private final String DATE_ACTUAL    = "Actual Dates";
+   private final String DATE_PLANNED   = "Planned Dates";
+
    private CPSPlanting displayedPlanting;
    
    CropPlanInfo( CPSMasterDetailModule mdm ) {
@@ -79,82 +90,90 @@ public class CropPlanInfo extends CPSDetailView {
             updateAutocompletionComponents();
         }
 
-        tfldCropName.setInitialText( displayedPlanting.getCropName() );
-        tfldVarName.setInitialText(displayedPlanting.getVarietyName(),
-                                   displayedPlanting.getVarietyNameState() );
+       CropPlans.debug( "CropPlanInfo", "Displaying planting:\n" + displayedPlanting );
 
-        tfldMatDays.setInitialText( displayedPlanting.getMaturityDaysString(),
+       tfldCropName.setInitialText( displayedPlanting.getCropName() );
+       tfldVarName.setInitialText( displayedPlanting.getVarietyName(),
+                                   displayedPlanting.getVarietyNameState() );
+       tfldMatDays.setInitialText( displayedPlanting.getMaturityDaysString(),
                                    displayedPlanting.getMaturityDaysState() );
-       tfldMatAdjust.setInitialText( displayedPlanting.getMatAdjustString(),
-                                   displayedPlanting.getMatAdjustState() );
-//       tfldMatAdjustPlanting.setInitialText( displayedPlanting.getPlantingAdjustString(),
-//                                   displayedPlanting.getPlantingAdjustState() );
-//       tfldMatAdjustMisc.setInitialText( displayedPlanting.getMiscAdjustString(),
-//                                   displayedPlanting.getMiscAdjustState() );
-        
-        tfldDatePlant.setInitialText(displayedPlanting.getDateToPlantString(),
-                                   displayedPlanting.getDateToPlantState() );
-        tfldDateTP.setInitialText( displayedPlanting.getDateToTPString(),
-                                   displayedPlanting.getDateToTPState() );
-        tfldDateHarvest.setInitialText(displayedPlanting.getDateToHarvestString(),
-                                   displayedPlanting.getDateToHarvestState());
-        
-       tfldBedsToPlant.setInitialText( displayedPlanting.getBedsToPlantString(),
-                                   displayedPlanting.getBedsToPlantState() );
-       tfldRowFtToPlant.setInitialText( displayedPlanting.getRowFtToPlantString(),
-                                   displayedPlanting.getRowFtToPlantState() );
-       tfldPlantsNeeded.setInitialText( displayedPlanting.getPlantsNeededString(),
-                                   displayedPlanting.getPlantsNeededState() );
-       tfldPlantsToStart.setInitialText( displayedPlanting.getPlantsToStartString(),
-                                         displayedPlanting.getPlantsToStartState() );
-       
-       
-       tfldFlatsNeeded.setInitialText( displayedPlanting.getFlatsNeededString(),
-                                   displayedPlanting.getFlatsNeededState() );
-       tfldRowsPerBed.setInitialText( displayedPlanting.getRowsPerBedString(), 
-                                      displayedPlanting.getRowsPerBedState() );
-       tfldTimeToTP.setInitialText( displayedPlanting.getTimeToTPString(),
-                                   displayedPlanting.getTimeToTPState() );
+       tfldLocation.setInitialText( displayedPlanting.getLocation(),
+                                    displayedPlanting.getLocationState() );
+
+       displayDates();
+
+       chkDonePlant.setInitialState( displayedPlanting.getDonePlanting(),
+                                     displayedPlanting.getDonePlantingState() );
+       chkDoneTP.setInitialState( displayedPlanting.getDoneTP(),
+                                  displayedPlanting.getDoneTPState() );
+       chkDoneHarvest.setInitialState( displayedPlanting.getDoneHarvest(),
+                                       displayedPlanting.getDoneHarvestState() );
+
+       chkFrostHardy.setInitialState( displayedPlanting.isFrostHardy(),
+                                      displayedPlanting.getFrostHardyState() );
+
        tfldInRowSpace.setInitialText( displayedPlanting.getInRowSpacingString(),
-                                   displayedPlanting.getInRowSpacingState() );
-       tfldBetRowSpace.setInitialText( displayedPlanting.getRowSpacingString(),
-                                   displayedPlanting.getRowSpacingState() );
+                                      displayedPlanting.getInRowSpacingState() );
        tfldFlatSize.setInitialText( displayedPlanting.getFlatSize(),
                                    displayedPlanting.getFlatSizeState() );
-       tfldPlanter.setInitialText( displayedPlanting.getPlanter(),
-                                   displayedPlanting.getPlanterState() );
-//       tfldPlanterSetting.setInitialText( displayedPlanting.getPlanterSetting(),
-//                                   displayedPlanting.getPlanterSettingState() );
+       tfldTimeToTP.setInitialText( displayedPlanting.getTimeToTPString(),
+                                   displayedPlanting.getTimeToTPState() );
+       tfldPlantingNotes.setInitialText( displayedPlanting.getPlantingNotes(),
+                                         displayedPlanting.getPlantingNotesState() );
+
+       tfldBedsToPlant.setInitialText( displayedPlanting.getBedsToPlantString(),
+                                       displayedPlanting.getBedsToPlantState() );
+       tfldRowFtToPlant.setInitialText( displayedPlanting.getRowFtToPlantString(),
+                                        displayedPlanting.getRowFtToPlantState() );
+       tfldPlantsNeeded.setInitialText( displayedPlanting.getPlantsNeededString(),
+                                        displayedPlanting.getPlantsNeededState() );
+       tfldPlantsToStart.setInitialText( displayedPlanting.getPlantsToStartString(),
+                                         displayedPlanting.getPlantsToStartState() );
+       tfldFlatsNeeded.setInitialText( displayedPlanting.getFlatsNeededString(),
+                                       displayedPlanting.getFlatsNeededState() );
+       tfldTotalYield.setInitialText( displayedPlanting.getTotalYieldString(),
+                                      displayedPlanting.getTotalYieldState() );
        
        tfldYieldPerFt.setInitialText( displayedPlanting.getYieldPerFootString(),
-                                   displayedPlanting.getYieldPerFootState() );
-       tfldTotalYield.setInitialText( displayedPlanting.getTotalYieldString(),
-                                   displayedPlanting.getTotalYieldState() );
+                                      displayedPlanting.getYieldPerFootState() );
        tfldYieldNumWeeks.setInitialText( displayedPlanting.getYieldNumWeeksString(),
-                                   displayedPlanting.getYieldNumWeeksState() );
+                                         displayedPlanting.getYieldNumWeeksState() );
        tfldYieldPerWeek.setInitialText( displayedPlanting.getYieldPerWeekString(),
-                                   displayedPlanting.getYieldPerWeekState() );
+                                        displayedPlanting.getYieldPerWeekState() );
        tfldCropYieldUnit.setInitialText( displayedPlanting.getCropYieldUnit(),
-                                   displayedPlanting.getCropYieldUnitState() );
+                                         displayedPlanting.getCropYieldUnitState() );
        tfldCropYieldUnitValue.setInitialText( displayedPlanting.getCropYieldUnitValueString(),
-                                   displayedPlanting.getCropYieldUnitValueState() );
+                                              displayedPlanting.getCropYieldUnitValueState() );
        
-        tareGroups.setInitialText(displayedPlanting.getGroups(),
+       tareGroups.setInitialText( displayedPlanting.getGroups(),
                                    displayedPlanting.getGroupsState() );
-        tareOtherReq.setInitialText(displayedPlanting.getOtherRequirments(),
-                                   displayedPlanting.getOtherRequirmentsState() );
-        tareKeywords.setInitialText(displayedPlanting.getKeywords(),
-                                   displayedPlanting.getKeywordsState());
-        tareNotes.setInitialText(displayedPlanting.getNotes(),
-                                   displayedPlanting.getNotesState());
+       tareOtherReq.setInitialText( displayedPlanting.getOtherRequirments(),
+                                    displayedPlanting.getOtherRequirmentsState() );
+       tareKeywords.setInitialText( displayedPlanting.getKeywords(),
+                                    displayedPlanting.getKeywordsState());
+       tareNotes.setInitialText( displayedPlanting.getNotes(),
+                                 displayedPlanting.getNotesState());
 
-        tfldLocation.setInitialText( displayedPlanting.getLocation(),
-                                   displayedPlanting.getLocationState() );
-
-//        cbCompleted.setInitialState( displayedPlanting.getDonePlanting() );
-        
-        // TODO  tfldStatus;
+       tfldCustom1.setInitialText( displayedPlanting.getCustomField1(), displayedPlanting.getCustomField1State() );
+       tfldCustom2.setInitialText( displayedPlanting.getCustomField2(), displayedPlanting.getCustomField2State() );
+       tfldCustom3.setInitialText( displayedPlanting.getCustomField3(), displayedPlanting.getCustomField3State() );
+       tfldCustom4.setInitialText( displayedPlanting.getCustomField4(), displayedPlanting.getCustomField4State() );
+       tfldCustom5.setInitialText( displayedPlanting.getCustomField5(), displayedPlanting.getCustomField5State() );
    
+       /*
+        * These all affect how other things are displayed so we should do them last.
+        */
+       if ( displayedPlanting.isDirectSeeded() )
+          bgSeedMethod.setInitialSelection( rdoDS, true, displayedPlanting.getDirectSeededState() );
+       else
+          bgSeedMethod.setInitialSelection( rdoTP, true, displayedPlanting.getDirectSeededState() );
+
+       displayDSTPProperties();
+
+       chkIgnore.setInitialState( displayedPlanting.getIgnore(),
+                                  displayedPlanting.getIgnoreState() );
+       
+
         setStatus("");
         if ( ! displayedPlanting.isSingleRecord() ) {
            String ids = "";
@@ -162,8 +181,7 @@ public class CropPlanInfo extends CPSDetailView {
               ids += i.toString() + ", ";
            ids = ids.substring( 0, ids.lastIndexOf(", ") );
            setStatus( "Displaying common data for records: " + ids );
-       }
-        
+       }        
            
     }
 
@@ -178,11 +196,11 @@ public class CropPlanInfo extends CPSDetailView {
        String selectedPlan = getDisplayedTableName();
        CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( this.asPlanting() );
        if ( diff.getID() == -1 ) {
-           System.out.println("DEBUG(CPInfo): no changes found (Invalid id) ... not saving;");
+          CropPlans.debug( "CPInfo", "no changes found (Invalid id) ... not saving;" );
           return;
        }
        
-       System.out.println("DEBUG(CPInfo): changes found (Valid id) ... attempting to save changes");    
+       CropPlans.debug( "CPInfo", "changes found (Valid id) ... attempting to save changes");
        if ( ! displayedPlanting.isSingleRecord() )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
        else
@@ -199,52 +217,89 @@ public class CropPlanInfo extends CPSDetailView {
     public CPSPlanting asPlanting() {
       
        CPSPlanting p = new CPSPlanting();
+
+       // ALLOW_NULL is used for values which can be inherited (potentially)
+       // this forces the program to save "blank" values as null, enabling
+       // inheritance
        boolean ALLOW_NULL = true;
       
        p.setID( displayedPlanting.getID() );
       
        if ( tfldCropName.hasChanged() ) p.setCropName( tfldCropName.getText() );
        if ( tfldVarName.hasChanged() ) p.setVarietyName( tfldVarName.getText(), ALLOW_NULL );
-      
        if ( tfldMatDays.hasChanged() ) p.setMaturityDays( tfldMatDays.getText(), ALLOW_NULL );
-     
-       if ( tfldDatePlant.hasChanged() ) p.setDateToPlant( tfldDatePlant.getText(), ALLOW_NULL );
-       if ( tfldDateHarvest.hasChanged() ) p.setDateToHarvest( tfldDateHarvest.getText(), ALLOW_NULL );
- 
-       if ( tareGroups.hasChanged() ) p.setGroups( tareGroups.getText(), ALLOW_NULL );
-       if ( tareOtherReq.hasChanged() ) p.setOtherRequirements( tareOtherReq.getText(), ALLOW_NULL );
-       if ( tareKeywords.hasChanged() ) p.setKeywords( tareKeywords.getText(), ALLOW_NULL );
-       if ( tareNotes.hasChanged() ) p.setNotes( tareNotes.getText( ) );
-         
-       if ( tfldDateTP.hasChanged() ) p.setDateToTP( tfldDateTP.getText(), ALLOW_NULL );
-       if ( tfldMatAdjust.hasChanged() ) p.setMatAdjust( tfldMatAdjust.getText(), ALLOW_NULL );       
-//       if ( tfldMatAdjustPlanting.hasChanged() ) p.setPlantingAdjust( tfldMatAdjustPlanting.getText(), ALLOW_NULL );
-//       if ( tfldMatAdjustMisc.hasChanged() ) p.setMiscAdjust( tfldMatAdjustMisc.getText(), ALLOW_NULL );
-       if ( tfldBedsToPlant.hasChanged() ) p.setBedsToPlant( tfldBedsToPlant.getText(), ALLOW_NULL );
-       if ( tfldRowFtToPlant.hasChanged() ) p.setRowFtToPlant( tfldRowFtToPlant.getText(), ALLOW_NULL );
-       if ( tfldPlantsNeeded.hasChanged() ) p.setPlantsNeeded( tfldPlantsNeeded.getText(), ALLOW_NULL );
-       if ( tfldPlantsToStart.hasChanged() ) p.setPlantsToStart( tfldPlantsToStart.getText(), ALLOW_NULL );
-       if ( tfldFlatsNeeded.hasChanged() ) p.setFlatsNeeded( tfldFlatsNeeded.getText(), ALLOW_NULL );
+       if ( tfldLocation.hasChanged() ) p.setLocation( tfldLocation.getText(), ALLOW_NULL );
+
+       /* We do not need to store the value of the "date radio buttons"
+        * group because that button group only acts to control which dates
+        * are displayed.  We *do* have to check those radiobuttons to
+        * determine how to store any values that the user has changed.
+        */
+       String s = (String) cmbDates.getSelectedItem();
+       if ( tfldDatePlant.hasChanged() )
+          if ( s.equalsIgnoreCase( DATE_ACTUAL ))
+             p.setDateToPlantActual( tfldDatePlant.getText(), ALLOW_NULL );
+          else if ( s.equalsIgnoreCase( DATE_PLANNED ))
+             p.setDateToPlantPlanned( tfldDatePlant.getText(), ALLOW_NULL );
+          // else do nothing for "effective" dates
+
+       if ( tfldDateTP.hasChanged() )
+          if ( s.equalsIgnoreCase( DATE_ACTUAL ))
+             p.setDateToTPActual( tfldDateTP.getText(), ALLOW_NULL );
+          else if ( s.equalsIgnoreCase( DATE_PLANNED ))
+             p.setDateToTPPlanned( tfldDateTP.getText(), ALLOW_NULL );
+          // else do nothing for "effective" dates
+
+       if ( tfldDateHarvest.hasChanged() )
+          if ( s.equalsIgnoreCase( DATE_ACTUAL ))
+             p.setDateToHarvestPlanned( tfldDateHarvest.getText(), ALLOW_NULL );
+          else if ( s.equalsIgnoreCase( DATE_PLANNED ))
+             p.setDateToHarvestPlanned( tfldDateHarvest.getText(), ALLOW_NULL );
+          // else do nothing for "effective" dates
+
+       if ( chkDonePlant.hasChanged() )   p.setDonePlanting( chkDonePlant.isSelected() );
+       if ( chkDoneTP.hasChanged() )      p.setDoneTP(       chkDoneTP.isSelected() );
+       if ( chkDoneHarvest.hasChanged() ) p.setDoneHarvest(  chkDoneHarvest.isSelected() );
+       if ( chkIgnore.hasChanged() )      p.setIgnore(       chkIgnore.isSelected() );
+
+//       if ( rdoDS.hasChanged() || rdoTP.hasChanged() ) p.setDirectSeeded( rdoDS.isSelected() );
+       p.setDirectSeeded( rdoDS.isSelected() );
+       
+       if ( tfldMatAdjust.hasChanged() ) p.setMatAdjust( tfldMatAdjust.getText(), ALLOW_NULL );  
        if ( tfldTimeToTP.hasChanged() ) p.setTimeToTP( tfldTimeToTP.getText(), ALLOW_NULL );
        if ( tfldRowsPerBed.hasChanged() ) p.setRowsPerBed( tfldRowsPerBed.getText(), ALLOW_NULL );
        if ( tfldInRowSpace.hasChanged() ) p.setInRowSpacing( tfldInRowSpace.getText(), ALLOW_NULL );
        if ( tfldBetRowSpace.hasChanged() ) p.setRowSpacing( tfldBetRowSpace.getText(), ALLOW_NULL );
        if ( tfldFlatSize.hasChanged() ) p.setFlatSize( tfldFlatSize.getText(), ALLOW_NULL );
-       if ( tfldPlanter.hasChanged() ) p.setPlanter( tfldPlanter.getText(), ALLOW_NULL );
-//       if ( tfldPlanterSetting.hasChanged() ) p.setPlanterSetting( tfldPlanterSetting.getText(), ALLOW_NULL );
-       if ( tfldYieldPerFt.hasChanged() ) p.setYieldPerFoot( tfldYieldPerFt.getText(), ALLOW_NULL );
-       
+       if ( tfldPlantingNotesCrop.hasChanged() ) p.setPlantingNotesInherited( tfldPlantingNotesCrop.getText(), ALLOW_NULL );
+       if ( tfldPlantingNotes.hasChanged() ) p.setPlantingNotes( tfldPlantingNotes.getText(), ALLOW_NULL );
+
+       if ( tfldBedsToPlant.hasChanged() ) p.setBedsToPlant( tfldBedsToPlant.getText(), ALLOW_NULL );
+       if ( tfldRowFtToPlant.hasChanged() ) p.setRowFtToPlant( tfldRowFtToPlant.getText(), ALLOW_NULL );
+       if ( tfldPlantsNeeded.hasChanged() ) p.setPlantsNeeded( tfldPlantsNeeded.getText(), ALLOW_NULL );
+       if ( tfldPlantsToStart.hasChanged() ) p.setPlantsToStart( tfldPlantsToStart.getText(), ALLOW_NULL );
+       if ( tfldFlatsNeeded.hasChanged() ) p.setFlatsNeeded( tfldFlatsNeeded.getText(), ALLOW_NULL );
+       if ( tfldYieldPerFt.hasChanged() ) p.setYieldPerFoot( tfldYieldPerFt.getText(), ALLOW_NULL );      
        if ( tfldTotalYield.hasChanged() ) p.setTotalYield( tfldTotalYield.getText(), ALLOW_NULL );
        
        if ( tfldYieldNumWeeks.hasChanged() ) p.setYieldNumWeeks( tfldYieldNumWeeks.getText(), ALLOW_NULL );
        if ( tfldYieldPerWeek.hasChanged() ) p.setYieldPerWeek( tfldYieldPerWeek.getText(), ALLOW_NULL );
        if ( tfldCropYieldUnit.hasChanged() ) p.setCropYieldUnit( tfldCropYieldUnit.getText(), ALLOW_NULL );
        if ( tfldCropYieldUnitValue.hasChanged() ) p.setCropYieldUnitValue( tfldCropYieldUnitValue.getText(), ALLOW_NULL );
-       if ( tfldLocation.hasChanged() ) p.setLocation( tfldLocation.getText(), ALLOW_NULL );
-           
-//       if ( cbCompleted.hasChanged() ) p.setDonePlanting( cbCompleted.isSelected() );
-       
-// TODO:          tfldStatus;
+
+       if ( tareGroups.hasChanged() ) p.setGroups( tareGroups.getText(), ALLOW_NULL );
+       if ( tareOtherReq.hasChanged() ) p.setOtherRequirements( tareOtherReq.getText(), ALLOW_NULL );
+       if ( tareKeywords.hasChanged() ) p.setKeywords( tareKeywords.getText(), ALLOW_NULL );
+       if ( tareNotes.hasChanged() ) p.setNotes( tareNotes.getText( ) );
+
+       if ( tfldCustom1.hasChanged() ) p.setCustomField1( tfldCustom1.getText(), ALLOW_NULL );
+       if ( tfldCustom2.hasChanged() ) p.setCustomField2( tfldCustom2.getText(), ALLOW_NULL );
+       if ( tfldCustom3.hasChanged() ) p.setCustomField3( tfldCustom3.getText(), ALLOW_NULL );
+       if ( tfldCustom4.hasChanged() ) p.setCustomField4( tfldCustom4.getText(), ALLOW_NULL );
+       if ( tfldCustom5.hasChanged() ) p.setCustomField5( tfldCustom5.getText(), ALLOW_NULL );
+
+       CropPlans.debug( "CPInfo", "panel display represents: " + p.toString() );
+
        return p;
       
    }
@@ -254,152 +309,209 @@ public class CropPlanInfo extends CPSDetailView {
       ArrayList<String> names = new ArrayList<String>();
       if ( isDataAvailable() )
          names = getDataSource().getCropNameList();
-      tfldCropName = new CPSTextField( FIELD_LEN_LONG, names, CPSTextField.MATCH_STRICT );
-        
-        tfldVarName = new CPSTextField( FIELD_LEN_LONG );
-        tfldMatDays = new CPSTextField( FIELD_LEN_SHORT );
-        tfldDatePlant = new CPSTextField( FIELD_LEN_LONG );
-        tfldDateHarvest = new CPSTextField( FIELD_LEN_LONG );
-        tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-        tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-        tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-        tareNotes = new CPSTextArea( 5, 40);
 
+      tfldCropName = new CPSTextField( FIELD_LEN_LONG, names, CPSTextField.MATCH_STRICT );
+      tfldVarName = new CPSTextField( FIELD_LEN_LONG );
+      tfldMatDays = new CPSTextField( FIELD_LEN_SHORT );
+      tfldLocation = new CPSTextField( FIELD_LEN_LONG );
+
+      cmbDates = new JComboBox( new String[] { DATE_EFFECTIVE, DATE_ACTUAL, DATE_PLANNED } );
+      cmbDates.addActionListener( this );
+
+      tfldDatePlant = new CPSTextField( FIELD_LEN_LONG );
       tfldDateTP = new CPSTextField( FIELD_LEN_LONG );
+      tfldDateHarvest = new CPSTextField( FIELD_LEN_LONG );
+
+      chkDonePlant   = new CPSCheckBox( "", false );
+      chkDonePlant.setToolTipText( "Check if planted" );
+      chkDonePlant.addItemListener( this );
+      chkDoneTP      = new CPSCheckBox( "", false );
+      chkDoneTP.setToolTipText( "Check if transplanted (if applicable)" );
+      chkDoneTP.addItemListener( this );
+      chkDoneHarvest = new CPSCheckBox( "", false );
+      chkDoneHarvest.setToolTipText( "Check if harvested" );
+      chkDoneHarvest.addItemListener( this );
+
+      chkIgnore = new CPSCheckBox( "Ignore this planting?", false );
+      chkIgnore.setToolTipText( "Ignore or skip this planting.  Hides it from view without deleting it." );
+      chkIgnore.addItemListener( this );
+      chkFrostHardy = new CPSCheckBox( "Frost hardy?", false );
+
+      rdoDS = new CPSRadioButton( "DS", false );
+      rdoTP = new CPSRadioButton( "TP", false );
+      rdoDS.addItemListener( this );
+      rdoTP.addItemListener( this );
+      bgSeedMethod = new CPSButtonGroup( new AbstractButton[] { rdoDS, rdoTP } );
+      bgSeedMethod.setSelectionModel( CPSButtonGroup.SELECT_ONLY_ONE );
+
       tfldMatAdjust = new CPSTextField( FIELD_LEN_SHORT );
-      tfldMatAdjustPlanting = new CPSTextField( FIELD_LEN_SHORT );
-      tfldMatAdjustMisc = new CPSTextField( FIELD_LEN_SHORT );
+      tfldRowsPerBed = new CPSTextField( FIELD_LEN_SHORT );
+      tfldInRowSpace = new CPSTextField( FIELD_LEN_SHORT );
+      tfldBetRowSpace = new CPSTextField( FIELD_LEN_SHORT );
+      tfldTimeToTP = new CPSTextField( FIELD_LEN_SHORT );
+      tfldFlatSize = new CPSTextField( FIELD_LEN_MED );
+      tfldPlantingNotesCrop = new CPSTextField( FIELD_LEN_LONG );
+      tfldPlantingNotes = new CPSTextField( FIELD_LEN_LONG );
+
       tfldBedsToPlant = new CPSTextField( FIELD_LEN_SHORT );
       tfldRowFtToPlant = new CPSTextField( FIELD_LEN_MED );
       tfldPlantsNeeded = new CPSTextField( FIELD_LEN_MED );
       tfldPlantsToStart = new CPSTextField( FIELD_LEN_MED );
       tfldFlatsNeeded = new CPSTextField( FIELD_LEN_SHORT );
-      tfldTimeToTP = new CPSTextField( FIELD_LEN_SHORT );
-      tfldRowsPerBed = new CPSTextField( FIELD_LEN_SHORT );
-      tfldInRowSpace = new CPSTextField( FIELD_LEN_SHORT );
-      tfldBetRowSpace = new CPSTextField( FIELD_LEN_SHORT );
-      tfldFlatSize = new CPSTextField( FIELD_LEN_MED );
-      tfldPlanter = new CPSTextField( FIELD_LEN_MED );
-      tfldPlanterSetting = new CPSTextField( FIELD_LEN_SHORT );
-      tfldYieldPerFt = new CPSTextField( FIELD_LEN_SHORT );
       tfldTotalYield = new CPSTextField( FIELD_LEN_MED );
+
+      tfldYieldPerFt = new CPSTextField( FIELD_LEN_SHORT );
       tfldYieldNumWeeks = new CPSTextField( FIELD_LEN_SHORT );
       tfldYieldPerWeek = new CPSTextField( FIELD_LEN_SHORT );
       tfldCropYieldUnit = new CPSTextField( FIELD_LEN_MED );
       tfldCropYieldUnitValue = new CPSTextField( FIELD_LEN_SHORT );
-      tfldLocation = new CPSTextField( FIELD_LEN_MED );
       
-//      cbCompleted = new CPSCheckBox();
-      
-// TODO     tfldStatus;
-        
+      tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareNotes = new CPSTextArea( 5, 40 );
+
+      tfldCustom1 = new CPSTextField( FIELD_LEN_LONG );
+      tfldCustom2 = new CPSTextField( FIELD_LEN_LONG );
+      tfldCustom3 = new CPSTextField( FIELD_LEN_LONG );
+      tfldCustom4 = new CPSTextField( FIELD_LEN_LONG );
+      tfldCustom5 = new CPSTextField( FIELD_LEN_LONG );
+
+
       JPanel columnOne = initPanelWithVerticalBoxLayout();
       JPanel columnTwo = initPanelWithVerticalBoxLayout();
       JPanel columnThree = initPanelWithVerticalBoxLayout();
       JPanel columnFour = initPanelWithVerticalBoxLayout();
-            
-/* the format for these calls is: panel, column, row, component */
+
+      JLabel tempLabel;
+
+      /* the format for these calls is: panel, column, row, component */
       /* ***********************************/
-      /* COLUMN ONE (really zero and one)  */
+      /* COLUMN ONE                        */
       /* ***********************************/
       JPanel jplName = initPanelWithGridBagLayout();
       jplName.setBorder( BorderFactory.createEmptyBorder() );
-      
-      LayoutAssist.createLabel(  jplName, 0, 0, "Crop Name:" );
-      LayoutAssist.addTextField( jplName, 1, 0, tfldCropName );
 
-      LayoutAssist.createLabel(  jplName, 0, 1, "Variety:" );
-      LayoutAssist.addTextField( jplName, 1, 1, tfldVarName );
+      int r = 0;
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Crop Name:" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldCropName );
+
+      anonLabels.add(LayoutAssist.createLabel(  jplName, 0, r, "Variety:" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldVarName );
       
-      LayoutAssist.createLabel(  jplName, 0, 2, "<html>Belongs to <br>Groups:</html>" );
-      LayoutAssist.addTextArea(  jplName, 1, 2, 1, 2, tareGroups );
+      anonLabels.add(LayoutAssist.createLabel(  jplName, 0, r, "Maturity Days:" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldMatDays );
+
+      anonLabels.add(LayoutAssist.createLabel(  jplName, 0, r, "Location" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldLocation);
       
-//      LayoutAssist.createLabel(  jplName, 0, 4, "Completed?" );
-//      LayoutAssist.addCheckBox(  jplName, 1, 4, cbCompleted );
       
+      JPanel jplDates = initPanelWithGridBagLayout();
+      jplDates.setBorder( BorderFactory.createTitledBorder( "Dates & Completed" ) );
+      r=0;
+
+      tempLabel = LayoutAssist.createLabel( jplDates, 0, r, "Display" );
+      tempLabel.setToolTipText( "Select which dates to display" );
+      anonLabels.add( tempLabel );
+      LayoutAssist.addComponent( jplDates, 1, r++, 2, 1, cmbDates );
+//      LayoutAssist.addButtonRightAlign( jplDates, 1, r++, rdoDateEff);
+//      LayoutAssist.addButtonRightAlign( jplDates, 1, r++, rdoDateAct);
+//      LayoutAssist.addButtonRightAlign( jplDates, 1, r++, rdoDatePlan);
+
+//      tempLabel = LayoutAssist.createLabel( jplDates, 2, r++, "Done?" );
+//      tempLabel.setToolTipText( "Check if completed" );
+
+      anonLabels.add( LayoutAssist.createLabel(  jplDates, 0, r, "Planting" ));
+      LayoutAssist.addTextField( jplDates, 1, r, tfldDatePlant );
+      LayoutAssist.addButton(    jplDates, 2, r++, chkDonePlant );
+
+      lblDateTP = LayoutAssist.createLabel(  jplDates, 0, r, "Transplant" );
+      lblDateTP.setToolTipText( "Transplanting" );
+      LayoutAssist.addTextField( jplDates, 1, r, tfldDateTP);
+      LayoutAssist.addButton(    jplDates, 2, r++, chkDoneTP );
+
+      anonLabels.add( LayoutAssist.createLabel(  jplDates, 0, r, "Harvest" ));
+      LayoutAssist.addTextField( jplDates, 1, r, tfldDateHarvest );
+      LayoutAssist.addButton(    jplDates, 2, r++, chkDoneHarvest );
+
+      LayoutAssist.addButton( jplDates, 1, r, 2, 1, chkIgnore );
+      
+//      JPanel jplSucc = initPanelWithGridBagLayout();
+//      jplSucc.setBorder( BorderFactory.createTitledBorder( "Successions" ) );
+//
+//      r=0;
+//      LayoutAssist.createLabel(  jplSucc, 0, r, "Part of a succ.?:" );
+//      LayoutAssist.addTextField( jplSucc, 1, r++, new JTextField(1) );
+//
+//      LayoutAssist.createLabel(  jplSucc, 0, r, "Frequency" );
+//      LayoutAssist.addTextField( jplSucc, 1, r++, new JTextField(1) );
+//
+//      LayoutAssist.createLabel(  jplSucc, 0, r, "Succession group" );
+//      LayoutAssist.addTextField( jplSucc, 1, r++, new JTextField(1) );
+//
+//      LayoutAssist.createLabel(  jplSucc, 0, r++, "BTN: Show only this group" );
+//      LayoutAssist.createLabel(  jplSucc, 0, r++, "BTN: Jump to next/last" );
+
+
       LayoutAssist.addPanelToColumn( columnOne, jplName );
-      
-      
-      JPanel jplSucc = initPanelWithGridBagLayout();
-      jplSucc.setBorder( BorderFactory.createTitledBorder( "Successions" ) );
-      
-      LayoutAssist.createLabel(  jplSucc, 0, 0, "Part of a succ.?:" );
-      LayoutAssist.addTextField( jplSucc, 1, 0, new JTextField(1) );
-      
-      LayoutAssist.createLabel(  jplSucc, 0, 1, "Frequency" );
-      LayoutAssist.addTextField( jplSucc, 1, 1, new JTextField(1) );
-      
-      LayoutAssist.createLabel(  jplSucc, 0, 2, "Succession group" );
-      LayoutAssist.addTextField( jplSucc, 1, 2, new JTextField(1) );
-      
-      LayoutAssist.createLabel(  jplSucc, 0, 3, "BTN: Show only this group" );
-      LayoutAssist.createLabel(  jplSucc, 0, 4, "BTN: Jump to next/last" );
-      
 //      LayoutAssist.addPanelToColumn( columnOne, jplSucc );
+      LayoutAssist.addPanelToColumn( columnOne, jplDates );
       LayoutAssist.finishColumn( columnOne );
       
       /* ***********************************/
       /* COLUMN TWO (really two and three) */
       /* ***********************************/
-      JPanel jplDates = initPanelWithGridBagLayout();
-      jplDates.setBorder( BorderFactory.createEmptyBorder() );
-      
-      LayoutAssist.createLabel(  jplDates, 2, 0, "Maturity Days:" );
-      LayoutAssist.addTextField( jplDates, 3, 0, tfldMatDays );
-      
-      LayoutAssist.createLabel(  jplDates, 2, 1, "Planting Date:" );
-      LayoutAssist.addTextField( jplDates, 3, 1, tfldDatePlant );
 
-      LayoutAssist.createLabel(  jplDates, 2, 2, "TP Date" );
-      LayoutAssist.addTextField( jplDates, 3, 2, tfldDateTP);
-      
-      LayoutAssist.createLabel(  jplDates, 2, 3, "Harvest Date:" );
-      LayoutAssist.addTextField( jplDates, 3, 3, tfldDateHarvest );
-      
-      LayoutAssist.addPanelToColumn( columnTwo, jplDates );
-      
       JPanel jplPlanting = initPanelWithGridBagLayout();
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
+      r=0;
+
+      LayoutAssist.addButtonRightAlign( jplPlanting, 0, r, rdoDS );
+      LayoutAssist.addButton(           jplPlanting, 1, r++, rdoTP );
+
+      tempLabel = LayoutAssist.createLabel(  jplPlanting, 0, r, "Mat. adj" );
+      tempLabel.setToolTipText( "Adjust maturity by so many days" );
+      anonLabels.add( tempLabel );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldMatAdjust );
+
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Rows/Bed" ));
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldRowsPerBed );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 0, "Rows/Bed" );
-      LayoutAssist.addTextField( jplPlanting, 1, 0, tfldRowsPerBed );
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Row Spacing" ));
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldBetRowSpace );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 1, "Row Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 1, 1, tfldBetRowSpace );
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Plant Spacing (in row)" ));
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldInRowSpace );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 2, "Plant Spacing (in row)" );
-      LayoutAssist.addTextField( jplPlanting, 1, 2, tfldInRowSpace );
+      LayoutAssist.addSeparator( jplPlanting, 0, r++, 2);
       
-      LayoutAssist.addSeparator( jplPlanting, 0, 3, 2);
+      lblFlatSize = LayoutAssist.createLabel(  jplPlanting, 0, r, "Flat Size" );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldFlatSize );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 4, "Flat Size" );
-      LayoutAssist.addTextField( jplPlanting, 1, 4, tfldFlatSize );
+      lblTimeToTP = LayoutAssist.createLabel(  jplPlanting, 0, r, "Weeks to TP" );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldTimeToTP );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 5, "Weeks to TP" );
-      LayoutAssist.addTextField( jplPlanting, 1, 5, tfldTimeToTP );
+      LayoutAssist.addSeparator( jplPlanting, 0, r++, 2);
       
-      LayoutAssist.addSeparator( jplPlanting, 0, 6, 2);
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Crop Notes" ));
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldPlantingNotesCrop );
       
-      LayoutAssist.createLabel(  jplPlanting, 0, 7, "Planter:" );
-      LayoutAssist.addTextField( jplPlanting, 1, 7, tfldPlanter );
-      
-      LayoutAssist.createLabel(  jplPlanting, 0, 8, "Planter Setting" );
-      LayoutAssist.addTextField( jplPlanting, 1, 8, tfldPlanterSetting );
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Planting Notes" ));
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldPlantingNotes );
       
       LayoutAssist.addPanelToColumn( columnTwo, jplPlanting );
       
       
       JPanel jplAdjust = initPanelWithGridBagLayout();
       jplAdjust.setBorder( BorderFactory.createTitledBorder( "Mat. Adjust" ) );
+
+      r=0;
       
-      LayoutAssist.createLabel(  jplAdjust, 0, 0, "General adj." );
-      LayoutAssist.addTextField( jplAdjust, 1, 0, tfldMatAdjust );
-      
-      LayoutAssist.createLabel(  jplAdjust, 0, 1, "Adj. for planting meth." );
-      LayoutAssist.addTextField( jplAdjust, 1, 1, tfldMatAdjustPlanting );
-      
-      LayoutAssist.createLabel(  jplAdjust, 0, 2, "Misc. adj." );
-      LayoutAssist.addTextField( jplAdjust, 1, 2, tfldMatAdjustMisc );
+//      LayoutAssist.createLabel(  jplAdjust, 0, r, "Adj. for planting meth." );
+//      LayoutAssist.addTextField( jplAdjust, 1, r++, tfldMatAdjustPlanting );
+//
+//      LayoutAssist.createLabel(  jplAdjust, 0, r, "Misc. adj." );
+//      LayoutAssist.addTextField( jplAdjust, 1, r++, tfldMatAdjustMisc );
       
       // TODO uncomment line below to add Mat Adjust panel back into the mix
 //      LayoutAssist.addPanelToColumn( columnTwo, jplAdjust );
@@ -410,49 +522,48 @@ public class CropPlanInfo extends CPSDetailView {
       /* COLUMN THREE (really four and five) */
       /* *************************************/
       JPanel jplAmount = initPanelWithGridBagLayout();
-      jplAmount.setBorder( BorderFactory.createTitledBorder( "Where and How Much" ) );
+      jplAmount.setBorder( BorderFactory.createTitledBorder( "How Much" ) );
+
+      r=0;
+      anonLabels.add( LayoutAssist.createLabel(  jplAmount, 0, r, "Beds to Plant" ));
+      LayoutAssist.addTextField( jplAmount, 1, r++, tfldBedsToPlant );
       
-      LayoutAssist.createLabel(  jplAmount, 0, 0, "Location" );
-      LayoutAssist.addTextField( jplAmount, 1, 0, tfldLocation);
+      anonLabels.add( LayoutAssist.createLabel(  jplAmount, 0, r, "Row Ft to Plant" ));
+      LayoutAssist.addTextField( jplAmount, 1, r++, tfldRowFtToPlant );
       
-      LayoutAssist.createLabel(  jplAmount, 0, 1, "Beds to Plant" );
-      LayoutAssist.addTextField( jplAmount, 1, 1, tfldBedsToPlant );
+      anonLabels.add( LayoutAssist.createLabel(  jplAmount, 0, r, "Plants Needed" ));
+      LayoutAssist.addTextField( jplAmount, 1, r++, tfldPlantsNeeded );
       
-      LayoutAssist.createLabel(  jplAmount, 0, 2, "Row Ft to Plant" );
-      LayoutAssist.addTextField( jplAmount, 1, 2, tfldRowFtToPlant );
+      lblPlantsToStart = LayoutAssist.createLabel(  jplAmount, 0, r, "Plants to Start" );
+      LayoutAssist.addTextField( jplAmount, 1, r++, tfldPlantsToStart );
       
-      LayoutAssist.createLabel(  jplAmount, 0, 3, "Plants Needed" );
-      LayoutAssist.addTextField( jplAmount, 1, 3, tfldPlantsNeeded );
-      
-      LayoutAssist.createLabel(  jplAmount, 0, 4, "Plants to Start" );
-      LayoutAssist.addTextField( jplAmount, 1, 4, tfldPlantsToStart );
-      
-      LayoutAssist.createLabel(  jplAmount, 0, 5, "Flats to Start" );
-      LayoutAssist.addTextField( jplAmount, 1, 5, tfldFlatsNeeded );
-      
-      LayoutAssist.createLabel(  jplAmount, 0, 6, "Total Yield" );
-      LayoutAssist.addTextField( jplAmount, 1, 6, tfldTotalYield );
+      lblFlatsNeeded = LayoutAssist.createLabel(  jplAmount, 0, r, "Flats to Start" );
+      LayoutAssist.addTextField( jplAmount, 1, r++, tfldFlatsNeeded );
       
       LayoutAssist.addPanelToColumn( columnThree, jplAmount );
       
       JPanel jplYield = initPanelWithGridBagLayout();
       jplYield.setBorder( BorderFactory.createTitledBorder( "Yield Info" ) );
-      
+
+      r=0;
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Total Yield" ));
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldTotalYield );
+
       /* unit, per foot, weeks, per week, value */
-      LayoutAssist.createLabel(  jplYield, 0, 0, "Yield Units" );
-      LayoutAssist.addTextField( jplYield, 1, 0, tfldCropYieldUnit );
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Yield Units" ));
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldCropYieldUnit );
       
-      LayoutAssist.createLabel(  jplYield, 0, 1, "Total Yield/Ft" );
-      LayoutAssist.addTextField( jplYield, 1, 1, tfldYieldPerFt );
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Total Yield/Ft" ));
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldPerFt );
       
-      LayoutAssist.createLabel(  jplYield, 0, 2, "Weeks of Yield" );
-      LayoutAssist.addTextField( jplYield, 1, 2, tfldYieldNumWeeks );
+//      LayoutAssist.createLabel(  jplYield, 0, r, "Weeks of Yield" );
+//      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldNumWeeks );
       
-      LayoutAssist.createLabel(  jplYield, 0, 3, "Yield/Week" );
-      LayoutAssist.addTextField( jplYield, 1, 3, tfldYieldPerWeek );
+//      LayoutAssist.createLabel(  jplYield, 0, r, "Yield/Week" );
+//      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldPerWeek );
       
-      LayoutAssist.createLabel(  jplYield, 0, 4, "Value/Unit" );
-      LayoutAssist.addTextField( jplYield, 1, 4, tfldCropYieldUnitValue );
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Value/Unit" ));
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldCropYieldUnitValue );
       
       LayoutAssist.addPanelToColumn( columnThree, jplYield );
       LayoutAssist.finishColumn( columnThree );
@@ -463,11 +574,19 @@ public class CropPlanInfo extends CPSDetailView {
       JPanel jplMisc = initPanelWithGridBagLayout();
       jplMisc.setBorder( BorderFactory.createTitledBorder( "Misc Info" ) );
 
-      LayoutAssist.createLabel(  jplMisc, 0, 0, "<html>Other <br>Requirements:</html>" );
-      LayoutAssist.addTextArea(  jplMisc, 1, 0, 1, 1, tareOtherReq );
-      
-      LayoutAssist.createLabel(  jplMisc, 0, 3, "Keywords:" );
-      LayoutAssist.addTextArea(  jplMisc, 1, 3, 1, 1, tareKeywords );
+      r=0;
+      tempLabel = LayoutAssist.createLabel( jplMisc, 0, r, "Groups:" );
+      tempLabel.setToolTipText( "Groups to which this planting belongs" );
+      anonLabels.add( tempLabel );
+      LayoutAssist.addTextArea( jplMisc, 1, r, 1, 1, tareGroups );
+
+      tempLabel = LayoutAssist.createLabel(  jplMisc, 0, r+=3, "Other Req" );
+      tempLabel.setToolTipText( "Other Requirements" );
+      anonLabels.add( tempLabel );
+      LayoutAssist.addTextArea(  jplMisc, 1, r, 1, 1, tareOtherReq );
+
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r+=3, "Keywords:" ));
+      LayoutAssist.addTextArea(  jplMisc, 1, r, 1, 1, tareKeywords );
       
       LayoutAssist.addPanelToColumn( columnFour, jplMisc );
       LayoutAssist.finishColumn( columnFour );
@@ -497,9 +616,6 @@ public class CropPlanInfo extends CPSDetailView {
       btnSaveChanges.setText( "Save & Recalculate" );
    }
    
-   
-   
-   
    protected void updateAutocompletionComponents() {
        tfldCropName.updateAutocompletionList( getDataSource().getCropNameList(),
                                               CPSTextField.MATCH_PERMISSIVE );
@@ -525,7 +641,193 @@ public class CropPlanInfo extends CPSDetailView {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
     
-   
+   // Implemented as per ItemListener
+   public void itemStateChanged ( ItemEvent arg0 ) {
+
+      Object source = arg0.getItemSelectable();
+
+      if ( source == rdoDS ) {
+         setTPComponentsEnabled( ! rdoDS.isSelected() );
+         // redisplay the DS/TP values
+         displayDSTPProperties();
+      }
+      else if ( source == rdoTP ) {
+         setTPComponentsEnabled( rdoTP.isSelected() );
+         // redisplay the DS/TP values
+         displayDSTPProperties();
+      }
+      else if ( source == chkIgnore ) {
+         setAllComponentsEnabled( ! chkIgnore.isSelected() );
+      }
+      else if ( source == chkDonePlant ) {
+         // IF  the actual dates are displayed
+         // AND the textbox is blank OR the textbox is calculated
+         if ( ((String) cmbDates.getSelectedItem()).equalsIgnoreCase( DATE_ACTUAL ) &&
+               ( tfldDatePlant.getText().equalsIgnoreCase( "" ) ||
+                 ! displayedPlanting.getDateToPlantState().isCalculated() ))
+            tfldDatePlant.setText( CPSDateValidator.format( new java.util.Date() ));
+      }
+      else if ( source == chkDoneTP ) {
+         // IF  the actual dates are displayed
+         // AND the textbox is blank OR the textbox is calculated
+         if ( ((String) cmbDates.getSelectedItem()).equalsIgnoreCase( DATE_ACTUAL ) &&
+               ( tfldDateTP.getText().equalsIgnoreCase( "" ) || 
+                 ! displayedPlanting.getDateToTPState().isCalculated() )) 
+            tfldDateTP.setText( CPSDateValidator.format( new java.util.Date() ));
+      }
+      else if ( source == chkDoneHarvest ) {
+         // IF  the actual dates are displayed
+         // AND the textbox is blank OR the textbox is calculated
+         if ( ((String) cmbDates.getSelectedItem()).equalsIgnoreCase( DATE_ACTUAL ) &&
+               ( tfldDateHarvest.getText().equalsIgnoreCase( "" ) ||
+                 ! displayedPlanting.getDateToHarvestState().isCalculated() ))
+            tfldDateHarvest.setText( CPSDateValidator.format( new java.util.Date() ));
+      }
+
+   }
+
+   private void setTPComponentsEnabled( boolean b ) {
+      lblDateTP.setEnabled( b );
+      lblTimeToTP.setEnabled( b );
+      lblFlatSize.setEnabled( b );
+      lblFlatsNeeded.setEnabled( b );
+      lblPlantsToStart.setEnabled( b );
+
+      tfldDateTP.setEnabled( b );
+      chkDoneTP.setEnabled( b );
+      tfldTimeToTP.setEnabled( b );
+      tfldFlatSize.setEnabled( b );
+      tfldFlatsNeeded.setEnabled( b );
+      tfldPlantsToStart.setEnabled( b );
+   }
+
+   private void setAllComponentsEnabled( boolean b ) {
+      
+      tfldCropName.setEnabled( b );
+      tfldVarName.setEnabled( b );
+      tfldMatDays.setEnabled( b );
+      tfldLocation.setEnabled( b );
+      cmbDates.setEnabled( b );
+      tfldDatePlant.setEnabled( b );
+      tfldDateHarvest.setEnabled( b );
+      chkDonePlant.setEnabled( b );
+      chkDoneHarvest.setEnabled( b );
+      
+      chkFrostHardy.setEnabled( b );
+      rdoDS.setEnabled( b );
+      rdoTP.setEnabled( b );
+      tfldMatAdjust.setEnabled( b );
+      tfldRowsPerBed.setEnabled( b );
+      tfldInRowSpace.setEnabled( b );
+      tfldBetRowSpace.setEnabled( b );
+      tfldPlantingNotesCrop.setEnabled( b );
+      tfldPlantingNotes.setEnabled( b );
+      tfldBedsToPlant.setEnabled( b );
+      tfldRowFtToPlant.setEnabled( b );
+      tfldPlantsNeeded.setEnabled( b );
+      tfldYieldPerFt.setEnabled( b );
+      tfldTotalYield.setEnabled( b );
+      tfldYieldNumWeeks.setEnabled( b );
+      tfldYieldPerWeek.setEnabled( b );
+      tfldCropYieldUnit.setEnabled( b );
+      tfldCropYieldUnitValue.setEnabled( b );
+      tareGroups.setEnabled( b );
+      tareKeywords.setEnabled( b );
+      tareOtherReq.setEnabled( b );
+      tareNotes.setEnabled( b );
+      tfldCustom1.setEnabled( b );
+      tfldCustom2.setEnabled( b );
+      tfldCustom3.setEnabled( b );
+      tfldCustom4.setEnabled( b );
+      tfldCustom5.setEnabled( b );
+      
+      setTPComponentsEnabled( b );
+
+      for ( JLabel jl : anonLabels )
+         jl.setEnabled( b );
+   }
+
+   @Override
+   public void actionPerformed ( ActionEvent actionEvent ) {
+
+      if ( actionEvent.getSource() != cmbDates )
+         super.actionPerformed( actionEvent );
+      else {
+         displayDates();
+      }
+   }
+
+   private void displayDates() {
+
+      if ( ! isDataAvailable() )
+         return;
+      
+      String s = (String) cmbDates.getSelectedItem();
+      // editTBox = should text boxes be edittable, enableCBox = should checkboxes be enabled
+      boolean editTBox, enableCBox;
+      if ( s.equalsIgnoreCase( DATE_EFFECTIVE ) ) {
+         // "effective" dates
+         editTBox = false;
+         enableCBox = true;
+         tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantString(),
+                                       displayedPlanting.getDateToPlantState() );
+         tfldDateTP.setInitialText( displayedPlanting.getDateToTPString(),
+                                    displayedPlanting.getDateToTPState() );
+         tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestString(),
+                                         displayedPlanting.getDateToHarvestState());
+      } else if ( s.equalsIgnoreCase( DATE_ACTUAL ) ) {
+         // actual dates
+         editTBox = enableCBox = true;
+         tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantActualString(),
+                                       displayedPlanting.getDateToPlantActualState() );
+         tfldDateTP.setInitialText( displayedPlanting.getDateToTPActualString(),
+                                    displayedPlanting.getDateToTPActualState() );
+         tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestActualString(),
+                                         displayedPlanting.getDateToHarvestActualState());
+      } else {
+         // default to planned dates
+         editTBox = true;
+         enableCBox = false;
+         tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantPlannedString(),
+                                       displayedPlanting.getDateToPlantPlannedState() );
+         tfldDateTP.setInitialText( displayedPlanting.getDateToTPPlannedString(),
+                                    displayedPlanting.getDateToTPPlannedState() );
+         tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestPlannedString(),
+                                         displayedPlanting.getDateToHarvestPlannedState() );
+      }
+
+      tfldDatePlant.setEditable( editTBox );
+      tfldDateTP.setEditable( editTBox );
+      tfldDateHarvest.setEditable( editTBox );
+
+      chkDonePlant.setEnabled( enableCBox );
+      if ( rdoTP.isSelected() )
+         chkDoneTP.setEnabled( enableCBox );
+      chkDoneHarvest.setEnabled( enableCBox );
+
+   }
+
+   private void displayDSTPProperties() {
+      if ( ! isDataAvailable() ) {
+//      if ( displayedPlanting == null ) {
+         CropPlans.debug( "CPInfo", "data unavailable, not displaying DS/TP values" );
+         return;
+      }
+      
+      CPSPlanting tempPlanting = displayedPlanting;
+      
+      tempPlanting.setDirectSeeded( rdoDS.isSelected() );
+
+      tfldMatAdjust.setInitialText( tempPlanting.getMatAdjustString(),
+                                    tempPlanting.getMatAdjustState() );
+      tfldRowsPerBed.setInitialText( tempPlanting.getRowsPerBedString(),
+                                     tempPlanting.getRowsPerBedState() );
+      tfldBetRowSpace.setInitialText( tempPlanting.getRowSpacingString(),
+                                      tempPlanting.getRowSpacingState() );
+      tfldPlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
+                                            tempPlanting.getPlantingNotesInheritedState() );
+   }
+
    /* for testing only */
    public static void main( String[] args ) {
       // "test" construtor  
@@ -539,4 +841,5 @@ public class CropPlanInfo extends CPSDetailView {
      frame.pack();
      frame.setVisible(true);
    }
+
 }
