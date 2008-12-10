@@ -359,8 +359,12 @@ public class HSQLColumnMap {
         l.add( new ColumnStruct( "ignore",         CPSDataModelConstants.PROP_IGNORE,        null,              null, false, true,  true,  false, false, true,  false,   "Ignore?" ) );
         
         l.add( new ColumnStruct( "maturity",       CPSDataModelConstants.PROP_MATURITY,      "maturity",        null, false, true,  false, true,  true,  true,  false,   "Maturity Days",     "Mat." ) );
-        l.add( new ColumnStruct( "mat_adjust",     CPSDataModelConstants.PROP_MAT_ADJUST,    "direct_seed, ds_mat_adjust, tp_mat_adjust",   
-                                                                                                                null, false, true,  false, false, false, true,  false,   "Mat. Adjustment",   "Mat +/-" ) );
+//        l.add( new ColumnStruct( "mat_adjust",     CPSDataModelConstants.PROP_MAT_ADJUST,    "direct_seed, ds_mat_adjust, tp_mat_adjust",
+//                                                                                                                null, false, true,  false, false, false, true,  false,   "Mat. Adjustment",   "Mat +/-" ) );
+        l.add( new ColumnStruct( "mat_adjust",     CPSDataModelConstants.PROP_MAT_ADJUST,    null,              "CASE WHEN direct_seed THEN ds_mat_adjust ELSE tp_mat_adjust END",
+                                                                                                                      false, true,  false, false, false, false, true,    "Mat. Adjustment",   "Mat +/-" ) );
+        l.add( new ColumnStruct( "ds_mat_adjust",  CPSDataModelConstants.PROP_DS_MAT_ADJUST, "ds_mat_adjust",   null, false, false, false, false, false, true,  false,   "Mat. Adjustment (DS)",   "Mat +/- (DS)" ) );
+        l.add( new ColumnStruct( "tp_mat_adjust",  CPSDataModelConstants.PROP_TP_MAT_ADJUST, "tp_mat_adjust",   null, false, false, false, false, false, true,  false,   "Mat. Adjustment (TP)",   "Mat +/- (TP)" ) );
       l.add( new ColumnStruct(  "direct_seed",     CPSDataModelConstants.PROP_DIRECT_SEED,   "direct_seed",     null, false, true,  false, false, true,  true,  false,   "Direct Seeded", "DS" ));
       l.add( new ColumnStruct(  "frost_hardy",     CPSDataModelConstants.PROP_FROST_HARDY,   "frost_hardy",     null, false, true,  false, false, true,  true,  false,   "Frost Hardy", "Hardy" ));
       l.add( new ColumnStruct(  "time_to_tp",      CPSDataModelConstants.PROP_TIME_TO_TP,    "direct_seed, NULL, tp_time_in_gh",   
@@ -408,8 +412,12 @@ public class HSQLColumnMap {
       l.add( new ColumnStruct(  "beds_to_plant",   CPSDataModelConstants.PROP_BEDS_PLANT,    null,            "\"CPS.Core.DB.HSQLCalc.bedsFromRowFt\"(  rowft_to_plant, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) ), "
                                                                                                             + "\"CPS.Core.DB.HSQLCalc.bedsFromPlants\"( plants_needed,  inrow_space, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) )",
                                                                                                                      false, true,  false, false, true,  true,  false,   "Beds to Plant",         "Beds"  ));
-      l.add( new ColumnStruct(  "rows_p_bed",      CPSDataModelConstants.PROP_ROWS_P_BED,    "direct_seed, ds_rows_p_bed, tp_rows_p_bed", 
-                                                                                                               null,  false, true,  false, false, false, true,  false,   "Rows/Bed"  ));
+//      l.add( new ColumnStruct(  "rows_p_bed",      CPSDataModelConstants.PROP_ROWS_P_BED,    "direct_seed, ds_rows_p_bed, tp_rows_p_bed",
+//                                                                                                               null,  false, true,  false, false, false, true,  false,   "Rows/Bed"  ));
+      l.add( new ColumnStruct(  "rows_p_bed",     CPSDataModelConstants.PROP_ROWS_P_BED,    null,              "CASE WHEN direct_seed THEN ds_rows_p_bed ELSE tp_rows_p_bed END",
+                                                                                                                     false, true,  false, false, false, false, true,    "Rows/Bed" ) );
+      l.add( new ColumnStruct(  "ds_rows_p_bed",  CPSDataModelConstants.PROP_DS_ROWS_P_BED, "ds_rows_p_bed",   null, false, false, false, false, false, true,  false,   "Rows/Bed (DS)" ) );
+      l.add( new ColumnStruct(  "tp_rows_p_bed",  CPSDataModelConstants.PROP_TP_ROWS_P_BED, "tp_rows_p_bed",   null, false, false, false, false, false, true,  false,   "Rows/Bed (TP)" ) );
       l.add( new ColumnStruct(  "plants_needed",   CPSDataModelConstants.PROP_PLANTS_NEEDED, null,            "\"CPS.Core.DB.HSQLCalc.plantsFromBeds\"(  beds_to_plant,  inrow_space, rows_p_bed, \"CPS.Core.DB.HSQLCalc.bedLength\"( location ) ), "
                                                                                                             + "\"CPS.Core.DB.HSQLCalc.plantsFromRowFt\"( rowft_to_plant, inrow_space )",
                                                                                                                      false, true,  false, false, true,  true,  false,   "Plants Needed",         "Need"  ));
@@ -420,8 +428,12 @@ public class HSQLColumnMap {
                                                                                                                      false, true,  false, false, true,  true,  false,   "Row Feet to Plant",      "Rowft"  ));
       l.add( new ColumnStruct(  "inrow_space",     CPSDataModelConstants.PROP_SPACE_INROW,  "direct_seed, NULL, tp_inrow_space",  
                                                                                                                null, false, true,  false, false, false, true,  false,   "Spacing between Plants", "Inrow Space"  ));
-      l.add( new ColumnStruct(  "row_space",       CPSDataModelConstants.PROP_SPACE_BETROW, "direct_seed, ds_row_space, tp_row_space",    
-                                                                                                               null, false, true,  false, false, false, true,  false,   "Spacing between Rows",   "Row Space"  ));
+//      l.add( new ColumnStruct(  "row_space",       CPSDataModelConstants.PROP_SPACE_BETROW, "direct_seed, ds_row_space, tp_row_space",
+//                                                                                                               null, false, true,  false, false, false, true,  false,   "Spacing between Rows",   "Row Space"  ));
+      l.add( new ColumnStruct(  "row_space",       CPSDataModelConstants.PROP_SPACE_BETROW,  null,             "CASE WHEN direct_seed THEN ds_row_space ELSE tp_row_space END",
+                                                                                                                     false, true,  false, false, false, false, true,   "Spacing between Rows",   "Row Space"  ));
+      l.add( new ColumnStruct(  "ds_row_space",    CPSDataModelConstants.PROP_DS_SPACE_BETROW, "ds_row_space", null, false, false, false, false, false, true,  false,  "Spacing between Rows (DS)",   "Row Space (DS)"  ));
+      l.add( new ColumnStruct(  "tp_row_space",    CPSDataModelConstants.PROP_TP_SPACE_BETROW, "tp_row_space", null, false, false, false, false, false, true,  false,  "Spacing between Rows (TP)",   "Row Space (TP)"  ));
       l.add( new ColumnStruct(  "flat_size",       CPSDataModelConstants.PROP_FLAT_SIZE,    "direct_seed, NULL, tp_flat_size",    
                                                                                                                null, false, true,  true,  false, false, true,  false,   "GH Flat Size or Capacity", "Flat"  ));
       l.add( new ColumnStruct(  "flats_needed",    CPSDataModelConstants.PROP_FLATS_NEEDED, null,              "\"CPS.Core.DB.HSQLCalc.flatsNeeded\"( plants_to_start, flat_size )",
@@ -429,8 +441,12 @@ public class HSQLColumnMap {
       
       
 //    l.add( new ColumnStruct(   colName,          propNum,                                    mapsTo,                   calc, mand,  disp,  filt,  def,   imp,   edit,  pseudo,  prettyName ));
-      l.add( new ColumnStruct(  "plant_notes_inh", CPSDataModelConstants.PROP_PLANT_NOTES,    "direct_seed, ds_plant_notes, tp_plant_notes",
-                                                                                                                         null, false, true,  true,  false, false, true,  false,   "Notes on Seeding (for crop)", "Notes" ));
+//      l.add( new ColumnStruct(  "plant_notes_inh", CPSDataModelConstants.PROP_PLANT_NOTES,    "direct_seed, ds_plant_notes, tp_plant_notes",
+//                                                                                                                         null, false, true,  true,  false, false, true,  false,   "Notes on Seeding (for crop)", "Notes" ));
+      l.add( new ColumnStruct(  "planting_notes",  CPSDataModelConstants.PROP_PLANT_NOTES,    null,                      "CASE WHEN direct_seed THEN ds_crop_notes ELSE tp_crop_notes END",
+                                                                                                                               false, true,  true,  false, false, false, true,    "Notes on Seeding (for crop)", "Notes" ));
+      l.add( new ColumnStruct(  "ds_crop_notes",   CPSDataModelConstants.PROP_DS_PLANT_NOTES, "ds_plant_notes",          null, false, false, false, false, false, true,  false,   "DS Notes on Seeding (for crop)", "DS Notes" ));
+      l.add( new ColumnStruct(  "tp_crop_notes",   CPSDataModelConstants.PROP_TP_PLANT_NOTES, "tp_plant_notes",          null, false, false, false, false, false, true,  false,   "TP Notes on Seeding (for crop)", "TP Notes" ));
       l.add( new ColumnStruct(  "plant_notes_spec",CPSDataModelConstants.PROP_PLANT_NOTES_SPECIFIC, null,                null, false, true,  true,  false, false, true,  false,   "Notes on Planting (for this planting)", "Notes" ));
       l.add( new ColumnStruct(  "pot_up",          CPSDataModelConstants.PROP_TP_POT_UP,      "direct_seed, NULL, tp_pot_up",               
                                                                                                                          null, false, true,  false, false, false, true,  false,   "Pot up? " ));

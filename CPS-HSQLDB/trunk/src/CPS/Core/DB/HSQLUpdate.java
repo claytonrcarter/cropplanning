@@ -81,6 +81,9 @@ public class HSQLUpdate {
            
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 4 ))
              updateForV000_001_004( con );
+
+           if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 5 ))
+              updateForV000_001_005( con );
            
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
@@ -264,5 +267,63 @@ public class HSQLUpdate {
 
       
    }
-   
+
+   private static void updateForV000_001_005( Connection con ) throws java.sql.SQLException {
+
+      CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.5" );
+
+      Statement st = con.createStatement();
+      String update;
+
+      ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+      update = "";
+      for ( String plan : plans ) {
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ds_mat_adjust  INTEGER; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ds_rows_p_bed  INTEGER; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ds_row_space   INTEGER; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ds_crop_notes  VARCHAR; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN tp_mat_adjust  INTEGER; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN tp_rows_p_bed  INTEGER; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN tp_row_space   INTEGER; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN tp_crop_notes  VARCHAR; ";
+
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET ds_mat_adjust = mat_adjust " +
+                   " WHERE mat_adjust IS NOT NULL AND direct_seed = TRUE; ";
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET tp_mat_adjust = mat_adjust " +
+                   " WHERE mat_adjust IS NOT NULL AND direct_seed = FALSE; ";
+
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET ds_rows_p_bed = rows_p_bed " +
+                   " WHERE rows_p_bed IS NOT NULL AND direct_seed = TRUE; ";
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET tp_rows_p_bed = rows_p_bed " +
+                   " WHERE rows_p_bed IS NOT NULL AND direct_seed = FALSE; ";
+
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET ds_row_space = row_space " +
+                   " WHERE row_space IS NOT NULL AND direct_seed = TRUE; ";
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET tp_row_space = row_space " +
+                   " WHERE row_space IS NOT NULL AND direct_seed = FALSE; ";
+
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET ds_crop_notes = plant_notes_inh " +
+                   " WHERE plant_notes_inh IS NOT NULL AND direct_seed = TRUE; ";
+         update += "UPDATE " + HSQLDB.escapeTableName( plan ) +
+                   " SET tp_crop_notes = plant_notes_inh " +
+                   " WHERE plant_notes_inh IS NOT NULL AND direct_seed = FALSE; ";
+
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN mat_adjust; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN rows_p_bed; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN row_space; ";
+         update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " DROP COLUMN plant_notes_inh; ";
+      }
+
+      if ( ! update.equals( "" ) ) {
+         CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
+         st.executeUpdate( update );
+      }
+   }
 }

@@ -64,12 +64,9 @@ public class HSQLDBSchemas {
       s += "notes     VARCHAR, ";
       
       s += "maturity        INTEGER, ";
-      s += "mat_adjust      INTEGER, ";
-//      s += "planting_adjust INTEGER, ";
-//      s += "ds_adjust       INTEGER, ";
-//      s += "season_adjust   INTEGER, ";
+      s += "ds_mat_adjust   INTEGER, ";
+      s += "tp_mat_adjust   INTEGER, ";
       s += "time_to_tp      INTEGER, ";
-//      s += "misc_adjust     INTEGER, ";
       s += "direct_seed     BOOLEAN, ";
       s += "frost_hardy     BOOLEAN, ";
       s += "ignore          BOOLEAN, ";
@@ -85,15 +82,18 @@ public class HSQLDBSchemas {
       s += "date_harvest_actual DATE, ";
       
       s += "beds_to_plant    FLOAT, ";
-      s += "rows_p_bed       INTEGER, ";
+      s += "ds_rows_p_bed    INTEGER, ";
+      s += "tp_rows_p_bed    INTEGER, ";
       s += "plants_needed    INTEGER, ";
       s += "rowft_to_plant   INTEGER, ";
       s += "inrow_space      FLOAT, ";
-      s += "row_space        FLOAT, ";
+      s += "ds_row_space     FLOAT, ";
+      s += "tp_row_space     FLOAT, ";
       s += "plants_to_start  INTEGER, ";
       s += "flat_size        VARCHAR, ";
       s += "flats_needed     FLOAT, ";
-      s += "plant_notes_inh  VARCHAR, ";
+      s += "ds_crop_notes    VARCHAR, ";
+      s += "tp_crop_notes    VARCHAR, ";
       s += "plant_notes_spec VARCHAR, ";
       s += "pot_up           BOOLEAN, ";
       s += "pot_up_notes     VARCHAR, ";

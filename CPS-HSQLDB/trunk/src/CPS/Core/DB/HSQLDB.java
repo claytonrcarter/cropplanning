@@ -23,23 +23,24 @@
 package CPS.Core.DB;
 
 import CPS.Data.*;
+import CPS.Module.CPSConfigurable;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSGlobalSettings;
+import CPS.Module.CPSWizardPage;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JPanel;
 import javax.swing.table.TableModel;
-import org.hsqldb.*;
-import resultsettablemodel.*;
 
 /**
  *
  * @author Clayton
  */
-public class HSQLDB extends CPSDataModel {
+public class HSQLDB extends CPSDataModel implements CPSConfigurable {
    
     private static final boolean DEBUG = true;
     
@@ -66,16 +67,17 @@ public class HSQLDB extends CPSDataModel {
                
        localSettings = new HSQLSettings();
        
-       if ( true || localSettings.getUseGlobalDir() )
-           dbDir = CPSGlobalSettings.getDataOutputDir();
-       else
-           dbDir = localSettings.getCustomOutDir();
-       
-       initAndUpdateDB();
+//       init();
    }
-   
-   private void initAndUpdateDB() {
-       
+
+   @Override
+   public int init () {
+
+      if ( true || localSettings.getUseGlobalDir() )
+         dbDir = CPSGlobalSettings.getDataOutputDir();
+      else
+         dbDir = localSettings.getCustomOutDir();
+
       con = HSQLConnect.getConnection( dbDir, dbFile, hsqlDriver );
       boolean newDB = false;
       
@@ -98,7 +100,8 @@ public class HSQLDB extends CPSDataModel {
 //         this.importCropsAndVarieties( HSQLDBPopulator.loadDefaultCropList( dbDir )
 //                                                      .getCropsAndVarietiesAsList() );
 //      } 
-       
+
+      return 0;
    }
    
    public synchronized ArrayList<String> getFlatSizeList( String planName ) {
@@ -546,6 +549,11 @@ public class HSQLDB extends CPSDataModel {
    private CPSCrop resultSetAsCrop( ResultSet rs ) throws SQLException {
       
       CPSCrop crop = new CPSCrop();
+
+// Not yet implemented (11/29/08)
+//        l.add( new ColumnStruct( "tp_pot_up",      CPSDataModelConstants.PROP_TP_POT_UP,       "tp_pot_up",       null, false, true,  true,  false, false, "Pot up? (TP)" ));
+//        l.add( new ColumnStruct( "tp_pot_up_notes",CPSDataModelConstants.PROP_TP_POT_UP_NOTES, "tp_pot_up_notes", null, false, true,  true,  false, false, "Plug Flat Size or Capacity" ));
+
       
       // move to the first (and only) row
       if ( rs.next() ) {
@@ -555,15 +563,13 @@ public class HSQLDB extends CPSDataModel {
             crop.setCropName( captureString( rs.getString( "crop_name" ) ));            
             crop.setVarietyName( captureString( rs.getString( "var_name" ) ));
             crop.setFamilyName( captureString( rs.getString( "fam_name" ) ));
-          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
+         
+            crop.setMaturityDays( getInt( rs, "maturity" ) );
+
+         } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
             
-            crop.setMaturityDays( getInt( rs, "maturity" ));
-            crop.setTPMaturityAdjust( getInt( rs, "tp_mat_adjust" ));
-//            crop.setSuccessions( rs.getBoolean("successions") );
-            
-            crop.setTPTimeInGH( getInt( rs, "tp_time_in_gh" ));
             
             // we have to go through these acrobatics because these fields
             // are inheritable and can be null
@@ -572,24 +578,31 @@ public class HSQLDB extends CPSDataModel {
                  crop.setDirectSeeded( (Boolean) null );
             else
                  crop.setDirectSeeded( b );
-            
-            b = rs.getBoolean( "frost_hardy" );
-            if ( rs.wasNull() )
-                 crop.setFrostHardy( (Boolean) null );
-            else
-                 crop.setFrostHardy( b );
+
+            crop.setDSMaturityAdjust( getInt( rs, "ds_mat_adjust" ));
+            crop.setDSRowsPerBed( getInt( rs, "ds_rows_p_bed" ) );
+            crop.setDSSpaceBetweenRow( getInt( rs, "ds_row_space" ) );
+            crop.setDSPlantNotes( captureString( rs.getString( "ds_plant_notes" )));
             
           } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
 
+            boolean b = rs.getBoolean( "transplant" );
+            if ( rs.wasNull() )
+               crop.setTransplanted( (Boolean) null );
+            else
+               crop.setTransplanted( b );
+            
+            crop.setTPMaturityAdjust( getInt( rs, "tp_mat_adjust" ));
             crop.setTPRowsPerBed( getInt( rs, "tp_rows_p_bed" ));
             crop.setTPSpaceInRow( getInt( rs, "tp_inrow_space" ));
             crop.setTPSpaceBetweenRow( getInt( rs, "tp_row_space" ));
             crop.setTPFlatSize( captureString( rs.getString( "tp_flat_size" )));
+            crop.setTPTimeInGH( getInt( rs, "tp_time_in_gh" ));
             crop.setTPPlantNotes( captureString( rs.getString( "tp_plant_notes" )));
-//            crop.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
-          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
+
+         } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
             
@@ -598,26 +611,29 @@ public class HSQLDB extends CPSDataModel {
             crop.setYieldPerWeek( getInt( rs, "yield_p_week" ));
             crop.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
             crop.setCropUnitValue( getFloat( rs, "crop_unit_value" ));
-          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
+
+         } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          try {
 
-            crop.setGroups( captureString( rs.getString( "groups" ) ));
-            crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
-            crop.setKeywords( captureString( rs.getString( "keywords" ) ));
-          } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
-         
-         try {
+            boolean b = rs.getBoolean( "frost_hardy" );
+            if ( rs.wasNull() )
+                 crop.setFrostHardy( (Boolean) null );
+            else
+                 crop.setFrostHardy( b );
 
             crop.setBotanicalName( captureString( rs.getString( "bot_name" ) ) );
             crop.setCropDescription( captureString( rs.getString("description") ));
+            crop.setGroups( captureString( rs.getString( "groups" ) ));
+            crop.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
+            crop.setKeywords( captureString( rs.getString( "keywords" ) ));
             crop.setNotes( captureString( rs.getString( "notes" ) ));
             
           } catch ( SQLException ignore ) { HSQLDB.debug( "HSQLDB", "WARNING: " + ignore.getMessage() ); }
          
          
           /* for varieties, inherit info from their crop, too */
-          if ( !crop.getVarietyName().equals( "" ) ) {
+          if ( ! crop.getVarietyName().equals( "" ) ) {
               CPSCrop superCrop = getCropInfo( crop.getCropName() );
               crop.inheritFrom( superCrop );            
           }
@@ -696,10 +712,13 @@ public class HSQLDB extends CPSDataModel {
       changedID.add( new Integer( changes.getID() ));
 //      HSQLDBCreator.updatePlanting( con, planName, planting, c.getID() );
       updatePlantings( planName, changes, changedID );
-      updateDataListeners();
+//      updateDataListeners();
    }
    
    public void updatePlantings( String planName, CPSPlanting changes, ArrayList<Integer> changedIDs ) {
+
+      debug( "saving changes to plan " + planName + ": " + changes.toString() );
+
       ArrayList<Integer> cropIDs = new ArrayList();
       for ( Integer i : changedIDs ) {
          CPSPlanting p = getPlanting( planName, i.intValue() );
@@ -728,40 +747,113 @@ public class HSQLDB extends CPSDataModel {
    private CPSPlanting resultSetAsPlanting( ResultSet rs, boolean summedPlanting ) throws SQLException {
       
       CPSPlanting p = new CPSPlanting();
-      
+
+//      debug( "converting result to planting:\n" + toXML( rs ) );
+//      rs.beforeFirst();
+
       // move to the first (and only) row
       if ( rs.next() ) {
+         
           // sometimes it's OK for some columns not to exist.  Instead of surrounding each "get..."
           // with a try clause, we'll group this into logical components
          try {
 
-            // Not yet implemented:
-            // PROP_CROP_ID, PROP_STATUS, PROP_COMPLETED     
-
             p.setID( rs.getInt( "id" ));
             p.setCropName( captureString( rs.getString( "crop_name" ) ));            
             p.setVarietyName( captureString( rs.getString( "var_name" ) ));
-
             p.setLocation( captureString( rs.getString( "location" )));
+
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
                 HSQLDB.debug( "HSQLDB", ignore.getMessage() ); 
           }
          
          try {           
-            p.setDateToPlant( captureDate( rs.getDate( "date_plant_plan" )));
-            p.setDateToTP( captureDate( rs.getDate( "date_tp_plan" )));
-            p.setDateToHarvest( captureDate( rs.getDate( "date_harvest_plan" )));
 
-            p.setDonePlanting( rs.getBoolean( "done_plant" ) );
+            p.setDateToPlantPlanned( captureDate( rs.getDate( "date_plant_plan" )));
+            p.setDateToTPPlanned( captureDate( rs.getDate( "date_tp_plan" )));
+            p.setDateToHarvestPlanned( captureDate( rs.getDate( "date_harvest_plan" )));
+
+            p.setDateToPlantActual( captureDate( rs.getDate( "date_plant_actual" )));
+            p.setDateToTPActual( captureDate( rs.getDate( "date_tp_actual" )));
+            p.setDateToHarvestActual( captureDate( rs.getDate( "date_harvest_actual" )));
+
+            p.setDonePlanting( rs.getBoolean( "done_plant" ));
             p.setDoneTP( rs.getBoolean( "done_TP" ));
             p.setDoneHarvest( rs.getBoolean( "done_harvest" ));
-//          } catch ( SQLException ignore ) {}
+            p.setIgnore( rs.getBoolean( "ignore" ));
+
           } catch ( SQLException ignore ) { 
             if ( !summedPlanting )
                HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
-         
+
+         try {
+
+            // record DS only info
+
+            p.setDirectSeeded( true );
+
+            p.setMatAdjust( getInt( rs, "ds_mat_adjust" ));
+            p.setRowsPerBed( getInt( rs, "ds_rows_p_bed" ));
+            p.setRowSpacing( getInt( rs, "ds_row_space" ));
+            p.setPlantingNotesInherited( captureString( rs.getString( "ds_crop_notes" )));
+
+         } catch ( SQLException ignore ) {
+            if ( !summedPlanting )
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
+         }
+
+         try {
+
+            // record TP only info
+
+            p.setDirectSeeded( false );
+
+            p.setMatAdjust( getInt( rs, "tp_mat_adjust" ));
+            p.setRowsPerBed( getInt( rs, "tp_rows_p_bed" ));
+            p.setInRowSpacing( getInt( rs, "inrow_space" ) );
+            p.setRowSpacing( getInt( rs, "tp_row_space" ));
+            p.setFlatSize( captureString( rs.getString( "flat_size" )));
+            p.setTimeToTP( getInt( rs, "time_to_tp" ));
+            p.setPlantingNotesInherited( captureString( rs.getString( "tp_crop_notes" )));
+
+         } catch ( SQLException ignore ) {
+            if ( !summedPlanting )
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
+         }
+
+         try {
+
+            // now start over and set direct_seed to what it "should" be
+            boolean b = rs.getBoolean( "direct_seed" );
+            if ( rs.wasNull() )
+                 p.setDirectSeeded( (Boolean) null );
+            else
+                 p.setDirectSeeded( b );
+
+            p.setMaturityDays( getInt( rs, "maturity") );
+            p.setPlantingNotes( captureString( rs.getString( "plant_notes_spec" )));
+
+         } catch ( SQLException ignore ) {
+            if ( !summedPlanting )
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
+         }
+
+         try {
+
+            // record "general" info that might be DS or TP, based on whether planting is DS or TP
+
+            p.setMatAdjust( getInt( rs, "mat_adjust" ));
+            p.setRowsPerBed( getInt( rs, "rows_p_bed" ));
+            p.setRowSpacing( getInt( rs, "row_space" ));
+            p.setPlantingNotesInherited( captureString( rs.getString( "planting_notes" )));
+
+         } catch ( SQLException ignore ) {
+            if ( !summedPlanting )
+               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
+         }
+
          try {
              
              // These are all used for the "summed" plantings
@@ -777,39 +869,6 @@ public class HSQLDB extends CPSDataModel {
                HSQLDB.debug( "HSQLDB", ignore.getMessage() );
          }
          
-         try {
-            p.setMaturityDays( getInt( rs, "maturity") );
-            p.setMatAdjust( getInt( rs, "mat_adjust" ));
-//            p.setPlantingAdjust( getInt( rs, "planting_adjust" ));
-//            p.setMiscAdjust( getInt( rs, "misc_adjust" ) );
-            
-            p.setTimeToTP( getInt( rs, "time_to_tp" ));
-            p.setRowsPerBed( getInt( rs, "rows_p_bed" ));
-            p.setInRowSpacing( getInt( rs, "inrow_space" ) );
-            p.setRowSpacing( getInt( rs, "row_space" ));
-            
-            p.setFlatSize( captureString( rs.getString( "flat_size" )));
-            p.setPlanter( captureString( rs.getString( "plant_notes_inh" )));
-//            p.setPlanterSetting( captureString( rs.getString( "planter_setting" )));
-
-            // we have to go through these acrobatics because these fields
-            // are inheritable and can be null
-            boolean b = rs.getBoolean( "direct_seed" );
-            if ( rs.wasNull() )
-                 p.setDirectSeeded( (Boolean) null );
-            else
-                 p.setDirectSeeded( b );
-            
-            b = rs.getBoolean( "frost_hardy" );
-            if ( rs.wasNull() )
-                 p.setFrostHardy( (Boolean) null );
-            else
-                 p.setFrostHardy( b );
-            
-         } catch ( SQLException ignore ) { 
-            if ( !summedPlanting )
-               HSQLDB.debug( "HSQLDB", ignore.getMessage() );
-         }
          
          try {
 
@@ -818,6 +877,12 @@ public class HSQLDB extends CPSDataModel {
             p.setYieldPerWeek( getFloat( rs, "yield_p_week" ));
             p.setCropYieldUnit( captureString( rs.getString( "crop_unit" )));
             p.setCropYieldUnitValue( getFloat( rs, "crop_unit_value" ));
+
+            boolean b = rs.getBoolean( "frost_hardy" );
+            if ( rs.wasNull() )
+                 p.setFrostHardy( (Boolean) null );
+            else
+                 p.setFrostHardy( b );
 
             p.setGroups( captureString( rs.getString( "groups" ) ));
             p.setOtherRequirements( captureString( rs.getString( "other_req" ) ));
@@ -842,7 +907,7 @@ public class HSQLDB extends CPSDataModel {
          try {
             
             /* handle data inheritance */
-            // we have to call a get* method before we can call wasNull
+            // we have to call a get... method before we can call wasNull
             int cid = rs.getInt( "crop_id" );
             if ( ! rs.wasNull() )
                  p.inheritFrom( getCropInfo( cid ) );
@@ -855,6 +920,9 @@ public class HSQLDB extends CPSDataModel {
          
       }
       
+      p.finishUp();
+
+      HSQLDB.debug( "HSQLDB", "Returning planting:\n" + p.toString() );
       return p;
    }
 
@@ -1287,15 +1355,48 @@ public class HSQLDB extends CPSDataModel {
         super.updateDataListeners();
     }
     
-    
     @Override
-    public int init() {
-        throw new UnsupportedOperationException( "Not supported yet." );
+    protected int saveState() { throw new UnsupportedOperationException( "Not supported yet." ); }
+
+   public JPanel getConfigurationDisplay () { return null; }
+
+   public CPSWizardPage[] getConfigurationWizardPages () {
+      return new CPSWizardPage[] { new NewPlanWizardPage( this ) };
+   }
+
+   public void resetConfiguration () {}
+   public void resetConfigurationToDefaults () {}
+   public void saveConfiguration () {}
+
+
+   private static String toXML(ResultSet rs) throws SQLException {
+
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int colCount = rsmd.getColumnCount();
+        StringBuffer xml = new StringBuffer();
+        xml.append("<Results>\n");
+
+        while (rs.next())
+        {
+            xml.append("  <Row>\n");
+
+            for (int i = 1; i <= colCount; i++)
+            {
+               String columnName = rsmd.getColumnName( i );
+               Object value = rs.getObject( i );
+               if ( rs.wasNull() )
+                  continue;
+               xml.append( "    <" + columnName + ">" );
+               xml.append( value.toString().trim() );
+               xml.append( "</" + columnName + ">\n" );
+            }
+            xml.append(" </Row>\n");
+        }
+
+        xml.append("</Results>\n");
+
+        return xml.toString();
     }
 
-    @Override
-    protected int saveState() {
-        throw new UnsupportedOperationException( "Not supported yet." );
-    }
 
 }

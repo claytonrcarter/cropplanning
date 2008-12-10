@@ -286,8 +286,8 @@ public class HSQLQuerier {
       query = query.substring( 0, query. lastIndexOf( ", " ));
       
       query += " FROM " + HSQLDB.escapeTableName( table );
-      
-      System.out.println("\n DEBUG(COMMON INFO query):\n" + query );
+
+      HSQLDB.debug( "HSQLQuerier", "COMMON INFO query:\n" + query );
       
       return submitRawQuery( con, query, false );
    }
