@@ -28,7 +28,7 @@ The project has been developed under Netbeans, though it does not require Netbea
 
   * For general *checkout*, the repository root path is `http://cropplanning.googlecode.com/svn`
   * For write access, use the same URL except with `https` instead of `http`.
-  * You will have to checkout _each_ module from the repository.  The URL would be `http://cropplanning.googlecode.com/svn/<module-name>/trunk` where `<module-name>` is the case sensitive name from the table above.
+  * You will have to checkout _each_ module from the repository.  The URL would be `http://cropplanning.googlecode.com/svn/<module-name>/trunk` where `<module-name>` is the _case sensitive_ name from the table above.
 
 === Netbeans ===
 
