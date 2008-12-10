@@ -25,6 +25,7 @@ package CPS.Data;
 
 import CPS.Data.CPSDatum.CPSDatumState;
 import CPS.Module.CPSDataModelConstants;
+import CPS.Module.CPSModule;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -47,8 +48,14 @@ public abstract class CPSRecord {
    protected ArrayList<Integer> changedProps = new ArrayList<Integer>();
    
    protected abstract CPSDatum getDatum( int prop );
-   public abstract String toString(); 
-   
+   @Override
+   public abstract String toString();
+   public abstract void finishUp();
+
+   protected void debug( String message ) {
+      CPSModule.debug( this.getClass().getName(), message );
+   }
+
    public int getID() { 
        if ( doesRepresentMultipleRecords() )
           return recordID.getDefaultValue();
@@ -302,13 +309,15 @@ public abstract class CPSRecord {
       if ( isObjectNull(s) || s.equals("") )
          return -1;
       else
-         return Integer.parseInt( s );
+         // remove whitespace and ignore a leading '+"
+         return Integer.parseInt( s.trim().replaceFirst( "^\\+", "" ));
    }
    public float parseFloat ( String s ) {
       if ( isObjectNull(s) || s.equals("") )
          return -1;
       else
-         return Float.parseFloat( s );
+         // remove whitespace and ignore a leading '+"
+         return Float.parseFloat( s.trim().replaceFirst( "^\\+", "" ));
    }
    
    public <T> void set( int prop, T value ) { set( prop, value, false ); }

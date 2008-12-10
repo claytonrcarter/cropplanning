@@ -24,6 +24,7 @@
 package CPS.Module;
 
 import javax.swing.JPanel;
+import org.netbeans.spi.wizard.WizardPage;
 
 /**
  * An interface for working with modules which have or provide "settings"
@@ -33,6 +34,7 @@ public interface CPSConfigurable {
 
     public String getModuleName();
     public JPanel getConfigurationDisplay();
+    public CPSWizardPage[] getConfigurationWizardPages();
 //    public void receiveGlobalSettings( CPSGlobalSettings globalSettings );
     
     public void saveConfiguration();

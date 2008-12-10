@@ -118,7 +118,16 @@ public class CPSDatum<T> {
       else
          return ((Integer) datum).intValue();
    }
-   
+
+   public void setState( CPSDatumState c ) {
+      this.setInherited( c.isInherited() );
+      this.setCalculated( c.isCalculated() );
+      if ( c.isValid() )
+         this.validate();
+      else
+         this.invalidate();
+   }
+
    public CPSDatumState getState() {
       return new CPSDatumState( this.isInherited(), this.isCalculated(), this.isValid() );
    }

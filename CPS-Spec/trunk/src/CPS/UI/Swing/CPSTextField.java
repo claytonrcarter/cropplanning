@@ -31,7 +31,7 @@ import javax.swing.JTextField;
  * CPSTextField - A class to wrap JTextField, providing extra functionality
  * primarily surrounding state information.
  */
-public class CPSTextField extends JTextField implements CPSComponent {
+public class CPSTextField extends JTextField implements CPSTextComponent {
 
    public static final boolean MATCH_STRICT = true;
    public static final boolean MATCH_PERMISSIVE = false;

@@ -81,7 +81,7 @@ public class CPSDateValidator {
     }
     
     public static Date simpleParse( String s ) {
-        if ( s.equals( "" ))
+        if ( s == null || s.equals( "" ))
             return null;
         else
             try {

@@ -32,34 +32,68 @@ import javax.swing.event.ChangeListener;
  *
  * @author Clayton
  */
-public class CPSCheckBox extends JCheckBox implements CPSComponent {
+public class CPSCheckBox extends JCheckBox implements CPSButtonComponent {
 
     boolean changed = false;
+    private CPSCheckBoxChangeListener changeListener = new CPSCheckBoxChangeListener();
     
     public CPSCheckBox() {
         super();
-        this.addChangeListener( new CPSCheckBoxChangeListener() );
+        this.addChangeListener( changeListener );
     }
-    
-    public void setInitialText( String s ) {};
-    public void setInitialText( String s, CPSDatumState c ) {}
-    
+
+    public CPSCheckBox( String label, boolean selected ) {
+       super( label, selected );
+       this.addChangeListener( changeListener );
+    }
+
     public void setInitialState( boolean b ) {
-        /* setText triggers document listener, which changes background to pink */ 
        this.setSelected( b );
        setHasChanged( false );
        setBackgroundNormal();
        setToolTipText( null );
     }
-     
-    
+    public void setInitialState( boolean b, CPSDatumState c ) {
+       setInitialState( b, c, (String) null );
+    }
+    /**
+     * Set the initial state of the button.
+     * @param checked
+     * @param state
+     * @param inheritedFrom - this will be displayed as a tooltip in the form "Inherited from ..."
+     */
+    public void setInitialState( boolean b, CPSDatumState c, String s ) {
+
+       String tt = "Inherited";
+       if ( s != null )
+          tt += " from " + s;
+
+       setInitialState( b );
+
+       if      ( c.isInherited() ) {
+          this.setBackgroundInherited();
+          this.setToolTipText( tt );
+       }
+    }
+        
     public boolean hasChanged() { return changed; }
 
     public void setHasChanged(boolean b) {
         changed = b;
     }
-    
-    public void setBackgroundInherited() {}
+
+   @Override
+   public void setEnabled ( boolean arg0 ) {
+      // remove and then re-add the change listener so that we can enable and disable
+      // the checkboxes without having to worry about the component being tagged "changed"
+      this.removeChangeListener( changeListener );
+      super.setEnabled( arg0 );
+      this.addChangeListener( changeListener );
+   }
+
+
+
+    public void setBackgroundInherited() { setBackground( COLOR_INHERITED ); }
     public void setBackgroundCalculated() {}
     public void setBackgroundChanged() { setBackground( COLOR_CHANGED ); }
     public void setBackgroundNormal() { setBackground( COLOR_NORMAL ); }

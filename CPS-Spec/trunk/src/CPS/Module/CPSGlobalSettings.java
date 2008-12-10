@@ -26,10 +26,16 @@ package CPS.Module;
 import CPS.Data.CPSDateValidator;
 import CPS.UI.Swing.LayoutAssist;
 import com.toedter.calendar.JDateChooser;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Date;
 import java.util.prefs.Preferences;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -37,6 +43,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.netbeans.spi.wizard.WizardPage;
+
+
 
 public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigurable,
                                                                     ActionListener {
@@ -81,6 +90,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 //    private static File prefOutputDirDefault = null;
     private static final String KEY_FIRSTTIME = "FIRST_TIME";
     private static final String KEY_LASTVERSION = "LAST_VERSION";
+    private static boolean firstTimeRunFake = false;
 
     private static final String KEY_LASTFROST = "LAST_FROST";
     private static final String KEY_FIRSTFROST = "FIRST_FROST";
@@ -148,6 +158,9 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         return getGlobalPreferences().getInt( KEY_ROWBEDLENGTH, prefRowOrBedLengthDefault );
     }
 
+    public void setBedLength( int i ) {
+       getGlobalPreferences().putInt( KEY_ROWBEDLENGTH, i );
+    }
     public static boolean getHighlightFields() {
         return getGlobalPreferences().getBoolean( KEY_HIGHLIGHTFIELDS, prefHightlightDefault );
     }
@@ -183,7 +196,11 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     public static boolean getFirstTimeRun() {
         long l = getLastVersionRun();
-        return l == -1;
+        return l == -1 || firstTimeRunFake;
+    }
+
+    public static void setFirstTimeRun( boolean b ) {
+       firstTimeRunFake = b;
     }
 
     public static long getLastVersionRun() {
@@ -198,13 +215,25 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public static String getFarmName() {
         return getGlobalPreferences().get( KEY_FARMNAME, "" );
     }
-    
+
+    public void setFarmName( String s ) {
+       getGlobalPreferences().put( KEY_FARMNAME, s );
+    }
+
     public static Date getLastFrostDate() {
         return CPSDateValidator.simpleParse( getGlobalPreferences().get( KEY_LASTFROST, "" ));
+    }
+
+    public void setLastFrostDate( Date d ) {
+       getGlobalPreferences().put( KEY_LASTFROST, CPSDateValidator.format( d ) );
     }
     
     public static Date getFirstFrostDate() {
         return CPSDateValidator.simpleParse( getGlobalPreferences().get( KEY_FIRSTFROST, "" ));
+    }
+
+    public void setFirstFrostDate( Date d ) {
+       getGlobalPreferences().put( KEY_FIRSTFROST, CPSDateValidator.format( d ) );
     }
     
     public static float getFudgeFactor() {
@@ -239,6 +268,12 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         return configPanel;
     }
 
+   public CPSWizardPage[] getConfigurationWizardPages () {
+      return new CPSWizardPage[] { new OutDirWizardPage(),
+                                   new GeneralSettingsWizardPage() };
+   }
+
+
     public String getModuleName() {
         return "Global Settings";
     }
@@ -250,6 +285,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         ckbxPrefHighlight.setSelected( getHighlightFields() );
         lblPrefOutputDir.setText( getOutputDir() );
         tfldFarmName.setText( getFarmName() );
+        System.out.println( "Last frost date is: " + getLastFrostDate() );
         jdtcLastFrost.setDate( getLastFrostDate() );
         jdtcFirstFrost.setDate( getFirstFrostDate() );
         tfldFudge.setText( "" + 100 * getFudgeFactor() );
@@ -272,15 +308,15 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public void saveConfiguration() {
         getGlobalPreferences().put( KEY_ROWSORBEDS, cmbxPrefRowOrBed.getSelectedItem().toString() );
         // TODO check this for improper input
-        getGlobalPreferences().putInt( KEY_ROWBEDLENGTH, Integer.parseInt( tfldRowOrBedLength.getText() ) );
+        setBedLength( Integer.parseInt( tfldRowOrBedLength.getText() ) );
         getGlobalPreferences().put( KEY_UNITOFLENGTH, cmbxPrefUnitLength.getSelectedItem().toString() );
         getGlobalPreferences().putBoolean( KEY_HIGHLIGHTFIELDS, ckbxPrefHighlight.isSelected() );
         setOutputDir( lblPrefOutputDir.getText() );
-        getGlobalPreferences().put( KEY_FARMNAME, tfldFarmName.getText() );
-        getGlobalPreferences().put( KEY_LASTFROST, CPSDateValidator.format( jdtcLastFrost.getDate() ) );
-        getGlobalPreferences().put( KEY_FIRSTFROST, CPSDateValidator.format( jdtcFirstFrost.getDate() ));
+        setFarmName( tfldFarmName.getText() );
+        setLastFrostDate( jdtcLastFrost.getDate() );
+        setFirstFrostDate( jdtcFirstFrost.getDate() );
         getGlobalPreferences().put( KEY_FUDGE, "" + Float.parseFloat( tfldFudge.getText() ) / 100 );
-        getGlobalPreferences().putBoolean( KEY_DEBUG, chkDebug.isSelected() );
+        setDebug( chkDebug.isSelected() );
     }
   
     private void buildConfigPanel() {
@@ -324,10 +360,6 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
        LayoutAssist.addLabelLeftAlign( configPanel, 0, 6, 2, 1, lblPrefOutputDir );
        LayoutAssist.addButton( configPanel,    1, 7, btnPrefOutputDir );
 
-//        LayoutAssist.addLabelLeftAlign( configPanel, 0, 0, new JLabel( "Output Directory:" ) );
-//        LayoutAssist.addLabelLeftAlign( configPanel, 0, 1, 2, 1, lblPrefOutputDir );
-//        LayoutAssist.addButton( configPanel, 1, 2, btnPrefOutputDir );
-
     }
 
     public void actionPerformed( ActionEvent arg0 ) {
@@ -342,6 +374,189 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         }
     }
    
-   
-    
 }
+
+
+
+
+class OutDirWizardPage extends CPSWizardPage {
+
+   static final String PAGE_OUT_DIR = "outDir";
+   static final String SETTING_OUT_DIR = PAGE_OUT_DIR;
+
+   private JFileChooser flchOutDir;
+   private boolean outDirIsSelected;
+   private Dimension panelDim = new Dimension( 400, 400 );
+   private Dimension fileDim = new Dimension( 400, 250 );
+
+   public OutDirWizardPage () {
+      super( PAGE_OUT_DIR, getDescription(), CPSWizardPage.WIZ_TYPE_PRE_INIT );
+
+      setLongDescription( getDescription() );
+
+      setPreferredSize( panelDim );
+      setMaximumSize( panelDim );
+
+      JLabel lblOutDir = new JLabel( "<html><table width=400><tr><td>" +
+                                     "<b>Select a folder or directory to store all of your crop planning data.</b>" +
+                                     "<p><p>If you have already used this program to create crop plans and would like to load that information, " +
+                                     "please select the folder or directory which contains your existing data. " +
+                                     "(The data files have names that start with \"CPSdb\".)" +
+                                     "</td></tr></table></html>" );
+      lblOutDir.setAlignmentX( Component.CENTER_ALIGNMENT );
+
+      String defaultDirectory = CPSGlobalSettings.getOutputDir();
+      flchOutDir = new JFileChooser();
+      flchOutDir.setSelectedFile( new File( defaultDirectory ) );
+      flchOutDir.setName( SETTING_OUT_DIR );
+      flchOutDir.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+      flchOutDir.setMultiSelectionEnabled( false );
+      flchOutDir.setControlButtonsAreShown( false );
+      flchOutDir.addPropertyChangeListener( new PropertyChangeListener() {
+
+         public void propertyChange ( PropertyChangeEvent evt ) {
+            if ( evt.getPropertyName().equals( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY ) ) {
+               outDirIsSelected = ( evt.getNewValue() != null ) ? true : false;
+               userInputReceived( flchOutDir, evt );
+            }
+         }
+      } ); // new PropChangeListener
+      flchOutDir.setPreferredSize( fileDim );
+      flchOutDir.setMaximumSize( fileDim );
+
+      add( lblOutDir );
+      add( flchOutDir );
+   }
+
+   @Override
+   protected String validateContents ( Component component, Object event ) {
+      if ( component == null ||
+           ( component == flchOutDir && !outDirIsSelected ) ) {
+         return "You must select a directory or folder.";
+      }
+      else {
+         getWizardDataMap().put( SETTING_OUT_DIR, flchOutDir.getSelectedFile().getPath() );
+         return null;
+      }
+   }
+
+   @Override
+   public void finishWizard ( CPSGlobalSettings globSet ) {
+      globSet.setOutputDir( (String) getWizardDataMap().get( SETTING_OUT_DIR ) );
+   }
+
+   public static String getDescription () { return "Output Directory"; }
+}
+
+
+class GeneralSettingsWizardPage extends CPSWizardPage {
+
+   protected final static String PAGE_GEN_SET = "genSettings";
+
+   protected final static String SETTING_FARM_NAME = "farmName";
+   protected final static String SETTING_BED_LENGTH = "bedLength";
+   protected final static String SETTING_LAST_FROST = "lastFrost";
+   protected final static String SETTING_FIRST_FROST = "firstFrost";
+
+   private JTextField tfldFarmName,  tfldBedLength;
+   private JDateChooser calLastFrost,  calFirstFrost;
+
+   public GeneralSettingsWizardPage () {
+      super( PAGE_GEN_SET, getDescription(), CPSWizardPage.WIZ_TYPE_PRE_INIT );
+
+      setLongDescription( getDescription() );
+
+      JPanel jpl;
+
+      tfldFarmName = new JTextField( 15 );
+      tfldFarmName.setName( SETTING_FARM_NAME );
+
+      jpl = new JPanel();
+      jpl.add( new JLabel( "The name of your farm:" ) );
+      jpl.add( tfldFarmName );
+
+      add( Box.createVerticalGlue() );
+      add( jpl );
+
+      tfldBedLength = new JTextField( 5 );
+      tfldBedLength.setName( SETTING_BED_LENGTH );
+      tfldBedLength.setText( Integer.toString( CPSGlobalSettings.getBedLength() ) );
+
+      jpl = new JPanel();
+      jpl.add( new JLabel( "Default row or bed length:" ) );
+      jpl.add( tfldBedLength );
+
+      add( jpl );
+
+      calLastFrost = new JDateChooser( CPSGlobalSettings.getLastFrostDate() );
+      calLastFrost.setDateFormatString( "MMMMM d" );
+      calLastFrost.setName( SETTING_LAST_FROST );
+      calLastFrost.addPropertyChangeListener( new PropertyChangeListener() {
+                                                        public void propertyChange ( PropertyChangeEvent evt ) {
+                                                           if ( evt.getPropertyName().equals( "date" ))
+                                                              userInputReceived( calLastFrost, evt );
+                                                        }
+                                                  } );
+
+      jpl = new JPanel();
+      jpl.add( new JLabel( "Date of last spring frost (optional):" ) );
+      jpl.add( calLastFrost );
+
+      add( jpl );
+
+      calFirstFrost = new JDateChooser( CPSGlobalSettings.getFirstFrostDate() );
+      calFirstFrost.setDateFormatString( "MMMMM d" );
+      calFirstFrost.setName( SETTING_FIRST_FROST );
+      calFirstFrost.addPropertyChangeListener( new PropertyChangeListener() {
+                                                        public void propertyChange ( PropertyChangeEvent evt ) {
+                                                           if ( evt.getPropertyName().equals( "date" ))
+                                                              userInputReceived( calFirstFrost, evt );
+                                                        }
+                                                  } );
+
+      jpl = new JPanel();
+      jpl.add( new JLabel( "Date of first fall frost (optional):" ) );
+      jpl.add( calFirstFrost );
+
+      add( jpl );
+      add( Box.createVerticalGlue() );
+
+   }
+
+   @Override
+   protected String validateContents ( Component component, Object event ) {
+      if ( component == null ||
+              ( component == tfldFarmName && tfldFarmName.getText().trim().length() == 0 ) ) {
+         return "You must enter a farm name.";
+      }
+      else if ( component == tfldBedLength ) {
+         try {
+            if ( Integer.parseInt( tfldBedLength.getText() ) < 1 )
+               return "Row or bed length must be greater than 0.";
+         }
+         catch ( NumberFormatException e ) {
+            return "Row or bed length must be an integer (whole number).";
+         }
+      }
+      else if ( component == calLastFrost ) {
+         getWizardDataMap().put( SETTING_LAST_FROST, CPSDateValidator.format( calLastFrost.getDate() ) );
+      }
+      else if ( component == calFirstFrost ) {
+         getWizardDataMap().put( SETTING_FIRST_FROST, CPSDateValidator.format( calFirstFrost.getDate() ) );
+      }
+
+      // else no problems
+      return null;
+   }
+
+   @Override
+   public void finishWizard ( CPSGlobalSettings globSet ) {
+      globSet.setFarmName( (String) getWizardDataMap().get( SETTING_FARM_NAME ) );
+      globSet.setBedLength( Integer.parseInt( (String) getWizardDataMap().get( SETTING_BED_LENGTH ) ) );
+      globSet.setLastFrostDate( CPSDateValidator.simpleParse( (String) getWizardDataMap().get( SETTING_LAST_FROST ) ) );
+      globSet.setFirstFrostDate( CPSDateValidator.simpleParse( (String) getWizardDataMap().get( SETTING_FIRST_FROST ) ) );
+   }
+
+   public static String getDescription () { return "General Settings"; }
+}
+

@@ -248,6 +248,9 @@ public class CPSCrop extends CPSRecord {
 
        return a;
    }
+
+   @Override
+   public void finishUp () { /* nothing to do here */ }
     
     public String getCropName() { return get( PROP_CROP_NAME ); }
     public CPSDatumState getCropNameState() { return getStateOf( PROP_CROP_NAME ); }

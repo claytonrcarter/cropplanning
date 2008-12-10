@@ -49,7 +49,7 @@ public class CPSDataModelConstants {
 //   public static final int PROP_MISC_ADJUST   = 33;
    public static final int PROP_TIME_TO_TP    = 34;
    public static final int PROP_DS_MAT_ADJUST = 35;
-   public static final int PROP_TP_MAT_ADJUST = PROP_MAT_ADJUST;
+   public static final int PROP_TP_MAT_ADJUST = 36;
    public static final int PROP_TP_TIME_IN_GH = PROP_TIME_TO_TP;
    
    /* planting date info */
@@ -59,9 +59,6 @@ public class CPSDataModelConstants {
    public static final int PROP_DATE_PLANT_PLAN     = 46;
    public static final int PROP_DATE_TP_PLAN        = 47;
    public static final int PROP_DATE_HARVEST_PLAN   = 48;
-//   public static final int PROP_DATE_PLANT_PLAN     = PROP_DATE_PLANT;
-//   public static final int PROP_DATE_TP_PLAN        = PROP_DATE_TP;
-//   public static final int PROP_DATE_HARVEST_PLAN   = PROP_DATE_HARVEST;
    public static final int PROP_DATE_PLANT_ACTUAL   = 43;
    public static final int PROP_DATE_TP_ACTUAL      = 44;
    public static final int PROP_DATE_HARVEST_ACTUAL = 45;
@@ -85,15 +82,15 @@ public class CPSDataModelConstants {
    
    /* TP */
    public static final int PROP_TRANSPLANT      = 70;
-   public static final int PROP_TP_ROWS_P_BED   = PROP_ROWS_P_BED;
+   public static final int PROP_TP_ROWS_P_BED   = 71;
    public static final int PROP_TP_SPACE_INROW  = PROP_SPACE_INROW;
-   public static final int PROP_TP_SPACE_BETROW = PROP_SPACE_BETROW;
+   public static final int PROP_TP_SPACE_BETROW = 73;
    public static final int PROP_TP_FLAT_SIZE    = PROP_FLAT_SIZE;
-   public static final int PROP_TP_POT_UP       = 71;
-   public static final int PROP_TP_POT_UP_NOTES = 72;
+   public static final int PROP_TP_POT_UP       = 74;
+   public static final int PROP_TP_POT_UP_NOTES = 75;
 //   public static final int PROP_POT_UP          = PROP_TP_POT_UP;
 //   public static final int PROP_POT_UP_NOTES    = PROP_TP_POT_UP_NOTES;
-   public static final int PROP_TP_PLANT_NOTES  = 73;
+   public static final int PROP_TP_PLANT_NOTES  = 76;
 
    
    /* planting amount info */

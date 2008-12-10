@@ -37,8 +37,8 @@ import javax.swing.*;
  */
 public class JButtonGroup extends ButtonGroup implements ActionListener {
 
-    public static final int SELECT_ONE  = 0;
-    public static final int SELECT_NONE = 1;
+    public static final int SELECT_ONLY_ONE   = 0;
+    public static final int SELECT_ALLOW_NONE = 1;
     
     private int selectionModel;
     protected AbstractButton lastSelectedButton = null;
@@ -57,7 +57,7 @@ public class JButtonGroup extends ButtonGroup implements ActionListener {
      */
     public JButtonGroup() {
         super();
-        selectionModel = SELECT_ONE;
+        selectionModel = SELECT_ONLY_ONE;
         add( dummyButton );
     }
 
@@ -225,8 +225,8 @@ public class JButtonGroup extends ButtonGroup implements ActionListener {
    
     
     public void setSelectionModel( int model ) {
-        if ( model == SELECT_NONE || 
-             model == SELECT_ONE )
+        if ( model == SELECT_ALLOW_NONE ||
+             model == SELECT_ONLY_ONE )
             selectionModel = model;
     }
     public int getSelectionModel() {
@@ -252,7 +252,7 @@ public class JButtonGroup extends ButtonGroup implements ActionListener {
     }
 
     public void actionPerformed( ActionEvent arg0 ) {
-        if ( selectionModel == SELECT_NONE ) {
+        if ( selectionModel == SELECT_ALLOW_NONE ) {
             if ( lastSelectedButton == null )
                 System.out.println( "Last selected button is " + lastSelectedButton );
             else

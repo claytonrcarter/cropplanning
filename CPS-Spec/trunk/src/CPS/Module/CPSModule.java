@@ -3,7 +3,7 @@ package CPS.Module;
 
 public abstract class CPSModule {
 
-    public static final String GLOBAL_DEVEL_VERSION = "0.1.4";
+    public static final String GLOBAL_DEVEL_VERSION = "0.1.5";
     /// handles UI experience and displays contents of modules
     protected final String MOD_TYPE_UI = "UI";
     /// provides core funtionality
@@ -100,7 +100,7 @@ public abstract class CPSModule {
    }
    
    public static void debug( String module, String message ) {
-      if ( CPSGlobalSettings.getDebug() )
+      if ( CPSGlobalSettings.getDebug() && ! module.equals( "HSQLQuerier" ))
          System.out.println( "DEBUG(" + module + "): " + message );
    }
 }

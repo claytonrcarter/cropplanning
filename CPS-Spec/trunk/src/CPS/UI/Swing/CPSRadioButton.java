@@ -29,7 +29,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JRadioButton;
 
-public class CPSRadioButton extends JRadioButton implements CPSComponent, ItemListener {
+public class CPSRadioButton extends JRadioButton implements CPSButtonComponent, ItemListener {
 
     boolean changed = false;
     boolean inherited = false;
@@ -83,8 +83,8 @@ public class CPSRadioButton extends JRadioButton implements CPSComponent, ItemLi
     }
     
     
-    public void setInitialText( String s ) { throw new UnsupportedOperationException( "Not supported yet." ); }
-    public void setInitialText( String s, CPSDatumState c ) { throw new UnsupportedOperationException( "Not supported yet." ); }
+    public void setInitialState( boolean b ) { throw new UnsupportedOperationException( "Not supported yet." ); }
+    public void setInitialState( boolean b, CPSDatumState c ) { throw new UnsupportedOperationException( "Not supported yet." ); }
 
     
     public void itemStateChanged( ItemEvent arg0 ) {

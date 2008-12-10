@@ -22,7 +22,6 @@
 
 package CPS.UI.Swing;
 
-import CPS.Data.CPSDatum.CPSDatumState;
 import java.awt.Color;
 
 /**
@@ -40,8 +39,6 @@ public interface CPSComponent {
    Color COLOR_CHANGED = LIGHT_RED;
    Color COLOR_NORMAL = Color.WHITE;
    
-   public void setInitialText( String s );
-   public void setInitialText( String s, CPSDatumState c );
    public boolean hasChanged();
    public void setHasChanged( boolean b );
    public void setBackgroundInherited();

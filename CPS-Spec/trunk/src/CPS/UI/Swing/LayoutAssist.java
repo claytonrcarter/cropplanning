@@ -110,6 +110,9 @@ public class LayoutAssist {
    public static void addButton( JPanel p, int col, int row, AbstractButton b ) {
        addButton( p, col, row, 1, 1, b );
    }
+   public static void addButtonRightAlign( JPanel p, int col, int row, AbstractButton b ) {
+       addButton( p, col, row, 1, 1, b, GridBagConstraints.FIRST_LINE_END );
+   }
    
    public static void addButton( JPanel p, int col, int row, int colSpan, int rowSpan, AbstractButton b ) {
        addButton( p, col, row, colSpan, rowSpan, b, GridBagConstraints.FIRST_LINE_START );
@@ -136,16 +139,16 @@ public class LayoutAssist {
    /**
     * createLabel
     */
-   public static void createLabel( JPanel p, int col, int row, String str ) {
+   public static JLabel createLabel( JPanel p, int col, int row, String str ) {
       if ( ! str.endsWith(":") )
          str += ":";
-      addLabel( p, col, row, new JLabel( str ));
+      return addLabel( p, col, row, new JLabel( str ));
    }
    
-   public static void addLabel( JPanel p, int col, int row, JLabel jl ) {
-       addLabel( p, col, row, 1, 1, jl );
+   public static JLabel addLabel( JPanel p, int col, int row, JLabel jl ) {
+       return addLabel( p, col, row, 1, 1, jl );
    }
-   public static void addLabel( JPanel p, int col, int row, int colSpan, int rowSpan, JLabel jl ) {
+   public static JLabel addLabel( JPanel p, int col, int row, int colSpan, int rowSpan, JLabel jl ) {
       
       Insets i  = new Insets( 0, 0, 0, 5 );
       GridBagConstraints c = new GridBagConstraints();
@@ -159,12 +162,13 @@ public class LayoutAssist {
 	
       p.add( jl, c );
 
+      return jl;
    }
 
-   public static void addLabelLeftAlign( JPanel p, int col, int row, JLabel jl ) {
-       addLabelLeftAlign( p, col, row, 1, 1, jl );
+   public static JLabel addLabelLeftAlign( JPanel p, int col, int row, JLabel jl ) {
+       return addLabelLeftAlign( p, col, row, 1, 1, jl );
    }
-   public static void addLabelLeftAlign( JPanel p, int col, int row, int colSpan, int rowSpan, JLabel jl ) {
+   public static JLabel addLabelLeftAlign( JPanel p, int col, int row, int colSpan, int rowSpan, JLabel jl ) {
       
       Insets i  = new Insets( 0, 0, 0, 5 );
       GridBagConstraints c = new GridBagConstraints();
@@ -178,6 +182,7 @@ public class LayoutAssist {
 	
       p.add( jl, c );
 
+      return jl;
    }
 
    private static void createCheckBox( JPanel p, int col, int row, String s, boolean b ) {

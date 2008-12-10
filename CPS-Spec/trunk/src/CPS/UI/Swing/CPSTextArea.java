@@ -34,7 +34,7 @@ import javax.swing.JTextArea;
  *
  * @author Clayton
  */
-public class CPSTextArea extends JTextArea implements CPSComponent {
+public class CPSTextArea extends JTextArea implements CPSTextComponent {
     
     boolean changed = false;
     
