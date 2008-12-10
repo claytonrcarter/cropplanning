@@ -2,6 +2,11 @@
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
 <project name="CropPlanning" default="default" basedir=".">
     <description>Builds, tests, and runs the project CropPlanning.</description>
     <import file="nbproject/build-impl.xml"/>
@@ -66,4 +71,149 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+  <target name="dist" depends="init,compile,-dist-init,-dist-clean,-dist-jarbundler,-dist-launch4j" />
+
+  <target name="-dist-init" depends="init">
+     <property name="stage.dir" value="${dist.dir}/stage" />
+  </target>
+
+  <target name="-dist-clean" depends="-dist-init" >
+
+    <echo>Cleaning up distribution files.</echo>
+
+    <delete includeemptydirs="true">
+      <fileset dir="${dist.dir}" >
+        <include name="*.exe" />
+        <include name="*.zip" />
+        <include name="*.dmg" />
+        <include name="*.app/**" />
+      </fileset>
+    </delete>
+
+    <delete dir="${stage.dir}" />
+
+  </target>
+
+
+
+
+  <target name="-dist-jarbundler" depends="init,compile,-dist-init" description="Package main project into a Mac application bundle.">
+    <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
+
+    <echo>JarBundler task START</echo>
+
+    <mkdir dir="${stage.dir}" />
+
+<!--
+    <exec ececutable="java"
+          outputproperty="versionProp">
+       <arg value="-jar dist/CropPlanning.jar" />
+       <arg value="-version" />
+    </exec>
+
+    <echo message="${versionProp}" />
+ -->
+
+    <echo>Creating application bundles.</echo>
+
+    <jarbundler dir="${dist.dir}"
+                name="${application.title}"
+                mainclass="${main.class}"
+                jvmversion="1.5+"
+                version="0.1.5"
+                icon="./cps-icon.icns">
+
+      <jarfileset dir="${dist.dir}">
+        <include name="*.jar" />
+        <include name="lib/*.jar" />
+      </jarfileset>
+    </jarbundler>
+
+
+<!-- Until we figure out why copying the app dir is frigging it up, we'll just create a second app bundle -->
+<!--
+    <copy todir="${stage.dir}/${application.title}.app">
+      <fileset dir="${dist.dir}/${application.title}.app" />
+    </copy>
+-->
+
+    <jarbundler dir="${stage.dir}"
+                name="${application.title}"
+                mainclass="${main.class}"
+                jvmversion="1.5+"
+                version="0.1.5"
+                icon="./cps-icon.icns">
+
+      <jarfileset dir="${dist.dir}">
+        <include name="**/*.jar" />
+        <include name="**/lib/*.jar" />
+      </jarfileset>
+    </jarbundler>
+
+    <copy file="./gpl-3.0.txt" todir="${stage.dir}" />
+
+    <echo>Creating disk image.</echo>
+
+    <exec dir="." os="Mac OS X" executable="/bin/sh">
+	   <arg value="-c"/>
+	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}" />
+    </exec>
+
+<!--
+    <gzip zipfile="${stage.dir}/${application.title}.dmg.gz" src="${stage.dir}/${application.title}.dmg"/>
+-->
+
+    <echo>JarBundler task DONE</echo>
+
+  </target>
+
+
+
+
+
+  <target name="-dist-launch4j" depends="init,compile,-dist-init" description="Package main project into a Windows application.">
+
+    <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" />
+
+    <echo>Launch4J task START</echo>
+
+    <property name="stage.dir" value="${dist.dir}/stage/${application.title}" />
+    <mkdir dir="${stage.dir}" />
+
+    <echo>Copying files to staging area.</echo>
+
+    <copy todir="${stage.dir}">
+      <fileset dir="${dist.dir}">
+        <include name="*.jar" />
+        <include name="lib/*.jar" />
+      </fileset>
+    </copy>
+
+    <copy file="./gpl-3.0.txt" todir="${stage.dir}" />
+
+    <echo>Creating Windows executable.</echo>
+
+    <launch4j>
+      <config headerType="gui"
+              outfile="${stage.dir}/${application.title}.exe"
+              dontWrapJar="true"
+              jarPath="${application.title}.jar" >
+        <classPath mainClass="${main.class}">
+          <cp>./lib/</cp>
+        </classPath>
+        <jre minVersion="1.5.0" />
+      </config>
+    </launch4j>
+
+    <echo>Creating zip archive.</echo>
+
+    <zip destfile="${dist.dir}/${application.title}.zip"
+         basedir="${stage.dir}"
+         level="9" />
+
+    <echo>Launch4J task DONE</echo>
+
+  </target>
+
 </project>

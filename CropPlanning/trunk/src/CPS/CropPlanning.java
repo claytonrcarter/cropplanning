@@ -36,9 +36,17 @@ public class CropPlanning implements Runnable {
     public static void main(String[] args) {
 
        // parse arguments
-       for ( String s : args )
+       for ( String s : args ) {
           if ( s.equalsIgnoreCase( "-debug" ))
              CPSGlobalSettings.setDebug(true);
+          if ( s.equalsIgnoreCase( "-firstTime" ) )
+             CPSGlobalSettings.setFirstTimeRun( true );
+          if ( s.equalsIgnoreCase( "-version" )) {
+             System.out.println( CPSModule.GLOBAL_DEVEL_VERSION );
+             System.exit(0);
+          }
+
+       }
        
        new CropPlanning();
 
@@ -48,21 +56,32 @@ public class CropPlanning implements Runnable {
        
        mm = new ModuleManager();
 
+       //
+       // DO NOT conflate all of these module calls into a mm.loadMods, mm.initMods, etc
+       //
+       // save that for a later version
+       //
        CPSGlobalSettings globSet = mm.getGlobalSettings();
        CPSUI ui = mm.getUI();
        ui.addModuleConfiguration( globSet );
-       
-       // TODO This is no good.  We need to work on a way for modules to 
-       // initialize seperately, possibly we should tell them to via an init()
-       // and they should signal us with an error
-       if ( globSet.getFirstTimeRun() )
-           globSet.setOutputDir( ui.showFirstRunDialog( globSet.getDataOutputDir() ));
-       
-       
+
        CPSDataModel dm = mm.getDM();
        // TODO test to see if data is available and then send a dialog to user if not
        if ( dm instanceof CPSConfigurable )
            ui.addModuleConfiguration( (CPSConfigurable) dm );
+
+       // TODO This is no good.  We need to work on a way for modules to 
+       // initialize seperately, possibly we should tell them to via an init()
+       // and they should signal us with an error
+       if ( CPSGlobalSettings.getFirstTimeRun() )
+          if ( ! ui.showFirstRunPreInitWizard( globSet ) )
+             System.exit(1);
+
+       // be sure to initialize the DM!
+       dm.init();
+
+       if ( CPSGlobalSettings.getFirstTimeRun() )
+          ui.showFirstRunPostInitWizard( globSet );
        
        mm.loadImportersExporters();
        for ( CPSModule ieMod : mm.getImportersExporters() ) {
