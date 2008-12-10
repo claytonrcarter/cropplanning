@@ -27,11 +27,13 @@ import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSExportable;
 import CPS.Module.CPSExporter;
+import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSImportable;
 import CPS.Module.CPSImporter;
 import CPS.Module.CPSModule;
 import CPS.Module.CPSUI;
 
+import CPS.Module.CPSWizardPage;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
@@ -65,6 +67,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
     JTabbedPane tabbedpane;
     SettingsDialog settings;
     FrameManager fm;
+    WizardManager preInitWiz, postInitWiz;
     
     protected JMenuBar menuBar;
     protected JMenu exportMenu = null;
@@ -103,6 +106,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
        importers = new ArrayList<CPSImporter>();
        
        settings = new SettingsDialog();
+       if ( CPSGlobalSettings.getFirstTimeRun() ) {
+          preInitWiz = new WizardManager( CPSWizardPage.WIZ_TYPE_PRE_INIT );
+          postInitWiz = new WizardManager( CPSWizardPage.WIZ_TYPE_POST_INIT );
+       }
        
     }
 
@@ -133,7 +140,40 @@ public class TabbedUI extends CPSUI implements ActionListener {
         dlg.setVisible(true);
         return dlg.getOutputDir();
     }
-    
+
+    public boolean showFirstRunPreInitWizard( CPSGlobalSettings globSet ) {
+       // ensure that this is the first time we're running
+       if ( CPSGlobalSettings.getFirstTimeRun() ) {
+          // show the wizard and store the result
+          boolean b = preInitWiz.showWizard( globSet );
+
+          if ( ! b ) {
+             JOptionPane.showMessageDialog( null,
+                                            "The program cannot continue until you complete configuration.  " +
+                                            "Please start the program again.",
+                                            "Configuation Error",
+                                            JOptionPane.ERROR_MESSAGE );
+          }
+          return b;
+       }
+       else
+          return false;
+    }
+
+    public boolean showFirstRunPostInitWizard( CPSGlobalSettings globSet ) {
+       // ensure that this is the first time we're running
+       if ( CPSGlobalSettings.getFirstTimeRun() ) {
+          // show the wizard and store the result
+          boolean b = postInitWiz.showWizard( globSet );
+          if ( !b ) {
+             // user pressed cancel ... that's OK.
+          }
+          return b;
+       }
+       else
+          return false;
+    }
+
     public void addModule( CPSDisplayableDataUserModule mod ) {
         moduleList.add( mod );
         addModule( mod.getModuleName(), mod.display() );
@@ -170,6 +210,14 @@ public class TabbedUI extends CPSUI implements ActionListener {
     @Override
     public void addModuleConfiguration( CPSConfigurable c ) {
         settings.addModuleConfiguration(c);
+        if ( CPSGlobalSettings.getFirstTimeRun() ) {
+           CPSWizardPage[] wps = c.getConfigurationWizardPages();
+           for ( CPSWizardPage wp : wps )
+              if ( wp.getWizardType() == CPSWizardPage.WIZ_TYPE_PRE_INIT )
+                 preInitWiz.addWizard( wp );
+              else
+                 postInitWiz.addWizard( wp );
+        }
     }
 
    @Override

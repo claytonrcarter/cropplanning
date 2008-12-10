@@ -83,7 +83,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
         tabbedPane.removeAll();
         
         for ( CPSConfigurable c : configurables ) {
-            tabbedPane.addTab( c.getModuleName(), c.getConfigurationDisplay() );
+           JPanel jp = c.getConfigurationDisplay();
+           if ( jp != null )
+              tabbedPane.addTab( c.getModuleName(), jp );
         }
         
         this.pack();
