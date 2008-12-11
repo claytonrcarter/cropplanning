@@ -17,6 +17,9 @@ _(aka check out source code)_
   * You will have to checkout _each_ module from the repository.  The URL would be `http://cropplanning.googlecode.com/svn/<module-name>/trunk` where `<module-name>` is the _case sensitive_ name from the table below.
 
 
+<wiki:toc max_depth="1" />
+
+
 == Introduction ==
 
 The project has been developed under Netbeans, though it does not require Netbeans to run.  The source is structured as a number of "modules", many of which of which depend upon each other.
