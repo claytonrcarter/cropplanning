@@ -183,7 +183,7 @@ public class HSQLQuerier {
       return rs;
    }
    
-   public static synchronized long getLastUsedVersion( Connection con ) {
+   public static synchronized long getLastUpdateVersion( Connection con ) {
        
        try {
            Statement s = con.createStatement();
@@ -390,6 +390,9 @@ public class HSQLQuerier {
        for ( String[] s : plantColMap ) {
            Boolean pseudo = new Boolean( s[PSEUDO] );
 
+//           // leave date columns for later calculation (this is a HACK!)
+//          if ( )
+//             plantingFillInQuery += "p." + s[PLANT_COL];
            // if this is a "pseudo" column
           if ( s[PSEUDO].equalsIgnoreCase( "true" ) ) {
              HSQLDB.debug( "HSQLQuerier", "using query for pseduocolumn: " + s[CALC] + " AS " + s[PLANT_COL] );
@@ -439,25 +442,46 @@ public class HSQLQuerier {
 //       plantingFillInQuery += " WHERE p.crop_id = c.id ";
        plantingFillInQuery += " ON p.crop_id = c.id ";
 
-       
-       String passQuery = "SELECT ";
+       // Now we handle the calculations and fill ins within the planting
+       // This handled rather bluntly by just recursing on the query several times
+       String iterateQuery = "SELECT ";
+       String staticDates = "";
+       String calcDates = "";
        for ( String[] s : plantColMap ) {
-           if ( s[PSEUDO].equalsIgnoreCase( "true" ) ) {
-              passQuery += s[CALC] + " AS " + s[PLANT_COL];
-           }
-           else if ( s[CALC] == null )
-               passQuery += s[PLANT_COL];
-           else {
-               passQuery += "COALESCE( " + s[PLANT_COL] + ", ";
-               passQuery += s[CALC] + " ) AS " + s[PLANT_COL];
-           }
-           passQuery += ", ";
-       }
-       passQuery = passQuery.substring( 0, passQuery.lastIndexOf( ", " ) );
 
-       String pass1 = passQuery + " FROM ( " + plantingFillInQuery + " ) ";
-       String pass2 = passQuery + " FROM ( " + pass1 + " ) ";
-       String pass3 = passQuery + " FROM ( " + pass2 + " ) ";
+          String temp = "";
+
+          // if it's a pseudo column, force calculation
+          if ( s[PSEUDO].equalsIgnoreCase( "true" ) ) {
+             temp += s[CALC] + " AS " + s[PLANT_COL];
+          }
+          // if there's no calculation, just use the column as is
+          else if ( s[CALC] == null )
+             temp += s[PLANT_COL];
+          // otherwise, coalesca the column w/ the calculation
+          else {
+             temp += "COALESCE( " + s[PLANT_COL] + ", ";
+             temp += s[CALC] + " ) AS " + s[PLANT_COL];
+          }
+          temp += ", ";
+
+          if ( s[PLANT_COL].startsWith( "date" ) ) {
+             calcDates += temp;
+             staticDates += s[PLANT_COL] + ", ";
+          }
+          else {
+             iterateQuery += temp;
+          }
+          
+       }
+//       passQuery = passQuery.substring( 0, passQuery.lastIndexOf( ", " ) );
+       calcDates = calcDates.substring( 0, calcDates.lastIndexOf( ", " ) );
+       staticDates = staticDates.substring( 0, staticDates.lastIndexOf( ", " ) );
+
+       String pass1 = iterateQuery + staticDates + " FROM ( " + plantingFillInQuery + " ) ";
+       String pass2 = iterateQuery + calcDates   + " FROM ( " + pass1 + " ) ";
+       String pass3 = iterateQuery + calcDates   + " FROM ( " + pass2 + " ) ";
+//       String pass3 = passQuery + " FROM ( " + pass2 + " ) ";
 
        return pass3;
        

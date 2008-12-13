@@ -48,15 +48,15 @@ public class HSQLUpdate {
                CPSModule.debug( "HSQLUpdate", "Metadata table DNE, attempting to create");
                Statement st = con.createStatement();
                st.executeUpdate( HSQLDBCreator.createTableDBMetaData() );
-               HSQLDBCreator.setLastUsedVersion( con, 0 );
+               HSQLDBCreator.setLastUpdateVersion( con, 0 );
                st.close();
            }
        
            // get previous version number
-           previousVersion = HSQLQuerier.getLastUsedVersion( con );
+           previousVersion = HSQLQuerier.getLastUpdateVersion( con );
        
            if ( previousVersion == -1 ) {
-               System.err.println("Error updating db: error retrieving previously used program version");
+               System.err.println("Error updating db: error retrieving version of previous update");
                return;
            }
            
@@ -66,34 +66,38 @@ public class HSQLUpdate {
            }
            
            if ( previousVersion == currentVersion ) {
-               CPSModule.debug( "HSQLUpdate", "DB is up to date!");
+               CPSModule.debug( "HSQLUpdate", "DB is up to date! (" + currentVersion + ")" );
                // nothing to do
                return;
            }
-           
+
+           long updateVersion = 0;
+
            // version 0.1.2
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 2 ))
-               updateForV000_001_002(con);
+             updateVersion = updateForV000_001_002( con );
        
            // version 0.1.3
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 3 ))
-               updateForV000_001_003(con);
+             updateVersion = updateForV000_001_003( con );
            
+           // version 0.1.4
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 4 ))
-             updateForV000_001_004( con );
+             updateVersion = updateForV000_001_004( con );
 
+           // version 0.1.5
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 5 ))
-              updateForV000_001_005( con );
+             updateVersion = updateForV000_001_005( con );
            
+           if ( updateVersion != 0 )
+             HSQLDBCreator.setLastUpdateVersion( con, updateVersion );
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
-       
-       HSQLDBCreator.setLastUsedVersion( con, currentVersion );
            
    }
    
    
-   private static void updateForV000_001_002( Connection con ) throws java.sql.SQLException {
+   private static long updateForV000_001_002( Connection con ) throws java.sql.SQLException {
        
        CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.2" );
        
@@ -139,9 +143,11 @@ public class HSQLUpdate {
        st.executeUpdate( update );
        
        st.close();
+
+       return CPSModule.versionAsLongInt( 0, 1, 2 );
    }
    
-   private static void updateForV000_001_003( Connection con ) throws java.sql.SQLException {
+   private static long updateForV000_001_003( Connection con ) throws java.sql.SQLException {
        
        CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.3" );
        
@@ -189,10 +195,13 @@ public class HSQLUpdate {
            st.executeUpdate(update);
            
        }
-       
+
+      st.close();
+
+      return CPSModule.versionAsLongInt( 0, 1, 3 );
    }
    
-   private static void updateForV000_001_004( Connection con ) throws java.sql.SQLException {
+   private static long updateForV000_001_004( Connection con ) throws java.sql.SQLException {
     
       CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.4" );
       
@@ -265,10 +274,12 @@ public class HSQLUpdate {
          st.executeUpdate( update );
       }
 
-      
+      st.close();
+
+      return CPSModule.versionAsLongInt( 0, 1, 4 );
    }
 
-   private static void updateForV000_001_005( Connection con ) throws java.sql.SQLException {
+   private static long updateForV000_001_005( Connection con ) throws java.sql.SQLException {
 
       CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.5" );
 
@@ -325,5 +336,9 @@ public class HSQLUpdate {
          CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
          st.executeUpdate( update );
       }
+
+      st.close();
+
+      return CPSModule.versionAsLongInt( 0, 1, 5 );
    }
 }

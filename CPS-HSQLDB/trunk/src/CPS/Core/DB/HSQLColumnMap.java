@@ -316,7 +316,7 @@ public class HSQLColumnMap {
         l.add( new ColumnStruct( "ds_mat_adjust",  CPSDataModelConstants.PROP_DS_MAT_ADJUST,   "ds_mat_adjust",   null, false, true,  false, false, false, "Mat. Adjustment (DS)" ));
         l.add( new ColumnStruct( "ds_rows_p_bed",  CPSDataModelConstants.PROP_DS_ROWS_P_BED,   "ds_rows_p_bed",   null, false, true,  false, false, true,  "Rows/Bed (DS)" ));
         l.add( new ColumnStruct( "ds_row_space",   CPSDataModelConstants.PROP_DS_SPACE_BETROW, "ds_row_space",    null, false, true,  false, false, false, "Space between Rows (DS)" ));
-        l.add( new ColumnStruct( "ds_plant_notes", CPSDataModelConstants.PROP_DS_PLANT_NOTES,  "ds_plant_notes",  null, false, true,  false, false, false, "Planting Notes (DS)" ));
+        l.add( new ColumnStruct( "ds_plant_notes", CPSDataModelConstants.PROP_DS_PLANT_NOTES,  "ds_plant_notes",  null, false, true,  true, false, false, "Planting Notes (DS)" ));
         
         l.add( new ColumnStruct( "transplant",     CPSDataModelConstants.PROP_TRANSPLANT,      "transplant",      null, false, true,  false, false, false, "Can be Transplanted?" ));
         l.add( new ColumnStruct( "tp_mat_adjust",  CPSDataModelConstants.PROP_TP_MAT_ADJUST,   "tp_mat_adjust",   null, false, true,  false, false, false, "Mat. Adjustment (TP)" ));
@@ -356,7 +356,7 @@ public class HSQLColumnMap {
         l.add( new ColumnStruct( "keywords",       CPSDataModelConstants.PROP_KEYWORDS,      "keywords",        null, false, true,  true,  false, false, true,  false,   "Keywords" ) );
         l.add( new ColumnStruct( "other_req",      CPSDataModelConstants.PROP_OTHER_REQ,     "other_req",       null, false, true,  true,  false, false, true,  false,   "Other Requirements" ) );
         l.add( new ColumnStruct( "notes",          CPSDataModelConstants.PROP_NOTES,         null,              null, false, true,  true,  false, false, true,  false,   "Notes" ) );
-        l.add( new ColumnStruct( "ignore",         CPSDataModelConstants.PROP_IGNORE,        null,              null, false, true,  true,  false, false, true,  false,   "Ignore?" ) );
+        l.add( new ColumnStruct( "ignore",         CPSDataModelConstants.PROP_IGNORE,        null,              null, false, true,  false, false, false, true,  false,   "Ignore?" ) );
         
         l.add( new ColumnStruct( "maturity",       CPSDataModelConstants.PROP_MATURITY,      "maturity",        null, false, true,  false, true,  true,  true,  false,   "Maturity Days",     "Mat." ) );
 //        l.add( new ColumnStruct( "mat_adjust",     CPSDataModelConstants.PROP_MAT_ADJUST,    "direct_seed, ds_mat_adjust, tp_mat_adjust",

@@ -50,7 +50,7 @@ public class HSQLDBCreator {
          Statement st = con.createStatement();
       
          st.executeUpdate( createTableDBMetaData() );
-         setLastUsedVersion( con, currentVersion );
+         setLastUpdateVersion( con, currentVersion );
          
          st.executeUpdate( createTableCropPlans() );
          st.executeUpdate( createTableCropsAndVarieties() );
@@ -175,8 +175,17 @@ public class HSQLDBCreator {
    }
    
    
-   
-   public static void setLastUsedVersion( Connection con, long version ) {
+   /**
+    * Updates the DB metadata table to record which program version was the last to update the database.  This
+    * figure chould be different from the currect program version if there have been one or more program
+    * releases made the last release which required a db structure update.  (eg, LastUpdateVersion could be
+    * 1.0.2 while current version is 1.0.6)
+    * This method should technically only be called when the db is first created and when explicit updates
+    * to the db schema and/or structure are made.
+    * @param con - JDBC Connection upon which to execute the version update statement.
+    * @param version - long int version number to set
+    */
+   public static void setLastUpdateVersion( Connection con, long version ) {
        
       try {
          

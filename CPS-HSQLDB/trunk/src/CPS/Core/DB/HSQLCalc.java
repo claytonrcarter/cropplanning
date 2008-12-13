@@ -23,6 +23,7 @@
 
 package CPS.Core.DB;
 
+import CPS.Data.CPSDateValidator;
 import java.sql.Date;
 
 /**
@@ -52,19 +53,18 @@ public class HSQLCalc {
    /**
     * Calculate planting date based upon a desired harvest date and an approx. maturity days.
     */
-//   public static Date plantFromHarvest( Date harvest, int mat, Integer adj, Integer weeksInGH ) {
    public static Date plantFromHarvest( Date d, int mat, Integer adj, Integer weeksInGH, Boolean ds ) {
-       
+
        if ( d == null )
            return null;
-      
+
        if ( adj == null )
            adj = new Integer( 0 );
-       
+
        if ( ds != null && weeksInGH != null && ! ds.booleanValue() )
          // type IS tp
          mat += weeksInGH.intValue() * 7;
-      
+
        return new Date( CPS.Data.CPSCalculations.calcDatePlantFromDateHarvest( d, mat, adj.intValue() ).getTime() );
    }
    
@@ -95,7 +95,8 @@ public class HSQLCalc {
    // trying to pass in is null; so if we're trying to passing time_to_tp, this is sort of our way
    // (stupid as it is) of saying "if type IS tp"
    public static Date TPFromHarvest( Date d, int mat, Integer adj, Boolean ds ) {
-       if ( d == null || ds != null && ds.booleanValue() )
+
+      if ( d == null || ds != null && ds.booleanValue() )
          return null;
        
       if ( adj == null )
@@ -108,16 +109,17 @@ public class HSQLCalc {
     * Calculate an approx harvest date based upon a planting date and maturity days.
     */
    public static Date harvestFromPlant( Date d, int mat, Integer adj, Integer weeksInGH, Boolean ds ) {
-      if ( d == null ) 
+
+      if ( d == null )
          return null;
-      
+
       if ( adj == null )
          adj = new Integer( 0 );
       
       if ( ds != null && weeksInGH != null && ! ds.booleanValue() )
          // type IS tp
          mat += weeksInGH.intValue() * 7;
-       
+
       return new Date( CPS.Data.CPSCalculations.calcDateHarvestFromDatePlant( d, mat, adj.intValue() ).getTime() );
    }
    
