@@ -203,6 +203,11 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
        firstTimeRunFake = b;
     }
 
+    /**
+     * @return A long int representing the version of the software when the software
+     *         was last run.  Generally, this will be the same as the current version
+     *         but will be different, of course, when the user downloads a newer version.
+     */
     public static long getLastVersionRun() {
         return getGlobalPreferences().getLong( KEY_LASTVERSION, -1 );
     }

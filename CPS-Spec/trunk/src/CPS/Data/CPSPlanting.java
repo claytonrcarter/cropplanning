@@ -1165,6 +1165,7 @@ public class CPSPlanting extends CPSRecord {
     * Misc Metadata
     */
    public boolean isDirectSeeded() { return get( PROP_DIRECT_SEED, new CPSBoolean(false)).booleanValue(); }
+   public boolean isTransplanted() { return ! isDirectSeeded(); }
    public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }
    public void setDirectSeeded( String s ) {
       if ( s != null && s.equalsIgnoreCase("true") )
@@ -1172,6 +1173,7 @@ public class CPSPlanting extends CPSRecord {
       else
          setDirectSeeded( false );
    }
+   public void setTransplanted( Boolean b ) { setDirectSeeded( new Boolean( ! b.booleanValue() )); }
    public void setDirectSeeded( Boolean b ) { setDirectSeeded( b, false ); }
    public void setDirectSeeded( Boolean b, boolean force ) { set( direct_seed, new CPSBoolean(b), force ); }
 
