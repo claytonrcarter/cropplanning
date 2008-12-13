@@ -198,8 +198,9 @@ public class TabbedUI extends CPSUI implements ActionListener {
      */
     public void addModule ( String name, JPanel content ) {
 
-	content.setBorder( BorderFactory.createTitledBorder( name ));
-        
+//       content.setBorder( BorderFactory.createTitledBorder( name ) );
+       content.setBorder( BorderFactory.createEmptyBorder() );
+
 //        moduleList.add( new ModuleListElement( name, content ));
         setModulesUpdated( true );
         
@@ -244,9 +245,11 @@ public class TabbedUI extends CPSUI implements ActionListener {
           
        while ( i.hasNext() ) {
           mle = i.next();
-          if ( mle instanceof  CPSDisplayableDataUserModule ) 
-               tabbedpane.addTab( ((CPSDisplayableDataUserModule) mle).getModuleName(),
-                                  ((CPSDisplayableDataUserModule) mle).display() );
+          if ( mle instanceof  CPSDisplayableDataUserModule ) {
+             JPanel jp = ((CPSDisplayableDataUserModule) mle).display();
+             jp.setMaximumSize( new Dimension( PREFERRED_WIDTH - 40, PREFERRED_HEIGHT - 80 ));
+             tabbedpane.addTab( ((CPSDisplayableDataUserModule) mle ).getModuleName(), jp );
+          }
        }
 
        finishAddingTabs();
@@ -485,22 +488,31 @@ public class TabbedUI extends CPSUI implements ActionListener {
                ((CPSDataModelUser) c).dataUpdated();
        }
    }
-   
+
+   /**
+    * Called whenever the UI has changed, ie new components are added or display and such.
+    */
    public void uiChanged() {
+
       Dimension maxDim = new Dimension( 0, 0 );
-      
+
+      // iterate over the list of modules
       for ( Object mle : moduleList ) {
+         // if a module is a displayed module
           if ( mle instanceof CPSDisplayableDataUserModule ) {
+              // record it's preferred size
               Dimension d = ((CPSDisplayableDataUserModule) mle).display().getPreferredSize();
-        
+
+              // determine if the either of the dimensions of the preferred size is
+              // larger than the cooresponding "max dimension"
               maxDim.setSize( Math.max( maxDim.getWidth(), d.getWidth() ),
                               Math.max( maxDim.getHeight(), d.getHeight() ) );
           }
       }
          
-      // TODO calculate the size of this tabbed pane to automatically include the tabs, which
-      // is what the 25 is in there for
-      maxDim.setSize( maxDim.getWidth(), maxDim.getHeight() + 25 );
+      // TODO automatically calculate size of the TabbedPane decorations (tabs and borders)
+      // the numbers added to the dimension are to account for the decorations of the tabbed pane
+      maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() + 50 );
       tabbedpane.setPreferredSize( maxDim );
       
       // TODO clean this up, add menubar and titlebar height
