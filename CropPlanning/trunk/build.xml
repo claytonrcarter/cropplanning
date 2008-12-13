@@ -78,6 +78,18 @@
      <property name="stage.dir" value="${dist.dir}/stage" />
   </target>
 
+
+  <target name="-dist-init-version-prop" depends="init,compile">
+     <exec executable="java"
+          outputproperty="version.prop">
+       <arg value="-jar" />
+       <arg value="${dist.dir}/CropPlanning.jar" />
+       <arg value="-version" />
+    </exec>
+<!--    <echo message="Version: ${versionProp}" /> -->
+  </target>
+
+
   <target name="-dist-clean" depends="-dist-init" >
 
     <echo>Cleaning up distribution files.</echo>
@@ -97,8 +109,8 @@
 
 
 
-
-  <target name="-dist-jarbundler" depends="init,compile,-dist-init" description="Package main project into a Mac application bundle.">
+  <target name="-dist-jarbundler" depends="init,compile,-dist-init,-dist-init-version-prop"
+          description="Package main project into a Mac application bundle.">
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
 
     <echo>JarBundler task START</echo>
@@ -142,7 +154,7 @@
                 name="${application.title}"
                 mainclass="${main.class}"
                 jvmversion="1.5+"
-                version="0.1.5"
+                version="${version.prop}"
                 icon="./cps-icon.icns">
 
       <jarfileset dir="${dist.dir}">
@@ -157,7 +169,7 @@
 
     <exec dir="." os="Mac OS X" executable="/bin/sh">
 	   <arg value="-c"/>
-	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}" />
+	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}-${version.prop}" />
     </exec>
 
 <!--
@@ -169,47 +181,54 @@
   </target>
 
 
-
-
-
-  <target name="-dist-launch4j" depends="init,compile,-dist-init" description="Package main project into a Windows application.">
+  <target name="-dist-launch4j" depends="init,compile,-dist-init,-dist-init-version-prop"
+          description="Package main project into a Windows application.">
 
     <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" />
 
     <echo>Launch4J task START</echo>
 
-    <property name="stage.dir" value="${dist.dir}/stage/${application.title}" />
-    <mkdir dir="${stage.dir}" />
+    <property name="local.stage.dir" value="${stage.dir}/${application.title}-${version.prop}" />
+    <mkdir dir="${local.stage.dir}" />
 
     <echo>Copying files to staging area.</echo>
 
-    <copy todir="${stage.dir}">
+    <copy todir="${local.stage.dir}">
       <fileset dir="${dist.dir}">
         <include name="*.jar" />
         <include name="lib/*.jar" />
       </fileset>
     </copy>
 
-    <copy file="./gpl-3.0.txt" todir="${stage.dir}" />
+    <copy file="./gpl-3.0.txt" todir="${local.stage.dir}" />
 
     <echo>Creating Windows executable.</echo>
 
     <launch4j>
       <config headerType="gui"
-              outfile="${stage.dir}/${application.title}.exe"
+              outfile="${local.stage.dir}/${application.title}.exe"
               dontWrapJar="true"
               jarPath="${application.title}.jar" >
         <classPath mainClass="${main.class}">
           <cp>./lib/</cp>
         </classPath>
         <jre minVersion="1.5.0" />
+        <versionInfo fileVersion="${version.prop}.0"
+                     txtFileVersion="${version.prop}"
+                     fileDescription="${application.title}"
+                     copyright="Copyright Clayton Carter, 2008"
+                     productVersion="${version.prop}.0"
+                     txtProductVersion="${version.prop}"
+                     productName="${application.title}"
+                     internalName="${application.title}"
+                     originalFilename="${application.title}.exe" />
       </config>
     </launch4j>
 
     <echo>Creating zip archive.</echo>
 
-    <zip destfile="${dist.dir}/${application.title}.zip"
-         basedir="${stage.dir}"
+    <zip destfile="${dist.dir}/${application.title}-${version.prop}.zip"
+         basedir="${local.stage.dir}"
          level="9" />
 
     <echo>Launch4J task DONE</echo>

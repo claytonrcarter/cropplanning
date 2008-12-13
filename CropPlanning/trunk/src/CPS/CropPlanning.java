@@ -115,7 +115,7 @@ public class CropPlanning implements Runnable {
     
    public void run() {
       mm.shutdownModules();
-      // always disable debug on exit
+      // always disable debug on exit (so that it won't be turned on upon startup)
       CPSGlobalSettings.setDebug(false);
    }
 
