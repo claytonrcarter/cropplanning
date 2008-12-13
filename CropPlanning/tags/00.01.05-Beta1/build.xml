@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="CropPlanning" default="default" basedir=".">
+    <description>Builds, tests, and runs the project CropPlanning.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="CropPlanning-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+
+  <target name="dist" depends="init,compile,-dist-init,-dist-clean,-dist-jarbundler,-dist-launch4j" />
+
+  <target name="-dist-init" depends="init">
+     <property name="stage.dir" value="${dist.dir}/stage" />
+  </target>
+
+
+  <target name="-dist-init-version-prop" depends="init,compile">
+     <exec executable="java"
+          outputproperty="version.prop">
+       <arg value="-jar" />
+       <arg value="${dist.dir}/CropPlanning.jar" />
+       <arg value="-version" />
+    </exec>
+<!--    <echo message="Version: ${versionProp}" /> -->
+  </target>
+
+
+  <target name="-dist-clean" depends="-dist-init" >
+
+    <echo>Cleaning up distribution files.</echo>
+
+    <delete includeemptydirs="true">
+      <fileset dir="${dist.dir}" >
+        <include name="*.exe" />
+        <include name="*.zip" />
+        <include name="*.dmg" />
+        <include name="*.app/**" />
+      </fileset>
+    </delete>
+
+    <delete dir="${stage.dir}" />
+
+  </target>
+
+
+
+  <target name="-dist-jarbundler" depends="init,compile,-dist-init,-dist-init-version-prop"
+          description="Package main project into a Mac application bundle.">
+    <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
+
+    <echo>JarBundler task START</echo>
+
+    <mkdir dir="${stage.dir}" />
+
+<!--
+    <exec ececutable="java"
+          outputproperty="versionProp">
+       <arg value="-jar dist/CropPlanning.jar" />
+       <arg value="-version" />
+    </exec>
+
+    <echo message="${versionProp}" />
+ -->
+
+    <echo>Creating application bundles.</echo>
+
+    <jarbundler dir="${dist.dir}"
+                name="${application.title}"
+                mainclass="${main.class}"
+                jvmversion="1.5+"
+                version="0.1.5"
+                icon="./cps-icon.icns">
+
+      <jarfileset dir="${dist.dir}">
+        <include name="*.jar" />
+        <include name="lib/*.jar" />
+      </jarfileset>
+    </jarbundler>
+
+
+<!-- Until we figure out why copying the app dir is frigging it up, we'll just create a second app bundle -->
+<!--
+    <copy todir="${stage.dir}/${application.title}.app">
+      <fileset dir="${dist.dir}/${application.title}.app" />
+    </copy>
+-->
+
+    <jarbundler dir="${stage.dir}"
+                name="${application.title}"
+                mainclass="${main.class}"
+                jvmversion="1.5+"
+                version="${version.prop}"
+                icon="./cps-icon.icns">
+
+      <jarfileset dir="${dist.dir}">
+        <include name="**/*.jar" />
+        <include name="**/lib/*.jar" />
+      </jarfileset>
+    </jarbundler>
+
+    <copy file="./gpl-3.0.txt" todir="${stage.dir}" />
+
+    <echo>Creating disk image.</echo>
+
+    <exec dir="." os="Mac OS X" executable="/bin/sh">
+	   <arg value="-c"/>
+	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}-${version.prop}" />
+    </exec>
+
+<!--
+    <gzip zipfile="${stage.dir}/${application.title}.dmg.gz" src="${stage.dir}/${application.title}.dmg"/>
+-->
+
+    <echo>JarBundler task DONE</echo>
+
+  </target>
+
+
+  <target name="-dist-launch4j" depends="init,compile,-dist-init,-dist-init-version-prop"
+          description="Package main project into a Windows application.">
+
+    <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" />
+
+    <echo>Launch4J task START</echo>
+
+    <property name="local.stage.dir" value="${stage.dir}/${application.title}-${version.prop}" />
+    <mkdir dir="${local.stage.dir}" />
+
+    <echo>Copying files to staging area.</echo>
+
+    <copy todir="${local.stage.dir}">
+      <fileset dir="${dist.dir}">
+        <include name="*.jar" />
+        <include name="lib/*.jar" />
+      </fileset>
+    </copy>
+
+    <copy file="./gpl-3.0.txt" todir="${local.stage.dir}" />
+
+    <echo>Creating Windows executable.</echo>
+
+    <launch4j>
+      <config headerType="gui"
+              outfile="${local.stage.dir}/${application.title}.exe"
+              dontWrapJar="true"
+              jarPath="${application.title}.jar" >
+        <classPath mainClass="${main.class}">
+          <cp>./lib/</cp>
+        </classPath>
+        <jre minVersion="1.5.0" />
+        <versionInfo fileVersion="${version.prop}.0"
+                     txtFileVersion="${version.prop}"
+                     fileDescription="${application.title}"
+                     copyright="Copyright Clayton Carter, 2008"
+                     productVersion="${version.prop}.0"
+                     txtProductVersion="${version.prop}"
+                     productName="${application.title}"
+                     internalName="${application.title}"
+                     originalFilename="${application.title}.exe" />
+      </config>
+    </launch4j>
+
+    <echo>Creating zip archive.</echo>
+
+    <zip destfile="${dist.dir}/${application.title}-${version.prop}.zip"
+         basedir="${local.stage.dir}"
+         level="9" />
+
+    <echo>Launch4J task DONE</echo>
+
+  </target>
+
+</project>
