@@ -37,6 +37,8 @@ import javax.swing.*;
 
 public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemListener {
 
+   private String STATUS_IGNORE = "This planting is IGNORED and cannot be editted.  Uncheck the \"Ignore\" box to edit.";
+
    private CPSTextField tfldCropName, tfldVarName, tfldMatDays, tfldLocation;
    private JComboBox cmbDates;
 //   private CPSRadioButton rdoDateEff, rdoDatePlan, rdoDateAct;
@@ -100,8 +102,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        tfldLocation.setInitialText( displayedPlanting.getLocation(),
                                     displayedPlanting.getLocationState() );
 
-       displayDates();
-
        chkDonePlant.setInitialState( displayedPlanting.getDonePlanting(),
                                      displayedPlanting.getDonePlantingState() );
        chkDoneTP.setInitialState( displayedPlanting.getDoneTP(),
@@ -163,18 +163,23 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        /*
         * These all affect how other things are displayed so we should do them last.
         */
+       chkIgnore.setInitialState( displayedPlanting.getIgnore(),
+                                  displayedPlanting.getIgnoreState() );
+
        if ( displayedPlanting.isDirectSeeded() )
           bgSeedMethod.setInitialSelection( rdoDS, true, displayedPlanting.getDirectSeededState() );
        else
           bgSeedMethod.setInitialSelection( rdoTP, true, displayedPlanting.getDirectSeededState() );
 
+       displayDates();
+
        displayDSTPProperties();
 
-       chkIgnore.setInitialState( displayedPlanting.getIgnore(),
-                                  displayedPlanting.getIgnoreState() );
+       if ( chkIgnore.isSelected() )
+          setStatus( "This planting is set as IGNORED and cannot be editted. Uncheck \"Ignore\" to edit." );
+       else
+          setStatus( "" );
        
-
-        setStatus("");
         if ( ! displayedPlanting.isSingleRecord() ) {
            String ids = "";
            for ( Integer i : displayedPlanting.getCommonIDs() )
@@ -647,17 +652,18 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       Object source = arg0.getItemSelectable();
 
       if ( source == rdoDS ) {
-         setTPComponentsEnabled( ! rdoDS.isSelected() );
+         setTPComponentsEnabled( ! rdoDS.isSelected() && ! chkIgnore.isSelected() );
          // redisplay the DS/TP values
          displayDSTPProperties();
       }
       else if ( source == rdoTP ) {
-         setTPComponentsEnabled( rdoTP.isSelected() );
+         setTPComponentsEnabled( rdoTP.isSelected() && ! chkIgnore.isSelected() );
          // redisplay the DS/TP values
          displayDSTPProperties();
       }
       else if ( source == chkIgnore ) {
          setAllComponentsEnabled( ! chkIgnore.isSelected() );
+         setStatus( STATUS_IGNORE );
       }
       else if ( source == chkDonePlant ) {
          // IF  the actual dates are displayed
@@ -763,6 +769,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          return;
       
       String s = (String) cmbDates.getSelectedItem();
+      String temp;
       // editTBox = should text boxes be edittable, enableCBox = should checkboxes be enabled
       boolean editTBox, enableCBox;
       if ( s.equalsIgnoreCase( DATE_EFFECTIVE ) ) {
@@ -771,8 +778,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = true;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantString(),
                                        displayedPlanting.getDateToPlantState() );
-         tfldDateTP.setInitialText( displayedPlanting.getDateToTPString(),
-                                    displayedPlanting.getDateToTPState() );
+         if ( displayedPlanting.isTransplanted() )
+            tfldDateTP.setInitialText( displayedPlanting.getDateToTPString(),
+                                       displayedPlanting.getDateToTPState() );
+         else
+            tfldDateTP.setInitialText( "" );
          tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestString(),
                                          displayedPlanting.getDateToHarvestState());
       } else if ( s.equalsIgnoreCase( DATE_ACTUAL ) ) {
@@ -780,8 +790,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          editTBox = enableCBox = true;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantActualString(),
                                        displayedPlanting.getDateToPlantActualState() );
-         tfldDateTP.setInitialText( displayedPlanting.getDateToTPActualString(),
-                                    displayedPlanting.getDateToTPActualState() );
+         if ( displayedPlanting.isTransplanted() )
+            tfldDateTP.setInitialText( displayedPlanting.getDateToTPActualString(),
+                                       displayedPlanting.getDateToTPActualState() );
+         else
+            tfldDateTP.setInitialText( "" );
          tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestActualString(),
                                          displayedPlanting.getDateToHarvestActualState());
       } else {
@@ -790,8 +803,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = false;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantPlannedString(),
                                        displayedPlanting.getDateToPlantPlannedState() );
-         tfldDateTP.setInitialText( displayedPlanting.getDateToTPPlannedString(),
-                                    displayedPlanting.getDateToTPPlannedState() );
+         if ( displayedPlanting.isTransplanted() )
+            tfldDateTP.setInitialText( displayedPlanting.getDateToTPPlannedString(),
+                                       displayedPlanting.getDateToTPPlannedState() );
+         else
+            tfldDateTP.setInitialText( "" );
          tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestPlannedString(),
                                          displayedPlanting.getDateToHarvestPlannedState() );
       }
