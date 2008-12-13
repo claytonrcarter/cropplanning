@@ -99,8 +99,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         
         jplTodo = new JPanel();
         jplTodo.setLayout( new GridBagLayout() );
-        jplTodo.setBorder( BorderFactory.createTitledBorder( "Export planting/seeding lists" ));
-        
+//        jplTodo.setBorder( BorderFactory.createTitledBorder( "Export planting/seeding lists" ));
+        jplTodo.setBorder( BorderFactory.createEmptyBorder() );
+
         cmbPlanName = new JComboBox();
         cmbPlanName.setEditable( false );
 //        cmbPlanName.addActionListener(this);
