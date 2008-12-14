@@ -72,7 +72,7 @@
 
     -->
 
-  <target name="dist" depends="init,compile,-dist-init,-dist-clean,-dist-jarbundler,-dist-launch4j" />
+  <target name="dist" depends="init,compile,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j" />
 
   <target name="-dist-init" depends="init">
      <property name="stage.dir" value="${dist.dir}/stage" />
@@ -109,7 +109,7 @@
 
 
 
-  <target name="-dist-jarbundler" depends="init,compile,-dist-init,-dist-init-version-prop"
+  <target name="dist-jarbundler" depends="init,compile,-dist-init,-dist-init-version-prop"
           description="Package main project into a Mac application bundle.">
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
 
@@ -129,33 +129,12 @@
 
     <echo>Creating application bundles.</echo>
 
-    <jarbundler dir="${dist.dir}"
-                name="${application.title}"
-                mainclass="${main.class}"
-                jvmversion="1.5+"
-                version="0.1.5"
-                icon="./cps-icon.icns">
-
-      <jarfileset dir="${dist.dir}">
-        <include name="*.jar" />
-        <include name="lib/*.jar" />
-      </jarfileset>
-    </jarbundler>
-
-
-<!-- Until we figure out why copying the app dir is frigging it up, we'll just create a second app bundle -->
-<!--
-    <copy todir="${stage.dir}/${application.title}.app">
-      <fileset dir="${dist.dir}/${application.title}.app" />
-    </copy>
--->
-
     <jarbundler dir="${stage.dir}"
                 name="${application.title}"
                 mainclass="${main.class}"
                 jvmversion="1.5+"
                 version="${version.prop}"
-                icon="./cps-icon.icns">
+                icon="./cps-icon-nobkg.icns">
 
       <jarfileset dir="${dist.dir}">
         <include name="**/*.jar" />
@@ -165,11 +144,14 @@
 
     <copy file="./gpl-3.0.txt" todir="${stage.dir}" />
 
+    <!-- failonerror is false in case this file doesn't exist -->
+    <copy file="./Release Notes.txt" todir="${stage.dir}" failonerror="false" />
+
     <echo>Creating disk image.</echo>
 
     <exec dir="." os="Mac OS X" executable="/bin/sh">
 	   <arg value="-c"/>
-	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}-${version.prop}" />
+	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}-${version.prop}-Mac" />
     </exec>
 
 <!--
@@ -181,7 +163,7 @@
   </target>
 
 
-  <target name="-dist-launch4j" depends="init,compile,-dist-init,-dist-init-version-prop"
+  <target name="dist-launch4j" depends="init,compile,-dist-init,-dist-init-version-prop"
           description="Package main project into a Windows application.">
 
     <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" />
@@ -202,15 +184,19 @@
 
     <copy file="./gpl-3.0.txt" todir="${local.stage.dir}" />
 
+    <!-- failonerror is false in case this file doesn't exist -->
+    <copy file="./Release Notes.txt" todir="${local.stage.dir}" failonerror="false" />
+
     <echo>Creating Windows executable.</echo>
 
     <launch4j>
       <config headerType="gui"
               outfile="${local.stage.dir}/${application.title}.exe"
               dontWrapJar="true"
-              jarPath="${application.title}.jar" >
+              jarPath="${application.title}.jar"
+              icon="./cps-icon-nobkg.ico" >
         <classPath mainClass="${main.class}">
-          <cp>./lib/</cp>
+          <cp>./lib</cp>
         </classPath>
         <jre minVersion="1.5.0" />
         <versionInfo fileVersion="${version.prop}.0"
@@ -227,7 +213,7 @@
 
     <echo>Creating zip archive.</echo>
 
-    <zip destfile="${dist.dir}/${application.title}-${version.prop}.zip"
+    <zip destfile="${dist.dir}/${application.title}-${version.prop}-Win.zip"
          basedir="${local.stage.dir}"
          level="9" />
 
