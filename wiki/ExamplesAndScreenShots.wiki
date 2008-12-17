@@ -3,6 +3,8 @@
 
 = Examples, Demonstrations and Screenshots =
 
+_*Note:*_ The images and examples on this page refer to an old version of the software.  Other information, including usage tips, should still be relevant and accurate.
+
 == Examples of Printable Seeding Lists ==
 
 The program can generate PDF files on demand.  These files can serve as printable "TODO lists" and can cover a number of predefined time ranges (this week, next week, this and next week ) or you can define a custom time range to print.  Below are examples of the two types of output currently supported.  These lists are generated dynamically from your crop plan and all you have to do is 1) make sure your plan is "correct", 2) press the "export _blah blah blah_ list" button.
