@@ -5,7 +5,7 @@
 
 As a _free and open source_ project, we depend upon the your help to keep this going and make it better.  Without funding, development will halt.  Period.  Please help out!
 
-= Donations =
+= Make Donations =
 
 <table border="0">
  <tr>
@@ -19,7 +19,13 @@ As a _free and open source_ project, we depend upon the your help to keep this g
    Donate $10
   </td>
   <td>
-   Donate any amount
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+     <input type="hidden" name="cmd" value="_s-xclick">
+     <input type="hidden" name="hosted_button_id" value="2309308">
+     <input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="">
+     <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+    </form>
+    Donate any amount
   </td>
  </tr>
 </table>
