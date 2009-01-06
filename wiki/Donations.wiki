@@ -1,0 +1,40 @@
+#summary Information for and about donors.
+#labels Phase-Support,Target-Users
+
+= Plea =
+
+As a _free and open source_ project, we depend upon the your help to keep this going and make it better.  Without funding, development will halt.  Period.  Please help out!
+
+= Donations =
+
+<table border="0">
+ <tr>
+  <td>
+   Donate $100
+  </td>
+  <td>
+   Donate $25
+  </td>
+  <td>
+   Donate $10
+  </td>
+  <td>
+   Donate any amount
+  </td>
+ </tr>
+</table>
+
+= Donors =
+If you've made a donation and aren't listed below, please [mailto:cropplanning@gmail.com let us know!]
+
+== Special Thanks ==
+
+ * MOFGA - for their support and encouragement
+ * Northeast SARE - for providing funding to get this project up and running
+ * Kendra - she's been very understanding of my long, underpaid hours
+ * The Marshalls - for their generosity and support
+
+== In-Kind Contributors ==
+
+ * sm_zl_kimi - code for CSV import 
+ * Chris Cornett - code for context menus on the buttons in the list view
