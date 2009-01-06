@@ -19,10 +19,7 @@ As a _free and open source_ project, we depend upon the your help to keep this g
    Donate $10
   </td>
   <td>
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2309308">
-     <img src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" border="0" alt="Donate"><br>
-    Donate any amount
-   </a>
+   [https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2309308 Donate any amount]
   </td>
  </tr>
 </table>
