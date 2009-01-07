@@ -3,7 +3,7 @@
 
 = Plea =
 
-As a _free and open source_ project, we depend upon the your help to keep this going and make it better.  Without funding, development will halt.  Period.  Please help out!
+As a _free and open source_ project, we depend upon your help to keep this going and make it better.  Without funding, development will halt.  Period.  Please help out!
 
 = Make Donations =
 
