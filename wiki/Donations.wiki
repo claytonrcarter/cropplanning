@@ -9,7 +9,7 @@ As a _free and open source_ project, we depend upon your help to keep this going
 
 We accept donations through [http://www.paypal.com PayPal], which allows you to donate with a credit or debit card if you don't have a PayPal account, or right from your bank account if you do.
 
-If you use the links below, you will be taken to the PayPal website where you will be able to send a donation directly to me (Clayton Carter, lead developer of the Crop Planning Software project) via the email address `crcarter@alumni.indiana.edu`.  Aside from the small processing fee charged to us by PayPal (approx. 6% for $10 donations, ~4% for $25, and ~3% for $100), all of your money will go to fund work on this software: developing new features, fixing bugs, creating documentation and such.
+If you use the buttons below, you will be taken to the PayPal website where you will be able to send a donation directly to me (Clayton Carter, lead developer of the Crop Planning Software project) via the email address `crcarter@alumni.indiana.edu`.  Aside from the small processing fee charged to us by PayPal (approx. 6% for $10 donations, ~4% for $25, and ~3% for $100), all of your money will go to fund work on this software: developing new features, fixing bugs, creating documentation and such.
 
 <table border="0">
  <tr align="center">
