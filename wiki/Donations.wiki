@@ -37,8 +37,8 @@ If you've made a donation and aren't listed below, please [mailto:cropplanning@g
 
 == Special Thanks ==
 
- * MOFGA - for their support and encouragement
- * Northeast SARE - for providing funding to get this project up and running
+ * [http://www.mofga.org/ MOFGA] - for their support and encouragement
+ * [http://www.uvm.edu/~nesare/ Northeast SARE] - for providing funding to get this project up and running
  * Kendra - she's been very understanding of my long, underpaid hours
  * The Marshalls - for their generosity and support
 
