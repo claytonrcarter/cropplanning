@@ -13,6 +13,8 @@ We accept donations through [http://www.paypal.com PayPal], which allows you to 
 
 If you use the buttons below, you will be taken to the PayPal website where you will be able to send a donation directly to me (Clayton Carter, lead developer of the Crop Planning Software project) via the email address `crcarter@alumni.indiana.edu`.  Aside from the small processing fee charged to us by PayPal (approx. 6% for $10 donations, ~4% for $25, and ~3% for $100), all of your money will go to fund work on this software: developing new features, fixing bugs, creating documentation and such.
 
+*_Please note_* that donations to this project are *not* tax deductible.
+
 <table border="0">
  <tr align="center">
   <td>
@@ -33,6 +35,12 @@ If you use the buttons below, you will be taken to the PayPal website where you 
   </td>
  </tr>
 </table>
+
+If you would prefer not to use Paypal, you can mail checks to:<br /><br />
+Clayton Carter/Fail Better Farm<br />
+41 Puls Ln<br />
+Montville, ME 04941<br />
+
 
 = Donors =
 If you've made a donation and aren't listed below, please [mailto:cropplanning@gmail.com let us know!]
