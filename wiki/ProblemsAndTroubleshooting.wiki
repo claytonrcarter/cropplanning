@@ -1,7 +1,7 @@
 #summary Common problems and their solutions.
 #labels Featured,Phase-Support,Target-Users
 
-Below you will find a series of common problems and various solutions to those problems (if they exist).  If you don't see your problem listed, or the list solutions don't work for you, please [mailto:cropplanning@gmail.com contact us].
+Below you will find a series of common problems and various solutions to those problems (if they exist).  If you don't see your problem listed, or the solutions don't work for you, please [mailto:cropplanning@gmail.com contact us].
 
 == My data is gone?! ==
 
