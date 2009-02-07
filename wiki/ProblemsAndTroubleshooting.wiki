@@ -10,8 +10,7 @@ _Problem_: When you open the software, your data is missing and you're just pres
 There are two possible causes:
 
  # You have changed the setting for *output directory*.  This setting covers not only where your PDF planting lists will be created, but also where your crops & crop plan data files will live.  Just change this setting back to what it was before and restart the program.  If you don't remember what it was before, you'll have to go looking around your computer for some files whose names start with `CPSdb`.  Change the setting to be the folder that contains those files.
-
- # Worst case scenario is that you deleted your data files.  In this case, your only recourse to check your trash (on the computer) to make sure that you haven't completed deleted your data, or to restore the files from their last backup.  If you don't already backup your computer, there are several [http://www.google.com/search?q=free+online+backup free only backup services].
+ # Worst case scenario is that you deleted your data files.  In this case, your only recourse is to check your trash (on the computer) to make sure that you haven't completed deleted your data, or to restore the files from their last backup.  If you don't already backup your computer, there are several [http://www.google.com/search?q=free+online+backup free only backup services].
 
 _(this section covers version Beta1 (at least) and was last updated 2/7/09)_
 
