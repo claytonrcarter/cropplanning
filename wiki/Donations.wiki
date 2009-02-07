@@ -7,6 +7,8 @@ As a _free and open source_ project, we depend upon your help to keep this going
 
 With _free and open source_ software, it's important to think about donations as pledges of support rather than purchases of products.  Don't think that you're purchasing an incomplete piece of software, think of it instead as you pledging to help complete that software knowing all the while that you (and the rest of world) will reap the benefits in the near future.
 
+In addition to *warm, fuzzy feelings*, donors have access to *priority email support*.
+
 = Make Donations =
 
 We accept donations through [http://www.paypal.com PayPal], which allows you to donate with a credit or debit card if you don't have a PayPal account, or right from your bank account if you do.
