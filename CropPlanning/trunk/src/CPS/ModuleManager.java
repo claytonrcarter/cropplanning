@@ -23,12 +23,13 @@
 package CPS;
 
 import CPS.Module.*;
+import CPS.UI.Modules.CPSMasterDetailModule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 
-public class ModuleManager {
+public class ModuleManager implements CPSModuleMediator {
    
    ArrayList<CPSUI>   uiMods;
    ArrayList<CPSDataModel>  dmMods;
@@ -36,7 +37,9 @@ public class ModuleManager {
    ArrayList<CPSModule> importExportMods;
    
    CPSGlobalSettings globalSettings;
-   
+
+   private CPSMasterDetailModule cropPlansModule = null;
+
    public ModuleManager() {
       uiMods   = new ArrayList<CPSUI>();
       dmMods   = new ArrayList<CPSDataModel>();
@@ -74,7 +77,15 @@ public class ModuleManager {
       coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
       coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
       coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "TODOLists.TODOLists" ) );
-      
+
+      for ( CPSModule mod : coreMods ) {
+          CPSModule.debug( "ModuleManager", "Examining module: " + mod.getModuleName() );
+          if ( mod.getModuleName().equals( "CropPlans" )) {
+              cropPlansModule = (CPSMasterDetailModule) mod;
+              CPSModule.debug( "ModuleManager", "Found what we're looking for: CropPlans" ); 
+          }
+      }
+
    }
    
    public List<CPSDisplayableDataUserModule> getCoreModules() {
@@ -158,4 +169,16 @@ public class ModuleManager {
           } catch ( UnsupportedOperationException ignore ) {}
       dmMods.get(0).shutdown();
    }
+
+
+    public String getCropPlan() {
+        if ( cropPlansModule != null )
+            return cropPlansModule.getMasterTableName();
+        else
+            return null;
+    }
+
+    public String getPlantingCropName() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
 }

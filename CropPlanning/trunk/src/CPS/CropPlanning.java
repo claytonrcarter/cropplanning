@@ -23,10 +23,10 @@
 package CPS;
 
 import CPS.Module.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
-import java.lang.reflect.*;
 
-import javax.swing.*;
 
 public class CropPlanning implements Runnable {
 
@@ -35,25 +35,49 @@ public class CropPlanning implements Runnable {
    
     public static void main(String[] args) {
 
+       InputStream in = null;
+       Properties props = new Properties();
+       String buildnum = "";
+       try {
+           in = CropPlanning.class.getClass().getResourceAsStream( "/appinfo.properties" );
+           props.load( in );
+
+           buildnum +=
+                   props.getProperty( "program.VERSION") + "-" +
+                   props.getProperty( "program.BUILDNUM" ) + "-" +
+                   props.getProperty( "program.BUILDDATE" );
+
+           in.close();
+
+       } catch ( IOException ex ) {
+           ex.printStackTrace();
+       }
+
        // parse arguments
        for ( String s : args ) {
           if ( s.equalsIgnoreCase( "-debug" ))
              CPSGlobalSettings.setDebug(true);
           if ( s.equalsIgnoreCase( "-firstTime" ) )
              CPSGlobalSettings.setFirstTimeRun( true );
-          if ( s.equalsIgnoreCase( "-version" )) {
+          if ( s.equalsIgnoreCase( "-version" ) || s.equalsIgnoreCase( "-versionsimple" )) {
              System.out.println( CPSModule.GLOBAL_DEVEL_VERSION );
+             System.exit(0);
+          }
+          if ( s.equalsIgnoreCase( "-versionraw" )) {
+             System.out.println( buildnum );
              System.exit(0);
           }
 
        }
-       
+
+       System.out.println( "Build number: " + buildnum );
+
        new CropPlanning();
 
     }
 
     public CropPlanning() {
-       
+
        mm = new ModuleManager();
 
        //
@@ -92,13 +116,15 @@ public class CropPlanning implements Runnable {
        }
        
        mm.loadCoreModules();
-//       for ( int i = 0; i < mm.getNumCoreModules(); i++ ) {
-//           // get the module (which was loaded and inited by ModuleManager)
-//          CPSDisplayableDataUserModule cm2 = mm.getCoreModule(i);
+
        for ( CPSDisplayableDataUserModule cm2 : mm.getCoreModules() ) {
           CPSModule.debug( "DRIVER", "Initializing module: " + cm2.getModuleName() );
+
+          cm2.setMediator( mm );
+
           // apply data source
           cm2.setDataSource(dm);
+          
           // add it to the UI
           ui.addModule( cm2 );
           cm2.addUIChangeListener( ui );

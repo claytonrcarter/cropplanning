@@ -72,14 +72,30 @@
 
     -->
 
-  <target name="dist" depends="init,compile,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j" />
+  <target name="-pre-jar">
+    <buildnumber file="buildnumber.properties"/>
+    <propertyfile file="appinfo.properties"
+                  comment="Everything can be manually updated except buildnum and builddate.">
+      <entry key="program.PROGNAME" default="${main.class}" />
+      <entry key="program.AUTHOR" default="" />
+      <entry key="program.COMPANY" default="" />
+      <entry key="program.COPYRIGHT" default="now" type="date" pattern="yyyy" />
+      <entry key="program.DESCRIPTION" default="" />
+      <entry key="program.VERSION" default="1.0.0" />
+      <entry key="program.BUILDNUM" value="${build.number}" />
+      <entry key="program.BUILDDATE" type="date" value="now" pattern="yyyyMMDDHHmmss" />
+    </propertyfile>
+    <copy file="appinfo.properties" todir="${build.classes.dir}"/>
+  </target>
+
+  <target name="dist" depends="init,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j" />
 
   <target name="-dist-init" depends="init">
      <property name="stage.dir" value="${dist.dir}/stage" />
   </target>
 
 
-  <target name="-dist-init-version-prop" depends="init,compile">
+  <target name="-dist-init-version-prop" depends="init">
      <exec executable="java"
           outputproperty="version.prop">
        <arg value="-jar" />
@@ -109,7 +125,7 @@
 
 
 
-  <target name="dist-jarbundler" depends="init,compile,-dist-init,-dist-init-version-prop"
+  <target name="dist-jarbundler" depends="init,-dist-init,-dist-init-version-prop"
           description="Package main project into a Mac application bundle.">
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
 
@@ -163,7 +179,7 @@
   </target>
 
 
-  <target name="dist-launch4j" depends="init,compile,-dist-init,-dist-init-version-prop"
+  <target name="dist-launch4j" depends="init,-dist-init,-dist-init-version-prop"
           description="Package main project into a Windows application.">
 
     <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" />
