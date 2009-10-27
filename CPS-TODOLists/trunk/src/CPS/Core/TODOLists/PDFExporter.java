@@ -28,10 +28,10 @@ import CPS.Data.CPSRecord;
 import CPS.UI.Swing.CPSTable;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
-import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
@@ -69,15 +69,20 @@ public class PDFExporter {
     
     public void startExport( JTable jtable, String filename, 
                              String farmName, String docTitle, String tableTitle ) {
+
+        startExport( filename, farmName, docTitle, tableTitle );
+        addTable( jtable, tableTitle );
+
+    }
+
+    public void startExport( String filename, String farmName, String docTitle, String tableTitle ) {
         tempDoc = prepareDocument( filename,
                                    docTitle, farmName, 
                                    "CropPlanning Software - http://cropplanning.googlecode.com" );
         tempDoc.open();
-        
-        add( jtable, tableTitle );
     }
     
-    public void add( JTable jtable, String tableTitle ) {
+    public void addTable( JTable jtable, String tableTitle ) {
         try {
             tempDoc.add( new Paragraph( tableTitle, fontPageHeader ) );
             tempDoc.add( new Paragraph( Chunk.NEWLINE ) ); // TODO halve the height of this
@@ -93,7 +98,7 @@ public class PDFExporter {
     public void addPage( JTable jtable, String tableTitle ) {
         try {
             tempDoc.newPage();
-            add( jtable, tableTitle );
+            addTable( jtable, tableTitle );
         }
         catch( Exception e ) {
             e.printStackTrace();
@@ -112,7 +117,9 @@ public class PDFExporter {
         System.out.println( "DEBUG(PDFExporter): Creating document: " + filename );
         
         Document d = new Document();
-        
+
+        d.setPageSize( PageSize.LETTER );
+
         d.addTitle( title );
         d.addAuthor( author );
 //        d.addSubject( );
@@ -220,8 +227,8 @@ public class PDFExporter {
            
            for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
                 Object o = jtable.getValueAt( row, col );
-//               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
-//               TODOLists.debug( "PDFExporter", "Value is " + o.toString() );
+               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
+               TODOLists.debug( "PDFExporter", "Value is " + (( o==null) ? "NULL" : o.toString()) );
                 if ( o == null ) {
                    if ( ! tableIncludesNotes || col != notesIndex )
                     table.addCell( new regCell( "" ) );
@@ -231,7 +238,8 @@ public class PDFExporter {
                                                                          CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK )));
                 else if ( o instanceof Boolean )
                     if ( ( (Boolean) o ).booleanValue() )
-                        table.addCell( new regCell( "yes" ) );
+//                        table.addCell( new regCell( "yes" ) );
+                        table.addCell( new centerCell( "X" ) );
                     else
                         table.addCell( new regCell( "" ) );
                 else if ( o instanceof Float )
@@ -275,7 +283,7 @@ public class PDFExporter {
            if ( tableIncludesNotes && col == notesIndex )
               continue;
            else if ( jtable.getColumnClass( col ).equals( new Boolean( true ).getClass() ) )
-              widths[col] = 3f;
+              widths[col] = 2.25f;
            else if ( jtable.getColumnClass( col ).equals( new Integer( 0 ).getClass() ) ||
                      jtable.getColumnClass( col ).equals( new Double( 0 ).getClass() ) ||
                      jtable.getColumnClass( col ).equals( new Float( 0 ).getClass() ) )
@@ -304,7 +312,15 @@ public class PDFExporter {
             setBorderWidth( .25f );
         }
     }
-    
+
+    public class centerCell extends regCell {
+
+        public centerCell( String s ) {
+            super( s );
+            setHorizontalAlignment( PdfPCell.ALIGN_CENTER );
+        }
+    }
+
     public class headCell extends PdfPCell {
         
         public headCell( String s ) {
