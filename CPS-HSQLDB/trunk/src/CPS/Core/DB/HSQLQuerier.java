@@ -481,9 +481,11 @@ public class HSQLQuerier {
        String pass1 = iterateQuery + staticDates + " FROM ( " + plantingFillInQuery + " ) ";
        String pass2 = iterateQuery + calcDates   + " FROM ( " + pass1 + " ) ";
        String pass3 = iterateQuery + calcDates   + " FROM ( " + pass2 + " ) ";
+       String pass4 = iterateQuery + calcDates   + " FROM ( " + pass3 + " ) ";
+//
 //       String pass3 = passQuery + " FROM ( " + pass2 + " ) ";
 
-       return pass3;
+       return pass4;
        
    }
    

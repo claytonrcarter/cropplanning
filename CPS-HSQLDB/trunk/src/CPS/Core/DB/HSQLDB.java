@@ -24,7 +24,7 @@ package CPS.Core.DB;
 
 import CPS.Data.*;
 import CPS.Module.CPSConfigurable;
-import CPS.Module.CPSDataModel;
+import CPS.Module.CPSDataModelSQL;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSWizardPage;
@@ -40,11 +40,11 @@ import javax.swing.table.TableModel;
  *
  * @author Clayton
  */
-public class HSQLDB extends CPSDataModel implements CPSConfigurable {
+public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    
     private static final boolean DEBUG = true;
     
-   private Connection con;
+   private Connection con = null;
    private String hsqlDriver = "org.hsqldb.jdbcDriver";
    private String dbDir = System.getProperty("user.dir");
    private String dbFile = "CPSdb";
@@ -1368,6 +1368,13 @@ public class HSQLDB extends CPSDataModel implements CPSConfigurable {
    public void resetConfigurationToDefaults () {}
    public void saveConfiguration () {}
 
+   /**
+    * @return The JDBC Connection that this SQL DataModel is using.  Could be null.
+    */
+   @Override
+   public Connection getConnection () {
+      return con;
+   }
 
    private static String toXML(ResultSet rs) throws SQLException {
 

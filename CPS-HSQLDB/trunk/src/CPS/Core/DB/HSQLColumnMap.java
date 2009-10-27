@@ -211,7 +211,8 @@ public class HSQLColumnMap {
     private ArrayList<String> getColumnList( ArrayList<ColumnStruct> m ) {
         ArrayList<String> l = new ArrayList<String>();
         for ( ColumnStruct cs : m )
-            if ( cs.displayable || cs.mandatory )
+//            if ( cs.displayable || cs.mandatory )
+            if (( cs.displayable || cs.mandatory ) && ! cs.pseudoColumn )
                 l.add( cs.columnName );
         return l;
     }
@@ -356,7 +357,7 @@ public class HSQLColumnMap {
         l.add( new ColumnStruct( "keywords",       CPSDataModelConstants.PROP_KEYWORDS,      "keywords",        null, false, true,  true,  false, false, true,  false,   "Keywords" ) );
         l.add( new ColumnStruct( "other_req",      CPSDataModelConstants.PROP_OTHER_REQ,     "other_req",       null, false, true,  true,  false, false, true,  false,   "Other Requirements" ) );
         l.add( new ColumnStruct( "notes",          CPSDataModelConstants.PROP_NOTES,         null,              null, false, true,  true,  false, false, true,  false,   "Notes" ) );
-        l.add( new ColumnStruct( "ignore",         CPSDataModelConstants.PROP_IGNORE,        null,              null, false, true,  false, false, false, true,  false,   "Ignore?" ) );
+        l.add( new ColumnStruct( "ignore",         CPSDataModelConstants.PROP_IGNORE,        null,              null, false, true,  false, false, false, true,  false,   "Ignore?", "Ign?" ) );
         
         l.add( new ColumnStruct( "maturity",       CPSDataModelConstants.PROP_MATURITY,      "maturity",        null, false, true,  false, true,  true,  true,  false,   "Maturity Days",     "Mat." ) );
 //        l.add( new ColumnStruct( "mat_adjust",     CPSDataModelConstants.PROP_MAT_ADJUST,    "direct_seed, ds_mat_adjust, tp_mat_adjust",
