@@ -78,9 +78,11 @@ public class CropDB extends CPSMasterDetailModule implements CPSExportable, CPSI
 
    public void importData( CPSImporter im ) {
       if ( isDataAvailable() ) {
+         // TODO display a dialog that tells the user how this works, w/ the option to cancel
          String fileName = CPSGlobalSettings.getDocumentOutputDir() + 
                               System.getProperty( "file.separator" ) +
                               "ExportedCropsAndVars.csv";
+         // TODO verifty that the file actually exists
          getDataSource().importCropsAndVarieties( im.importCropsAndVarieties( fileName ) );
       }
    }
