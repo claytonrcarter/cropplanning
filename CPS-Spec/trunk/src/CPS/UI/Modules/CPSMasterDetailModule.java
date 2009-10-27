@@ -47,7 +47,7 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
 
     private CPSUI mainUI;
     
-    protected String getMasterTableName() {
+    public String getMasterTableName() {
         return master.getDisplayedTableName();
     }
 

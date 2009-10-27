@@ -12,6 +12,7 @@ public abstract class CPSDataUserModule extends CPSModule implements CPSDataUser
    
    protected boolean dataAvail = false;
    private CPSDataModel dataModel = null;
+   private CPSModuleMediator modmed = null;
    
    /**
     * Register the data source for this module and signal that the data is ready to be used.
@@ -36,5 +37,13 @@ public abstract class CPSDataUserModule extends CPSModule implements CPSDataUser
     * method to update and/or refresh the data they are currently using.
     */
    public abstract void dataUpdated();
-   
+
+   public void setMediator( CPSModuleMediator modmed ) {
+       this.modmed = modmed;
+   }
+
+   protected CPSModuleMediator getMediator() {
+       return modmed;
+   }
+
 }
