@@ -75,9 +75,11 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable, C
 
    public void importData( CPSImporter im ) {
       if ( isDataAvailable() ) {
+         // TODO display a dialog that tells the user how this works, w/ the option to cancel
          String fileName = CPSGlobalSettings.getDocumentOutputDir() +
                            System.getProperty( "file.separator" ) +
                            "ExportedCropPlan - 2008.csv";
+         // TODO verifty that the file actually exists
          getDataSource().importCropPlan( "newplan", im.importCropPlan( fileName ) );
       }
    }
