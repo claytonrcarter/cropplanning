@@ -32,8 +32,12 @@ import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.CPSTable.CPSComboBoxCellEditor;
 import CPS.UI.Swing.autocomplete.*;
+import ca.odell.glazedlists.TextFilterator;
+import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.*;
@@ -66,8 +70,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     private JButton btnLimit;
     private CPSComplexFilterDialog dlgFilter;
     
-//    private ArrayList<String> listOfValidCropPlans;
-    private ArrayList<String> listOfValidCrops, listOfFields;
+    private List<String> listOfValidCrops, listOfFields;
     
     public CropPlanList( CPSMasterDetailModule mdm ) {
         super(mdm);
@@ -123,7 +126,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        return getDataSource().getPlanting( getDisplayedTableName(), id );
     }
 
-    protected CPSPlanting getDetailsForIDs( ArrayList<Integer> ids ) {
+    protected CPSPlanting getDetailsForIDs( List<Integer> ids ) {
        return getDataSource().getCommonInfoForPlantings( getDisplayedTableName(), ids );
     }
     
@@ -161,7 +164,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     protected void updateMasterList() {
        super.updateMasterList();
 
-       if ( masterTable.getRowCount() > 0 ) 
+       if ( masterTable.getRowCount() > 0 )
            // install custom table renderes and editors
            for ( int i = 0; i < masterTable.getColumnModel().getColumnCount(); i++ ) {
                // install autocomplete combobox in column "crop_name"
@@ -175,28 +178,40 @@ class CropPlanList extends CPSMasterView implements ActionListener,
                }
            }
     }
-       
-       
-    protected TableModel getMasterListData() {
+
+
+
+    protected List getMasterListData() {
         if ( !isDataAvailable() )
-            return new DefaultTableModel();
-         
-        String selectedPlan = getSelectedPlanName();       
+            return new ArrayList<CPSPlanting>();
+
+        String selectedPlan = getSelectedPlanName();
 //        if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
         if ( selectedPlan != null )
-            return getDataSource().getCropPlan( selectedPlan, getDisplayedColumnList(), getSortColumn(),
-                                                (CPSComplexPlantingFilter) getFilter() );
-//            return getDataSource().getCropPlan( selectedPlan, getSortColumn(), getFilterString() );
+            return getDataSource().getCropPlan( selectedPlan );
        else
           // TODO error checking fall through to following call when invalid plan is selected
-          return new DefaultTableModel();
-       
+          return new ArrayList();
+
     }
+
+    @Override
+    protected TableFormat getTableFormat() {
+        return new CropPlanTableFormat();
+    }
+
+
+    @Override
+    protected TextFilterator getTextFilterator() {
+        return new CropPlanFilterator();
+    }
+       
     
 //    protected String getDisplayedTableName() { return (String) cmbxPlanList.getSelectedItem(); }
     protected String getDisplayedTableName() { return planMan.getSelectedPlanName(); }
     String getSelectedPlanName() { return getDisplayedTableName(); }
-    
+
+    @Override
     protected void buildAboveListPanel() {
         initAboveListPanel();
                 
@@ -212,7 +227,8 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         // false ==> do not initialize panel
         super.buildAboveListPanel(false);
     }
-    
+
+    @Override
     protected void buildListPanel() {
        super.buildListPanel();
        
@@ -329,16 +345,16 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     }
     
    @Override
-   protected ArrayList<String> getDisplayableColumnList() {
+   protected List<String> getDisplayableColumnList() {
       return getDataSource().getPlantingDisplayablePropertyNames();
    }
    
    @Override
-   protected ArrayList<Integer> getDefaultDisplayableColumnList() {
+   protected List<Integer> getDefaultDisplayableColumnList() {
       return getDataSource().getPlantingDefaultProperties();
    }
    
-   protected ArrayList<String[]> getColumnPrettyNameMap() {
+   protected List<String[]> getColumnPrettyNameMap() {
        return getDataSource().getPlantingPrettyNames();
    }
 
@@ -346,7 +362,11 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     protected String getTableStatisticsString() {
         if ( ! isDataAvailable() || getSelectedPlanName() == null )
             return "";
-        
+
+        // disabled for now
+        if ( true )
+          return "summary not supported";
+
        CPSPlanting p = getDataSource().getSumsForCropPlan( getSelectedPlanName(),
                                                            (CPSComplexPlantingFilter) getFilter() );
        String s = "";

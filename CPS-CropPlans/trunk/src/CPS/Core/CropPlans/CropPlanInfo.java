@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 
 public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemListener {
@@ -166,7 +167,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        chkIgnore.setInitialState( displayedPlanting.getIgnore(),
                                   displayedPlanting.getIgnoreState() );
 
-       if ( displayedPlanting.isDirectSeeded() )
+       if ( displayedPlanting.isDirectSeeded().booleanValue() )
           bgSeedMethod.setInitialSelection( rdoDS, true, displayedPlanting.getDirectSeededState() );
        else
           bgSeedMethod.setInitialSelection( rdoTP, true, displayedPlanting.getDirectSeededState() );
@@ -199,7 +200,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    
     protected void saveChangesToRecord() {
        String selectedPlan = getDisplayedTableName();
-       CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( this.asPlanting() );
+
+       CPSPlanting currentlyDisplayed = this.asPlanting();
+
+       CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( currentlyDisplayed );
        if ( diff.getID() == -1 ) {
           CropPlans.debug( "CPInfo", "no changes found (Invalid id) ... not saving;" );
           return;
@@ -209,7 +213,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( ! displayedPlanting.isSingleRecord() )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
        else
-          getDataSource().updatePlanting( selectedPlan, diff );
+          getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
        
        selectRecordInMasterView( displayedPlanting.getID() );
     }
@@ -222,18 +226,13 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
     public CPSPlanting asPlanting() {
       
        CPSPlanting p = new CPSPlanting();
-
-       // ALLOW_NULL is used for values which can be inherited (potentially)
-       // this forces the program to save "blank" values as null, enabling
-       // inheritance
-       boolean ALLOW_NULL = true;
       
        p.setID( displayedPlanting.getID() );
       
        if ( tfldCropName.hasChanged() ) p.setCropName( tfldCropName.getText() );
-       if ( tfldVarName.hasChanged() ) p.setVarietyName( tfldVarName.getText(), ALLOW_NULL );
-       if ( tfldMatDays.hasChanged() ) p.setMaturityDays( tfldMatDays.getText(), ALLOW_NULL );
-       if ( tfldLocation.hasChanged() ) p.setLocation( tfldLocation.getText(), ALLOW_NULL );
+       if ( tfldVarName.hasChanged() ) p.setVarietyName( tfldVarName.getText() );
+       if ( tfldMatDays.hasChanged() ) p.setMaturityDays( tfldMatDays.getText() );
+       if ( tfldLocation.hasChanged() ) p.setLocation( tfldLocation.getText() );
 
        /* We do not need to store the value of the "date radio buttons"
         * group because that button group only acts to control which dates
@@ -243,23 +242,23 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        String s = (String) cmbDates.getSelectedItem();
        if ( tfldDatePlant.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             p.setDateToPlantActual( tfldDatePlant.getText(), ALLOW_NULL );
+             p.setDateToPlantActual( tfldDatePlant.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
-             p.setDateToPlantPlanned( tfldDatePlant.getText(), ALLOW_NULL );
+             p.setDateToPlantPlanned( tfldDatePlant.getText() );
           // else do nothing for "effective" dates
 
        if ( tfldDateTP.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             p.setDateToTPActual( tfldDateTP.getText(), ALLOW_NULL );
+             p.setDateToTPActual( tfldDateTP.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
-             p.setDateToTPPlanned( tfldDateTP.getText(), ALLOW_NULL );
+             p.setDateToTPPlanned( tfldDateTP.getText() );
           // else do nothing for "effective" dates
 
        if ( tfldDateHarvest.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             p.setDateToHarvestPlanned( tfldDateHarvest.getText(), ALLOW_NULL );
+             p.setDateToHarvestPlanned( tfldDateHarvest.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
-             p.setDateToHarvestPlanned( tfldDateHarvest.getText(), ALLOW_NULL );
+             p.setDateToHarvestPlanned( tfldDateHarvest.getText() );
           // else do nothing for "effective" dates
 
        if ( chkDonePlant.hasChanged() )   p.setDonePlanting( chkDonePlant.isSelected() );
@@ -270,38 +269,38 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 //       if ( rdoDS.hasChanged() || rdoTP.hasChanged() ) p.setDirectSeeded( rdoDS.isSelected() );
        p.setDirectSeeded( rdoDS.isSelected() );
        
-       if ( tfldMatAdjust.hasChanged() ) p.setMatAdjust( tfldMatAdjust.getText(), ALLOW_NULL );  
-       if ( tfldTimeToTP.hasChanged() ) p.setTimeToTP( tfldTimeToTP.getText(), ALLOW_NULL );
-       if ( tfldRowsPerBed.hasChanged() ) p.setRowsPerBed( tfldRowsPerBed.getText(), ALLOW_NULL );
-       if ( tfldInRowSpace.hasChanged() ) p.setInRowSpacing( tfldInRowSpace.getText(), ALLOW_NULL );
-       if ( tfldBetRowSpace.hasChanged() ) p.setRowSpacing( tfldBetRowSpace.getText(), ALLOW_NULL );
-       if ( tfldFlatSize.hasChanged() ) p.setFlatSize( tfldFlatSize.getText(), ALLOW_NULL );
-       if ( tfldPlantingNotesCrop.hasChanged() ) p.setPlantingNotesInherited( tfldPlantingNotesCrop.getText(), ALLOW_NULL );
-       if ( tfldPlantingNotes.hasChanged() ) p.setPlantingNotes( tfldPlantingNotes.getText(), ALLOW_NULL );
+       if ( tfldMatAdjust.hasChanged() ) p.setMatAdjust( tfldMatAdjust.getText() );  
+       if ( tfldTimeToTP.hasChanged() ) p.setTimeToTP( tfldTimeToTP.getText() );
+       if ( tfldRowsPerBed.hasChanged() ) p.setRowsPerBed( tfldRowsPerBed.getText() );
+       if ( tfldInRowSpace.hasChanged() ) p.setInRowSpacing( tfldInRowSpace.getText() );
+       if ( tfldBetRowSpace.hasChanged() ) p.setRowSpacing( tfldBetRowSpace.getText() );
+       if ( tfldFlatSize.hasChanged() ) p.setFlatSize( tfldFlatSize.getText() );
+       if ( tfldPlantingNotesCrop.hasChanged() ) p.setPlantingNotesInherited( tfldPlantingNotesCrop.getText() );
+       if ( tfldPlantingNotes.hasChanged() ) p.setPlantingNotes( tfldPlantingNotes.getText() );
 
-       if ( tfldBedsToPlant.hasChanged() ) p.setBedsToPlant( tfldBedsToPlant.getText(), ALLOW_NULL );
-       if ( tfldRowFtToPlant.hasChanged() ) p.setRowFtToPlant( tfldRowFtToPlant.getText(), ALLOW_NULL );
-       if ( tfldPlantsNeeded.hasChanged() ) p.setPlantsNeeded( tfldPlantsNeeded.getText(), ALLOW_NULL );
-       if ( tfldPlantsToStart.hasChanged() ) p.setPlantsToStart( tfldPlantsToStart.getText(), ALLOW_NULL );
-       if ( tfldFlatsNeeded.hasChanged() ) p.setFlatsNeeded( tfldFlatsNeeded.getText(), ALLOW_NULL );
-       if ( tfldYieldPerFt.hasChanged() ) p.setYieldPerFoot( tfldYieldPerFt.getText(), ALLOW_NULL );      
-       if ( tfldTotalYield.hasChanged() ) p.setTotalYield( tfldTotalYield.getText(), ALLOW_NULL );
+       if ( tfldBedsToPlant.hasChanged() ) p.setBedsToPlant( tfldBedsToPlant.getText() );
+       if ( tfldRowFtToPlant.hasChanged() ) p.setRowFtToPlant( tfldRowFtToPlant.getText() );
+       if ( tfldPlantsNeeded.hasChanged() ) p.setPlantsNeeded( tfldPlantsNeeded.getText() );
+       if ( tfldPlantsToStart.hasChanged() ) p.setPlantsToStart( tfldPlantsToStart.getText() );
+       if ( tfldFlatsNeeded.hasChanged() ) p.setFlatsNeeded( tfldFlatsNeeded.getText() );
+       if ( tfldYieldPerFt.hasChanged() ) p.setYieldPerFoot( tfldYieldPerFt.getText() );      
+       if ( tfldTotalYield.hasChanged() ) p.setTotalYield( tfldTotalYield.getText() );
        
-       if ( tfldYieldNumWeeks.hasChanged() ) p.setYieldNumWeeks( tfldYieldNumWeeks.getText(), ALLOW_NULL );
-       if ( tfldYieldPerWeek.hasChanged() ) p.setYieldPerWeek( tfldYieldPerWeek.getText(), ALLOW_NULL );
-       if ( tfldCropYieldUnit.hasChanged() ) p.setCropYieldUnit( tfldCropYieldUnit.getText(), ALLOW_NULL );
-       if ( tfldCropYieldUnitValue.hasChanged() ) p.setCropYieldUnitValue( tfldCropYieldUnitValue.getText(), ALLOW_NULL );
+       if ( tfldYieldNumWeeks.hasChanged() ) p.setYieldNumWeeks( tfldYieldNumWeeks.getText() );
+       if ( tfldYieldPerWeek.hasChanged() ) p.setYieldPerWeek( tfldYieldPerWeek.getText() );
+       if ( tfldCropYieldUnit.hasChanged() ) p.setCropYieldUnit( tfldCropYieldUnit.getText() );
+       if ( tfldCropYieldUnitValue.hasChanged() ) p.setCropYieldUnitValue( tfldCropYieldUnitValue.getText() );
 
-       if ( tareGroups.hasChanged() ) p.setGroups( tareGroups.getText(), ALLOW_NULL );
-       if ( tareOtherReq.hasChanged() ) p.setOtherRequirements( tareOtherReq.getText(), ALLOW_NULL );
-       if ( tareKeywords.hasChanged() ) p.setKeywords( tareKeywords.getText(), ALLOW_NULL );
+       if ( tareGroups.hasChanged() ) p.setGroups( tareGroups.getText() );
+       if ( tareOtherReq.hasChanged() ) p.setOtherRequirements( tareOtherReq.getText() );
+       if ( tareKeywords.hasChanged() ) p.setKeywords( tareKeywords.getText() );
        if ( tareNotes.hasChanged() ) p.setNotes( tareNotes.getText( ) );
 
-       if ( tfldCustom1.hasChanged() ) p.setCustomField1( tfldCustom1.getText(), ALLOW_NULL );
-       if ( tfldCustom2.hasChanged() ) p.setCustomField2( tfldCustom2.getText(), ALLOW_NULL );
-       if ( tfldCustom3.hasChanged() ) p.setCustomField3( tfldCustom3.getText(), ALLOW_NULL );
-       if ( tfldCustom4.hasChanged() ) p.setCustomField4( tfldCustom4.getText(), ALLOW_NULL );
-       if ( tfldCustom5.hasChanged() ) p.setCustomField5( tfldCustom5.getText(), ALLOW_NULL );
+       if ( tfldCustom1.hasChanged() ) p.setCustomField1( tfldCustom1.getText() );
+       if ( tfldCustom2.hasChanged() ) p.setCustomField2( tfldCustom2.getText() );
+       if ( tfldCustom3.hasChanged() ) p.setCustomField3( tfldCustom3.getText() );
+       if ( tfldCustom4.hasChanged() ) p.setCustomField4( tfldCustom4.getText() );
+       if ( tfldCustom5.hasChanged() ) p.setCustomField5( tfldCustom5.getText() );
 
        CropPlans.debug( "CPInfo", "panel display represents: " + p.toString() );
 
@@ -311,7 +310,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    
    protected void buildDetailsPanel() {
        
-      ArrayList<String> names = new ArrayList<String>();
+      List<String> names = new ArrayList<String>();
       if ( isDataAvailable() )
          names = getDataSource().getCropNameList();
 
@@ -778,7 +777,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = true;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantString(),
                                        displayedPlanting.getDateToPlantState() );
-         if ( displayedPlanting.isTransplanted() )
+         if ( displayedPlanting.isTransplanted().booleanValue() )
             tfldDateTP.setInitialText( displayedPlanting.getDateToTPString(),
                                        displayedPlanting.getDateToTPState() );
          else
@@ -790,7 +789,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          editTBox = enableCBox = true;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantActualString(),
                                        displayedPlanting.getDateToPlantActualState() );
-         if ( displayedPlanting.isTransplanted() )
+         if ( displayedPlanting.isTransplanted().booleanValue() )
             tfldDateTP.setInitialText( displayedPlanting.getDateToTPActualString(),
                                        displayedPlanting.getDateToTPActualState() );
          else
@@ -803,7 +802,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = false;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantPlannedString(),
                                        displayedPlanting.getDateToPlantPlannedState() );
-         if ( displayedPlanting.isTransplanted() )
+         if ( displayedPlanting.isTransplanted().booleanValue() )
             tfldDateTP.setInitialText( displayedPlanting.getDateToTPPlannedString(),
                                        displayedPlanting.getDateToTPPlannedState() );
          else

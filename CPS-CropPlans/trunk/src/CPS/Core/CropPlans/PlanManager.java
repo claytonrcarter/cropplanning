@@ -24,24 +24,19 @@
 package CPS.Core.CropPlans;
 
 import CPS.Module.CPSDataModel;
-import CPS.Module.CPSDataUser;
-import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
-import CPS.Module.CPSWizardPage;
 import CPS.UI.Swing.CPSDialog;
 import CPS.UI.Swing.LayoutAssist;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -60,7 +55,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    private GregorianCalendar tempCal;
    
    private String selectedPlan = null, oldSelection;
-   private ArrayList<String> listOfValidCropPlans;
+   private List<String> listOfValidCropPlans;
    static CPSDataModel dm = null;
    
    
