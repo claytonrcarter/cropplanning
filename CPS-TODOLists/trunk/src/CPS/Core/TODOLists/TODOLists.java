@@ -23,6 +23,7 @@
 package CPS.Core.TODOLists;
 
 import CPS.Data.CPSComplexPlantingFilter;
+import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDisplayableDataUserModule;
@@ -30,6 +31,8 @@ import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.LayoutAssist;
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.swing.EventTableModel;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -46,10 +49,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -203,7 +206,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             return;
         }
 
-        ArrayList<String> l = getDataSource().getListOfCropPlans();
+        List<String> l = getDataSource().getListOfCropPlans();
         cmbPlanName.removeAllItems();
         for (String s : l) {
             // TODO think about this; possibly remove COMMON_PLANTINGS from list returned by
@@ -281,8 +284,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
 
         CPSTable jt = new CPSTable();
-        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
+//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
+        BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
+        data.addAll( getDataSource().getCropPlan( planName ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
 
         exporter.export(jt, filename,
@@ -348,8 +354,12 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
 
         CPSTable jt = new CPSTable();
-        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
+//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
+        BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
+        data.addAll( getDataSource().getCropPlan( planName ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+
+//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
 
         exporter.startExport(jt, filename,
@@ -409,9 +419,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         }
 
 
-        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
+//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
+//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
+
+        data.clear();
+        data.addAll( getDataSource().getCropPlan( planName ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+
 
         exporter.addPage(jt, "Transplanted Field Plantings");
         exporter.endExport();
@@ -448,9 +463,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         filter.setViewLimited(false);
 
         CPSTable jt = new CPSTable();
-        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
+//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
+//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
+
+        BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
+        data.addAll( getDataSource().getCropPlan( planName ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+
 
         exporter.export( jt, filename,
                          CPSGlobalSettings.getFarmName(),
