@@ -27,11 +27,12 @@ import CPS.Module.*;
 import CPS.Data.CPSCrop;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Modules.CPSMasterView;
-import java.awt.*;
+import ca.odell.glazedlists.TextFilterator;
+import ca.odell.glazedlists.gui.TableFormat;
 import java.awt.event.*;
+import java.util.List;
 import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.table.*;
 
 // package access
 class CropDBCropList extends CPSMasterView implements ItemListener {
@@ -85,24 +86,54 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     }
     
     
-    protected CPSRecord getDetailsForIDs( ArrayList<Integer> ids ) {
+    protected CPSRecord getDetailsForIDs( List<Integer> ids ) {
        return getDataSource().getCommonInfoForCrops( ids );
     }
     
    
-    protected TableModel getMasterListData() {
-       if ( ! isDataAvailable() )
-          return new DefaultTableModel();
-       
+    protected List getMasterListData() {
+//        List l;
+//
+//       if ( ! isDataAvailable() )
+//          l = new ArrayList<CPSCrop>();
+//
+//       if      ( radioAll.isSelected() )
+//          l =  getDataSource().getCropAndVarietyList();
+//       else if ( radioCrops.isSelected() )
+//          l = getDataSource().getCropList();
+//       else if ( radioVar.isSelected() )
+//          l = getDataSource().getVarietyList();
+//       else // nothing selected (not useful)
+//          l = new ArrayList<CPSCrop>();
+//
+//        System.out.println( "\nReturn master crop list with " + l.size() + " elements\n" );
+//
+//        return l;
+        
+        if ( ! isDataAvailable() )
+          return new ArrayList<CPSCrop>();
+
        if      ( radioAll.isSelected() )
-          return getDataSource().getCropAndVarietyTable( getDisplayedColumnList(), getSortColumn(), getFilter() );
+          return getDataSource().getCropAndVarietyList();
        else if ( radioCrops.isSelected() )
-          return getDataSource().getCropTable( getDisplayedColumnList(), getSortColumn(), getFilter() );
+          return getDataSource().getCropList();
        else if ( radioVar.isSelected() )
-          return getDataSource().getVarietyTable( getDisplayedColumnList(), getSortColumn(), getFilter() );
+          return getDataSource().getVarietyList();
        else // nothing selected (not useful)
-          return new DefaultTableModel();
+          return new ArrayList<CPSCrop>();
     }
+
+    @Override
+    protected TableFormat getTableFormat() {
+        return new CropDBTableFormat();
+    }
+
+
+    @Override
+    protected TextFilterator getTextFilterator() {
+        return new CropDBFilterator();
+    }
+
     
     // Pertinent method for ItemListener
     public void itemStateChanged( ItemEvent itemEvent ) {
@@ -115,6 +146,7 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
     @Override
     protected String getDisplayedTableName() {
+        // TODO uh oh; this out of here
         return "CROPS_VARIETIES";
     }
     
@@ -129,20 +161,21 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     }
     @Override
     public void deleteRecord( int id ) {
+        clearSelection();
         getDataSource().deleteCrop( id );
     }
     
      @Override
-   protected ArrayList<String> getDisplayableColumnList() {
+   protected List<String> getDisplayableColumnList() {
       return getDataSource().getCropDisplayablePropertyNames();
    }
    
    @Override
-   protected ArrayList<Integer> getDefaultDisplayableColumnList() {
+   protected List<Integer> getDefaultDisplayableColumnList() {
       return getDataSource().getCropDefaultProperties();
    }
    
-   protected ArrayList<String[]> getColumnPrettyNameMap() {
+   protected List<String[]> getColumnPrettyNameMap() {
        return getDataSource().getCropPrettyNames();
    }
 
