@@ -29,6 +29,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
+import net.sf.persist.Persist;
 
 /**
  * A class to handle updating the database between versions.
@@ -37,8 +39,10 @@ import java.util.GregorianCalendar;
  */
 public class HSQLUpdate {
     
-   protected static void updateDB( Connection con, long currentVersion ) {
-       
+   protected static void updateDB( Persist p, long currentVersion ) {
+
+       Connection con = p.getConnection();
+
        long previousVersion;
        
        try { 
@@ -48,7 +52,7 @@ public class HSQLUpdate {
                CPSModule.debug( "HSQLUpdate", "Metadata table DNE, attempting to create");
                Statement st = con.createStatement();
                st.executeUpdate( HSQLDBCreator.createTableDBMetaData() );
-               HSQLDBCreator.setLastUpdateVersion( con, 0 );
+               HSQLDBCreator.setLastUpdateVersion( p, 0 );
                st.close();
            }
        
@@ -90,7 +94,7 @@ public class HSQLUpdate {
              updateVersion = updateForV000_001_005( con );
            
            if ( updateVersion != 0 )
-             HSQLDBCreator.setLastUpdateVersion( con, updateVersion );
+             HSQLDBCreator.setLastUpdateVersion( p, updateVersion );
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
            
@@ -101,7 +105,7 @@ public class HSQLUpdate {
        
        CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.1.2" );
        
-       ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+       List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
        Statement st = con.createStatement();
        String update;
        
@@ -172,7 +176,7 @@ public class HSQLUpdate {
        CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
        st.executeUpdate( update );
        
-       ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+       List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
        update = "";
        for ( String plan : plans ) {
           if ( plan.matches( "^\\p{Alpha}+$" ) )
@@ -244,7 +248,7 @@ public class HSQLUpdate {
       st.executeUpdate( update );
 
 
-      ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
       update = "";
       for ( String plan : plans ) {
          update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ignore              BOOLEAN; ";
@@ -286,7 +290,7 @@ public class HSQLUpdate {
       Statement st = con.createStatement();
       String update;
 
-      ArrayList<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
       update = "";
       for ( String plan : plans ) {
          update += "ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " ADD COLUMN ds_mat_adjust  INTEGER; ";

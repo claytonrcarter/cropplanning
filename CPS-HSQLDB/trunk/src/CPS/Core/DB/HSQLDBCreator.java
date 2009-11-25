@@ -22,45 +22,41 @@
 
 package CPS.Core.DB;
 
-import CPS.Data.CPSCrop;
-import CPS.Data.CPSDatum;
-import CPS.Data.CPSPlanting;
-import CPS.Data.CPSRecord;
+import CPS.Data.*;
 import CPS.Module.CPSDataModelConstants;
+import CPS.Module.CPSModule;
+import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import net.sf.persist.Persist;
 
 /**
  *
  * @author Clayton
  */
 public class HSQLDBCreator {
-   
+
+    // TODO eliminate the use of p.executeUpdate() calls in favor of passing objects into Persist
+
    // private constructor == no instantiation
    private HSQLDBCreator() {}
    
    // package level access
-   static void createTables( Connection con, long currentVersion ) {
-      
-      try {
-         Statement st = con.createStatement();
-      
-         st.executeUpdate( createTableDBMetaData() );
-         setLastUpdateVersion( con, currentVersion );
+   static void createTables( Persist p, long currentVersion ) {
+
+       HSQLDB.debug( "HSQLDBCreator", "creating default tables in db" );
+       
+       // there is currently no POJO for this, so we'll just stick with the raw SQL
+       p.executeUpdate( createTableDBMetaData() );
+       setLastUpdateVersion( p, currentVersion );
          
-         st.executeUpdate( createTableCropPlans() );
-         st.executeUpdate( createTableCropsAndVarieties() );
-//         st.executeUpdate( createTablePlantingMethods() );
-         
-         st.close();
-         
-//         createCropPlan( con, "COMMON_PLANTINGS" );
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }
+       // ditto here: stick with the raw SQL
+       p.executeUpdate( createTableCropPlans() );
+
+       createTableCropsAndVarieties( p );
          
    }
    
@@ -69,82 +65,57 @@ public class HSQLDBCreator {
               "INSERT INTO CPS_METADATA ( prev_ver ) VALUES ( 0 )";
    }
    
-   static void createCropPlan( Connection con, String name, int year, String desc ) {
+   static void createCropPlan( Persist p, String name, int year, String desc ) {
       
       // TODO error if plan with name already exists
-      
-      try {
-         Statement st = con.createStatement();
-   
-         // Create the table for the crop plan
-         String s = createTableCropPlan( name );
-         System.out.println("Executing update: " + s );
+      HSQLDB.debug( "HSQLDBCreator", "Creating crop plan: " + HSQLDB.escapeTableName( name ) + " (" + year + ")" );
+
+       p.create( HSQLDB.escapeTableName( name ), new CPSPlanting() );
+
+       // Record the plan in the table listing all of the plans.
+       String s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + HSQLDB.escapeValue( name ) + " );";
+
+       System.out.println( "Executing update: " + s );
+       p.executeUpdate( s );
          
-         st.executeUpdate( createTableCropPlan( name ) );
-      
-         // Record the plan in the table listing all of the plans.
-         s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + HSQLDB.escapeValue( name ) + " );";
-      
-         System.out.println("Executing update: " + s );
-         st.executeUpdate( s );
-         st.close();
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }      
-      
-      updateCropPlan( con, name, year, desc );
+       updateCropPlan( p, name, year, desc );
+
    }
    
-   static void updateCropPlan( Connection con, String name, int year, String desc ) {
+   static void updateCropPlan( Persist p, String name, int year, String desc ) {
 
-      try {
-         Statement st = con.createStatement();
+       // Update the plan metadata
+       String s = "UPDATE " + HSQLDB.escapeTableName( "CROP_PLANS" ) +
+                  " SET year = " + year + ", description = " +  HSQLDB.escapeValue( desc ) +
+                  " WHERE plan_name = " + HSQLDB.escapeValue( name );
       
-         // Update the plan metadata
-         String s = "UPDATE " + HSQLDB.escapeTableName( "CROP_PLANS" ) +
-                 " SET year = " + year + ", description = " +  HSQLDB.escapeValue( desc ) +
-                 " WHERE plan_name = " + HSQLDB.escapeValue( name );
-      
-         System.out.println("Executing update: " + s );
-         st.executeUpdate( s );
-         st.close();
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }
-   
-   }
-   
-   static void deleteCropPlan( Connection con, String name ) {
-
-      try {
-         Statement st = con.createStatement();
-   
-         // Drop the table
-         String s = "DROP TABLE " + HSQLDB.escapeTableName( name );
-         System.out.println( "Executing update: " + s );
+       CPSModule.debug( "HSQLDBCreator", "Executing update: " + s );
+       p.executeUpdate( s );
          
-         st.executeUpdate( s );
-
-         // Remove the table record from the plan metadata table
-         s = "DELETE FROM CROP_PLANS WHERE plan_name = " + HSQLDB.escapeValue( name );
-      
-         System.out.println( "Executing update: " + s );
-         st.executeUpdate( s );
-         st.close();
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }      
-   
    }
    
-   public static void deleteRecord( Connection con, String table, int row ) {
+   static void deleteCropPlan( Persist p, String name ) {
+
+       // Drop the table
+       String s = "DROP TABLE " + HSQLDB.escapeTableName( name );
+
+       CPSModule.debug( "HSQLDBCreator", "Executing update: " + s );
+       p.executeUpdate( s );
+
+       // Remove the table record from the plan metadata table
+       s = "DELETE FROM CROP_PLANS WHERE plan_name = " + HSQLDB.escapeValue( name );
       
-       try {
-           String s = "DELETE FROM " + HSQLDB.escapeTableName(table) + " WHERE id = " + row;
+       CPSModule.debug( "HSQLDBCreator", "Executing update: " + s );
+       p.executeUpdate( s );
+       
+   }
+   
+   public static void deleteRecord( Persist p, String table, int row ) {
       
-           System.out.println("Executing update: " + s);
-           Statement st = con.createStatement();
-           st.executeUpdate(s);
-           st.close();
-      }
-      catch ( SQLException e ) { e.printStackTrace(); }
+       String s = "DELETE FROM " + HSQLDB.escapeTableName( table ) + " WHERE id = " + row;
+      
+       CPSModule.debug( "HSQLDBCreator", "Executing update: " + s );
+       p.executeUpdate( s );
        
    }
    
@@ -155,17 +126,27 @@ public class HSQLDBCreator {
    private static String createTableCropPlan( String name ) {
       return statementCreateTable( name, HSQLDBSchemas.cropPlanSchema() );
    }
-   
-   private static String createTableCropsAndVarieties() {    
-      return statementCreateTable( "CROPS_VARIETIES", HSQLDBSchemas.cropAndVarietySchema() );
+
+   /**
+    * Create the table CROPS_VARIETIES, generating the schema from a CPSCrop object.
+    * @param p a Persist object connected to the db in which the table will be created.
+    */
+   private static void createTableCropsAndVarieties( Persist p ) {
+
+       p.create( HSQLDB.CROP_VAR_TABLE, new CPSCrop() );
+
    }
-   
-   private static String createTablePlantingMethods() {
-      return statementCreateTable( "PLANTING_METHODS", HSQLDBSchemas.plantingDataSchema() );
-   }
-   
+
+   /**
+    * Given a table name and an SQL schema definition (of field names and data
+    * types), will form an SQL state that can be used to create the table in question.
+    *
+    * @param name name of table to be created
+    * @param table_def schema def'n consisting of field names and data types, separated by commas
+    * @return an SQL statement that can be used to create the table in question
+    */
    private static String statementCreateTable( String name, String table_def ) {
-      // TODO: test if table_def ends with "," or ", " and strip it off
+
       if ( table_def.endsWith( "," ))
          table_def = table_def.substring( 0, table_def.length() - 1 );
       if ( table_def.endsWith( ", " ))
@@ -185,176 +166,94 @@ public class HSQLDBCreator {
     * @param con - JDBC Connection upon which to execute the version update statement.
     * @param version - long int version number to set
     */
-   public static void setLastUpdateVersion( Connection con, long version ) {
+   public static void setLastUpdateVersion( Persist p, long version ) {
        
-      try {
+       String sqlUpdate = "UPDATE " + HSQLDB.escapeTableName( "CPS_METADATA" ) +
+                          " SET prev_ver = " + version;
          
-         String sqlUpdate = "UPDATE " + HSQLDB.escapeTableName( "CPS_METADATA" ) + 
-                            " SET prev_ver = " + version;
-         
-         System.out.println("Attempting to execute: " + sqlUpdate );
-         Statement st = con.createStatement();
-         st.executeUpdate( sqlUpdate );
-         st.close();
-         
-      }
-      catch ( SQLException ex ) { ex.printStackTrace(); }
-       
-   }
-   
-   
-   
-   public static int insertCrop( Connection con, HSQLColumnMap map, CPSCrop crop ) {
-   
-      try {
-         
-         String cols = "";
-         String vals = "";
-         
-         Iterator<CPSDatum> i = crop.iterator();
-         CPSDatum c;
-         boolean isEmpty = crop.getID() == -1;
-         
-         while ( i.hasNext() ) {
-            c = i.next();
-            if ( c.isValid() || isEmpty ) {
-               // System.out.println(" Processing datum: " + c.getColumnName() );
-//               cols += c.getColumnName() + ", ";
-               cols += map.getCropColumnNameForProperty( c.getPropertyNum() ) + ", ";
-               if ( c.isInherited() )
-                  vals += HSQLDB.escapeValue( "null" ) + ", ";
-               else 
-                  vals += HSQLDB.escapeValue( c.getDatum() ) + ", ";
-            }
-         }
-         
-//         cols += "similar_to";
-//         vals += HSQLDB.escapeValue( crop.getSimilarCrop().getCropName() );
+       CPSModule.debug( "HSQLDBCreator","Attempting to execute: " + sqlUpdate );
+       p.executeUpdate( sqlUpdate );
 
-         if ( cols.length() > 0 && vals.length() > 0 ) {
-            cols = cols.substring( 0, cols.lastIndexOf( ", " ));
-            vals = vals.substring( 0, vals.lastIndexOf( ", " ));
-         }
-         
-         //"Fudge","mat_adjust","misc_adjust","seeds_sources","seeds_item_codes","seeds_unit_size"         
-         
-         String sql = "INSERT INTO CROPS_VARIETIES ( " + cols + " ) VALUES ( " + vals + " )";
-         
-         System.out.println( "Attempting to execute: " + sql );
-         
-         Statement st = con.createStatement();
-         if ( st.executeUpdate( sql ) == -1 )
-            System.err.println( "Error creating crop " + crop.getCropName() );
-         
-         ResultSet rs = st.executeQuery( "CALL IDENTITY()" );
-         rs.next();
-         int newID = rs.getInt(1);
-         rs.close();
-         st.close();
-         
-         System.out.println( "Inserted " + crop.getCropName() + " with id " + newID );
-         
-         return newID;
-         
-      }
-      catch ( SQLException ex ) { 
-         ex.printStackTrace(); 
-         return -1;
-      }
    }
    
-   public static void updateCrop( Connection con, HSQLColumnMap map, CPSCrop crop ) {
-      ArrayList<Integer> id = new ArrayList<Integer>();
-      id.add( new Integer( crop.getID() ));
-      updateCrops( con, map, crop, id );
+   
+   
+   public static int insertCrop( Persist p, CPSCrop crop ) {
+
+       // grab the current ID -- this will probably be -1 -- and it doesn't
+       // matter at that because the ID will be regenerated when it's put into
+       // the db
+       int newID = crop.getID();
+
+       crop.useRawOutput( true );
+       // insert the new crop
+       p.insert( HSQLDB.CROP_VAR_TABLE, crop );
+       crop.useRawOutput( false );
+
+       // retrieve the new ID
+       crop.setID( getLastIdentity( p ) );
+
+       CPSModule.debug( "HSQLDBCreator", "Inserted " + crop.getCropName() + " with id " + crop.getID() );
+         
+       return crop.getID();
+
    }
    
-   public static void updateCrops( Connection con, HSQLColumnMap map, CPSCrop changes, ArrayList<Integer> ids ) {
-      updateRecords( con, CPSDataModelConstants.RECORD_TYPE_CROP, map, "CROPS_VARIETIES", changes, ids, null );
+   public static void updateCrop( Persist p, CPSCrop crop ) {
+       crop.useRawOutput( true );
+       p.update( HSQLDB.CROP_VAR_TABLE, crop);
+       crop.useRawOutput( false );
+   }
+
+   public static void updateCrops( Persist p, HSQLColumnMap map, CPSCrop changes, List<Integer> ids ) {
+
+       CPSCrop tempCrop;
+       for ( Integer I : ids ) {
+           tempCrop = p.readByPrimaryKey( HSQLDB.CROP_VAR_TABLE, CPSCrop.class, I.intValue() );
+           tempCrop.merge( changes );
+           p.update( HSQLDB.CROP_VAR_TABLE, tempCrop );
+       }
+
+//      updateRecords( p.getConnection(), CPSDataModelConstants.RECORD_TYPE_CROP, map, HSQLDB.CROP_VAR_TABLE, changes, ids, null );
    }
    
-   public static int insertPlanting( Connection con, 
-                                     HSQLColumnMap map,
+   public static int insertPlanting( Persist p,
                                      String planName,
                                      CPSPlanting planting,
                                      int cropID ) {
-   
-      try {
-         
-         String cols = "";
-         String vals = "";
-         
-         Iterator<CPSDatum> i = planting.iterator();
-         CPSDatum c;
-         boolean isEmpty = planting.getID() == -1;
-         
-         while ( i.hasNext() ) {
-            c = i.next();
-            if ( c.isConcrete() || isEmpty ) {
-//            if ( c.isValid() || isEmpty ) {
-               // System.out.println(" Processing datum: " + c.getColumnName() );
-//               cols += c.getColumnName() + ", "; 
-               cols += map.getPlantingColumnNameForProperty( c.getPropertyNum() ) + ", ";
-               // This would be the place to check for data inheritance and insert "escape" data for it
-               vals += HSQLDB.escapeValue(c.getDatum()) + ", ";
-            }
-         }
 
-         if ( cols.length() > 0 && vals.length() > 0 ) {
-            cols = cols.substring( 0, cols.lastIndexOf( ", " ));
-            vals = vals.substring( 0, vals.lastIndexOf( ", " ));
-         }
+       p.insert( planName, planting );
+
+       planting.setID( getLastIdentity( p ) );
+
+       CPSModule.debug( "HSQLDBCreator", "Inserted " + planting.getCropName() + " with id " + planting.getID() );
+
+       return planting.getID();
          
-         if ( cropID != -1 ) {
-             cols += ", crop_id";
-             vals += ", " + cropID;
-         }
-         
-         String sql = "INSERT INTO " + HSQLDB.escapeTableName( planName ) + " ( " + cols + " ) VALUES ( " + vals + " )";
-         
-         System.out.println( "Attempting to execute: " + sql );
-         
-         Statement st = con.createStatement();
-         if ( st.executeUpdate( sql ) == -1 )
-            System.err.println( "Error creating planting " + planting.getCropName() );
-         
-         ResultSet rs = st.executeQuery( "CALL IDENTITY()" );
-         rs.next();
-         int newID = rs.getInt(1);
-         rs.close();
-         st.close();
-         
-         System.out.println( "Inserted new planting " + planting.getCropName() + " with id " + newID );
-         
-         return newID;
-         
-      }
-      catch ( SQLException ex ) { 
-         ex.printStackTrace(); 
-         return -1;
-      }
+      
    }
 
-   /* TODO updatePlanting and updateCrop could be conflated into an updateRecord
-    * method that takes a String tableName and a CPSRecord.  Everything else is
-    * identical. Perhaps same thing for insertCrop and insertPlanting */
-   public static void updatePlanting( Connection con, HSQLColumnMap map, String planName, CPSPlanting p, int cropID ) {
-      ArrayList<Integer> id = new ArrayList();
-      ArrayList<Integer> cID = new ArrayList();
-      
-      id.add( new Integer( p.getID() ) );
-      cID.add( new Integer( cropID ) );
-      
-      updatePlantings( con, map, planName, p, id, cID );
+   public static void updatePlanting( Persist p, String planName, CPSPlanting planting, int cropID ) {
+
+       p.update( planName, planting );
+
    }
-   
-   public static void updatePlantings( Connection con, 
+
+   public static void updatePlantings( Persist p,
                                        HSQLColumnMap map,
                                        String planName,
                                        CPSPlanting changes, 
-                                       ArrayList<Integer> ids,
-                                       ArrayList<Integer> cropIDs ) {
-      updateRecords( con, CPSDataModelConstants.RECORD_TYPE_PLANTING, map, planName, changes, ids, cropIDs );
+                                       List<Integer> ids,
+                                       List<Integer> cropIDs ) {
+       
+       CPSPlanting tempPlant;
+       for ( Integer I : ids ) {
+           tempPlant = p.readByPrimaryKey( planName, CPSPlanting.class, I.intValue() );
+           tempPlant.merge( changes );
+           p.update( planName, tempPlant );
+       }
+
+//      updateRecords( con, CPSDataModelConstants.RECORD_TYPE_PLANTING, map, planName, changes, ids, cropIDs );
    }
    
    /**
@@ -374,8 +273,8 @@ public class HSQLDBCreator {
                                       HSQLColumnMap map,
                                       String tableName,
                                       CPSRecord changes, 
-                                      ArrayList<Integer> changedIDs,
-                                      ArrayList<Integer> cropIDs ) {
+                                      List<Integer> changedIDs,
+                                      List<Integer> cropIDs ) {
       // To the developer: a simpler structure for this method would be to just create one
       // UPDATE statement with the condition if "WHERE id IN ( changedIDs )", but we have to
       // do it this way in order to support the crop_id FOREIGN KEY in the crop plan schema
@@ -388,13 +287,13 @@ public class HSQLDBCreator {
          CPSDatum c;
          while ( iter.hasNext() ) {
             c = iter.next();
-            if ( c.isValid() ) {
+            if ( c.isNotNull() ) {
                if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
                   sqlChanges += map.getCropColumnNameForProperty( c.getPropertyNum() );
                else // if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
                   sqlChanges += map.getPlantingColumnNameForProperty( c.getPropertyNum() );
                   
-               sqlChanges += " = " + HSQLDB.escapeValue( c.getDatum() ) + ", ";
+               sqlChanges += " = " + HSQLDB.escapeValue( c.getValue() ) + ", ";
             }
          }
          sqlChanges = sqlChanges.substring( 0, sqlChanges.lastIndexOf( ", " ) );
@@ -423,4 +322,26 @@ public class HSQLDBCreator {
       catch ( SQLException ex ) { ex.printStackTrace(); }
    }
 
+
+   private static int getLastIdentity( Persist p ) {
+
+       int i = -1;
+
+       try {
+           Statement st = p.getConnection().createStatement();
+           ResultSet rs = st.executeQuery( "CALL IDENTITY()" );
+
+           rs.next();
+           i = rs.getInt(1);
+
+           rs.close();
+           st.close();
+       }
+       catch ( SQLException e ) {
+           e.printStackTrace();
+       }
+
+       return i;
+       
+   }
 }
