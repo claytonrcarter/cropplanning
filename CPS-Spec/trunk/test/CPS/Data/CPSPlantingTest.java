@@ -96,7 +96,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCropName( s, force );
+      instance.setCropName( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -135,7 +135,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setVarietyName( s, force );
+      instance.setVarietyName( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -184,7 +184,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setMaturityDays( i, force );
+      instance.setMaturityDays( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -203,7 +203,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setMaturityDays( s, force );
+      instance.setMaturityDays( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -242,7 +242,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setLocation( s, force );
+      instance.setLocation( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -355,7 +355,7 @@ public class CPSPlantingTest extends TestCase {
       Date d = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToPlantPlanned( d, force );
+      instance.setDateToPlantPlanned( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -365,7 +365,7 @@ public class CPSPlantingTest extends TestCase {
       String d = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToPlantPlanned( d, force );
+      instance.setDateToPlantPlanned( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -423,7 +423,7 @@ public class CPSPlantingTest extends TestCase {
       Date d = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToPlantActual( d, force );
+      instance.setDateToPlantActual( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -433,7 +433,7 @@ public class CPSPlantingTest extends TestCase {
       String d = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToPlantActual( d, force );
+      instance.setDateToPlantActual( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -532,7 +532,7 @@ public class CPSPlantingTest extends TestCase {
       Date d = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToTPPlanned( d, force );
+      instance.setDateToTPPlanned( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -542,7 +542,7 @@ public class CPSPlantingTest extends TestCase {
       String d = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToTPPlanned( d, force );
+      instance.setDateToTPPlanned( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -600,7 +600,7 @@ public class CPSPlantingTest extends TestCase {
       Date d = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToTPActual( d, force );
+      instance.setDateToTPActual( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -610,7 +610,7 @@ public class CPSPlantingTest extends TestCase {
       String d = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToTPActual( d, force );
+      instance.setDateToTPActual( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -700,7 +700,7 @@ public class CPSPlantingTest extends TestCase {
       Date d = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToHarvestPlanned( d, force );
+      instance.setDateToHarvestPlanned( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -719,7 +719,7 @@ public class CPSPlantingTest extends TestCase {
       String d = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToHarvestPlanned( d, force );
+      instance.setDateToHarvestPlanned( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -768,7 +768,7 @@ public class CPSPlantingTest extends TestCase {
       Date d = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToHarvestActual( d, force );
+      instance.setDateToHarvestActual( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -787,7 +787,7 @@ public class CPSPlantingTest extends TestCase {
       String d = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDateToHarvestActual( d, force );
+      instance.setDateToHarvestActual( d );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -796,7 +796,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "getDonePlanting" );
       CPSPlanting instance = new CPSPlanting();
       Boolean expResult = null;
-      Boolean result = instance.getDonePlanting();
+      Boolean result = instance.getDonePlanting().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -835,7 +835,7 @@ public class CPSPlantingTest extends TestCase {
       Boolean b = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDonePlanting( b, force );
+      instance.setDonePlanting( b );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -844,7 +844,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "getDoneTP" );
       CPSPlanting instance = new CPSPlanting();
       Boolean expResult = null;
-      Boolean result = instance.getDoneTP();
+      Boolean result = instance.getDoneTP().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -883,7 +883,7 @@ public class CPSPlantingTest extends TestCase {
       Boolean b = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDoneTP( b, force );
+      instance.setDoneTP( b );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -892,7 +892,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "getDoneHarvest" );
       CPSPlanting instance = new CPSPlanting();
       Boolean expResult = null;
-      Boolean result = instance.getDoneHarvest();
+      Boolean result = instance.getDoneHarvest().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -931,7 +931,7 @@ public class CPSPlantingTest extends TestCase {
       Boolean b = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDoneHarvest( b, force );
+      instance.setDoneHarvest( b );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -940,7 +940,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "getIgnore" );
       CPSPlanting instance = new CPSPlanting();
       Boolean expResult = null;
-      Boolean result = instance.getIgnore();
+      Boolean result = instance.getIgnore().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -979,7 +979,7 @@ public class CPSPlantingTest extends TestCase {
       Boolean b = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setIgnore( b, force );
+      instance.setIgnore( b );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1028,7 +1028,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setMatAdjust( i, force );
+      instance.setMatAdjust( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1047,7 +1047,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setMatAdjust( s, force );
+      instance.setMatAdjust( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1096,7 +1096,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setTimeToTP( i, force );
+      instance.setTimeToTP( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1115,7 +1115,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setTimeToTP( s, force );
+      instance.setTimeToTP( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1164,7 +1164,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setRowsPerBed( i, force );
+      instance.setRowsPerBed( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1183,7 +1183,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setRowsPerBed( s, force );
+      instance.setRowsPerBed( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1232,7 +1232,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setInRowSpacing( i, force );
+      instance.setInRowSpacing( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1251,7 +1251,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setInRowSpacing( s, force );
+      instance.setInRowSpacing( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1300,7 +1300,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setRowSpacing( i, force );
+      instance.setRowSpacing( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1319,7 +1319,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setRowSpacing( s, force );
+      instance.setRowSpacing( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1368,7 +1368,7 @@ public class CPSPlantingTest extends TestCase {
       String i = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setFlatSize( i, force );
+      instance.setFlatSize( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1407,7 +1407,7 @@ public class CPSPlantingTest extends TestCase {
       String i = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setPlantingNotesInherited( i, force );
+      instance.setPlantingNotesInherited( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1446,7 +1446,7 @@ public class CPSPlantingTest extends TestCase {
       String i = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setPlantingNotes( i, force );
+      instance.setPlantingNotes( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1495,7 +1495,7 @@ public class CPSPlantingTest extends TestCase {
       float i = 0.0F;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setBedsToPlant( i, force );
+      instance.setBedsToPlant( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1514,7 +1514,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setBedsToPlant( s, force );
+      instance.setBedsToPlant( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1563,7 +1563,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setPlantsNeeded( i, force );
+      instance.setPlantsNeeded( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1582,7 +1582,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setPlantsNeeded( s, force );
+      instance.setPlantsNeeded( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1631,7 +1631,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setRowFtToPlant( i, force );
+      instance.setRowFtToPlant( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1650,7 +1650,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setRowFtToPlant( s, force );
+      instance.setRowFtToPlant( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1699,7 +1699,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setPlantsToStart( i, force );
+      instance.setPlantsToStart( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1718,7 +1718,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setPlantsToStart( s, force );
+      instance.setPlantsToStart( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1767,7 +1767,7 @@ public class CPSPlantingTest extends TestCase {
       float i = 0.0F;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setFlatsNeeded( i, force );
+      instance.setFlatsNeeded( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1786,7 +1786,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setFlatsNeeded( s, force );
+      instance.setFlatsNeeded( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1835,7 +1835,7 @@ public class CPSPlantingTest extends TestCase {
       float i = 0.0F;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setYieldPerFoot( i, force );
+      instance.setYieldPerFoot( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1854,7 +1854,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setYieldPerFoot( s, force );
+      instance.setYieldPerFoot( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1903,7 +1903,7 @@ public class CPSPlantingTest extends TestCase {
       int i = 0;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setYieldNumWeeks( i, force );
+      instance.setYieldNumWeeks( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1922,7 +1922,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setYieldNumWeeks( s, force );
+      instance.setYieldNumWeeks( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1971,7 +1971,7 @@ public class CPSPlantingTest extends TestCase {
       float i = 0.0F;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setYieldPerWeek( i, force );
+      instance.setYieldPerWeek( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -1990,7 +1990,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setYieldPerWeek( s, force );
+      instance.setYieldPerWeek( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2029,7 +2029,7 @@ public class CPSPlantingTest extends TestCase {
       String i = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCropYieldUnit( i, force );
+      instance.setCropYieldUnit( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2078,7 +2078,7 @@ public class CPSPlantingTest extends TestCase {
       float i = 0.0F;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCropYieldUnitValue( i, force );
+      instance.setCropYieldUnitValue( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2097,7 +2097,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCropYieldUnitValue( s, force );
+      instance.setCropYieldUnitValue( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2146,7 +2146,7 @@ public class CPSPlantingTest extends TestCase {
       float i = 0.0F;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setTotalYield( i, force );
+      instance.setTotalYield( i );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2165,7 +2165,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setTotalYield( s, force );
+      instance.setTotalYield( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2174,7 +2174,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "isDirectSeeded" );
       CPSPlanting instance = new CPSPlanting();
       boolean expResult = false;
-      boolean result = instance.isDirectSeeded();
+      boolean result = instance.isDirectSeeded().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -2213,7 +2213,7 @@ public class CPSPlantingTest extends TestCase {
       Boolean b = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setDirectSeeded( b, force );
+      instance.setDirectSeeded( b );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2222,7 +2222,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "isFrostHardy" );
       CPSPlanting instance = new CPSPlanting();
       boolean expResult = false;
-      boolean result = instance.isFrostHardy();
+      boolean result = instance.isFrostHardy().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -2232,7 +2232,7 @@ public class CPSPlantingTest extends TestCase {
       System.out.println( "isFrostTender" );
       CPSPlanting instance = new CPSPlanting();
       boolean expResult = false;
-      boolean result = instance.isFrostTender();
+      boolean result = instance.isFrostTender().booleanValue();
       assertEquals( expResult, result );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
@@ -2271,7 +2271,7 @@ public class CPSPlantingTest extends TestCase {
       Boolean b = null;
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setFrostHardy( b, force );
+      instance.setFrostHardy( b );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2310,7 +2310,7 @@ public class CPSPlantingTest extends TestCase {
       String e = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setGroups( e, force );
+      instance.setGroups( e );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2349,7 +2349,7 @@ public class CPSPlantingTest extends TestCase {
       String e = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setKeywords( e, force );
+      instance.setKeywords( e );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2388,7 +2388,7 @@ public class CPSPlantingTest extends TestCase {
       String e = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setOtherRequirements( e, force );
+      instance.setOtherRequirements( e );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2427,7 +2427,7 @@ public class CPSPlantingTest extends TestCase {
       String e = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setNotes( e, force );
+      instance.setNotes( e );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2582,7 +2582,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCustomField1( s, force );
+      instance.setCustomField1( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2592,7 +2592,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCustomField2( s, force );
+      instance.setCustomField2( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2602,7 +2602,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCustomField3( s, force );
+      instance.setCustomField3( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2612,7 +2612,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCustomField4( s, force );
+      instance.setCustomField4( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }
@@ -2622,7 +2622,7 @@ public class CPSPlantingTest extends TestCase {
       String s = "";
       boolean force = false;
       CPSPlanting instance = new CPSPlanting();
-      instance.setCustomField5( s, force );
+      instance.setCustomField5( s );
       // TODO review the generated test code and remove the default call to fail.
       fail( "The test case is a prototype." );
    }

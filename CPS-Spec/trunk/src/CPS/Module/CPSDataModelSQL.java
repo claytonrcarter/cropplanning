@@ -29,6 +29,6 @@ public abstract class CPSDataModelSQL extends CPSDataModel {
 
    public CPSDataModelSQL() { super(); }
 
-   public abstract Connection getConnection();
+//   public abstract Connection getConnection();
 
 }

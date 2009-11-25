@@ -1,10 +1,11 @@
-/* CPSDatum.java
- * Copyright (C) 2007, 2008 Clayton Carter
- * 
+/*
+ *  CPSDatum2.java - created: Nov 14, 2009
+ *  Copyright (c) 2009  Clayton Carter
+ *
  * This file is part of the project "Crop Planning Software".  For more
  * information:
  *    website: http://cropplanning.googlecode.com
- *    email:   cropplanning@gmail.com 
+ *    email:   cropplanning@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,128 +25,244 @@ package CPS.Data;
 
 public class CPSDatum<T> {
 
-   protected String descriptor;
-   protected T datum;
-   
-   private int property;
-   private String columnName;
-   private boolean stateValid, stateInherited, stateCalculated;
-   private T defaultValue;
+    T value;
+    T nullValue;
+    T blankValue;
 
-   public CPSDatum() {
-      setCalculated(false);
-      setInherited(false);
-      invalidate();
-   }
-   
-   private CPSDatum( String n, T d ) {
-      setDescriptor(n);
-      setDatum(d);
-   }
-   
-//   public CPSDatum( String n, int p, String c, T def ) {
-   public CPSDatum( String n, int p, T def ) {
-      setDescriptor(n);
-      setDefaultValue(def);
-      setDatum( getDefaultValue() );
-      setProperty(p);
-//      setColumnName(c);
-      setInherited(false);
-      setCalculated(false);
-      invalidate();
-   }
-   
-   public String getDescriptor() { return descriptor; }
-   public void setDescriptor( String name ) { this.descriptor = name; }
-   
-//   protected void setColumnName( String c ) { columnName = c; }
-//   public String getColumnName() { return columnName; }
-   
-   protected void setProperty( int p ) { property = p; }
-   public int getPropertyNum() { return property; }
-   
-   public void validate() { stateValid = true; }
-   public void invalidate() { stateValid = false; }
-   public boolean isValid() { return stateValid; }
-   public boolean isAvailable() { return stateValid || stateInherited || stateCalculated; }
-   public boolean isConcrete() { return stateValid && ! stateInherited && ! stateCalculated; }
-   
-   public void setInherited( boolean b ) { stateInherited = b; }
-   public boolean isInherited() { return stateInherited; }
+    String name, dTion;
+    int propertyNum;
+    CPSDatumState state;
 
-   public void setCalculated( boolean b ) { stateCalculated = b; }
-   public boolean isCalculated() { return stateCalculated; }
-   
-   protected void setDefaultValue( T v ) { defaultValue = v; }
-   public T getDefaultValue() { return defaultValue; }
-   
-   /**
-    * Get and Set Datum methods 
-    */
-   public T getDatum() { return datum; }
-   public void setDatum( T datum ) { setDatum( datum, false ); }
-   /** setDatum - records changes to this datum
-    * 
-    * @param datum - value to record
-    * @param overrideValidation - if true, the value is set and the datum is
-    * validated regardless of whether the datum is null; if false, the datum is 
-    * recorded and validated only if the new datum is not null.  If the new
-    * datum is null, this datum is invalidated.
-    */
-   public void setDatum( T datum, boolean overrideValidation ) {
-      if ( overrideValidation || datum != null ) {
-         this.datum = datum;
-         validate();
-         setInherited( false );
-         setCalculated( false );
-      }
-      else
-         invalidate();
-   }
-   
-   public boolean getDatumAsBoolean() {
-      if ( datum == null || ! ( datum instanceof Boolean ))
+    public final int DATA_MODE_RAW = 0;
+    public final int DATA_MODE_NORMAL = 1;
+    int dataMode = DATA_MODE_NORMAL;
+
+    int precision;
+    public final int PRECISION_NA          = 0;
+    public final int PRECISION_FULL        = 1;
+    public final int PRECISION_ONE_DIGIT   = 2;
+    public final int PRECISION_TWO_DIGIT   = 3;
+    public final int PRECISION_THREE_DIGIT = 4;
+
+    /*
+     * 
+     *  Constructors
+     * 
+     */
+
+    public CPSDatum( String name, String desc,
+                     T value, T nullValue, T blankValue,
+                     int propertyNum,
+                     boolean inherited, boolean calculated ) {
+        this( name, desc, value, nullValue, blankValue, propertyNum );
+        setInherited( inherited );
+        setCalculated( calculated );
+    }
+    
+    public CPSDatum( String name, String desc, 
+                     T value, T nullValue, T blankValue,
+                     int propertyNum ) {
+        this( name, desc, nullValue, blankValue, propertyNum );
+        setValue(value);
+    }
+
+    public CPSDatum( String name, String desc, T blankValue, int propertyNum ) {
+        this( name, desc, null, blankValue, propertyNum );
+    }
+
+    public CPSDatum( String name, T blankValue, int propertyNum ) {
+       this( name, "", null, blankValue, propertyNum );
+    }
+
+    public CPSDatum( String name, String desc,
+                     T nullValue, T blankValue, int propertyNum ) {
+        this( name, nullValue, blankValue );
+        setDescription( desc );
+        setPropertyNum( propertyNum );
+    }
+
+    public CPSDatum( String name, T nullValue, T blankValue ) {
+
+       setName(name);
+       setNullValue( nullValue );
+       setBlankValue( blankValue );
+
+       state = new CPSDatumState( false, false );
+
+    }
+
+    /*
+     *
+     *  Important getters and setters
+     *
+     */
+
+    public void setValue( T value ) {
+        if ( value == null )
+            this.value = getNullValue();
+        else
+            this.value = value;
+    }
+
+    public T getValue() {
+       return getValue( false );
+    }
+
+    public T getValue( boolean rawAccess ) {
+        if ( ( isCalculated() || isInherited() || isNull() ) &&
+             ( getDataMode() == DATA_MODE_RAW || rawAccess ) ) {
+//           System.out.println( "get: " + getNullValue()  + " (null value) => "+ getName() );
+            return getNullValue();
+        }
+        else if ( isNull() && ! rawAccess ) {
+           return blankValue;
+        }
+        else {
+//           System.out.println( "get: " + (( value == null ) ? "null" : value.toString() ) + " => " + getName() );
+           
+           return value;
+        }
+    }
+
+    public boolean getValueAsBoolean() {
+      if ( isNull() || ! ( value instanceof Boolean ))
          return false;
-      else 
-         return ((CPSBoolean) datum).booleanValue();
-   }
-   
-   public int getDatumAsInt() {
-      if      ( datum == null || ! ( datum instanceof Integer ) && ! ( datum instanceof String ))
-         return 0;
-      else if ( datum instanceof String )
-         return Integer.parseInt( (String) datum );
       else
-         return ((Integer) datum).intValue();
+         return ((CPSBoolean) value).booleanValue();
    }
 
-   public void setState( CPSDatumState c ) {
+   public int getValueAsInt() {
+//      System.out.println( "getValueAsInt: " + (( value == null ) ? "null" : value.toString() ) + " => " + getName() );
+      if      ( isNull() || ! ( value instanceof Integer ) && ! ( value instanceof String ))
+         return 0;
+      else if ( value instanceof String )
+         return Integer.parseInt( (String) value );
+      else
+         return ((Integer) value).intValue();
+   }
+
+   public float getValueAsFloat() {
+      if      ( isNull() || ! ( value instanceof Float ) && ! ( value instanceof String ))
+         return 0f;
+      else if ( value instanceof String )
+         return Float.parseFloat( (String) value );
+      else
+         return ((Float) value).floatValue();
+   }
+
+    /*
+     * 
+     *  Lesser getters and setters
+     * 
+     */
+
+   /**
+    * @return the name (or short description) of this datum
+    */
+    public String getName() { return name; }
+    public void setName( String name ) { this.name = name; }
+
+    /**
+     * @return a more verbose description of this datum
+     */
+    public String getDescription() { return dTion; }
+    public void setDescription( String desc ) { this.dTion = desc; }
+
+    public int getPropertyNum() { return propertyNum; }
+    public void setPropertyNum( int propertyNum ) { this.propertyNum = propertyNum; }
+
+    public T getBlankValue() { return blankValue; }
+    public void setBlankValue( T blankValue ) { this.blankValue = blankValue; }
+
+    public T getNullValue() { return nullValue; }
+    public void setNullValue( T nullValue ) { this.nullValue = nullValue; }
+
+    public boolean isCalculated() { return getState().isCalculated(); }
+    public void setCalculated( boolean calculated ) { getState().setCalculated( calculated ); }
+
+    public boolean isInherited() { return getState().isInherited(); }
+    public void setInherited( boolean inherited ) { getState().setInherited( inherited ); }
+
+    /*
+     *
+     * Various metadata queries
+     *
+     */
+
+    /**
+     * @return true if this datum has a value set and it is not inherited or calculated
+     */
+    public boolean isConcrete() { return isNotNull() && ! isInherited() && ! isCalculated(); }
+    /**
+     * Convenience method to set this Datum as niether inherited nor calculated.  Equivalent to calling
+     * both setInherited(false) and setCalculated(false)
+     */
+    public void setConcrete() {
+       setInherited( false );
+       setCalculated( false );
+    }
+    /**
+     * @return true if this value has a value set and it is <i>either</i> inherited or calculated
+     */
+    public boolean isAbstract() { return isNotNull() && ( isInherited() || isCalculated() ); }
+    // TODO this == operation could get us into trouble; will probaly have to do
+    // some introspection about what type we are and such
+    public boolean isNull() { return value == null || value.equals( getNullValue() ); }
+    public boolean isNotNull() { return ! isNull(); }
+    public boolean isBlank() { return value.equals( getBlankValue() ); }
+
+
+    /**
+     * Retrieve the data access mode.  Data can either be accessed in a simple, low-level
+     * way which ignores inherited and calculated values or in a more complex, normal way
+     * in which that higher level processing is honored.  This only affects get
+     * methods, not set methods.
+     *
+     * @return one of either DATA_MODE_NORMAL or DATA_MODE_RAW; default value is DATA_MODE_NORMAL
+     */
+    public int getDataMode() { return dataMode; }
+
+    /**
+     * Control the data access mode.  Data can either be accessed in a simple, low-level
+     * way which ignores inherited and calculated values or in a more complex, normal way
+     * in which that higher level processing is honored.  This only affects get
+     * methods, not set methods.
+     *
+     * @param dataMode one of either DATA_MODE_NORMAL or DATA_MODE_RAW; if an invalid value
+     * is specified, the default value of DATA_MODE_NORMAL is used
+     */
+    public void setDataMode( int dataMode ) {
+        if ( dataMode == DATA_MODE_NORMAL ||
+             dataMode == DATA_MODE_RAW )
+            this.dataMode = dataMode;
+        else
+            this.dataMode = DATA_MODE_NORMAL;
+    }
+
+
+    public CPSDatumState getState() { return state; }
+
+    public void setState( CPSDatumState c ) {
       this.setInherited( c.isInherited() );
       this.setCalculated( c.isCalculated() );
-      if ( c.isValid() )
-         this.validate();
-      else
-         this.invalidate();
    }
 
-   public CPSDatumState getState() {
-      return new CPSDatumState( this.isInherited(), this.isCalculated(), this.isValid() );
-   }
-   
-   public class CPSDatumState {
-    
-      boolean inherited, calculated, valid;
-      
-      public CPSDatumState( boolean inherited, boolean calculated, boolean valid ) {
+    public class CPSDatumState {
+
+      boolean inherited, calculated;
+
+      public CPSDatumState( boolean inherited, boolean calculated ) {
          this.inherited = inherited;
          this.calculated = calculated;
-         this.valid = valid;
       }
-      
+
       public boolean isInherited() { return inherited; }
+      public void setInherited( boolean inherited ) { this.inherited = inherited; }
+
       public boolean isCalculated() { return calculated; }
-      public boolean isValid() { return valid; }
-      
+      public void setCalculated( boolean calculated ) { this.calculated = calculated; }
+
    }
-   
+
+
 }

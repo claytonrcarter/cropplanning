@@ -34,6 +34,7 @@ public class CPSDateValidator {
     public static String DATE_FORMAT_SHORT_DAY_OF_WEEK = "EEE MM/dd";
     public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
     public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";
+    public static String DATE_FORMAT_JUSTMONTH = "MMMM";
     
     public static String DATE_FORMAT_SQL = "yyyy-MM-dd";
     

@@ -31,16 +31,15 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -48,7 +47,6 @@ import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -64,20 +62,28 @@ public class CPSTable extends JTable {
     
     public CPSTable() {
         super();
-        
-       /* setup selection parameters */
+        init();
+    }
+
+    public CPSTable( TableModel tm ) {
+        super( tm );
+        init();
+    }
+
+    private void init() {
+        /* setup selection parameters */
        // enable row selection, disable column selection (default)
        this.setColumnSelectionAllowed( false );
        this.setRowSelectionAllowed( true );
        // allow multiple rows to be selected
-       this.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+//       this.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+       this.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
        this.getTableHeader().setReorderingAllowed(false);
-        
+
         dateValidator = new CPSDateValidator();
         dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
     }
-    
-    
+
     @Override
     public void setModel( TableModel tm ) {
         super.setModel( tm );
@@ -154,7 +160,7 @@ public class CPSTable extends JTable {
     }
     
     
-    public void setColumnNamesAndToolTips( ArrayList<String[]> prettyNames ) {
+    public void setColumnNamesAndToolTips( List<String[]> prettyNames ) {
         ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
 //        ArrayList<String[]> prettyNames = getColumnPrettyNameMap();
         int COLNAME = 0;

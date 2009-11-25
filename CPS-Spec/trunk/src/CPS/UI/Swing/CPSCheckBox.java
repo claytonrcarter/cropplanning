@@ -22,9 +22,9 @@
 
 package CPS.UI.Swing;
 
+import CPS.Data.CPSBoolean;
 import CPS.Data.CPSDatum.CPSDatumState;
 import javax.swing.JCheckBox;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -56,6 +56,13 @@ public class CPSCheckBox extends JCheckBox implements CPSButtonComponent {
     public void setInitialState( boolean b, CPSDatumState c ) {
        setInitialState( b, c, (String) null );
     }
+    public void setInitialState( CPSBoolean b, CPSDatumState c ) {
+       if ( b == null || b.isNull() )
+          setInitialState( false, c, (String) null );
+       else
+          setInitialState( b.booleanValue(), c, (String) null );
+    }
+    
     /**
      * Set the initial state of the button.
      * @param checked

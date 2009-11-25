@@ -18,12 +18,12 @@
 
 package CPS.Module;
 
-import java.util.ArrayList;
-import javax.swing.table.TableModel;
 import CPS.Data.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  *
@@ -38,39 +38,20 @@ public abstract class CPSDataModel extends CPSModule {
    /* retrieval */
    /**
     * Retrieves a list of all crop plans currently available.
-    * @return an unsorted ArrayList of Strings which represent the names of all available crop plans
+    * @return an unsorted List of Strings which represent the names of all available crop plans
     */
-   public abstract ArrayList<String> getListOfCropPlans();
+   public abstract List<String> getListOfCropPlans();
    /**
     * Retrieve a crop plan in tabular form.
     * @param plan_name name of the crop plan to retrieve
     * @return a TableModel representing the retrived plan
     */
-   public abstract TableModel getCropPlan( String plan_name );
+//   public abstract TableModel getCropPlan( String plan_name );
+   public abstract List<CPSPlanting> getCropPlan( String plan_name );
+
    /**
-    * Same as getCropPlan( String plan_name ) except that this plan is sorted by a particular column.
-    * @param plan_name name of the crop plan to retrieve
-    * @param sortCol the crop plan column name to sort
-    * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
-    * @see getCropPlan( String plan_name )
+    * @deprecated
     */
-   protected abstract TableModel getCropPlan( String plan_name, String sortCol );
-   public abstract TableModel getCropPlan( String plan_name, int sortProperty );
-   /**
-    * Same as getCropPlan( String plan_name, String sortCol ) except that
-    * the tabular data retrieved is filtered to match a particular character string.  The fields 
-    * that are used for the filtering are determined by the particular implementation. 
-    * 
-    * @param plan_name name of the crop plan to retrieve
-    * @param sortCol the column name to sort
-    * @param filterString a string to use when filtering the data in the plan
-    * @return a TableModel representing the retrived plan; the underlying data is sorted by column sortCol
-    * @see getCropPlan( String plan_name, String sortCol )
-    */
-   protected abstract TableModel getCropPlan( String plan_name, String sortCol, CPSComplexPlantingFilter filter );
-   public abstract TableModel getCropPlan( String plan_name, int sortProp, CPSComplexPlantingFilter filter );
-   protected abstract TableModel getCropPlan( String plan_name, String columns, String sortCol, CPSComplexPlantingFilter filter );
-   public abstract TableModel getCropPlan( String plan_name, ArrayList<Integer> properties, int sortProp, CPSComplexPlantingFilter filter );
    public abstract CPSPlanting getSumsForCropPlan( String plan_name, CPSComplexPlantingFilter filter );
    /* create and update */ 
    public void createCropPlan( String plan_name ) { 
@@ -86,73 +67,51 @@ public abstract class CPSDataModel extends CPSModule {
    
    /* Planting methods */
    /* retrieval */
-   public abstract ArrayList<String> getFieldNameList( String planName );
-   public abstract ArrayList<String> getFlatSizeList( String planName );
-   public abstract ArrayList<String> getPlantingDefaultPropertyNames();
-   public abstract ArrayList<Integer> getPlantingDefaultProperties();
-   public abstract ArrayList<String> getPlantingDisplayablePropertyNames();
-   public abstract ArrayList<Integer> getPlantingDisplayableProperties();
-   public abstract ArrayList<String[]> getPlantingPrettyNames();
-   public abstract ArrayList<String[]> getPlantingShortNames();
+   public abstract List<String> getFieldNameList( String planName );
+   public abstract List<String> getFlatSizeList( String planName );
+   public abstract List<String> getPlantingDefaultPropertyNames();
+   public abstract List<Integer> getPlantingDefaultProperties();
+   public abstract List<String> getPlantingDisplayablePropertyNames();
+   public abstract List<Integer> getPlantingDisplayableProperties();
+   public abstract List<String[]> getPlantingPrettyNames();
+   public abstract List<String[]> getPlantingShortNames();
    public abstract CPSPlanting getPlanting( String planName, int PlantingID );
-   public abstract CPSPlanting getCommonInfoForPlantings( String planName, ArrayList<Integer> plantingIDs );
+   public abstract CPSPlanting getCommonInfoForPlantings( String planName, List<Integer> plantingIDs );
    /* create and update */
    public abstract CPSPlanting createPlanting( String planName, CPSPlanting planting );
    public abstract void updatePlanting( String planName, CPSPlanting planting );
-   public abstract void updatePlantings( String planName, CPSPlanting changes, ArrayList<Integer> plantingIDs );
+   public abstract void updatePlantings( String planName, CPSPlanting changes, List<Integer> plantingIDs );
    public abstract void deletePlanting( String planting, int plantingID );
    
    /* Crop and Variety methods */
    /* retrieval */
-   public abstract ArrayList<String> getCropDefaultPropertyNames();
-   public abstract ArrayList<String> getCropDisplayablePropertyNames();
-   public abstract ArrayList<Integer> getCropDefaultProperties();
-   public abstract ArrayList<Integer> getCropDisplayableProperties();
-   public abstract ArrayList<String[]> getCropPrettyNames();
-   public abstract ArrayList<String> getCropNameList();
-   public ArrayList<String> getVarietyNameList() { return getVarietyNameList( null, null ); }
-   public ArrayList<String> getVarietyNameList( String crop_name ) { return getVarietyNameList( crop_name, null ); }
-   public abstract ArrayList<String> getVarietyNameList( String crop_name, String cropPlan );
-   public abstract ArrayList<String> getFamilyNameList();
-   public ArrayList<String> getFlatSizeList() { return getFlatSizeList( null ); }
+   public abstract List<String> getCropDefaultPropertyNames();
+   public abstract List<String> getCropDisplayablePropertyNames();
+   public abstract List<Integer> getCropDefaultProperties();
+   public abstract List<Integer> getCropDisplayableProperties();
+   public abstract List<String[]> getCropPrettyNames();
+   public abstract List<String> getCropNameList();
+   public List<String> getVarietyNameList() { return getVarietyNameList( null, null ); }
+   public List<String> getVarietyNameList( String crop_name ) { return getVarietyNameList( crop_name, null ); }
+   public abstract List<String> getVarietyNameList( String crop_name, String cropPlan );
+   public abstract List<String> getFamilyNameList();
+   public List<String> getFlatSizeList() { return getFlatSizeList( null ); }
    public CPSCrop getCropInfo( String cropName ) { return getVarietyInfo( cropName, null ); }
    public abstract CPSCrop getVarietyInfo( String cropName, String varName );
    public abstract CPSCrop getCropInfo( int CropID );
-   public abstract CPSCrop getCommonInfoForCrops( ArrayList<Integer> cropIDs );
+   public abstract CPSCrop getCommonInfoForCrops( List<Integer> cropIDs );
    /* create and update */
    public abstract CPSCrop createCrop(CPSCrop crop);
    public abstract void updateCrop( CPSCrop crop );
-   public abstract void updateCrops( CPSCrop changes, ArrayList<Integer> cropIDs );
+   public abstract void updateCrops( CPSCrop changes, List<Integer> cropIDs );
    public abstract void deleteCrop( int cropID );
    
-   public abstract TableModel getCropTable();
-   public abstract TableModel getVarietyTable();
-   public abstract TableModel getCropAndVarietyTable();
+   public abstract List<CPSCrop> getCropList();
+   public abstract List<CPSCrop> getVarietyList();
+   public abstract List<CPSCrop> getCropAndVarietyList();   
    
-   protected abstract TableModel getCropTable( String sortCol );
-   protected abstract TableModel getVarietyTable( String sortCol );
-   protected abstract TableModel getCropAndVarietyTable( String sortCol );
-   public abstract TableModel getCropTable( int sortProp );
-   public abstract TableModel getVarietyTable( int sortProp );
-   public abstract TableModel getCropAndVarietyTable( int sortProp );
-   
-   protected abstract TableModel getCropTable( String sortCol, CPSComplexFilter filter );
-   protected abstract TableModel getVarietyTable( String sortCol, CPSComplexFilter filter );
-   protected abstract TableModel getCropAndVarietyTable( String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getCropTable( int sortProp, CPSComplexFilter filter );
-   public abstract TableModel getVarietyTable( int sortProp, CPSComplexFilter filter );
-   public abstract TableModel getCropAndVarietyTable( int sortProp, CPSComplexFilter filter );
-   
-   protected abstract TableModel getCropTable( String columns, String sortCol, CPSComplexFilter filter );
-   protected abstract TableModel getVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
-   protected abstract TableModel getCropAndVarietyTable( String columns, String sortCol, CPSComplexFilter filter );
-   public abstract TableModel getCropTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter );
-   public abstract TableModel getVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter );
-   public abstract TableModel getCropAndVarietyTable( ArrayList<Integer> properties, int sortProp, CPSComplexFilter filter );
-   
-   
-   /** An ArrayList of CPSDataModelUsers which will be notified when the database has changed or been updated. */
-   protected ArrayList<CPSDataUser> dataListeners = new ArrayList();
+   /** An List of CPSDataModelUsers which will be notified when the database has changed or been updated. */
+   protected List<CPSDataUser> dataListeners = new ArrayList<CPSDataUser>();
    /**
     * Add a CPSDataModelUser to the list of of modules that wish to be notified when the data has been updated
     * @param dmu The CPSDataModelUser to be added (and subsequently notified)
@@ -166,11 +125,8 @@ public abstract class CPSDataModel extends CPSModule {
       for( CPSDataUser dmu : dataListeners )
          dmu.dataUpdated();
    }
-   
-   public abstract ArrayList<CPSCrop> getCropsAndVarietiesAsList();
-   public abstract ArrayList<CPSPlanting> getCropPlanAsList( String planName );
-   
-   public void importCropPlan( String planName, ArrayList<CPSPlanting> importedPlan ) {
+      
+   public void importCropPlan( String planName, List<CPSPlanting> importedPlan ) {
       int ip = 0;
       
       if ( getListOfCropPlans().contains(planName) ) {
@@ -188,7 +144,7 @@ public abstract class CPSDataModel extends CPSModule {
       System.out.println( "Imported " + ip + " plantings into crop plan " + planName );
    }
    
-   public void importCropsAndVarieties( ArrayList<CPSCrop> importedCrops ) {
+   public void importCropsAndVarieties( List<CPSCrop> importedCrops ) {
       int ic = 0, iv = 0;
       int skipped = 0;
       
