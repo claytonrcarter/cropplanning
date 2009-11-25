@@ -40,6 +40,12 @@ public class CropPlanning implements Runnable {
        String buildnum = "";
        try {
            in = CropPlanning.class.getClass().getResourceAsStream( "/appinfo.properties" );
+           
+           if ( in == null ) {
+               System.err.println( "Uh Oh!  appinfo.properties NOT FOUND!  You should copy it into CropPlanning/trunk/build/classes" );
+               System.exit( -1 );
+           }
+
            props.load( in );
 
            buildnum +=

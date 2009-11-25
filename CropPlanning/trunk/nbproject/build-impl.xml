@@ -317,6 +317,7 @@ is divided into following sections:
         <ant antfile="${project.CPS-Spec}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.CPS-SwingUI}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.CPS-TODOLists}/build.xml" inheritall="false" target="jar"/>
+        <ant antfile="${project.Persist}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.TableUtil}/build.xml" inheritall="false" target="jar"/>
     </target>
     <target depends="init,-check-automatic-build,-clean-after-automatic-build" name="-verify-automatic-build"/>
@@ -635,6 +636,7 @@ is divided into following sections:
         <ant antfile="${project.CPS-Spec}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.CPS-SwingUI}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.CPS-TODOLists}/build.xml" inheritall="false" target="clean"/>
+        <ant antfile="${project.Persist}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.TableUtil}/build.xml" inheritall="false" target="clean"/>
     </target>
     <target depends="init" name="-do-clean">
