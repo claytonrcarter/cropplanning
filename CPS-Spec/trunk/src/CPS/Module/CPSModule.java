@@ -3,7 +3,7 @@ package CPS.Module;
 
 public abstract class CPSModule {
 
-    public static final String GLOBAL_DEVEL_VERSION = "0.1.5";
+    public static final String GLOBAL_DEVEL_VERSION = "0.1.6";
     /// handles UI experience and displays contents of modules
     protected final String MOD_TYPE_UI = "UI";
     /// provides core funtionality
