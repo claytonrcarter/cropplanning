@@ -40,27 +40,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import ca.odell.glazedlists.*;
+import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.swing.EventSelectionModel;
+import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
+import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
 
 /**
  *
@@ -86,13 +74,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     protected CPSTable masterTable;
     protected JPopupMenu pupColumnList;
-//    private ColumnHeaderToolTips headerToolTips = new ColumnHeaderToolTips();
     private int sortColumn = 0;
-//    private JTextField tfldFilter;
     private CPSSearchField tfldFilter;
-//    private String filterString;
-    
-//    private JButton btnFilterClear;
 
     private JButton btnNewRecord, btnDupeRecord, btnDeleteRecord;
     
@@ -105,7 +88,14 @@ public abstract class CPSMasterView extends CPSDataModelUser
     private int[] selectedRows = {};
     private ArrayList<Integer> selectedIDs = new ArrayList();
     private ArrayList<ColumnNameStruct> columnList = new ArrayList();
-    
+
+
+    // lists and such for the GlazedList sorting, filtering and such
+    protected BasicEventList<CPSRecord> masterList = new BasicEventList<CPSRecord>();
+    protected SortedList<CPSRecord> masterListSorted = new SortedList<CPSRecord>( masterList, new CPSComparator( CPSRecord.PROP_ID ) );
+    protected FilterList<CPSRecord> masterListFiltered = null;
+    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterList );
+
     
     public CPSMasterView( CPSMasterDetailModule ui ) {
        uiManager = ui;
@@ -116,7 +106,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
        buildMainPanel( null );
     }
     
-//    public abstract int init();
     public int init() { return 0; }
     protected int saveState() {
        getPrefs().put( KEY_DISPLAYED_COLUMNS, getDisplayedColumnListAsString() );
@@ -139,7 +128,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     protected abstract String getDisplayedTableName();
     protected abstract CPSRecord getDetailsForID( int id );
-    protected abstract CPSRecord getDetailsForIDs( ArrayList<Integer> ids );
+    protected abstract CPSRecord getDetailsForIDs( List<Integer> ids );
     
     protected CPSRecord getRecordToDisplay() {
        if ( selectedIDs.size() < 1 ) {
@@ -187,10 +176,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
             // selectedRow = lsm.getMinSelectionIndex();
            
            // retrieve the selected rows (for multi row selection mode)
-           selectedRows = masterTable.getSelectedRows();
+//           selectedRows = masterTable.getSelectedRows();
            selectedIDs.clear();
-           for ( int i : selectedRows)
-                selectedIDs.add( new Integer( getRecordIDForRow( i ) ) );
+           for ( CPSRecord r : selectModel.getSelected() )
+                selectedIDs.add( new Integer( r.getID() ));
            
            // for single row selection mode
 //           selectedIDs = Integer.parseInt( masterTable.getValueAt( selectedRow, -1 ).toString() );
@@ -198,24 +187,22 @@ public abstract class CPSMasterView extends CPSDataModelUser
             updateDetailView();
         }
     }
-
-    private int getRecordIDForRow( int row ) {
-       return new Integer( masterTable.getValueAt( row, -1 ).toString() ).intValue();
-    }
     
     protected void selectRecord( int id ) {
         setSelectedRowByRecordID( id );
     }
+
     private void setSelectedRowByRecordID( int recordID ) {
        
        masterTable.clearSelection();
-       
-       int numRows = masterTable.getRowCount();
-       for ( int row = 0; row < numRows; row++ ) {
-          if ( getRecordIDForRow( row ) == recordID ) {
-             masterTable.setRowSelectionInterval( row, row );
-             break;
-          }
+
+       int i = 0;
+       for ( CPSRecord r : masterListSorted ) {
+           if ( r.getID() == recordID ) {
+               selectModel.setSelectionInterval( i, i );
+               break;
+           }
+           i++; // count rows
        }
           
     }
@@ -317,12 +304,17 @@ public abstract class CPSMasterView extends CPSDataModelUser
         tfldFilter.setMaximumSize(tfldFilter.getPreferredSize());
         // HACK! TODO, improve this; possibly by implementing a delay?
         // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
-        tfldFilter.getDocument().addDocumentListener( new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { updateFilter(); }
-            public void removeUpdate(DocumentEvent e) { updateFilter(); }
-            public void changedUpdate(DocumentEvent evt) {}
-       });
-       
+//        tfldFilter.getDocument().addDocumentListener( new DocumentListener() {
+//            public void insertUpdate(DocumentEvent e) { updateFilter(); }
+//            public void removeUpdate(DocumentEvent e) { updateFilter(); }
+//            public void changedUpdate(DocumentEvent evt) {}
+//       });
+
+//        masterListFiltered =
+//                new FilterList<CPSRecord>( masterList,
+//                                           new TextComponentMatcherEditor<CPSRecord>( tfldFilter,
+//                                                                                      getTextFilterator() ) );
+
        if ( init )
            initFilterPanel();
        
@@ -342,18 +334,32 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     protected void buildListPanel() {
        
-       masterTable = new CPSTable();
+        // in case masterListFiltered hasn't been init;ed yet
+       EventList<CPSRecord> el = masterListSorted;
+       if ( el == null )
+           el = masterListSorted;
+       masterTable = new CPSTable( new EventTableModel<CPSRecord>( el, getTableFormat() ) );
+
+       
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
        masterTable.setPreferredScrollableViewportSize( d );
        masterTable.setMaximumSize( d );
        masterTable.getTableHeader().addMouseListener( this );
        
        // Ask to be notified of selection changes (see method: valueChanged)
-       masterTable.getSelectionModel().addListSelectionListener( this );
-       
+       selectModel.addListSelectionListener( this );
+       masterTable.setSelectionModel( selectModel );
+
+       TableComparatorChooser.install( masterTable, masterListSorted, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE );
+
+
        initListPanel(); // init listPanel
        jplList.add( new JScrollPane( masterTable ) );
        
+    }
+
+    protected void clearSelection() {
+        selectModel.clearSelection();
     }
     
     protected abstract String getTableStatisticsString();
@@ -371,13 +377,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
         
     }
     
-    protected abstract ArrayList<String[]> getColumnPrettyNameMap();
-    protected abstract ArrayList<String> getDisplayableColumnList();
-    protected abstract ArrayList<Integer> getDefaultDisplayableColumnList();
+    protected abstract List<String[]> getColumnPrettyNameMap();
+    protected abstract List<String> getDisplayableColumnList();
+    protected abstract List<Integer> getDefaultDisplayableColumnList();
     protected void buildColumnListPopUpMenu() {
        pupColumnList = new JPopupMenu();
       
-       ArrayList<Integer> defaultCols;
+       List<Integer> defaultCols;
        String savedCols = getPrefs().get( KEY_DISPLAYED_COLUMNS, "" );
        if ( savedCols.equals( "" ) )
            defaultCols = getDefaultDisplayableColumnList();
@@ -391,7 +397,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
        }
 
        
-       ArrayList<String[]> columnNames = getColumnPrettyNameMap();
+       List<String[]> columnNames = getColumnPrettyNameMap();
        
        // retrieve list of columns, build tuple list w/ column and ISSELECTED
        for ( String[] s : columnNames ) {
@@ -465,7 +471,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     
     
-    protected ArrayList<Integer> getDisplayedColumnList() {
+    protected List<Integer> getDisplayedColumnList() {
        ArrayList<Integer> l = new ArrayList<Integer>();
        for ( ColumnNameStruct c : columnList ) {
           if ( c.selected )
@@ -476,7 +482,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     protected String getDisplayedColumnListAsString() {
        String s = "";
-       ArrayList<Integer> l = getDisplayedColumnList();
+       List<Integer> l = getDisplayedColumnList();
        for ( Integer i : l )
           s += i.intValue() + ", ";
        s = s.substring( 0, s.lastIndexOf(", ") );
@@ -496,7 +502,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // Perhaps updateMasterTable or updateMasterListTable?
     private void updateListTable( TableModel tm ) {
         tm.addTableModelListener(this);
-        masterTable.setModel(tm);    
+        masterTable.setModel(tm);
         masterTable.setColumnNamesAndToolTips( getColumnPrettyNameMap() );
     }
     
@@ -505,8 +511,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
         if ( !isDataAvailable() )
             return;
 
-        updateListTable( getMasterListData() );
-        
+        // obtaining locks on the list before we edit it seems to have
+        // fixed sporadic NullPointerExceptions related to concurrency
+        masterList.getReadWriteLock().writeLock().lock();
+        masterList.clear();
+        masterList.addAll( getMasterListData() );
+        masterList.getReadWriteLock().writeLock().unlock();
+
     }
     
     protected void setStatus( String s ) {
@@ -516,7 +527,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
     /// Abstract method to retrieve new data and then hand it off to the
     // JTable to display.  Overriding class should do the fancy work of
     // figuring out which table to query, etc.  Returns a TableModel.
-    protected abstract TableModel getMasterListData();
+    protected abstract List getMasterListData();
+    protected abstract TableFormat<CPSRecord> getTableFormat();
+    protected abstract TextFilterator<CPSRecord> getTextFilterator();
+//    protected abstract TextComponentMatcherEditor<CPSRecord> getTextCompMatcherEditor();
+
+
     protected void setSortColumn( int prop ) { 
 //       if ( s == null ) s = ""; 
        sortColumn = prop;
