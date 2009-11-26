@@ -28,12 +28,12 @@ import CPS.Module.CPSImporter;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSModule;
 import java.util.ArrayList;
-import javax.swing.table.TableModel;
 import com.csvreader.*;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class CSV extends CPSModule implements CPSExporter, CPSImporter {
@@ -145,7 +145,8 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
   }
 
   
-   public void exportCropPlan( String filename, String planName, ArrayList<CPSPlanting> plantings ) {
+   public void exportCropPlan( String filename, String planName, List<CPSPlanting> plantings ) {
+
 
        ArrayList<CPSRecord> records = new ArrayList<CPSRecord>( plantings.size() );
        for ( CPSPlanting p : plantings )
@@ -156,7 +157,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
    }
 
-   public void exportCropsAndVarieties( String filename, ArrayList<CPSCrop> crops ) {
+   public void exportCropsAndVarieties( String filename, List<CPSCrop> crops ) {
 
        ArrayList<CPSRecord> records = new ArrayList<CPSRecord>( crops.size() );
        for ( CPSCrop c : crops )
@@ -234,12 +235,12 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
                        continue;
                    }
 
-                   Object o = d.getDatum();
+                   Object o = d.getValue();
                    if ( o instanceof java.util.Date ||
                         o instanceof java.sql.Date )
-                       row[colForDatum] = dateValidator.format( (Date) d.getDatum() );
+                       row[colForDatum] = dateValidator.format( (Date) o );
                    else
-                       row[colForDatum] = d.getDatum().toString();
+                       row[colForDatum] = o.toString();
                }
                csvOut.writeRecord( row );
            }
