@@ -142,13 +142,13 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
                                    displayedCrop.getKeywordsState() );
       tareNotes.setInitialText( displayedCrop.getNotes() );
 
-      chkDS.setInitialState( displayedCrop.isDirectSeeded().booleanValue(),
+      chkDS.setInitialState( displayedCrop.isDirectSeeded(),
                              displayedCrop.getDirectSeededState() );
-      setDSComponentsEnabled( displayedCrop.isDirectSeeded().booleanValue() );
+      setDSComponentsEnabled( displayedCrop.isDirectSeeded() );
       
-      chkTP.setInitialState( displayedCrop.isTransplanted().booleanValue(),
+      chkTP.setInitialState( displayedCrop.isTransplanted(),
                              displayedCrop.getTransplantedState() );
-      setTPComponentsEnabled( displayedCrop.isTransplanted().booleanValue() );
+      setTPComponentsEnabled( displayedCrop.isTransplanted() );
 
       setAllComponentsEnabled( isRecordDisplayed() );
    }
