@@ -107,7 +107,11 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private static final String KEY_DEBUG = "DEBUG";
     private JCheckBox chkDebug;
     private static boolean prefDebugDefault = false;
-    
+
+    private static final String KEY_VERSION = "VERSION";
+    private static final String cpsMainVersionDefault = "0.0.0";
+    private static String cpsMainVersion = cpsMainVersionDefault;
+
     
     public CPSGlobalSettings() {
 
@@ -260,7 +264,15 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public static void setDebug( boolean debug ) {
        getGlobalPreferences().putBoolean( KEY_DEBUG, debug );
     }
-    
+
+    public static String getVersion() {
+       return getGlobalPreferences().get( KEY_VERSION, cpsMainVersionDefault );
+    }
+
+    public static void setVersion( String s ) {
+       getGlobalPreferences().put( KEY_VERSION, s );
+    }
+
     /*
      * Methods for CPSConfigurable.
      * Used for displaying a dialog to setup the settings.

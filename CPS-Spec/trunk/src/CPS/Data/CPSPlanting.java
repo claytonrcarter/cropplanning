@@ -282,7 +282,7 @@ public class CPSPlanting extends CPSRecord {
           case PROP_IGNORE:        return ignore;
 
           case PROP_MAT_ADJUST:
-             if ( isDirectSeeded().booleanValue() )
+             if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
                 return getDatum( PROP_DS_MAT_ADJUST );
              else
                 return getDatum( PROP_TP_MAT_ADJUST );
@@ -290,7 +290,7 @@ public class CPSPlanting extends CPSRecord {
           case PROP_TP_MAT_ADJUST:    return tp_mat_adjust;
           case PROP_TIME_TO_TP:    return time_to_tp;
           case PROP_ROWS_P_BED:    
-             if ( isDirectSeeded().booleanValue() )
+             if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
                 return getDatum( PROP_DS_ROWS_P_BED );
              else
                 return getDatum( PROP_TP_ROWS_P_BED );
@@ -298,7 +298,7 @@ public class CPSPlanting extends CPSRecord {
           case PROP_TP_ROWS_P_BED:    return tp_rows_p_bed;
           case PROP_INROW_SPACE:   return inrow_space;
           case PROP_ROW_SPACE:
-             if ( isDirectSeeded().booleanValue() )
+             if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
                 return getDatum( PROP_DS_ROW_SPACE );
              else
                 return getDatum( PROP_TP_ROW_SPACE );
@@ -306,7 +306,7 @@ public class CPSPlanting extends CPSRecord {
           case PROP_TP_ROW_SPACE:     return tp_row_space;
           case PROP_FLAT_SIZE:     return flat_size;
           case PROP_CROP_NOTES:
-             if ( isDirectSeeded().booleanValue() )
+             if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
                 return getDatum( PROP_DS_CROP_NOTES );
              else
                 return getDatum( PROP_TP_CROP_NOTES );
@@ -401,7 +401,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getMaturityDaysState() { return getStateOf( PROP_MATURITY ); }
    public void setMaturityDays( Integer i ) { set( maturity, i ); }
    public void setMaturityDays( int i ) { setMaturityDays( new Integer( i ) ); }
-   public void setMaturityDays( String s ) { setMaturityDays( parseInt( s ) ); }
+   public void setMaturityDays( String s ) { setMaturityDays( parseInteger( s ) ); }
 
    public String getLocation() { return get( PROP_LOCATION ); }
    public CPSDatumState getLocationState() { return getStateOf( PROP_LOCATION ); }
@@ -706,49 +706,49 @@ public class CPSPlanting extends CPSRecord {
    /* Static Data */
    /* *********************************************************************************************/
    public Integer getMatAdjust() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getInt( PROP_DS_MAT_ADJUST );
       else
          return getInt( PROP_TP_MAT_ADJUST );
    }
    public String getMatAdjustString() { return formatInt( getMatAdjust() ); }
    public CPSDatumState getMatAdjustState() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getStateOf( PROP_DS_MAT_ADJUST );
       else
          return getStateOf( PROP_TP_MAT_ADJUST );
    }
    public void setMatAdjust( Integer i ) {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          set( ds_mat_adjust, i );
       else
          set( tp_mat_adjust, i );
    }
    public void setMatAdjust( int i ) { setMatAdjust( new Integer( i )); }
-   public void setMatAdjust( String s ) { setMatAdjust( parseInt(s) ); }
+   public void setMatAdjust( String s ) { setMatAdjust( parseInteger(s) ); }
 
    public Integer getTimeToTP() { return getInt( PROP_TIME_TO_TP ); }
    public String getTimeToTPString() { return formatInt( getTimeToTP() ); }
    public CPSDatumState getTimeToTPState() { return getStateOf( PROP_TIME_TO_TP ); }
    public void setTimeToTP( Integer i ) { set( time_to_tp, i ); }
    public void setTimeToTP( int i ) { setTimeToTP( new Integer( i ) ); }
-   public void setTimeToTP( String s ) { setTimeToTP( parseInt(s) ); }
+   public void setTimeToTP( String s ) { setTimeToTP( parseInteger(s) ); }
 
    public CPSDatumState getRowsPerBedState() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getStateOf( PROP_DS_ROWS_P_BED );
       else
          return getStateOf( PROP_TP_ROWS_P_BED );
    }
    public Integer getRowsPerBed() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getInt( PROP_DS_ROWS_P_BED );
       else
          return getInt( PROP_TP_ROWS_P_BED );
    }
    public String getRowsPerBedString() { return formatInt( getRowsPerBed() ); }
    public void setRowsPerBed( Integer i ) {
-      if ( isDirectSeeded().booleanValue() ) {
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() ) {
          CPSModule.debug( "CPSPlanting", "planting is DIRECT SEEDED, recording rows per bed as " + i );
          set( ds_rows_p_bed, i );
       }
@@ -758,36 +758,36 @@ public class CPSPlanting extends CPSRecord {
       }
    }
    public void setRowsPerBed( int i ) { setRowsPerBed( new Integer( i )); }
-   public void setRowsPerBed( String s ) { setRowsPerBed( parseInt(s) ); }
+   public void setRowsPerBed( String s ) { setRowsPerBed( parseInteger(s) ); }
 
    public Integer getInRowSpacing() { return getInt( PROP_INROW_SPACE ); }
    public String getInRowSpacingString() { return formatInt( getInRowSpacing() ); }
    public CPSDatumState getInRowSpacingState() { return getStateOf( PROP_INROW_SPACE ); }
    public void setInRowSpacing( Integer i ) { set( inrow_space, i ); }
    public void setInRowSpacing( int i ) { setInRowSpacing( new Integer( i ) ); }
-   public void setInRowSpacing( String s ) { setInRowSpacing( parseInt(s) ); }
+   public void setInRowSpacing( String s ) { setInRowSpacing( parseInteger(s) ); }
 
    public Integer getRowSpacing() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getInt( PROP_DS_ROW_SPACE );
       else
          return getInt( PROP_TP_ROW_SPACE );
    }
    public String getRowSpacingString() { return formatInt( getRowSpacing() ); }
    public CPSDatumState getRowSpacingState() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getStateOf( PROP_DS_ROW_SPACE );
       else
          return getStateOf( PROP_TP_ROW_SPACE );
    }
    public void setRowSpacing( Integer i ) {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          set( ds_row_space, i );
       else
          set( tp_row_space, i );
    }
    public void setRowSpacing( int i ) { setRowSpacing( new Integer( i ) ); }
-   public void setRowSpacing( String s ) { setRowSpacing( parseInt(s) ); }
+   public void setRowSpacing( String s ) { setRowSpacing( parseInteger(s) ); }
 
    public String getFlatSize() { return get( PROP_FLAT_SIZE ); }
    public Integer getFlatSizeCapacity() {
@@ -797,19 +797,19 @@ public class CPSPlanting extends CPSRecord {
    public void setFlatSize( String i ) { set( flat_size, i ); }
 
    public String getPlantingNotesInherited() {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return get( PROP_DS_CROP_NOTES );
       else
          return get( PROP_TP_CROP_NOTES );
    }
    public CPSDatumState getPlantingNotesInheritedState() { 
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return getStateOf( PROP_DS_CROP_NOTES );
       else
          return getStateOf( PROP_TP_CROP_NOTES );
    }
    public void setPlantingNotesInherited( String i ) {
-      if ( isDirectSeeded().booleanValue() )
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          set( ds_crop_notes, i );
       else
          set( tp_crop_notes, i );
@@ -871,7 +871,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getBedsToPlantState() { return getStateOf( PROP_BEDS_PLANT ); }
    public void setBedsToPlant( Float i ) { set( beds_to_plant, i ); }
    public void setBedsToPlant( float i ) { setBedsToPlant( new Float( i ) ); }
-   public void setBedsToPlant( String s ) { setBedsToPlant( parseFloat(s) ); }
+   public void setBedsToPlant( String s ) { setBedsToPlant( parseFloatBigF(s) ); }
    
    public Integer getPlantsNeeded() {
       CPSDatum p = getDatum( PROP_PLANTS_NEEDED );
@@ -917,7 +917,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getPlantsNeededState() { return getStateOf( PROP_PLANTS_NEEDED ); }
    public void setPlantsNeeded( Integer i ) { set( plants_needed, i ); }
    public void setPlantsNeeded( int i ) { setPlantsNeeded( new Integer( i ) ); }
-   public void setPlantsNeeded( String s ) { setPlantsNeeded( parseInt(s) ); }
+   public void setPlantsNeeded( String s ) { setPlantsNeeded( parseInteger(s) ); }
    
    public Integer getRowFtToPlant() {
       CPSDatum r = getDatum( PROP_ROWFT_PLANT );
@@ -961,7 +961,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getRowFtToPlantState() { return getStateOf( PROP_ROWFT_PLANT ); }
    public void setRowFtToPlant( Integer i ) { set( rowft_to_plant, i ); }
    public void setRowFtToPlant( int i ) { setRowFtToPlant( new Integer( i ) ); }
-   public void setRowFtToPlant( String s ) { setRowFtToPlant( parseInt(s) ); }
+   public void setRowFtToPlant( String s ) { setRowFtToPlant( parseInteger(s) ); }
 
    public Integer getPlantsToStart() {
       CPSDatum s = getDatum( PROP_PLANTS_START );
@@ -982,7 +982,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getPlantsToStartState() { return getStateOf( PROP_PLANTS_START ); }
    public void setPlantsToStart( Integer i ) { set( plants_to_start, i ); }
    public void setPlantsToStart( int i ) { setPlantsToStart( new Integer( i ) ); }
-   public void setPlantsToStart( String s ) { setPlantsToStart( parseInt(s) ); }
+   public void setPlantsToStart( String s ) { setPlantsToStart( parseInteger(s) ); }
 
    public Float getFlatsNeeded() {
       CPSDatum n = getDatum( PROP_FLATS_NEEDED );
@@ -1001,7 +1001,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getFlatsNeededState() { return getStateOf( PROP_FLATS_NEEDED ); }
    public void setFlatsNeeded( Float i ) { set( flats_needed, i ); }
    public void setFlatsNeeded( float i ) { setFlatsNeeded( new Float( i ) ); }
-   public void setFlatsNeeded( String s ) { setFlatsNeeded( parseFloat(s) ); }
+   public void setFlatsNeeded( String s ) { setFlatsNeeded( parseFloatBigF(s) ); }
 
    /* *********************************************************************************************/
    /* Yield Data */
@@ -1011,21 +1011,21 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getYieldPerFootState() { return getStateOf( PROP_YIELD_P_FOOT ); }
    public void setYieldPerFoot( Float i ) { set( yield_p_foot, i ); }
    public void setYieldPerFoot( float i ) { setYieldPerFoot( new Float( i ) ); }
-   public void setYieldPerFoot( String s ) { setYieldPerFoot( parseFloat(s) ); }
+   public void setYieldPerFoot( String s ) { setYieldPerFoot( parseFloatBigF(s) ); }
 
    public Integer getYieldNumWeeks() { return getInt( PROP_YIELD_NUM_WEEKS ); }
    public String getYieldNumWeeksString() { return formatInt( getYieldNumWeeks() ); }
    public CPSDatumState getYieldNumWeeksState() { return getStateOf( PROP_YIELD_NUM_WEEKS ); }
    public void setYieldNumWeeks( Integer i ) { set( yield_num_weeks, i ); }
    public void setYieldNumWeeks( int i ) { setYieldNumWeeks( new Integer( i ) ); }
-   public void setYieldNumWeeks( String s ) { setYieldNumWeeks( parseInt(s) ); }
+   public void setYieldNumWeeks( String s ) { setYieldNumWeeks( parseInteger(s) ); }
 
    public Float getYieldPerWeek() { return getFloat( PROP_YIELD_P_WEEK ); }
    public String getYieldPerWeekString() { return formatFloat( getYieldPerWeek(), 3 ); }
    public CPSDatumState getYieldPerWeekState() { return getStateOf( PROP_YIELD_P_WEEK ); }
    public void setYieldPerWeek( Float i ) { set( yield_p_week, i ); }
    public void setYieldPerWeek( float i ) { setYieldPerWeek( new Float( i ) ); }
-   public void setYieldPerWeek( String s ) { setYieldPerWeek( parseFloat(s) ); }
+   public void setYieldPerWeek( String s ) { setYieldPerWeek( parseFloatBigF(s) ); }
 
    public String getCropYieldUnit() { return get( PROP_CROP_UNIT ); }
    public CPSDatumState getCropYieldUnitState() { return getStateOf( PROP_CROP_UNIT ); }
@@ -1036,7 +1036,7 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getCropYieldUnitValueState() { return getStateOf( PROP_CROP_UNIT_VALUE ); }
    public void setCropYieldUnitValue( Float i ) { set( crop_unit_value, i ); }
    public void setCropYieldUnitValue( float i ) { setCropYieldUnitValue( new Float( i ) ); }
-   public void setCropYieldUnitValue( String s ) { setCropYieldUnitValue( parseFloat(s) ); }
+   public void setCropYieldUnitValue( String s ) { setCropYieldUnitValue( parseFloatBigF(s) ); }
 
    public Float getTotalYield() {
       CPSDatum t = getDatum( PROP_TOTAL_YIELD );
@@ -1055,13 +1055,22 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getTotalYieldState() { return getStateOf( PROP_TOTAL_YIELD ); }
    public void setTotalYield( Float i ) { set( total_yield, i ); }
    public void setTotalYield( float i ) { setTotalYield( new Float( i ) ); }
-   public void setTotalYield( String s ) { setTotalYield( parseFloat(s) ); }
+   public void setTotalYield( String s ) { setTotalYield( parseFloatBigF(s) ); }
 
    /* *********************************************************************************************/
    /* Misc Metadata */
    /* *********************************************************************************************/
+   /**
+    * @return Whether or not this planting is direct seeded.  If call when useRawouput() == true, this
+    * could return null.
+    */
    public CPSBoolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
-   public CPSBoolean isTransplanted() { return isDirectSeeded().not(); }
+   public CPSBoolean isTransplanted() { 
+      if ( isDirectSeeded() == null ) 
+         return null;
+      else 
+         return isDirectSeeded().not();
+   }
    public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }
    public void setDirectSeeded( String s ) {
       if ( s != null && s.equalsIgnoreCase("true") )

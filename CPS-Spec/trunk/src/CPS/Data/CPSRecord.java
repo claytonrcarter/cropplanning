@@ -242,13 +242,11 @@ public abstract class CPSRecord {
        
        Iterator<CPSDatum> thisIt = this.iterator();
        Iterator<CPSDatum> thatIt = thatRecord.iterator();
-       Iterator<CPSDatum> deltIt = diffs.iterator();
        
        CPSDatum thi, that;
-       while ( thisIt.hasNext() && thatIt.hasNext() && deltIt.hasNext() ) {
+       while ( thisIt.hasNext() && thatIt.hasNext() ) {
           thi = thisIt.next();
           that = thatIt.next();
-//          delta = deltIt.next();
           
           /*
            * if this is CALCULATED and that IS NOT VALID, then skip
@@ -259,14 +257,12 @@ public abstract class CPSRecord {
            * if the recorded difference is NOT valid,
            * then record the difference as the default value
            */
-          if ( thi.isCalculated() && ! that.isConcrete() ) 
+          if ( ( thi.isCalculated() || thi.isInherited() ) && ! that.isConcrete() )
              continue;
           else if ( ( thi.isNull() && that.isNotNull() ) ||
                     ( thi.isNotNull() && that.isNotNull() ) &&
                     ! thi.getValue().equals( that.getValue() ) ) {
              diffs.set( that.getPropertyNum(), that.getValue() );
-//              System.out.println( "Recording difference for datum: " + that.getColumnName() + " = " + that.getDatum() );
-
 //             if ( diffs.getDatum( that.getPropertyNum() ).isNull() )
 //                diffs.set( that.getPropertyNum(), that.getBlankValue() );
              diffsExists = true;
@@ -284,6 +280,58 @@ public abstract class CPSRecord {
        
        return diffs;
     }
+
+
+   /**
+    * Merge the values from another record into this one.  Only values which are
+    * different, non-null, not calculated, etc will be merged.
+    *
+    * @param changes the record whose values will be considered for merger
+    * @return this record, after the updates
+    */
+   public CPSRecord merge( CPSRecord changes ) {
+
+       debug( "Merging records:\n" +
+               this.toString() + "\n" +
+               changes.toString() );
+
+       Iterator<CPSDatum> thisIt = this.iterator();
+       Iterator<CPSDatum> changeIt = changes.iterator();
+
+       CPSDatum thisItem, changedItem;
+       while ( thisIt.hasNext() && changeIt.hasNext() ) {
+          thisItem = thisIt.next();
+          changedItem = changeIt.next();
+
+          /*
+           * if this is CALCULATED and change IS NOT VALID, then skip
+           * if this IS NOT valid AND change IS valid OR   (means: new info added)
+           *    this IS     valid AND change IS valid AND
+           *    this IS NOT equal to change,               (means: info changed)
+           * then record the difference
+           *
+           * finally:
+           * if the recorded difference is NOT valid,
+           * then record the difference as the default value
+           */
+          if ( ! thisItem.isConcrete() && ! changedItem.isConcrete() )
+             continue;
+          else if ( (   thisItem.isNull() && changedItem.isNotNull() ) ||
+                    (   thisItem.isNotNull() && changedItem.isNotNull() ) &&
+                      ! thisItem.getValue().equals( changedItem.getValue() ) ) {
+//              debug( "Recording difference for datum: " +
+//                      this.getDatum( changedItem.getPropertyNum() ).getName() + " => " +
+//                      changes.getDatum( changedItem.getPropertyNum()).getValue().toString() );
+              this.set( changedItem.getPropertyNum(), changedItem.getValue() );
+
+//              if ( this.getDatum( changedItem.getPropertyNum() ).isNull() )
+//                  this.set( changedItem.getPropertyNum(), changedItem.getBlankValue() );
+
+          }
+       }
+
+       return this;
+   }
 
    
    public abstract List<Integer> getListOfInheritableProperties();
@@ -322,61 +370,17 @@ public abstract class CPSRecord {
        return this;
     }
 
-   /**
-    * Merge the values from another record into this one.  Only values which are
-    * different, non-null, not calculated, etc will be merged.
-    *
-    * @param changes the record whose values will be considered for merger
-    * @return this record, after the updates
-    */
-   public CPSRecord merge( CPSRecord changes ) {
 
-       debug( "Merging records:\n" +
-               this.toString() + "\n" +
-               changes.toString() );
-
-       Iterator<CPSDatum> thisIt = this.iterator();
-       Iterator<CPSDatum> changeIt = changes.iterator();
-
-       CPSDatum thisItem, changedItem;
-       while ( thisIt.hasNext() && changeIt.hasNext() ) {
-          thisItem = thisIt.next();
-          changedItem = changeIt.next();
-
-          /*
-           * if this is CALCULATED and change IS NOT VALID, then skip
-           * if this IS NOT valid AND change IS valid OR   (means: new info added)
-           *    this IS     valid AND change IS valid AND
-           *    this IS NOT equal to change,               (means: info changed)
-           * then record the difference
-           *
-           * finally:
-           * if the recorded difference is NOT valid,
-           * then record the difference as the default value
-           */
-          if ( thisItem.isCalculated() && ! changedItem.isConcrete() )
-             continue;
-          else if ( (   thisItem.isNull() && changedItem.isNotNull() ) ||
-                    (   thisItem.isNotNull() && changedItem.isNotNull() ) &&
-                      ! thisItem.getValue().equals( changedItem.getValue() ) ) {
-              debug( "Recording difference for datum: " +
-                      this.getDatum( changedItem.getPropertyNum() ).getName() + " => " +
-                      changes.getDatum( changedItem.getPropertyNum()).getValue().toString() );
-              this.set( changedItem.getPropertyNum(), changedItem.getValue() );
-              
-//              if ( this.getDatum( changedItem.getPropertyNum() ).isNull() )
-//                  this.set( changedItem.getPropertyNum(), changedItem.getBlankValue() );
-             
-          }
-       }
-
-       return this;
-   }
-   
    public boolean equals( Object o ) {
       return ( o instanceof CPSRecord && this.diff( (CPSRecord) o ).getID() == -1 );
    }
-   
+
+   public Integer parseInteger( String s ) {
+      if ( isObjectNull(s) || s.equals("") )
+         return null;
+      else
+         return new Integer( parseInt(s) );
+   }
    public int parseInt ( String s ) {
       if ( isObjectNull(s) || s.equals("") )
          return -1;
@@ -384,7 +388,15 @@ public abstract class CPSRecord {
          // remove whitespace and ignore a leading '+"
          return Integer.parseInt( s.trim().replaceFirst( "^\\+", "" ));
    }
-   public float parseFloat ( String s ) {
+
+
+   public Float parseFloatBigF( String s ) {
+      if ( isObjectNull(s) || s.equals("") )
+         return null;
+      else
+         return new Float( parseFloat(s));
+   }
+   public float parseFloat( String s ) {
       if ( isObjectNull(s) || s.equals("") )
          return -1;
       else

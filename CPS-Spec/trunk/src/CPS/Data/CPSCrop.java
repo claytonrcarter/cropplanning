@@ -280,7 +280,7 @@ public class CPSCrop extends CPSRecord {
     public CPSDatumState getMaturityDaysState() { return getStateOf( PROP_MATURITY ); }
     public void setMaturityDays( Integer i ) { set( maturityDays, i ); }
     public void setMaturityDays( int i ) { setMaturityDays( new Integer( i ) ); }
-    public void setMaturityDays( String s ) { setMaturityDays( parseInt( s ) ); }
+    public void setMaturityDays( String s ) { setMaturityDays( parseInteger( s ) ); }
 
     public String getGroups() { return get( PROP_GROUPS ); }
     public CPSDatumState getGroupsState() { return getStateOf( PROP_GROUPS ); }
@@ -329,21 +329,21 @@ public class CPSCrop extends CPSRecord {
     public CPSDatumState getDSMaturityAdjustState() { return getStateOf( PROP_DS_MAT_ADJUST  ); }
     public void setDSMaturityAdjust( Integer i ) { set( dsMatAdjust, i ); }
     public void setDSMaturityAdjust( int i ) { set( dsMatAdjust, new Integer( i ) ); }
-    public void setDSMaturityAdjust( String s ) { setDSMaturityAdjust( parseInt(s) ); }
+    public void setDSMaturityAdjust( String s ) { setDSMaturityAdjust( parseInteger(s) ); }
    
     public Integer getDSRowsPerBed() { return getInt( PROP_DS_ROWS_P_BED  ); }
     public String getDSRowsPerBedString() { return formatInt( getDSRowsPerBed() ); }
     public CPSDatumState getDSRowsPerBedState() { return getStateOf( PROP_DS_ROWS_P_BED  ); }
     public void setDSRowsPerBed( Integer i ) { set( dsRowsPerBed, i ); }
     public void setDSRowsPerBed( int i ) { set( dsRowsPerBed, new Integer( i )); }
-    public void setDSRowsPerBed( String s ) { setDSRowsPerBed( parseInt(s) ); }
+    public void setDSRowsPerBed( String s ) { setDSRowsPerBed( parseInteger(s) ); }
 
     public Integer getDSSpaceBetweenRow() { return getInt( PROP_DS_SPACE_BETROW  ); }
     public String getDSSpaceBetweenRowString() { return formatInt( getDSSpaceBetweenRow() ); }
     public CPSDatumState getDSSpaceBetweenRowState() { return getStateOf( PROP_DS_SPACE_BETROW  ); }
     public void setDSSpaceBetweenRow( Integer i ) { set( dsRowSpace, i ); }
     public void setDSSpaceBetweenRow( int i ) { set( dsRowSpace, new Integer( i ) ); }
-    public void setDSSpaceBetweenRow( String s ) { setDSSpaceBetweenRow( parseInt(s) ); }
+    public void setDSSpaceBetweenRow( String s ) { setDSSpaceBetweenRow( parseInteger(s) ); }
    
     public String getDSPlantNotes() { return get( PROP_DS_PLANT_NOTES  ); }
     public CPSDatumState getDSPlantNotesState() { return getStateOf( PROP_DS_PLANT_NOTES  ); }
@@ -368,35 +368,35 @@ public class CPSCrop extends CPSRecord {
     public CPSDatumState getTPMaturityAdjustState() { return getStateOf( PROP_TP_MAT_ADJUST  ); }
     public void setTPMaturityAdjust( Integer i ) { set( tpMatAdjust, i ); }
     public void setTPMaturityAdjust( int i ) { setTPMaturityAdjust( new Integer( i ) ); }
-    public void setTPMaturityAdjust( String s ) { setTPMaturityAdjust( parseInt(s) ); }
+    public void setTPMaturityAdjust( String s ) { setTPMaturityAdjust( parseInteger(s) ); }
    
     public Integer getTPRowsPerBed() { return getInt( PROP_TP_ROWS_BED  ); }
     public String getTPRowsPerBedString() { return formatInt( getTPRowsPerBed() ); }
     public CPSDatumState getTPRowsPerBedState() { return getStateOf( PROP_TP_ROWS_BED  ); }
     public void setTPRowsPerBed( Integer i ) { set( tpRowsPerBed, i ); }
     public void setTPRowsPerBed( int i ) { setTPRowsPerBed( new Integer( i ) ); }
-    public void setTPRowsPerBed( String s ) { setTPRowsPerBed( parseInt(s) ); }
+    public void setTPRowsPerBed( String s ) { setTPRowsPerBed( parseInteger(s) ); }
    
     public Integer getTPSpaceBetweenRow() { return getInt( PROP_TP_SPACE_BETROW  ); }
     public String getTPSpaceBetweenRowString() { return formatInt( getTPSpaceBetweenRow() ); }
     public CPSDatumState getTPSpaceBetweenRowState() { return getStateOf( PROP_TP_SPACE_BETROW  ); }
     public void setTPSpaceBetweenRow( Integer i ) { set( tpRowSpace, i ); }
     public void setTPSpaceBetweenRow( int i ) { setTPSpaceBetweenRow( new Integer( i ) ); }
-    public void setTPSpaceBetweenRow( String s ) { setTPSpaceBetweenRow( parseInt(s) ); }
+    public void setTPSpaceBetweenRow( String s ) { setTPSpaceBetweenRow( parseInteger(s) ); }
     
     public Integer getTPSpaceInRow() { return getInt( PROP_TP_SPACE_INROW  ); }
     public String getTPSpaceInRowString() { return formatInt( getTPSpaceInRow() ); }
     public CPSDatumState getTPSpaceInRowState() { return getStateOf( PROP_TP_SPACE_INROW  ); }
     public void setTPSpaceInRow( Integer i ) { set( tpInRowSpace, i ); }
     public void setTPSpaceInRow( int i ) { setTPSpaceInRow( new Integer( i ) ); }
-    public void setTPSpaceInRow( String s ) { setTPSpaceInRow( parseInt(s) ); }
+    public void setTPSpaceInRow( String s ) { setTPSpaceInRow( parseInteger(s) ); }
    
     public Integer getTPTimeInGH() { return getInt( PROP_TP_TIME_IN_GH  ); }
     public String getTPTimeInGHString() { return formatInt( getTPTimeInGH() ); }
     public CPSDatumState getTPTimeInGHState() { return getStateOf( PROP_TP_TIME_IN_GH  ); }
     public void setTPTimeInGH( Integer i ) { set( tpTimeInGH, i ); }
     public void setTPTimeInGH( int i ) { setTPTimeInGH( new Integer( i ) ); }
-    public void setTPTimeInGH( String s ) { setTPTimeInGH( parseInt(s) ); }
+    public void setTPTimeInGH( String s ) { setTPTimeInGH( parseInteger(s) ); }
    
     public String getTPFlatSize() { return get( PROP_FLAT_SIZE ); }
     public CPSDatumState getTPFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
@@ -429,21 +429,21 @@ public class CPSCrop extends CPSRecord {
    public CPSDatumState getYieldPerFootState() { return getStateOf( PROP_YIELD_FOOT ); }
     public void setYieldPerFoot( Float f ) { set( yieldPerFoot, f ); }
     public void setYieldPerFoot( float f ) { setYieldPerFoot( new Float( f ) ); }
-   public void setYieldPerFoot( String s ) { setYieldPerFoot( parseFloat(s) ); }
+   public void setYieldPerFoot( String s ) { setYieldPerFoot( parseFloatBigF(s) ); }
    
    public Integer getYieldNumWeeks() { return getInt( PROP_YIELD_WEEKS ); }
    public String getYieldNumWeeksString() { return formatInt( getYieldNumWeeks() ); }
    public CPSDatumState getYieldNumWeeksState() { return getStateOf( PROP_YIELD_WEEKS ); }
     public void setYieldNumWeeks( Integer i ) { set( yieldNumWeeks, i ); }
     public void setYieldNumWeeks( int i ) { setYieldNumWeeks( new Integer( i )); }
-   public void setYieldNumWeeks( String s ) { setYieldNumWeeks( parseInt(s) ); }
+   public void setYieldNumWeeks( String s ) { setYieldNumWeeks( parseInteger(s) ); }
    
    public Integer getYieldPerWeek() { return getInt( PROP_YIELD_PER_WEEK ); }
    public String getYieldPerWeekString() { return formatInt( getYieldPerWeek() ); }
    public CPSDatumState getYieldPerWeekState() { return getStateOf( PROP_YIELD_PER_WEEK ); }
     public void setYieldPerWeek( Integer i ) { set( yieldPerWeek, i ); }
     public void setYieldPerWeek( int i ) { setYieldPerWeek( new Integer( i )); }
-   public void setYieldPerWeek( String s ) { setYieldPerWeek( parseInt(s) ); }
+   public void setYieldPerWeek( String s ) { setYieldPerWeek( parseInteger(s) ); }
    
    public String getCropYieldUnit() { return get( PROP_CROP_UNIT ); }
    public CPSDatumState getCropYieldUnitState() { return getStateOf( PROP_CROP_UNIT ); }
@@ -454,7 +454,7 @@ public class CPSCrop extends CPSRecord {
    public CPSDatumState getCropUnitValueState() { return getStateOf( PROP_CROP_UNIT_VALUE ); }
     public void setCropUnitValue( Float f ) { set( cropUnitValue, f ); }
     public void setCropUnitValue( float f ) { setCropUnitValue( new Float( f )); }
-   public void setCropUnitValue( String s ) { setCropUnitValue( parseFloat(s) ); }
+   public void setCropUnitValue( String s ) { setCropUnitValue( parseFloatBigF(s) ); }
    
    
     

@@ -98,7 +98,7 @@ public class CPSDatum<T> {
      */
 
     public void setValue( T value ) {
-        if ( value == null )
+        if ( value == null || value.equals( getNullValue() ))
             this.value = getNullValue();
         else
             this.value = value;

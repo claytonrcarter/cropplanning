@@ -2,8 +2,7 @@ package CPS.Module;
 
 
 public abstract class CPSModule {
-
-    public static final String GLOBAL_DEVEL_VERSION = "0.1.6";
+   
     /// handles UI experience and displays contents of modules
     protected final String MOD_TYPE_UI = "UI";
     /// provides core funtionality
@@ -34,7 +33,7 @@ public abstract class CPSModule {
    public long getModuleVersionAsLongInt() { 
        return versionAsLongInt( ModuleVersion_Major, ModuleVersion_Minor, ModuleVersion_Revision );
    }
-   
+
    public static long versionAsLongInt( String ver ) {
        
        // this is cribbed more or less directly from setModuleVersion()
