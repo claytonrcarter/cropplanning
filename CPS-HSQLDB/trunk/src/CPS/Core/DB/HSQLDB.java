@@ -70,7 +70,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
        setModuleName( "HSQLDB" );
        setModuleDescription( "A full featured DataModel based on HSQLDB.");
-       setModuleVersion( GLOBAL_DEVEL_VERSION );
+       setModuleVersion( CPSGlobalSettings.getVersion() );
                
        localSettings = new HSQLSettings();
        
@@ -79,6 +79,9 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    @Override
    public int init () {
+
+      // enable Persist logging
+//      org.apache.log4j.BasicConfigurator.configure();
 
       if ( true || localSettings.getUseGlobalDir() )
          dbDir = CPSGlobalSettings.getDataOutputDir();
@@ -105,7 +108,10 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       } catch ( Exception e ) {
           e.printStackTrace();
       }
-         
+
+      // make sure Persist knows about our custom data types
+//      p.getClassToTypeNumMap().put( CPSBoolean.class, new Integer( java.sql.Types.BOOLEAN ));
+
       HSQLUpdate.updateDB( p, getModuleVersionAsLongInt() );
 
       // TODO Persist port HERE
@@ -116,12 +122,16 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    }
 
    public synchronized List<String> getFlatSizeList( String planName ) {
+
        // if the plan doesn't exist, then don't get the mapping, just return an empty list
        if ( ! HSQLConnect.tableExists( p.getConnection(), planName ))
            return new ArrayList<String>();
        
        TableMapping tm = (TableMapping) p.getMapping( CPSPlanting.class, planName );
-       return getDistinctValsFromCVAndPlan( planName, tm.getColumnNameForMethod( "getFlatSize" ) );
+       String plantColName = tm.getColumnNameForMethod( "getFlatSize" );
+       tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE );
+       String cropColName = tm.getColumnNameForMethod( "getFlatSize" );
+       return getDistinctValsFromCVAndPlan( planName, plantColName, cropColName );
    }
 
    public synchronized List<String> getFieldNameList( String planName ) {
@@ -144,27 +154,31 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    }
 
    public synchronized List<String> getVarietyNameList( String crop_name, String planName ) {
+
        // if the plan doesn't exist, then don't get the mapping, just return an empty list
        if ( ! HSQLConnect.tableExists( p.getConnection(), planName ))
            return new ArrayList<String>();
        
        TableMapping tm = (TableMapping) p.getMapping( CPSPlanting.class, planName );
-       return getDistinctValsFromCVAndPlan( planName, tm.getColumnNameForMethod( "getVarietyName" ) );
+       String plantColName = tm.getColumnNameForMethod( "getVarietyName" );
+       tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE );
+       String cropColName = tm.getColumnNameForMethod( "getVarietyName" );
+       return getDistinctValsFromCVAndPlan( planName, plantColName, cropColName );
    }
 
    // TODO port to Persist
-   private synchronized List<String> getDistinctValsFromCVAndPlan( String planName, String colName ) {
+   private synchronized List<String> getDistinctValsFromCVAndPlan( String planName, String planColName, String cropColName ) {
        ArrayList<String> l = new ArrayList<String>();
        Set set = new HashSet();
        
        if ( planName != null )
            l.addAll( HSQLQuerier.getDistinctValuesForColumn( p.getConnection(),
                                                              planName,
-                                                             colName ) );
+                                                             planColName ) );
 
        l.addAll( HSQLQuerier.getDistinctValuesForColumn( p.getConnection(),
                                                          CROP_VAR_TABLE,
-                                                         colName ) );
+                                                         cropColName ) );
 
        // list now contains all values, possibly some duplicates
        // this ensures that the values are unique
@@ -362,8 +376,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public List<CPSPlanting> getCropPlan(String plan_name) {
 
       debug( "Retrieving crop plan: " + plan_name );
-//      return p.readList( escapeTableName( plan_name ), CPSPlanting.class );
-//      List<CPSPlanting> cropPlan = p.readList( escapeTableName( plan_name ), CPSPlanting.class );
       List<CPSPlanting> cropPlan = p.readList( plan_name, CPSPlanting.class );
 
       for ( CPSPlanting planting : cropPlan ) {
@@ -485,9 +497,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    }
 
    public void updateCrop( CPSCrop crop ) {
-       crop.useRawOutput( true );
       HSQLDBCreator.updateCrop( p, crop );
-      crop.useRawOutput( false );
       updateDataListeners();
    }
    
@@ -498,7 +508,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    public CPSCrop createCrop(CPSCrop crop) {
       int newID = HSQLDBCreator.insertCrop( p, crop );
-      // TODO is this really a good idea?
       updateDataListeners();
       if ( newID == -1 )
          return new CPSCrop();
@@ -514,6 +523,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
 
    protected void performInheritanceForCropVar( CPSCrop crop ) {
+
+      if ( crop == null ) return;
 
       if ( crop.isVariety() ) {
 
@@ -543,8 +554,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    // also called with "empty" or new CPSPlantings, so should handle case where
    // the "cropID" is not valid
    public CPSPlanting createPlanting( String planName, CPSPlanting planting ) {
-      int cropID = getVarietyInfo( planting.getCropName(), planting.getVarietyName() ).getID();
-      int newID = HSQLDBCreator.insertPlanting( p, planName, planting, cropID );
+      int newID = HSQLDBCreator.insertPlanting( p, planName, planting );
       updateDataListeners();
       if ( newID == -1 )
          return new CPSPlanting();
@@ -561,7 +571,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       if ( id != -1 )
          planting = p.read( CPSPlanting.class, tm.getSelectSql(), new Object[]{ new Integer( id ) } );
       else
-         planting = new CPSPlanting();
+         return new CPSPlanting(); // inheriting not necessary
 
       performInheritanceForPlanting( planting );
 
@@ -570,11 +580,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    }
 
    public void updatePlanting( String planName, CPSPlanting planting ) {
-//      ArrayList<Integer> changedID = new ArrayList();
-//      changedID.add( new Integer( changes.getID() ));
-//      updatePlantings( planName, changes, changedID );
-       p.update( planName, planting );
-       updateDataListeners();
+      HSQLDBCreator.updatePlanting( p, planName, planting );
+      updateDataListeners();
    }
    
    public void updatePlantings( String planName, CPSPlanting changes, List<Integer> changedIDs ) {
@@ -607,10 +614,22 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    protected void performInheritanceForPlanting( CPSPlanting planting ) {
 
+      if ( planting == null ) return;
+
+      debug( "Looking up inheritance info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ]" );
+      debug( "Before inheritance, planting looks like:\n" + planting.toString() );
+
       CPSCrop parent = getVarietyInfo( planting.getCropName(), planting.getVarietyName() );
 
-      if ( parent != null && parent.getID() != -1 )
+      if ( parent != null && parent.getID() != -1 ) {
+         debug( "Inheriting info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ] from crop [ " +
+                 parent.getCropName() + " : " + parent.getVarietyName() + " ]" );
          planting.inheritFrom( parent );
+      }
+      else
+         debug( "Couldn't find crop/var info to inherit." );
+
+      debug( "After inheritance, planting looks like:\n" + planting.toString() );
 
    }
 

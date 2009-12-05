@@ -44,7 +44,7 @@ public class HSQLUpdate {
        Connection con = p.getConnection();
 
        long previousVersion;
-       
+
        try { 
            // if the previously used version was so old as to not even
            // have the CPS_METADATA table
@@ -58,7 +58,9 @@ public class HSQLUpdate {
        
            // get previous version number
            previousVersion = HSQLQuerier.getLastUpdateVersion( con );
-       
+
+           CPSModule.debug( "HSQLUpdate", "Updating db from version " + previousVersion + " to version " + currentVersion );
+
            if ( previousVersion == -1 ) {
                System.err.println("Error updating db: error retrieving version of previous update");
                return;

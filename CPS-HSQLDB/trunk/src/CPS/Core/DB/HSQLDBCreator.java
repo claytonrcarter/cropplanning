@@ -43,7 +43,12 @@ public class HSQLDBCreator {
 
    // private constructor == no instantiation
    private HSQLDBCreator() {}
-   
+
+
+   /* ********************************************************************************************************* */
+   /* Create table methods */
+   /* ********************************************************************************************************* */
+
    // package level access
    static void createTables( Persist p, long currentVersion ) {
 
@@ -65,12 +70,76 @@ public class HSQLDBCreator {
               "INSERT INTO CPS_METADATA ( prev_ver ) VALUES ( 0 )";
    }
    
+   private static String createTableCropPlans() {
+      return statementCreateTable( "CROP_PLANS", HSQLDBSchemas.cropPlansListSchema() );
+   }
+   
+   private static String createTableCropPlan( String name ) {
+      return statementCreateTable( name, HSQLDBSchemas.cropPlanSchema() );
+   }
+
+   /**
+    * Create the table CROPS_VARIETIES, generating the schema from a CPSCrop object.
+    * @param p a Persist object connected to the db in which the table will be created.
+    */
+   private static void createTableCropsAndVarieties( Persist p ) {
+
+       p.create( HSQLDB.CROP_VAR_TABLE, new CPSCrop() );
+
+   }
+
+   /**
+    * Given a table name and an SQL schema definition (of field names and data
+    * types), will form an SQL state that can be used to create the table in question.
+    *
+    * @param name name of table to be created
+    * @param table_def schema def'n consisting of field names and data types, separated by commas
+    * @return an SQL statement that can be used to create the table in question
+    */
+   private static String statementCreateTable( String name, String table_def ) {
+
+      if ( table_def.endsWith( "," ))
+         table_def = table_def.substring( 0, table_def.length() - 1 );
+      if ( table_def.endsWith( ", " ))
+         table_def = table_def.substring( 0, table_def.length() - 2 );
+      
+      return "CREATE TABLE " + HSQLDB.escapeTableName( name ) + " ( " + table_def + " ) ";
+   }
+   
+   /* ********************************************************************************************************* */
+   /* Table metadata methods */
+   /* ********************************************************************************************************* */
+   
+   /**
+    * Updates the DB metadata table to record which program version was the last to update the database.  This
+    * figure chould be different from the currect program version if there have been one or more program
+    * releases made the last release which required a db structure update.  (eg, LastUpdateVersion could be
+    * 1.0.2 while current version is 1.0.6)
+    * This method should technically only be called when the db is first created and when explicit updates
+    * to the db schema and/or structure are made.
+    * @param con - JDBC Connection upon which to execute the version update statement.
+    * @param version - long int version number to set
+    */
+   public static void setLastUpdateVersion( Persist p, long version ) {
+       
+       String sqlUpdate = "UPDATE " + HSQLDB.escapeTableName( "CPS_METADATA" ) +
+                          " SET prev_ver = " + version;
+         
+       CPSModule.debug( "HSQLDBCreator","Attempting to execute: " + sqlUpdate );
+       p.executeUpdate( sqlUpdate );
+
+   }
+   
+   /* ********************************************************************************************************* */
+   /* Crop plan methods */
+   /* ********************************************************************************************************* */
+
    static void createCropPlan( Persist p, String name, int year, String desc ) {
       
       // TODO error if plan with name already exists
       HSQLDB.debug( "HSQLDBCreator", "Creating crop plan: " + HSQLDB.escapeTableName( name ) + " (" + year + ")" );
 
-       p.create( HSQLDB.escapeTableName( name ), new CPSPlanting() );
+       p.create( name, new CPSPlanting() );
 
        // Record the plan in the table listing all of the plans.
        String s = "INSERT INTO CROP_PLANS( plan_name ) VALUES( " + HSQLDB.escapeValue( name ) + " );";
@@ -110,80 +179,12 @@ public class HSQLDBCreator {
        
    }
    
-   public static void deleteRecord( Persist p, String table, int row ) {
-      
-       String s = "DELETE FROM " + HSQLDB.escapeTableName( table ) + " WHERE id = " + row;
-      
-       CPSModule.debug( "HSQLDBCreator", "Executing update: " + s );
-       p.executeUpdate( s );
-       
-   }
-   
-   private static String createTableCropPlans() {
-      return statementCreateTable( "CROP_PLANS", HSQLDBSchemas.cropPlansListSchema() );
-   }
-   
-   private static String createTableCropPlan( String name ) {
-      return statementCreateTable( name, HSQLDBSchemas.cropPlanSchema() );
-   }
 
-   /**
-    * Create the table CROPS_VARIETIES, generating the schema from a CPSCrop object.
-    * @param p a Persist object connected to the db in which the table will be created.
-    */
-   private static void createTableCropsAndVarieties( Persist p ) {
-
-       p.create( HSQLDB.CROP_VAR_TABLE, new CPSCrop() );
-
-   }
-
-   /**
-    * Given a table name and an SQL schema definition (of field names and data
-    * types), will form an SQL state that can be used to create the table in question.
-    *
-    * @param name name of table to be created
-    * @param table_def schema def'n consisting of field names and data types, separated by commas
-    * @return an SQL statement that can be used to create the table in question
-    */
-   private static String statementCreateTable( String name, String table_def ) {
-
-      if ( table_def.endsWith( "," ))
-         table_def = table_def.substring( 0, table_def.length() - 1 );
-      if ( table_def.endsWith( ", " ))
-         table_def = table_def.substring( 0, table_def.length() - 2 );
-      
-      return "CREATE TABLE " + HSQLDB.escapeTableName( name ) + " ( " + table_def + " ) ";
-   }
-   
-   
-   /**
-    * Updates the DB metadata table to record which program version was the last to update the database.  This
-    * figure chould be different from the currect program version if there have been one or more program
-    * releases made the last release which required a db structure update.  (eg, LastUpdateVersion could be
-    * 1.0.2 while current version is 1.0.6)
-    * This method should technically only be called when the db is first created and when explicit updates
-    * to the db schema and/or structure are made.
-    * @param con - JDBC Connection upon which to execute the version update statement.
-    * @param version - long int version number to set
-    */
-   public static void setLastUpdateVersion( Persist p, long version ) {
-       
-       String sqlUpdate = "UPDATE " + HSQLDB.escapeTableName( "CPS_METADATA" ) +
-                          " SET prev_ver = " + version;
-         
-       CPSModule.debug( "HSQLDBCreator","Attempting to execute: " + sqlUpdate );
-       p.executeUpdate( sqlUpdate );
-
-   }
-   
-   
+   /* ********************************************************************************************************* */
+   /* Crop Methods */
+   /* ********************************************************************************************************* */
    
    public static int insertCrop( Persist p, CPSCrop crop ) {
-
-       // grab the current ID -- this will probably be -1 -- and it doesn't
-       // matter at that because the ID will be regenerated when it's put into
-       // the db
-       int newID = crop.getID();
 
        crop.useRawOutput( true );
        // insert the new crop
@@ -211,31 +212,39 @@ public class HSQLDBCreator {
        for ( Integer I : ids ) {
            tempCrop = p.readByPrimaryKey( HSQLDB.CROP_VAR_TABLE, CPSCrop.class, I.intValue() );
            tempCrop.merge( changes );
+           tempCrop.useRawOutput( true );
            p.update( HSQLDB.CROP_VAR_TABLE, tempCrop );
+           tempCrop.useRawOutput( false );
        }
 
 //      updateRecords( p.getConnection(), CPSDataModelConstants.RECORD_TYPE_CROP, map, HSQLDB.CROP_VAR_TABLE, changes, ids, null );
    }
-   
+
+
+   /* ********************************************************************************************************* */
+   /* Planting methods */
+   /* ********************************************************************************************************* */
+
    public static int insertPlanting( Persist p,
                                      String planName,
-                                     CPSPlanting planting,
-                                     int cropID ) {
+                                     CPSPlanting planting ) {
 
+       planting.useRawOutput( true );
        p.insert( planName, planting );
+       planting.useRawOutput( false );
 
        planting.setID( getLastIdentity( p ) );
 
        CPSModule.debug( "HSQLDBCreator", "Inserted " + planting.getCropName() + " with id " + planting.getID() );
 
-       return planting.getID();
-         
+       return planting.getID();   
       
    }
 
-   public static void updatePlanting( Persist p, String planName, CPSPlanting planting, int cropID ) {
-
+   public static void updatePlanting( Persist p, String planName, CPSPlanting planting ) {
+       planting.useRawOutput( true );
        p.update( planName, planting );
+       planting.useRawOutput( false );
 
    }
 
@@ -250,12 +259,18 @@ public class HSQLDBCreator {
        for ( Integer I : ids ) {
            tempPlant = p.readByPrimaryKey( planName, CPSPlanting.class, I.intValue() );
            tempPlant.merge( changes );
+           tempPlant.useRawOutput( true);
            p.update( planName, tempPlant );
+           tempPlant.useRawOutput( false );
        }
 
 //      updateRecords( con, CPSDataModelConstants.RECORD_TYPE_PLANTING, map, planName, changes, ids, cropIDs );
    }
-   
+
+   /* ********************************************************************************************************* */
+   /* Generic methods */
+   /* ********************************************************************************************************* */
+
    /**
     * Update a list of (one or more) records.
     * 
@@ -322,6 +337,18 @@ public class HSQLDBCreator {
       catch ( SQLException ex ) { ex.printStackTrace(); }
    }
 
+   public static void deleteRecord( Persist p, String table, int row ) {
+
+       String s = "DELETE FROM " + HSQLDB.escapeTableName( table ) + " WHERE id = " + row;
+
+       CPSModule.debug( "HSQLDBCreator", "Executing update: " + s );
+       p.executeUpdate( s );
+
+   }
+
+   /* ********************************************************************************************************* */
+   /* Utility methods */
+   /* ********************************************************************************************************* */
 
    private static int getLastIdentity( Persist p ) {
 

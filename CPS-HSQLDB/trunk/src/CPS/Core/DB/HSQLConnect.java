@@ -88,7 +88,7 @@ public class HSQLConnect {
 //         String query = "select * from  " + tableName + " where 1=0";
 //         String query = "SELECT count(*) FROM  " + HSQLDB.escapeTableName( tableName );
          String query = "SELECT count(*) FROM INFORMATION_SCHEMA.SYSTEM_TABLES WHERE table_name = " +
-                        HSQLDB.escapeTableName( tableName.toUpperCase(), HSQLDB.ESCAPE_WITH_SINGLE_QUOTES );
+                        HSQLDB.escapeTableName( tableName, HSQLDB.ESCAPE_WITH_SINGLE_QUOTES );
 
          st.executeQuery( query );
 
