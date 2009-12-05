@@ -33,7 +33,7 @@ public class CropPlans extends CPSMasterDetailModule implements CPSExportable, C
       
       setModuleName( "CropPlans" );
       setModuleType( "Core" );
-      setModuleVersion( GLOBAL_DEVEL_VERSION );
+      setModuleVersion( CPSGlobalSettings.getVersion() );
       
       initPrefs( CropPlans.class );
       

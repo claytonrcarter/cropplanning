@@ -38,8 +38,6 @@ import javax.swing.*;
 
 public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemListener {
 
-   private String STATUS_IGNORE = "This planting is IGNORED and cannot be editted.  Uncheck the \"Ignore\" box to edit.";
-
    private CPSTextField tfldCropName, tfldVarName, tfldMatDays, tfldLocation;
    private JComboBox cmbDates;
 //   private CPSRadioButton rdoDateEff, rdoDatePlan, rdoDateAct;
@@ -87,11 +85,19 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
         displayedPlanting = p;
 
-        if ( ! isRecordDisplayed() ) {
-            setRecordDisplayed();
+        if ( ! isMainPanelBuilt() ) {
+            setMainPanelBuilt();
             rebuildMainPanel();
             updateAutocompletionComponents();
         }
+
+        if ( displayedPlanting == null ) {
+          displayedPlanting = new CPSPlanting();
+          setRecordDisplayed( false );
+        }
+        else
+           setRecordDisplayed( true );
+
 
        CropPlans.debug( "CropPlanInfo", "Displaying planting:\n" + displayedPlanting );
 
@@ -177,9 +183,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        displayDSTPProperties();
 
        if ( chkIgnore.isSelected() )
-          setStatus( "This planting is set as IGNORED and cannot be editted. Uncheck \"Ignore\" to edit." );
+          setStatus( CPSMasterDetailModule.STATUS_IGNORED );
        else
-          setStatus( "" );
+          setStatus( CPSMasterDetailModule.STATUS_BLANK );
        
         if ( ! displayedPlanting.isSingleRecord() ) {
            String ids = "";
@@ -187,7 +193,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
               ids += i.toString() + ", ";
            ids = ids.substring( 0, ids.lastIndexOf(", ") );
            setStatus( "Displaying common data for records: " + ids );
-       }        
+       }
+
+
+       setAllComponentsEnabled( isRecordDisplayed() );
            
     }
 
@@ -199,17 +208,15 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
     
    
     protected void saveChangesToRecord() {
+
        String selectedPlan = getDisplayedTableName();
 
        CPSPlanting currentlyDisplayed = this.asPlanting();
-
        CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( currentlyDisplayed );
-       if ( diff.getID() == -1 ) {
-          CropPlans.debug( "CPInfo", "no changes found (Invalid id) ... not saving;" );
+
+       if ( diff.getID() == -1 )
           return;
-       }
        
-       CropPlans.debug( "CPInfo", "changes found (Valid id) ... attempting to save changes");
        if ( ! displayedPlanting.isSingleRecord() )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
        else
@@ -225,14 +232,15 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
     */
     public CPSPlanting asPlanting() {
       
-       CPSPlanting p = new CPSPlanting();
+       CPSPlanting changes = new CPSPlanting();
+       changes.merge( displayedPlanting );
+
+       changes.setID( displayedPlanting.getID() );
       
-       p.setID( displayedPlanting.getID() );
-      
-       if ( tfldCropName.hasChanged() ) p.setCropName( tfldCropName.getText() );
-       if ( tfldVarName.hasChanged() ) p.setVarietyName( tfldVarName.getText() );
-       if ( tfldMatDays.hasChanged() ) p.setMaturityDays( tfldMatDays.getText() );
-       if ( tfldLocation.hasChanged() ) p.setLocation( tfldLocation.getText() );
+       if ( tfldCropName.hasChanged() ) changes.setCropName( tfldCropName.getText() );
+       if ( tfldVarName.hasChanged() ) changes.setVarietyName( tfldVarName.getText() );
+       if ( tfldMatDays.hasChanged() ) changes.setMaturityDays( tfldMatDays.getText() );
+       if ( tfldLocation.hasChanged() ) changes.setLocation( tfldLocation.getText() );
 
        /* We do not need to store the value of the "date radio buttons"
         * group because that button group only acts to control which dates
@@ -242,69 +250,69 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        String s = (String) cmbDates.getSelectedItem();
        if ( tfldDatePlant.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             p.setDateToPlantActual( tfldDatePlant.getText() );
+             changes.setDateToPlantActual( tfldDatePlant.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
-             p.setDateToPlantPlanned( tfldDatePlant.getText() );
+             changes.setDateToPlantPlanned( tfldDatePlant.getText() );
           // else do nothing for "effective" dates
 
        if ( tfldDateTP.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             p.setDateToTPActual( tfldDateTP.getText() );
+             changes.setDateToTPActual( tfldDateTP.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
-             p.setDateToTPPlanned( tfldDateTP.getText() );
+             changes.setDateToTPPlanned( tfldDateTP.getText() );
           // else do nothing for "effective" dates
 
        if ( tfldDateHarvest.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             p.setDateToHarvestPlanned( tfldDateHarvest.getText() );
+             changes.setDateToHarvestPlanned( tfldDateHarvest.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
-             p.setDateToHarvestPlanned( tfldDateHarvest.getText() );
+             changes.setDateToHarvestPlanned( tfldDateHarvest.getText() );
           // else do nothing for "effective" dates
 
-       if ( chkDonePlant.hasChanged() )   p.setDonePlanting( chkDonePlant.isSelected() );
-       if ( chkDoneTP.hasChanged() )      p.setDoneTP(       chkDoneTP.isSelected() );
-       if ( chkDoneHarvest.hasChanged() ) p.setDoneHarvest(  chkDoneHarvest.isSelected() );
-       if ( chkIgnore.hasChanged() )      p.setIgnore(       chkIgnore.isSelected() );
+       if ( chkDonePlant.hasChanged() )   changes.setDonePlanting( chkDonePlant.isSelected() );
+       if ( chkDoneTP.hasChanged() )      changes.setDoneTP(       chkDoneTP.isSelected() );
+       if ( chkDoneHarvest.hasChanged() ) changes.setDoneHarvest(  chkDoneHarvest.isSelected() );
+       if ( chkIgnore.hasChanged() )      changes.setIgnore(       chkIgnore.isSelected() );
 
 //       if ( rdoDS.hasChanged() || rdoTP.hasChanged() ) p.setDirectSeeded( rdoDS.isSelected() );
-       p.setDirectSeeded( rdoDS.isSelected() );
+       changes.setDirectSeeded( rdoDS.isSelected() );
        
-       if ( tfldMatAdjust.hasChanged() ) p.setMatAdjust( tfldMatAdjust.getText() );  
-       if ( tfldTimeToTP.hasChanged() ) p.setTimeToTP( tfldTimeToTP.getText() );
-       if ( tfldRowsPerBed.hasChanged() ) p.setRowsPerBed( tfldRowsPerBed.getText() );
-       if ( tfldInRowSpace.hasChanged() ) p.setInRowSpacing( tfldInRowSpace.getText() );
-       if ( tfldBetRowSpace.hasChanged() ) p.setRowSpacing( tfldBetRowSpace.getText() );
-       if ( tfldFlatSize.hasChanged() ) p.setFlatSize( tfldFlatSize.getText() );
-       if ( tfldPlantingNotesCrop.hasChanged() ) p.setPlantingNotesInherited( tfldPlantingNotesCrop.getText() );
-       if ( tfldPlantingNotes.hasChanged() ) p.setPlantingNotes( tfldPlantingNotes.getText() );
+       if ( tfldMatAdjust.hasChanged() ) changes.setMatAdjust( tfldMatAdjust.getText() );
+       if ( tfldTimeToTP.hasChanged() ) changes.setTimeToTP( tfldTimeToTP.getText() );
+       if ( tfldRowsPerBed.hasChanged() ) changes.setRowsPerBed( tfldRowsPerBed.getText() );
+       if ( tfldInRowSpace.hasChanged() ) changes.setInRowSpacing( tfldInRowSpace.getText() );
+       if ( tfldBetRowSpace.hasChanged() ) changes.setRowSpacing( tfldBetRowSpace.getText() );
+       if ( tfldFlatSize.hasChanged() ) changes.setFlatSize( tfldFlatSize.getText() );
+       if ( tfldPlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tfldPlantingNotesCrop.getText() );
+       if ( tfldPlantingNotes.hasChanged() ) changes.setPlantingNotes( tfldPlantingNotes.getText() );
 
-       if ( tfldBedsToPlant.hasChanged() ) p.setBedsToPlant( tfldBedsToPlant.getText() );
-       if ( tfldRowFtToPlant.hasChanged() ) p.setRowFtToPlant( tfldRowFtToPlant.getText() );
-       if ( tfldPlantsNeeded.hasChanged() ) p.setPlantsNeeded( tfldPlantsNeeded.getText() );
-       if ( tfldPlantsToStart.hasChanged() ) p.setPlantsToStart( tfldPlantsToStart.getText() );
-       if ( tfldFlatsNeeded.hasChanged() ) p.setFlatsNeeded( tfldFlatsNeeded.getText() );
-       if ( tfldYieldPerFt.hasChanged() ) p.setYieldPerFoot( tfldYieldPerFt.getText() );      
-       if ( tfldTotalYield.hasChanged() ) p.setTotalYield( tfldTotalYield.getText() );
+       if ( tfldBedsToPlant.hasChanged() ) changes.setBedsToPlant( tfldBedsToPlant.getText() );
+       if ( tfldRowFtToPlant.hasChanged() ) changes.setRowFtToPlant( tfldRowFtToPlant.getText() );
+       if ( tfldPlantsNeeded.hasChanged() ) changes.setPlantsNeeded( tfldPlantsNeeded.getText() );
+       if ( tfldPlantsToStart.hasChanged() ) changes.setPlantsToStart( tfldPlantsToStart.getText() );
+       if ( tfldFlatsNeeded.hasChanged() ) changes.setFlatsNeeded( tfldFlatsNeeded.getText() );
+       if ( tfldYieldPerFt.hasChanged() ) changes.setYieldPerFoot( tfldYieldPerFt.getText() );
+       if ( tfldTotalYield.hasChanged() ) changes.setTotalYield( tfldTotalYield.getText() );
        
-       if ( tfldYieldNumWeeks.hasChanged() ) p.setYieldNumWeeks( tfldYieldNumWeeks.getText() );
-       if ( tfldYieldPerWeek.hasChanged() ) p.setYieldPerWeek( tfldYieldPerWeek.getText() );
-       if ( tfldCropYieldUnit.hasChanged() ) p.setCropYieldUnit( tfldCropYieldUnit.getText() );
-       if ( tfldCropYieldUnitValue.hasChanged() ) p.setCropYieldUnitValue( tfldCropYieldUnitValue.getText() );
+       if ( tfldYieldNumWeeks.hasChanged() ) changes.setYieldNumWeeks( tfldYieldNumWeeks.getText() );
+       if ( tfldYieldPerWeek.hasChanged() ) changes.setYieldPerWeek( tfldYieldPerWeek.getText() );
+       if ( tfldCropYieldUnit.hasChanged() ) changes.setCropYieldUnit( tfldCropYieldUnit.getText() );
+       if ( tfldCropYieldUnitValue.hasChanged() ) changes.setCropYieldUnitValue( tfldCropYieldUnitValue.getText() );
 
-       if ( tareGroups.hasChanged() ) p.setGroups( tareGroups.getText() );
-       if ( tareOtherReq.hasChanged() ) p.setOtherRequirements( tareOtherReq.getText() );
-       if ( tareKeywords.hasChanged() ) p.setKeywords( tareKeywords.getText() );
-       if ( tareNotes.hasChanged() ) p.setNotes( tareNotes.getText( ) );
+       if ( tareGroups.hasChanged() ) changes.setGroups( tareGroups.getText() );
+       if ( tareOtherReq.hasChanged() ) changes.setOtherRequirements( tareOtherReq.getText() );
+       if ( tareKeywords.hasChanged() ) changes.setKeywords( tareKeywords.getText() );
+       if ( tareNotes.hasChanged() ) changes.setNotes( tareNotes.getText( ) );
 
-       if ( tfldCustom1.hasChanged() ) p.setCustomField1( tfldCustom1.getText() );
-       if ( tfldCustom2.hasChanged() ) p.setCustomField2( tfldCustom2.getText() );
-       if ( tfldCustom3.hasChanged() ) p.setCustomField3( tfldCustom3.getText() );
-       if ( tfldCustom4.hasChanged() ) p.setCustomField4( tfldCustom4.getText() );
-       if ( tfldCustom5.hasChanged() ) p.setCustomField5( tfldCustom5.getText() );
+       if ( tfldCustom1.hasChanged() ) changes.setCustomField1( tfldCustom1.getText() );
+       if ( tfldCustom2.hasChanged() ) changes.setCustomField2( tfldCustom2.getText() );
+       if ( tfldCustom3.hasChanged() ) changes.setCustomField3( tfldCustom3.getText() );
+       if ( tfldCustom4.hasChanged() ) changes.setCustomField4( tfldCustom4.getText() );
+       if ( tfldCustom5.hasChanged() ) changes.setCustomField5( tfldCustom5.getText() );
 
-       CropPlans.debug( "CPInfo", "panel display represents: " + p.toString() );
+       CropPlans.debug( "CPInfo", "panel display represents: " + changes.toString() );
 
-       return p;
+       return changes;
       
    }
    
@@ -634,9 +642,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    @Override
    public void dataUpdated() {
       if ( isRecordDisplayed() ) {
-         this.displayRecord( getDataSource().getPlanting( getDisplayedTableName(),
-                                                          getDisplayedRecord().getID() ) );
+         CPSPlanting p = getDataSource().getPlanting( getDisplayedTableName(),
+                                                      getDisplayedRecord().getID() );
+         this.displayRecord( p );
          updateAutocompletionComponents();
+         
       }
    }
 
@@ -662,7 +672,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       }
       else if ( source == chkIgnore ) {
          setAllComponentsEnabled( ! chkIgnore.isSelected() );
-         setStatus( STATUS_IGNORE );
+         setStatus( CPSMasterDetailModule.STATUS_IGNORED );
       }
       else if ( source == chkDonePlant ) {
          // IF  the actual dates are displayed
@@ -706,7 +716,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldPlantsToStart.setEnabled( b );
    }
 
-   private void setAllComponentsEnabled( boolean b ) {
+   protected void setAllComponentsEnabled( boolean b ) {
       
       tfldCropName.setEnabled( b );
       tfldVarName.setEnabled( b );

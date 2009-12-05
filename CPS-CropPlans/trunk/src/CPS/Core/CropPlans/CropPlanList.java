@@ -412,7 +412,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         updateSelectedPlanLabel();
         
         if ( getSelectedPlanName() == null ) {
-            setStatus( "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one." );
+            setStatus( CPSMasterView.STATUS_NO_PLAN_SELECTED );
         }
         else {
             updateListOfFieldNames();
