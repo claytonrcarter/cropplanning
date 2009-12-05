@@ -89,15 +89,15 @@ public class CPSCrop extends CPSRecord {
    private CPSDatum<String> otherRequirements;
    private CPSDatum<String> notes;
    
-   private CPSDatum<CPSBoolean> frostHardy;
+   private CPSDatum<Boolean> frostHardy;
    
-   private CPSDatum<CPSBoolean> directSeed;
+   private CPSDatum<Boolean> directSeed;
    private CPSDatum<Integer> dsMatAdjust;
    private CPSDatum<Integer> dsRowsPerBed;
    private CPSDatum<Integer> dsRowSpace;
    private CPSDatum<String>  dsPlantNotes;
    
-   private CPSDatum<CPSBoolean> transplant;
+   private CPSDatum<Boolean> transplant;
    private CPSDatum<Integer> tpMatAdjust;
    private CPSDatum<Integer> tpRowsPerBed;
    private CPSDatum<Integer> tpRowSpace;
@@ -105,7 +105,7 @@ public class CPSCrop extends CPSRecord {
    private CPSDatum<Integer> tpTimeInGH;
    private CPSDatum<String> tpFlatSize;
    private CPSDatum<String> tpPlantNotes;
-   private CPSDatum<CPSBoolean> tpPotUp;
+   private CPSDatum<Boolean> tpPotUp;
    private CPSDatum<String> tpPotUpNotes;
    
    private CPSDatum<Float> yieldPerFoot;
@@ -137,15 +137,15 @@ public class CPSCrop extends CPSRecord {
       otherRequirements = new CPSDatum<String>( "Other Requirements", "", PROP_OTHER_REQ );
       notes = new CPSDatum<String>( "Notes", "" , PROP_NOTES );
         
-      frostHardy = new CPSDatum<CPSBoolean>( "Frost hardy?", new CPSBoolean( null ), PROP_FROST_HARDY );
+      frostHardy = new CPSDatum<Boolean>( "Frost hardy?", new Boolean( null ), PROP_FROST_HARDY );
        
-      directSeed = new CPSDatum<CPSBoolean>( "Direct Seeded", new CPSBoolean( null ), PROP_DIRECT_SEED );
+      directSeed = new CPSDatum<Boolean>( "Direct Seeded", new Boolean( null ), PROP_DIRECT_SEED );
       dsMatAdjust = new CPSDatum<Integer>( "Adjust Mat. (DS)", new Integer( -1 ), PROP_DS_MAT_ADJUST );
       dsRowsPerBed = new CPSDatum<Integer>( "Rows/Bed (DS)", new Integer( -1 ), PROP_DS_ROWS_P_BED );
       dsRowSpace = new CPSDatum<Integer>( "Row Spacing (DS)", new Integer( -1 ), PROP_DS_SPACE_BETROW );
       dsPlantNotes = new CPSDatum<String>( "Notes for DS", ""  , PROP_DS_PLANT_NOTES );
 
-      transplant = new CPSDatum<CPSBoolean>( "Transplant", new CPSBoolean( null ), PROP_TRANSPLANT );
+      transplant = new CPSDatum<Boolean>( "Transplant", new Boolean( null ), PROP_TRANSPLANT );
       tpMatAdjust = new CPSDatum<Integer>( "Adjust Mat. (TP)", new Integer( -1 ), PROP_TP_MAT_ADJUST );
       tpRowsPerBed = new CPSDatum<Integer>( "Rows/Bed (TP)", new Integer( -1 ), PROP_TP_ROWS_BED );
       tpRowSpace = new CPSDatum<Integer>( "Row Spacing (TP)", new Integer( -1 ), PROP_TP_SPACE_BETROW );
@@ -153,7 +153,7 @@ public class CPSCrop extends CPSRecord {
       tpTimeInGH = new CPSDatum<Integer>( "Time to TP", new Integer( -1 ), PROP_TP_TIME_IN_GH );
       tpFlatSize = new CPSDatum<String>( "Flat Size", "", PROP_FLAT_SIZE );
       tpPlantNotes = new CPSDatum<String>( "Notes for TP", "", PROP_TP_PLANT_NOTES );
-      tpPotUp = new CPSDatum<CPSBoolean>( "Pot Up", new CPSBoolean( null ), PROP_POT_UP );
+      tpPotUp = new CPSDatum<Boolean>( "Pot Up", new Boolean( null ), PROP_POT_UP );
       tpPotUpNotes = new CPSDatum<String>( "Notes for Potting Up", "" , PROP_POT_UP_NOTES );
        
 //      yieldPerFoot = new CPSDatum<Float>( "Yield/Foot", new Float( -1.0 ), PROP_YIELD_FOOT );
@@ -298,31 +298,31 @@ public class CPSCrop extends CPSRecord {
     public CPSDatumState getOtherRequirmentsState() { return getStateOf( PROP_OTHER_REQ ); }
     public void setOtherRequirements( String e ) { set( otherRequirements, e ); }
     
-    public CPSBoolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }
-    public CPSBoolean isFrostTender() { return isFrostHardy().not(); }
+    public Boolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }
+    public Boolean isFrostTender() { return ! isFrostHardy().booleanValue(); }
     public CPSDatumState getFrostHardyState() { return getStateOf( PROP_FROST_HARDY ); }   
     public void setFrostHardy( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
-          setFrostHardy( new CPSBoolean( true ));
+          setFrostHardy( new Boolean( true ));
        else
-          setFrostHardy( new CPSBoolean( false ));
+          setFrostHardy( new Boolean( false ));
     }
-    public void setFrostHardy( CPSBoolean b ) { set( frostHardy, b ); }
-    public void setFrostHardy( Boolean b ) { setFrostHardy( new CPSBoolean( b )); }
+    public void setFrostHardy( Boolean b ) { set( frostHardy, b ); }
+    public void setFrostHardy( boolean b ) { setFrostHardy( new Boolean( b )); }
     
     /*
      * DIRECT SEEDING STATS
      */
-    public CPSBoolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
+    public Boolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
     public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }   
     public void setDirectSeeded( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
-          setDirectSeeded( new CPSBoolean( true ));
+          setDirectSeeded( new Boolean( true ));
        else
-          setDirectSeeded( new CPSBoolean( false ));
+          setDirectSeeded( new Boolean( false ));
     }
-    public void setDirectSeeded( CPSBoolean b ) { set( directSeed, b ); }
-    public void setDirectSeeded( Boolean b ) { setDirectSeeded( new CPSBoolean( b )); }
+    public void setDirectSeeded( Boolean b ) { set( directSeed, b ); }
+    public void setDirectSeeded( boolean b ) { setDirectSeeded( new Boolean( b )); }
     
     public Integer getDSMaturityAdjust() { return getInt( PROP_DS_MAT_ADJUST  ); }
     public String getDSMaturityAdjustString() { return formatInt( getDSMaturityAdjust() ); }
@@ -352,16 +352,16 @@ public class CPSCrop extends CPSRecord {
     /* 
      * TRANSPLANT STATS
      */
-    public CPSBoolean isTransplanted() { return getBoolean( PROP_TRANSPLANT ); }
+    public Boolean isTransplanted() { return getBoolean( PROP_TRANSPLANT ); }
     public CPSDatumState getTransplantedState() { return getStateOf( PROP_TRANSPLANT ); }   
     public void setTransplanted( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
-          setTransplanted( new CPSBoolean( true ));
+          setTransplanted( new Boolean( true ));
        else
-          setTransplanted( new CPSBoolean( false ));
+          setTransplanted( new Boolean( false ));
     }
-    public void setTransplanted( CPSBoolean b ) { set( transplant, b ); }
-    public void setTransplanted( Boolean b ) { setTransplanted( new CPSBoolean( b )); }
+    public void setTransplanted( Boolean b ) { set( transplant, b ); }
+    public void setTransplanted( boolean b ) { setTransplanted( new Boolean( b )); }
 
     public Integer getTPMaturityAdjust() { return getInt( PROP_TP_MAT_ADJUST  ); }
     public String getTPMaturityAdjustString() { return formatInt( getTPMaturityAdjust() ); }
@@ -407,7 +407,7 @@ public class CPSCrop extends CPSRecord {
     public void setTPPlantNotes( String s ) { set( tpPlantNotes, s ); }
 
     
-    public CPSBoolean isPottedUp() { return getBoolean( PROP_POT_UP ); }
+    public Boolean isPottedUp() { return getBoolean( PROP_POT_UP ); }
     public CPSDatumState getTPPottedUpState() { return getStateOf( PROP_POT_UP); }   
     public void setTPPottedUp( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
@@ -415,8 +415,8 @@ public class CPSCrop extends CPSRecord {
        else
           setTPPottedUp( false );
     }
-    public void setTPPottedUp( CPSBoolean b ) { set( tpPotUp, b ); }
-    public void setTPPottedUp( Boolean b ) { setTPPottedUp( new CPSBoolean(b) ); }
+    public void setTPPottedUp( Boolean b ) { set( tpPotUp, b ); }
+    public void setTPPottedUp( boolean b ) { setTPPottedUp( new Boolean(b) ); }
     
     public String getTPPotUpNotes() { return get( PROP_POT_UP_NOTES  ); }
     public CPSDatumState getTPPotUpNotesState() { return getStateOf( PROP_POT_UP_NOTES ); }

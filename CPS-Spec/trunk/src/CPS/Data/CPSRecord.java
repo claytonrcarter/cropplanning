@@ -162,11 +162,11 @@ public abstract class CPSRecord {
       else 
          return "" + i;
    }
-   public CPSBoolean getBoolean( int prop ) {
+   public Boolean getBoolean( int prop ) {
       if ( useRawOutput() )
-         return (CPSBoolean) getDatum( prop ).getValue( useRawOutput() );
+         return (Boolean) getDatum( prop ).getValue( useRawOutput() );
       else
-         return new CPSBoolean( getDatum( prop ).getValueAsBoolean() );
+         return new Boolean( getDatum( prop ).getValueAsBoolean() );
 //      Boolean b = get( prop );
 //      return b.booleanValue();
    }
@@ -382,7 +382,7 @@ public abstract class CPSRecord {
          return new Integer( parseInt(s) );
    }
    public int parseInt ( String s ) {
-      if ( isObjectNull(s) || s.equals("") )
+      if ( isObjectNull(s) || s.trim().equals("") )
          return -1;
       else
          // remove whitespace and ignore a leading '+"

@@ -136,10 +136,10 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<Date> date_tp_actual;
    private CPSDatum<Date> date_harvest_actual;
 
-   private CPSDatum<CPSBoolean> done_plant;
-   private CPSDatum<CPSBoolean> done_tp;
-   private CPSDatum<CPSBoolean> done_harvest;
-   private CPSDatum<CPSBoolean> ignore;
+   private CPSDatum<Boolean> done_plant;
+   private CPSDatum<Boolean> done_tp;
+   private CPSDatum<Boolean> done_harvest;
+   private CPSDatum<Boolean> ignore;
 
    private CPSDatum<Integer> ds_mat_adjust, tp_mat_adjust;
    private CPSDatum<Integer> time_to_tp;
@@ -163,8 +163,8 @@ public class CPSPlanting extends CPSRecord {
    private CPSDatum<Float> crop_unit_value;
    private CPSDatum<Float> total_yield;
 
-   private CPSDatum<CPSBoolean> direct_seed;
-   private CPSDatum<CPSBoolean> frost_hardy;
+   private CPSDatum<Boolean> direct_seed;
+   private CPSDatum<Boolean> frost_hardy;
 
    private CPSDatum<String> groups;
    private CPSDatum<String> keywords;
@@ -208,10 +208,10 @@ public class CPSPlanting extends CPSRecord {
       date_tp_actual = new CPSDatum<Date>( "Transplant Date (Actual)", "When this will be transplanted to the field", new Date( 0 ), PROP_DATE_TP_ACTUAL );
       date_harvest_actual = new CPSDatum<Date>( "Harvest Date (Actual)", "When this will be harvested", new Date( 0 ), PROP_DATE_HARVEST_ACTUAL );
 
-      done_plant = new CPSDatum<CPSBoolean>( "Planted?", "Has this been planted?", new CPSBoolean( false ), PROP_DONE_PLANTING);
-      done_tp = new CPSDatum<CPSBoolean>( "Transplanted?", "Has this been transplanted?", new CPSBoolean( false ), PROP_DONE_TP );
-      done_harvest = new CPSDatum<CPSBoolean>( "Harvested?", "Has this been harvested", new CPSBoolean( false ), PROP_DONE_HARVEST );
-      ignore = new CPSDatum<CPSBoolean>( "Ignore?", "Ignore this planting", new CPSBoolean( false ), PROP_IGNORE );
+      done_plant = new CPSDatum<Boolean>( "Planted?", "Has this been planted?", new Boolean( false ), PROP_DONE_PLANTING);
+      done_tp = new CPSDatum<Boolean>( "Transplanted?", "Has this been transplanted?", new Boolean( false ), PROP_DONE_TP );
+      done_harvest = new CPSDatum<Boolean>( "Harvested?", "Has this been harvested", new Boolean( false ), PROP_DONE_HARVEST );
+      ignore = new CPSDatum<Boolean>( "Ignore?", "Ignore this planting", new Boolean( false ), PROP_IGNORE );
 
       ds_mat_adjust = new CPSDatum<Integer>( "DS Mat. Adj.", new Integer(-1), PROP_DS_MAT_ADJUST );
       tp_mat_adjust = new CPSDatum<Integer>( "TP Mat. Adj.", new Integer(-1), PROP_TP_MAT_ADJUST );
@@ -239,8 +239,8 @@ public class CPSPlanting extends CPSRecord {
       crop_unit_value = new CPSDatum<Float>( "Value per Yield Unit", new Float(-1.0), PROP_CROP_UNIT_VALUE );
       total_yield = new CPSDatum<Float>( "Total Yield", new Float( -1.0 ), PROP_TOTAL_YIELD );
 
-      direct_seed = new CPSDatum<CPSBoolean>( "Direct seeded?", new CPSBoolean( true ), PROP_DIRECT_SEED );
-      frost_hardy = new CPSDatum<CPSBoolean>( "Frost hardy?", new CPSBoolean( false ) , PROP_FROST_HARDY );
+      direct_seed = new CPSDatum<Boolean>( "Direct seeded?", new Boolean( true ), PROP_DIRECT_SEED );
+      frost_hardy = new CPSDatum<Boolean>( "Frost hardy?", new Boolean( false ) , PROP_FROST_HARDY );
 
       groups = new CPSDatum<String>( "Groups", "", PROP_GROUPS );
       keywords = new CPSDatum<String>( "Keywords", "", PROP_KEYWORDS );
@@ -657,7 +657,7 @@ public class CPSPlanting extends CPSRecord {
    /* *********************************************************************************************/
    /* Status Booleans */
    /* *********************************************************************************************/
-   public CPSBoolean getDonePlanting() { return get( PROP_DONE_PLANTING ); }
+   public Boolean getDonePlanting() { return get( PROP_DONE_PLANTING ); }
    public CPSDatumState getDonePlantingState() { return getStateOf( PROP_DONE_PLANTING  ); }
    public void setDonePlanting( String s ) { 
       if ( s != null && s.equalsIgnoreCase("true") )
@@ -665,10 +665,10 @@ public class CPSPlanting extends CPSRecord {
       else
          setDonePlanting( false );
    }
-   public void setDonePlanting( CPSBoolean b ) { set( done_plant, b ); }
-   public void setDonePlanting( boolean b ) { set( done_plant, new CPSBoolean( b ) ); }
+   public void setDonePlanting( Boolean b ) { set( done_plant, b ); }
+   public void setDonePlanting( boolean b ) { set( done_plant, new Boolean( b ) ); }
 
-   public CPSBoolean getDoneTP() { return get( PROP_DONE_TP ); }
+   public Boolean getDoneTP() { return get( PROP_DONE_TP ); }
    public CPSDatumState getDoneTPState() { return getStateOf( PROP_DONE_TP  ); }
    public void setDoneTP( String s ) { 
       if ( s != null && s.equalsIgnoreCase("true") )
@@ -676,10 +676,10 @@ public class CPSPlanting extends CPSRecord {
       else
          setDoneTP( false );
    }
-   public void setDoneTP( CPSBoolean b ) { set( done_tp, b ); }
-   public void setDoneTP( boolean b ) { set( done_tp, new CPSBoolean( b ) ); }
+   public void setDoneTP( Boolean b ) { set( done_tp, b ); }
+   public void setDoneTP( boolean b ) { set( done_tp, new Boolean( b ) ); }
 
-   public CPSBoolean getDoneHarvest() { return get( PROP_DONE_HARVEST ); }
+   public Boolean getDoneHarvest() { return get( PROP_DONE_HARVEST ); }
    public CPSDatumState getDoneHarvestState() { return getStateOf( PROP_DONE_HARVEST  ); }
    public void setDoneHarvest( String s ) { 
       if ( s != null && s.equalsIgnoreCase("true") )
@@ -687,10 +687,10 @@ public class CPSPlanting extends CPSRecord {
       else
          setDoneHarvest( false );
    }
-   public void setDoneHarvest( CPSBoolean b ) { set( done_harvest, b ); }
-   public void setDoneHarvest( boolean b ) { set( done_harvest, new CPSBoolean( b ) ); }
+   public void setDoneHarvest( Boolean b ) { set( done_harvest, b ); }
+   public void setDoneHarvest( boolean b ) { set( done_harvest, new Boolean( b ) ); }
 
-   public CPSBoolean getIgnore() { return get( PROP_IGNORE ); }
+   public Boolean getIgnore() { return get( PROP_IGNORE ); }
    public CPSDatumState getIgnoreState() { return getStateOf( PROP_IGNORE  ); }
    public void setIgnore( String s ) {
       if ( s != null && s.equalsIgnoreCase("true") )
@@ -698,8 +698,8 @@ public class CPSPlanting extends CPSRecord {
       else
          setIgnore( false );
    }
-   public void setIgnore( CPSBoolean b ) { set( ignore, b ); }
-   public void setIgnore( boolean b ) { set( ignore, new CPSBoolean( b ) ); }
+   public void setIgnore( Boolean b ) { set( ignore, b ); }
+   public void setIgnore( boolean b ) { set( ignore, new Boolean( b ) ); }
 
 
    /* *********************************************************************************************/
@@ -1064,35 +1064,40 @@ public class CPSPlanting extends CPSRecord {
     * @return Whether or not this planting is direct seeded.  If call when useRawouput() == true, this
     * could return null.
     */
-   public CPSBoolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
-   public CPSBoolean isTransplanted() { 
+   public Boolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
+   public Boolean isTransplanted() {
       if ( isDirectSeeded() == null ) 
          return null;
       else 
-         return isDirectSeeded().not();
+         return ! isDirectSeeded().booleanValue();
    }
    public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }
    public void setDirectSeeded( String s ) {
       if ( s != null && s.equalsIgnoreCase("true") )
-         setDirectSeeded( new CPSBoolean( true ));
+         setDirectSeeded( new Boolean( true ));
       else
-         setDirectSeeded( new CPSBoolean( false ));
+         setDirectSeeded( new Boolean( false ));
    }
-   public void setTransplanted( Boolean b ) { setDirectSeeded( new CPSBoolean( ! b.booleanValue() )); }
-   public void setDirectSeeded( CPSBoolean b ) { set( direct_seed, b ); }
-   public void setDirectSeeded( Boolean b ) { setDirectSeeded( new CPSBoolean( b )); }
+   public void setTransplanted( Boolean b ) { 
+      if ( b == null )
+         setDirectSeeded( (Boolean) null );
+      else
+         setDirectSeeded( new Boolean( ! b.booleanValue() ));
+   }
+   public void setDirectSeeded( Boolean b ) { set( direct_seed, b ); }
+   public void setDirectSeeded( boolean b ) { setDirectSeeded( new Boolean( b )); }
 
-   public CPSBoolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }
-   public CPSBoolean isFrostTender() { return isFrostHardy().not(); }
+   public Boolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }
+   public Boolean isFrostTender() { return ! isFrostHardy().booleanValue(); }
    public CPSDatumState getFrostHardyState() { return getStateOf( PROP_FROST_HARDY ); }
    public void setFrostHardy( String s ) {
       if ( s != null && s.equalsIgnoreCase( "true" ) )
-         setFrostHardy( new CPSBoolean( true ));
+         setFrostHardy( new Boolean( true ));
       else
-         setFrostHardy( new CPSBoolean( false ));
+         setFrostHardy( new Boolean( false ));
    }
-   public void setFrostHardy( CPSBoolean b ) { set( frost_hardy, b ); }
-   public void setFrostHardy( boolean b ) { setFrostHardy( new CPSBoolean( b )); }
+   public void setFrostHardy( Boolean b ) { set( frost_hardy, b ); }
+   public void setFrostHardy( boolean b ) { setFrostHardy( new Boolean( b )); }
 
    public String getGroups() { return get( PROP_GROUPS ); }
    public CPSDatumState getGroupsState() { return getStateOf( PROP_GROUPS ); }
