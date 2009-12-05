@@ -30,6 +30,7 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.*;
 
 public class CropDBCropInfo extends CPSDetailView implements ItemListener {
@@ -52,6 +53,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private CPSTextArea tareDesc, tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private CPSTextField tfldYieldPerWeek, tfldYieldWeeks, tfldYieldPerFoot, tfldYieldUnits, tfldYieldUnitValue;
 
+   private ArrayList<JLabel> anonLabels = new ArrayList<JLabel>();
+
    // for the DS/TP checkboxes
 //   private CPSButtonGroup jbgPlantingMethod;
    
@@ -67,14 +70,22 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    public CPSRecord getDisplayedRecord() { return displayedCrop; }
    public void displayRecord( CPSRecord r ) { displayRecord( (CPSCrop) r ); }
    public void displayRecord( CPSCrop crop ) {
-      
+
       displayedCrop = crop;
       
-      if ( ! isRecordDisplayed() ) {
-         setRecordDisplayed();
+      if ( ! isMainPanelBuilt() ) {
+         setMainPanelBuilt();
          rebuildMainPanel();
          updateAutocompletionComponents();
       }
+
+      if ( displayedCrop == null ) {
+         displayedCrop = new CPSCrop();
+         setRecordDisplayed(false);
+      }
+      else
+         setRecordDisplayed( true );
+
 
       if ( CPSGlobalSettings.getDebug() )
          System.out.println( "Displaying record: " + displayedCrop.toString() );
@@ -139,6 +150,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
                              displayedCrop.getTransplantedState() );
       setTPComponentsEnabled( displayedCrop.isTransplanted().booleanValue() );
 
+      setAllComponentsEnabled( isRecordDisplayed() );
    }
    
    @Override
@@ -151,7 +163,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       
       CPSCrop changes = new CPSCrop();
       changes.merge( displayedCrop );
-      boolean ALLOW_NULL = true;
       
       changes.setID( displayedCrop.getID() );
 
@@ -253,19 +264,19 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       JPanel jplName = initPanelWithGridBagLayout();
       jplName.setBorder( BorderFactory.createEmptyBorder() );
       
-      LayoutAssist.createLabel(  jplName, 0, 0, "Crop Name:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 0, "Crop Name:" ));
       LayoutAssist.addTextField( jplName, 1, 0, tfldCropName );
 
-      LayoutAssist.createLabel(  jplName, 0, 1, "Variety:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 1, "Variety:" ));
       LayoutAssist.addTextField( jplName, 1, 1, tfldVarName );
       
-      LayoutAssist.createLabel(  jplName, 0, 2, "Family:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 2, "Family:" ));
       LayoutAssist.addTextField( jplName, 1, 2, tfldFamName );
       
       // starts in column 0, row 3 and spans 2 columns
       LayoutAssist.addSeparator( jplName, 0, 3, 2 );
       
-      LayoutAssist.createLabel(  jplName, 0, 4, "Description:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 4, "Description:" ));
       LayoutAssist.addTextArea(  jplName, 1, 4, tareDesc  );
       
       LayoutAssist.addPanelToColumn( columnOne, jplName );
@@ -278,7 +289,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
       
       /* Applies to both DS & TP */
-      LayoutAssist.createLabel(  jplPlanting, 1, 0, "Maturity Days:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 1, 0, "Maturity Days:" ));
       LayoutAssist.addTextField( jplPlanting, 2, 0, 2, 1, tfldMatDays );
       
       /* DS Column */
@@ -331,6 +342,11 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       LayoutAssist.addPanelToColumn( columnTwo, jplPlanting );
       LayoutAssist.finishColumn( columnTwo );
       
+      // add all of the above labels to the label list
+      anonLabels.addAll( Arrays.asList( new JLabel[] { lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes,
+                                                       lblTPMat, lblTPRows, lblTPSpaceRow, lblTPSpace,
+                                                       lblTPFlat, lblTPWeeks, lblTPNotes } ) );
+
       /* *************************************/
       /* COLUMN THREE (really four and five) */
       /* *************************************/
@@ -338,10 +354,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplYield.setBorder( BorderFactory.createTitledBorder( "Yield Info" ) );
       
       /* unit, per foot, weeks, per week, value */
-      LayoutAssist.createLabel(  jplYield, 0, 0, "Yield Units" );
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, 0, "Yield Units" ));
       LayoutAssist.addTextField( jplYield, 1, 0, tfldYieldUnits);
       
-      LayoutAssist.createLabel(  jplYield, 0, 1, "Total Yield/Ft" );
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, 1, "Total Yield/Ft" ));
       LayoutAssist.addTextField( jplYield, 1, 1, tfldYieldPerFoot );
       
 //      LayoutAssist.createLabel(  jplYield, 0, 2, "Weeks of Yield" );
@@ -364,13 +380,13 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       JPanel jplMisc = initPanelWithGridBagLayout();
       jplMisc.setBorder( BorderFactory.createTitledBorder( "Misc Info" ) );
 
-      LayoutAssist.createLabel(  jplMisc, 0, 0, "<html>Other <br>Requirements:</html>" );
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, 0, "<html>Other <br>Requirements:</html>" ));
       LayoutAssist.addTextArea(  jplMisc, 1, 0, 1, 1, tareOtherReq );
       
-      LayoutAssist.createLabel(  jplMisc, 0, 2, "<html>Belongs to <br>Groups:</html>" );
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, 2, "<html>Belongs to <br>Groups:</html>" ));
       LayoutAssist.addTextArea(  jplMisc, 1, 2, 1, 1, tareGroups );
       
-      LayoutAssist.createLabel(  jplMisc, 0, 4, "Keywords:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, 4, "Keywords:" ));
       LayoutAssist.addTextArea(  jplMisc, 1, 4, 1, 1, tareKeywords );
       
 //      LayoutAssist.addSubPanel( jplDetails, 6, 1, 2, 7, jplMisc);
@@ -392,7 +408,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       // Notes TextArea is set to span all remaining columns
       JPanel jplNotes = initPanelWithGridBagLayout();
       jplNotes.setBorder( BorderFactory.createEmptyBorder() );
-      LayoutAssist.createLabel(  jplNotes, 0, 0, "Notes:" );
+      anonLabels.add( LayoutAssist.createLabel(  jplNotes, 0, 0, "Notes:" ));
       LayoutAssist.addTextArea(  jplNotes, 1, 0, tareNotes );
       LayoutAssist.addSubPanel( jplDetails, 0, 14, 7, 1, jplNotes );
 
@@ -442,8 +458,50 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldTPWeeksToTP.setEnabled( b );
       tfldTPPlantNotes.setEnabled( b );
    }
+
+   @Override
+   protected void setAllComponentsEnabled( boolean b ) {
+
+      tfldCropName.setEnabled( b );
+      tfldVarName.setEnabled( b );
+      tfldFamName.setEnabled( b );
+      tfldMatDays.setEnabled( b );
+      tfldDSMatAdjust.setEnabled( b );
+      tfldDSRowsPerBed.setEnabled( b );
+      tfldDSSpaceBetRows.setEnabled( b );
+      tfldDSPlantNotes.setEnabled( b );
+      tfldTPMatAdjust.setEnabled( b );
+      tfldTPRowsPerBed.setEnabled( b );
+      tfldTPSpaceInRow.setEnabled( b );
+      tfldTPSpaceBetRows.setEnabled( b );
+      tfldTPFlatSize.setEnabled( b );
+      tfldTPWeeksToTP.setEnabled( b );
+      tfldTPPlantNotes.setEnabled( b );
+      tfldYieldPerWeek.setEnabled( b );
+      tfldYieldWeeks.setEnabled( b );
+      tfldYieldPerFoot.setEnabled( b );
+      tfldYieldUnits.setEnabled( b );
+      tfldYieldUnitValue.setEnabled( b );
+      tareDesc.setEnabled( b );
+      tareGroups.setEnabled( b );
+      tareOtherReq.setEnabled( b );
+      tareKeywords.setEnabled( b );
+      tareNotes.setEnabled( b );
+
+      chkDS.setEnabled( b );
+      chkTP.setEnabled( b );
+
+      for ( JLabel jl : anonLabels )
+         jl.setEnabled( b );
+
+   }
+
+
    
     protected void saveChangesToRecord() {
+
+
+
        CPSCrop currentlyDisplayed = this.asCrop();
        CPSCrop diff = (CPSCrop) displayedCrop.diff( currentlyDisplayed );
 
@@ -477,8 +535,11 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    @Override
    public void dataUpdated() {
       if ( isRecordDisplayed() ) {
-         this.displayRecord( getDataSource().getCropInfo( getDisplayedRecord().getID() ) );
+         CPSCrop c = getDataSource().getCropInfo( getDisplayedRecord().getID() );
+
+         this.displayRecord( c );
          updateAutocompletionComponents();
+         
       }
    }
    

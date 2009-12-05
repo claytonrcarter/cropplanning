@@ -37,7 +37,7 @@ public class CropDB extends CPSMasterDetailModule implements CPSExportable, CPSI
        
        setModuleName( "CropDB" );
        setModuleType( "Core" );
-       setModuleVersion( GLOBAL_DEVEL_VERSION );
+       setModuleVersion( CPSGlobalSettings.getVersion() );
        
        initPrefs( CropDB.class );
        
