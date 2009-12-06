@@ -57,6 +57,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
     protected JButton btnSaveChanges,  btnDiscardChanges;
    
     private boolean displayRecord = false;
+    private boolean panelBuilt = false;
    
     protected CPSMasterDetailModule uiManager = null;
    
@@ -79,8 +80,12 @@ public abstract class CPSDetailView extends CPSDataModelUser
     public int shutdown() { return 0; }
     protected Preferences getPrefs() { return uiManager.getPrefs(); }
     
+    protected boolean isMainPanelBuilt() { return panelBuilt; }
+    protected void setMainPanelBuilt() { panelBuilt = true; }
+
     protected boolean isRecordDisplayed() { return displayRecord; }
-    protected void setRecordDisplayed() { displayRecord = true; }
+    protected void setRecordDisplayed() { setRecordDisplayed( true ); }
+    protected void setRecordDisplayed( boolean b ) { displayRecord = b; }
     
     public JPanel getJPanel() {
         return getMainPanel();
@@ -104,7 +109,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
         
         if ( ! isRecordDisplayed() ) {
             initMainPanel( title );
-            mainPanel.add( lblStatus, BorderLayout.CENTER );    
+            clearMainPanel();
         }
         else
             rebuildMainPanel();
@@ -118,6 +123,13 @@ public abstract class CPSDetailView extends CPSDataModelUser
         
         uiManager.signalUIChanged();
 
+    }
+    protected void clearMainPanel() {
+       mainPanel.removeAll();
+       setStatus( CPSMasterDetailModule.STATUS_NO_SELECTION );
+       mainPanel.add( lblStatus, BorderLayout.CENTER );
+       
+       uiManager.signalUIChanged();
     }
    
     protected JPanel getAboveDetailsPanel() {
@@ -193,9 +205,15 @@ public abstract class CPSDetailView extends CPSDataModelUser
         uiManager.selectRecordInMasterView( id );
     }
     public abstract void displayRecord( CPSRecord r );
+    public void clearDisplay() {
+       setRecordDisplayed( false );
+       clearMainPanel();
+    }
     public abstract void setForEditting();
     public abstract CPSRecord getDisplayedRecord();
     protected abstract void updateAutocompletionComponents();
+    protected abstract void setAllComponentsEnabled( boolean b );
+
    
     protected String getDisplayedTableName() {
         return uiManager.getMasterTableName();
@@ -227,7 +245,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
                 return;
             }
             saveChangesToRecord();
-            setStatus("Changes saved.");
+            setStatus( CPSMasterDetailModule.STATUS_SAVED );
         }
         else if ( action.equalsIgnoreCase( btnDiscardChanges.getText() ) ) {
            displayRecord( getDisplayedRecord() );

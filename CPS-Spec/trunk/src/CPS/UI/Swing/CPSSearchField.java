@@ -27,11 +27,21 @@
 
 package CPS.UI.Swing;
 
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 
 /**
  * A text field for search/filter interfaces. The extra functionality includes
@@ -61,7 +71,6 @@ public class CPSSearchField extends JTextField {
     public CPSSearchField() {
         this("Search");
     }
-
     
     @Override
     public String getText() {
@@ -160,22 +169,10 @@ public class CPSSearchField extends JTextField {
             return (innerArea.contains(e.getPoint()) == false);
         }
         
-        public void mouseDragged(MouseEvent e) {
-            arm(e);
-        }
-        
-        public void mouseEntered(MouseEvent e) {
-            arm(e);
-        }
-        
-        public void mouseExited(MouseEvent e) {
-            disarm();
-        }
-        
-        public void mousePressed(MouseEvent e) {
-            arm(e);
-        }
-        
+        public void mouseDragged(MouseEvent e) { arm(e); }
+        public void mouseEntered(MouseEvent e) { arm(e); }
+        public void mouseExited(MouseEvent e) { disarm(); }
+        public void mousePressed(MouseEvent e) { arm(e); }
         public void mouseReleased(MouseEvent e) {
             if (armed) {
                 cancel();
@@ -217,11 +214,13 @@ public class CPSSearchField extends JTextField {
         public void focusLost(FocusEvent e) {
             previousText = getText();
             previousColor = getForeground();
+
             if (previousText.length() == 0) {
-                showingPlaceholderText = true;
-                setForeground(Color.GRAY);
-                setText(placeholderText);
-            }
+               showingPlaceholderText = true;
+               setForeground( Color.GRAY );
+               setText( placeholderText );
+           }
+
         }
     }
 }

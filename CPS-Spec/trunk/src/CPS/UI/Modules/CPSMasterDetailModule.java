@@ -37,7 +37,13 @@ import javax.swing.JSplitPane;
  * @author Clayton
  */
 public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule {
-    
+
+   public final static String STATUS_NO_SELECTION = "No records selected.  Select item from table above to display detailed information.";
+   public final static String STATUS_IGNORED = "This record is set as IGNORED and cannot be editted. Uncheck \"Ignore\" to edit.";
+   public final static String STATUS_BLANK = "";
+   public final static String STATUS_SAVED = "Changes saved.";
+
+
     private JPanel mainPanel = null;
     private JSplitPane splitPane;
     private CPSDetailView detail;
@@ -58,6 +64,9 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
     // with a method to pass a record ID instead of a whole record
     protected void displayDetail( CPSRecord r ) {
         detail.displayRecord(r);
+    }
+    protected void clearDetailDisplay() {
+       detail.clearDisplay();
     }
     protected void setDetailViewForEditting() {
         detail.setForEditting();

@@ -34,6 +34,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -45,10 +46,13 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.matchers.Matcher;
+import ca.odell.glazedlists.matchers.Matchers;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
+import java.awt.event.FocusListener;
 
 /**
  *
@@ -62,8 +66,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
     protected static final String KEY_DISPLAYED_COLUMNS = "DISPLAYED_COLUMNS";
     protected static final String KEY_DISPLAYED_TABLE = "DISPLAYED_TABLE";
-    
-    
+
+    protected static final String STATUS_NO_PLAN_SELECTED = "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one.";
+    protected static final String STATUS_NEW_RECORD = "Editing new record; save changes to add to list.";
+    protected static final String STATUS_NO_RECORDS = "No records found.  Use \"New\" button to create some.";
+    protected static final String STATUS_FILTER_NO_RECORDS = "Filter returned no records.  Check spelling or be less specific.";
+
     private JPanel masterListPanel = null;
     protected JPanel jplAboveList = null;
     private JPanel jplList = null;
@@ -143,7 +151,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     protected void updateDetailView() {
         if ( selectedIDs.size() < 1 )
-            return;
+            uiManager.clearDetailDisplay();
         else if ( selectedIDs.size() == 1 )
            uiManager.displayDetail( getDetailsForID( selectedIDs.get(0).intValue() ) );
         else
@@ -298,22 +306,31 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
     protected JPanel buildFilterComponent( boolean init ) {
         
-//        tfldFilter = new JTextField(10);
        tfldFilter = new CPSSearchField( "Filter" );
        tfldFilter.setToolTipText( "Only show records matching ALL of these terms.  Leave blank to show everything." );
-        tfldFilter.setMaximumSize(tfldFilter.getPreferredSize());
-        // HACK! TODO, improve this; possibly by implementing a delay?
-        // from: http://www.exampledepot.com/egs/javax.swing.text/ChangeEvt.html
-//        tfldFilter.getDocument().addDocumentListener( new DocumentListener() {
-//            public void insertUpdate(DocumentEvent e) { updateFilter(); }
-//            public void removeUpdate(DocumentEvent e) { updateFilter(); }
-//            public void changedUpdate(DocumentEvent evt) {}
-//       });
+       tfldFilter.setMaximumSize( tfldFilter.getPreferredSize() );
 
-//        masterListFiltered =
-//                new FilterList<CPSRecord>( masterList,
-//                                           new TextComponentMatcherEditor<CPSRecord>( tfldFilter,
-//                                                                                      getTextFilterator() ) );
+       masterListFiltered = new FilterList<CPSRecord>( masterList );
+       masterListFiltered.setMatcher( Matchers.trueMatcher() );
+
+       tfldFilter.addFocusListener( new FocusListener() {
+          TextComponentMatcherEditor<CPSRecord> realMatcher =
+                                                new TextComponentMatcherEditor<CPSRecord>( tfldFilter,
+                                                                                           getTextFilterator(),
+                                                                                           true );
+          Matcher<CPSRecord> defaultMatcher = Matchers.trueMatcher();
+
+          public void focusGained( FocusEvent arg0 ) {
+             masterListFiltered.setMatcherEditor( realMatcher );
+          }
+
+          public void focusLost( FocusEvent arg0 ) {
+             if ( tfldFilter.getText().equals( "" ) )
+                masterListFiltered.setMatcher( defaultMatcher );
+          }
+           
+       } );
+
 
        if ( init )
            initFilterPanel();
@@ -335,7 +352,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void buildListPanel() {
        
         // in case masterListFiltered hasn't been init;ed yet
-       EventList<CPSRecord> el = masterListSorted;
+       EventList<CPSRecord> el = masterListFiltered;
+//       EventList<CPSRecord> el = masterListSorted;
        if ( el == null )
            el = masterListSorted;
        masterTable = new CPSTable( new EventTableModel<CPSRecord>( el, getTableFormat() ) );
@@ -604,15 +622,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
         String action = actionEvent.getActionCommand();
 
         CPSModule.debug( "CPSMasterView", "Action performed: " + action);
-
-        /*
-         * FILTER BUTTON CLEAR
-         */
-//        if (action.equalsIgnoreCase(btnFilterClear.getText())) {
-//            tfldFilter.setText("");
-//            tfldFilter.requestFocus();
-//            return;
-//        }
         
         /*
          * COLUMN SELECTION POPUP WINDOW
@@ -649,7 +658,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
             uiManager.displayDetail( newRecord );
             uiManager.setDetailViewForEditting();
             setSelectedRowByRecordID( newID );
-            setStatus( "Editing new record; save changes to add to list." );
+            setStatus( STATUS_NEW_RECORD );
         }
         else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
             if (!isDataAvailable()) {
@@ -696,17 +705,17 @@ public abstract class CPSMasterView extends CPSDataModelUser
           // if the filter string is empty, then there really are no records
           // else we're just created an incorrect or too restrictive filter
           if ( getFilter().getFilterString().equals("") ) {
-              tfldFilter.setEnabled(false);
+//              tfldFilter.setEnabled(false);
               if ( getDisplayedTableName() == null || getDisplayedTableName().equals("") )
                   btnNewRecord.setEnabled( false );
               else
                   btnNewRecord.setEnabled( true );
-              setStatus( "No records found.  Use \"New\" button to create some." );
+              setStatus( STATUS_NO_RECORDS );
           }
           else {
               btnNewRecord.setEnabled(false);
               tfldFilter.setEnabled(true);
-              setStatus( "Filter returned no records.  Check spelling or be less specific." );
+              setStatus( STATUS_FILTER_NO_RECORDS );
           }
       }
       // table contains data; undo anything we might have just done (in the "if" clause) 
@@ -722,7 +731,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
               setStatus( null );
           }
           else
-              setStatus( "No records selected.  Select item from table above to display detailed information." );
+              setStatus( CPSMasterDetailModule.STATUS_NO_SELECTION );
       }
           
    }
