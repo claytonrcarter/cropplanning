@@ -54,6 +54,13 @@ If you've made a donation and aren't listed below, please [mailto:cropplanning@g
  * Kendra - she's been very understanding of my long, underpaid hours
  * The Marshalls - for their generosity and support
 
+== Donors ==
+
+ * Andrew Erwin
+ * Patricia Rupiper
+ * White Oak Gourmet
+ * kent duke
+
 == In-Kind Contributors ==
 
  * sm_zl_kimi - code for CSV import 
