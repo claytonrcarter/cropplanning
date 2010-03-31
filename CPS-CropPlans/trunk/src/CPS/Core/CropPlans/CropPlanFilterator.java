@@ -35,7 +35,7 @@ public class CropPlanFilterator implements TextFilterator<CPSPlanting>{
         baseList.add( planting.getGroups() );
         baseList.add( planting.getLocation() );
         baseList.add( planting.getKeywords() );
-        baseList.add( planting.getOtherRequirments() );
+        baseList.add( planting.getOtherRequirements() );
         baseList.add( planting.getNotes() );
 
         // actual dates, formated numerically (ie, 10/11/2009)

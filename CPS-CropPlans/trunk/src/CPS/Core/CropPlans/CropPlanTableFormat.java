@@ -23,44 +23,185 @@
 package CPS.Core.CropPlans;
 
 import CPS.Data.CPSPlanting;
-import ca.odell.glazedlists.gui.TableFormat;
+import CPS.UI.Modules.CPSAdvancedTableFormat;
 
-public class CropPlanTableFormat implements TableFormat<CPSPlanting> {
+public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
-    public int getColumnCount() { return 9; }
+   public int getColumnCount() { return 47; }
 
-    public String getColumnName( int arg0 ) {
+   @Override
+   public CPSPlanting getBlankRecord() {
+      return new CPSPlanting();
+   }
 
-        CPSPlanting p = new CPSPlanting();
+   @Override
+   public int getPropNumForColumn( int colNum ) {
 
-        switch ( arg0 ) {
-            case 0: return p.getDatum( p.PROP_CROP_NAME ).getName();
-            case 1: return p.getDatum( p.PROP_VAR_NAME ).getName();
-            case 2: return p.getDatum( p.PROP_MATURITY ).getName();
-            case 3: return p.getDatum( p.PROP_DATE_PLANT ).getName();
-            case 4: return p.getDatum( p.PROP_DONE_PLANTING ).getName();
-            case 5: return p.getDatum( p.PROP_DATE_TP ).getName();
-            case 6: return p.getDatum( p.PROP_DONE_TP ).getName();
-            case 7: return p.getDatum( p.PROP_DATE_HARVEST ).getName();
-            case 8: return p.getDatum( p.PROP_DONE_HARVEST ).getName();
-            default: return "";
-        }
+      switch ( colNum ) {
+         case 0: return CPSPlanting.PROP_CROP_NAME;
+         case 1: return CPSPlanting.PROP_VAR_NAME     ;
+         case 2: return CPSPlanting.PROP_MATURITY     ;
+         case 3: return CPSPlanting.PROP_LOCATION     ;
+
+         // Dates
+         // "effective" dates
+         case 4: return CPSPlanting.PROP_DATE_PLANT   ;
+         case 5: return CPSPlanting.PROP_DATE_TP      ;
+         case 6: return CPSPlanting.PROP_DATE_HARVEST ;
+         // planned dates
+         case 7: return CPSPlanting.PROP_DATE_PLANT_PLAN;
+         case 8: return CPSPlanting.PROP_DATE_TP_PLAN;
+         case 9: return CPSPlanting.PROP_DATE_HARVEST_PLAN;
+         // actual dates
+         case 10: return CPSPlanting.PROP_DATE_PLANT_ACTUAL;
+         case 11: return CPSPlanting.PROP_DATE_TP_ACTUAL;
+         case 12: return CPSPlanting.PROP_DATE_HARVEST_ACTUAL;
+
+         // Status Booleans
+         case 13: return CPSPlanting.PROP_DONE_PLANTING;
+         case 14: return CPSPlanting.PROP_DONE_TP      ;
+         case 15: return CPSPlanting.PROP_DONE_HARVEST ;
+         case 16: return CPSPlanting.PROP_IGNORE;
+
+         // Static Data
+         // inheritable
+         case 17: return CPSPlanting.PROP_MAT_ADJUST   ;
+         case 18: return CPSPlanting.PROP_ROWS_P_BED   ;
+         case 19: return CPSPlanting.PROP_ROW_SPACE    ;
+         case 20: return CPSPlanting.PROP_CROP_NOTES   ;
+
+         case 21: return CPSPlanting.PROP_TIME_TO_TP      ;
+         case 22: return CPSPlanting.PROP_INROW_SPACE  ;
+         case 23: return CPSPlanting.PROP_FLAT_SIZE    ;
+         case 24: return CPSPlanting.PROP_PLANTING_NOTES;
+
+         // Calculated Data
+         case 25: return CPSPlanting.PROP_BEDS_PLANT   ;
+         case 26: return CPSPlanting.PROP_PLANTS_NEEDED;
+         case 27: return CPSPlanting.PROP_ROWFT_PLANT  ;
+         case 28: return CPSPlanting.PROP_PLANTS_START ;
+         case 29: return CPSPlanting.PROP_FLATS_NEEDED ;
+
+         // Yield
+         // static
+         case 30: return CPSPlanting.PROP_YIELD_P_FOOT ;
+         case 31: return CPSPlanting.PROP_YIELD_NUM_WEEKS;
+         case 32: return CPSPlanting.PROP_YIELD_P_WEEK ;
+         case 33: return CPSPlanting.PROP_CROP_UNIT    ;
+         case 34: return CPSPlanting.PROP_CROP_UNIT_VALUE;
+         // calculated
+         case 35: return CPSPlanting.PROP_TOTAL_YIELD  ;
+
+         // Misc Metadata
+         // bools
+         case 36: return CPSPlanting.PROP_DIRECT_SEED  ;
+         case 37: return CPSPlanting.PROP_FROST_HARDY  ;
+         // Strings
+         case 38: return CPSPlanting.PROP_GROUPS       ;
+         case 39: return CPSPlanting.PROP_KEYWORDS     ;
+         case 40: return CPSPlanting.PROP_OTHER_REQ    ;
+         case 41: return CPSPlanting.PROP_NOTES        ;
+
+         case 42: return CPSPlanting.PROP_CUSTOM1      ;
+         case 43: return CPSPlanting.PROP_CUSTOM2      ;
+         case 44: return CPSPlanting.PROP_CUSTOM3      ;
+         case 45: return CPSPlanting.PROP_CUSTOM4      ;
+         case 46: return CPSPlanting.PROP_CUSTOM5      ;
+
+         default: return CPSPlanting.PROP_ID;
+      }
+   }
+
+   @Override
+   public boolean isDefaultColumn( int colNum ) {
+
+      switch ( colNum ) {
+         case 0: case 1: case 2: case 3:
+         case 4: case 5: case 6:
+            return true;
+
+         default: return false;
+      }
+   }
+
+   public Object getColumnValue( CPSPlanting p, int colNum ) {
+
+      switch ( colNum ) {
+         case 0: return p.getCropName();
+         case 1: return p.getVarietyName();
+         case 2: return p.getMaturityDays();
+         case 3: return p.getLocation();
+
+         // Dates
+         // "effective" dates
+         case 4: return p.getDateToPlant();
+         case 5: return p.getDateToTP();
+         case 6: return p.getDateToHarvest();
+         // planned dates
+         case 7: return p.getDateToPlantPlanned();
+         case 8: return p.getDateToTPPlanned();
+         case 9: return p.getDateToHarvestPlanned();
+         // actual dates
+         case 10: return p.getDateToPlantActual();
+         case 11: return p.getDateToTPActual();
+         case 12: return p.getDateToHarvestActual();
+
+         // Status Booleans
+         case 13: return p.getDonePlanting();
+         case 14: return p.getDoneTP();
+         case 15: return p.getDoneHarvest();
+         case 16: return p.getIgnore();
+
+         // Static Data
+         // inheritable
+         case 17: return p.getMatAdjust();
+         case 18: return p.getRowsPerBed();
+         case 19: return p.getRowSpacing();
+         case 20: return p.getNotes();
+
+         case 21: return p.getTimeToTP();
+         case 22: return p.getInRowSpacing();
+         case 23: return p.getFlatSize();
+         case 24: return p.getPlantingNotes();
+
+         // Calculated Data
+         case 25: return p.getBedsToPlant();
+         case 26: return p.getPlantsNeeded();
+         case 27: return p.getRowFtToPlant();
+         case 28: return p.getPlantsToStart();
+         case 29: return p.getFlatsNeeded();
+
+         // Yield
+         // static
+         case 30: return p.getYieldPerFoot();
+         case 31: return p.getYieldNumWeeks();
+         case 32: return p.getYieldPerWeek();
+         case 33: return p.getCropYieldUnit();
+         case 34: return p.getCropYieldUnitValue();
+         // calculated
+         case 35: return p.getTotalYield();
+
+         // Misc Metadata
+         // bools
+         case 36: return p.isDirectSeeded();
+         case 37: return p.isFrostHardy();
+         // Strings
+         case 38: return p.getGroups();
+         case 39: return p.getKeywords();
+         case 40: return p.getOtherRequirements();
+         case 41: return p.getNotes();
+
+         case 42: return p.getCustomField1();
+         case 43: return p.getCustomField2();
+         case 44: return p.getCustomField3();
+         case 45: return p.getCustomField4();
+         case 46: return p.getCustomField5();
+         
+         default: return "";
+      }
     }
 
-    public Object getColumnValue( CPSPlanting p, int arg1 ) {
 
-        switch ( arg1 ) {
-            case 0: return p.getCropName();
-            case 1: return p.getVarietyName();
-            case 2: return p.getMaturityDays();
-            case 3: return p.getDateToPlant();
-            case 4: return p.getDonePlanting();
-            case 5: return p.getDateToTP();
-            case 6: return p.getDoneTP();
-            case 7: return p.getDateToHarvest();
-            case 8: return p.getDoneHarvest();
-            default: return "";
-        }
-    }
+
 
 }

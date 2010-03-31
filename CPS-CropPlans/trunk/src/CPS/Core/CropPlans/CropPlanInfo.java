@@ -154,8 +154,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        
        tareGroups.setInitialText( displayedPlanting.getGroups(),
                                    displayedPlanting.getGroupsState() );
-       tareOtherReq.setInitialText( displayedPlanting.getOtherRequirments(),
-                                    displayedPlanting.getOtherRequirmentsState() );
+       tareOtherReq.setInitialText( displayedPlanting.getOtherRequirements(),
+                                    displayedPlanting.getOtherRequirementsState() );
        tareKeywords.setInitialText( displayedPlanting.getKeywords(),
                                     displayedPlanting.getKeywordsState());
        tareNotes.setInitialText( displayedPlanting.getNotes(),
@@ -264,7 +264,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
        if ( tfldDateHarvest.hasChanged() )
           if ( s.equalsIgnoreCase( DATE_ACTUAL ))
-             changes.setDateToHarvestPlanned( tfldDateHarvest.getText() );
+             changes.setDateToHarvestActual( tfldDateHarvest.getText() );
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
              changes.setDateToHarvestPlanned( tfldDateHarvest.getText() );
           // else do nothing for "effective" dates
