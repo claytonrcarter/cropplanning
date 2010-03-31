@@ -26,6 +26,7 @@ import CPS.Data.*;
 import CPS.Module.CPSExporter;
 import CPS.Module.CPSImporter;
 import CPS.Module.CPSDataModelConstants;
+import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
 import java.util.ArrayList;
 import com.csvreader.*;
@@ -48,7 +49,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
       setModuleName("CSV");
       setModuleType( MOD_TYPE_DATAMODEL );
       setModuleDescription("A CSV DataModel (for import/export only)");
-      setModuleVersion( GLOBAL_DEVEL_VERSION );
+      setModuleVersion( CPSGlobalSettings.getVersion() );
 
       exportOnly = true;
       dateValidator = new CPSDateValidator();
