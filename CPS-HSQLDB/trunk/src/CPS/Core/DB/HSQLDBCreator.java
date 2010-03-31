@@ -201,6 +201,7 @@ public class HSQLDBCreator {
    }
    
    public static void updateCrop( Persist p, CPSCrop crop ) {
+      HSQLDB.debug( "HSQLCreator", "Updating crop: " + crop.toString() );
        crop.useRawOutput( true );
        p.update( HSQLDB.CROP_VAR_TABLE, crop);
        crop.useRawOutput( false );

@@ -33,7 +33,7 @@ import java.sql.Date;
  * @see CPS.Data.CPSCalculations
  * @author Clayton Carter
  */
-public class HSQLCalc {
+public final class HSQLCalc {
    
    /*
     * ===[ DEVELOPER NOTES ]===
