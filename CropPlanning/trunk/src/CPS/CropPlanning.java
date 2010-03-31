@@ -31,7 +31,6 @@ import java.util.*;
 public class CropPlanning implements Runnable {
 
    private ModuleManager mm;
-   public static final String CPS_CORE_VERSION = CPSModule.GLOBAL_DEVEL_VERSION;
    
     public static void main(String[] args) {
 
@@ -47,6 +46,8 @@ public class CropPlanning implements Runnable {
            }
 
            props.load( in );
+
+           CPSGlobalSettings.setVersion( props.getProperty( "program.VERSION" ) );
 
            buildnum +=
                    props.getProperty( "program.VERSION") + "-" +
@@ -66,7 +67,7 @@ public class CropPlanning implements Runnable {
           if ( s.equalsIgnoreCase( "-firstTime" ) )
              CPSGlobalSettings.setFirstTimeRun( true );
           if ( s.equalsIgnoreCase( "-version" ) || s.equalsIgnoreCase( "-versionsimple" )) {
-             System.out.println( CPSModule.GLOBAL_DEVEL_VERSION );
+             System.out.println( CPSGlobalSettings.getVersion() );
              System.exit(0);
           }
           if ( s.equalsIgnoreCase( "-versionraw" )) {
@@ -138,7 +139,7 @@ public class CropPlanning implements Runnable {
        
        Runtime.getRuntime().addShutdownHook( new Thread(this) );
                    
-       globSet.setLastVersionUsed( CPSModule.versionAsLongInt( CPS_CORE_VERSION ) );
+       globSet.setLastVersionUsed( CPSModule.versionAsLongInt( globSet.getVersion() ) );
        
        ui.showUI();
        
