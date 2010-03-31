@@ -79,7 +79,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     public TODOLists() {
         setModuleName("TODOLists");
         setModuleType("Core");
-        setModuleVersion(GLOBAL_DEVEL_VERSION);
+        setModuleVersion( CPSGlobalSettings.getVersion() );
 
         tempCal = new GregorianCalendar();
     }
@@ -148,11 +148,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         filFile.setMultiSelectionEnabled(false);
         filFile.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if ( filFile == null ) {
-            lblDirectory = new JLabel("<html><i>Hmm, problem displaying directory name. (Error 701)</i></html>");
+            lblDirectory = new JLabel("<html><em>Hmm, problem displaying directory name. (Error 701)</em></html>");
             debug( "Encountered null JFileChooser, ERROR 701" );
         }
         else if ( filFile.getSelectedFile() == null ) {
-            lblDirectory = new JLabel("<html><i>Hmm, problem displaying directory name. (Error 702)</i></html>");
+            lblDirectory = new JLabel("<html><em>Hmm, problem displaying directory name. (Error 702)</em></html>");
             debug( "JFileChooser returned a null selected file, ERROR 702" );
         }
         else if ( filFile.getSelectedFile().getPath() == null ) {
@@ -357,7 +357,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 //        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
         BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
         data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new DSFieldPlantingTableFormat() ));
 
 //        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
 //        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
@@ -425,7 +425,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         data.clear();
         data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new TPFieldPlantingTableFormat() ));
 
 
         exporter.addPage(jt, "Transplanted Field Plantings");
@@ -469,7 +469,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
         data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
+        jt.setModel( new EventTableModel<CPSPlanting>( data, new AllPlantingsTableFormat() ));
 
 
         exporter.export( jt, filename,

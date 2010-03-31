@@ -227,8 +227,8 @@ public class PDFExporter {
            
            for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
                 Object o = jtable.getValueAt( row, col );
-               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
-               TODOLists.debug( "PDFExporter", "Value is " + (( o==null) ? "NULL" : o.toString()) );
+//               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
+//               TODOLists.debug( "PDFExporter", "Value is " + (( o==null) ? "NULL" : o.toString()) );
                 if ( o == null ) {
                    if ( ! tableIncludesNotes || col != notesIndex )
                     table.addCell( new regCell( "" ) );
