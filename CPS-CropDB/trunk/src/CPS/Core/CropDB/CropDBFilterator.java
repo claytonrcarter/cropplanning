@@ -44,7 +44,7 @@ public class CropDBFilterator implements TextFilterator<CPSCrop>{
         baseList.add( crop.getCropYieldUnit() );
         baseList.add( crop.getGroups() );
         baseList.add( crop.getKeywords() );
-        baseList.add( crop.getOtherRequirments() );
+        baseList.add( crop.getOtherRequirements() );
         baseList.add( crop.getNotes() );
 
     }

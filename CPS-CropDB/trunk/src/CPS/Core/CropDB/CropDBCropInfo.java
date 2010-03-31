@@ -136,8 +136,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tareDesc.setInitialText( displayedCrop.getCropDescription() );
       tareGroups.setInitialText( displayedCrop.getGroups(),
                                  displayedCrop.getGroupsState() );
-      tareOtherReq.setInitialText( displayedCrop.getOtherRequirments(),
-                                   displayedCrop.getOtherRequirmentsState() );
+      tareOtherReq.setInitialText( displayedCrop.getOtherRequirements(),
+                                   displayedCrop.getOtherRequirementsState() );
       tareKeywords.setInitialText( displayedCrop.getKeywords(),
                                    displayedCrop.getKeywordsState() );
       tareNotes.setInitialText( displayedCrop.getNotes() );

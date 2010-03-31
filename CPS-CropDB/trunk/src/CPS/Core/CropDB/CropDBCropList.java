@@ -28,7 +28,7 @@ import CPS.Data.CPSCrop;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Modules.CPSMasterView;
 import ca.odell.glazedlists.TextFilterator;
-import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -41,7 +41,6 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
     CropDBCropList( CPSMasterDetailModule mdm ) {
        super(mdm);
-       setSortColumn( CPSDataModelConstants.PROP_CROP_NAME );
     }
 
    @Override
@@ -124,7 +123,7 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     }
 
     @Override
-    protected TableFormat getTableFormat() {
+    protected AdvancedTableFormat getTableFormat() {
         return new CropDBTableFormat();
     }
 
