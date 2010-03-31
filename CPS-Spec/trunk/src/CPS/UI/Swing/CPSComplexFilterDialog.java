@@ -33,22 +33,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, ActionListener {
+public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, 
+                                                                 ActionListener,
+                                                                 WindowListener {
 
     private static final String SHOW_ALL = "Show all";
     
@@ -87,7 +86,9 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
                         "default view filter.  View filters " + 
                         "are used to \"limit\" the data " +
                         "which is displayed in the main\ntable." );
-        
+
+        addWindowListener( this );
+
         savedFilter = new CPSComplexPlantingFilter();
         dateValidator = new CPSDateValidator();
         
@@ -113,7 +114,15 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
     private CPSComplexPlantingFilter asFilter() {
         
         CPSComplexPlantingFilter f = new CPSComplexPlantingFilter();
+        updateFilter( f );
+        return f;
         
+    }
+
+    public void updateFilter ( CPSComplexPlantingFilter f ) {
+       
+       f.reset();
+
         if ( ! rdoNoLimit.isSelected() ) {
             
             f.setViewLimited(true);
@@ -144,8 +153,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
             }
             
         }
-        
-        return f;
+
+       f.changed();
 
     }
     
@@ -374,15 +383,6 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
         add( jplDates );
         
     }
-
-    public void itemStateChanged( ItemEvent arg0 ) {
-        Object source = arg0.getSource();
-        
-        if      ( source == rdoNoLimit || source == rdoLimit ) {
-            setComponentsEnabled( ! rdoNoLimit.isSelected() );
-        }
-        
-    }
     
     private void setComponentsEnabled( boolean enable ) {
         rdoDSAndTP.setEnabled(enable);
@@ -406,6 +406,11 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
         btnHarvestDateRange.setEnabled( enable );
     }
 
+
+    /* ***************************************************************************************** */
+    /* Interface Methods */
+    /* ***************************************************************************************** */
+
     public void actionPerformed( ActionEvent arg0 ) {
         String action = arg0.getActionCommand();
         
@@ -420,8 +425,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
         else if ( action.equalsIgnoreCase( btnPlantDateRange.getActionCommand() )) {
             dlgPlantRange.setVisible(true);
             if ( dlgPlantRange.isDateRangeSet() )
-                this.lblPlantDateRange.setText( dateValidator.format( dlgPlantRange.getStartDate() ) + " - " +
-                                                dateValidator.format( dlgPlantRange.getEndDate() ) );
+                this.lblPlantDateRange.setText( CPSDateValidator.format( dlgPlantRange.getStartDate() ) + " - " +
+                                                CPSDateValidator.format( dlgPlantRange.getEndDate() ) );
             else
                 this.lblPlantDateRange.setText( SHOW_ALL );
             this.pack();
@@ -429,8 +434,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
         else if ( action.equalsIgnoreCase( btnTPDateRange.getActionCommand() )) {
             dlgTPRange.setVisible(true);
             if ( dlgTPRange.isDateRangeSet() )
-                this.lblTPDateRange.setText( dateValidator.format( dlgTPRange.getStartDate() ) + " - " +
-                                             dateValidator.format( dlgTPRange.getEndDate() ) );
+                this.lblTPDateRange.setText( CPSDateValidator.format( dlgTPRange.getStartDate() ) + " - " +
+                                             CPSDateValidator.format( dlgTPRange.getEndDate() ) );
             else
                 this.lblTPDateRange.setText( SHOW_ALL );
             this.pack();
@@ -438,8 +443,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
         else if ( action.equalsIgnoreCase( btnHarvestDateRange.getActionCommand() )) {
             dlgHarvestRange.setVisible(true);
             if ( dlgHarvestRange.isDateRangeSet() )
-                this.lblHarvestDateRange.setText( dateValidator.format( dlgHarvestRange.getStartDate() ) + " - " +
-                                                  dateValidator.format( dlgHarvestRange.getEndDate() ) );
+                this.lblHarvestDateRange.setText( CPSDateValidator.format( dlgHarvestRange.getStartDate() ) + " - " +
+                                                  CPSDateValidator.format( dlgHarvestRange.getEndDate() ) );
             else
                 this.lblHarvestDateRange.setText( SHOW_ALL );
             this.pack();
@@ -447,15 +452,34 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener, A
         
     }
     
-    
-    /*
-     * Inner Class Def'n
-     * 
-     * 
-     * 
-     * 
-     * 
-     */
+    public void itemStateChanged( ItemEvent arg0 ) {
+        Object source = arg0.getSource();
+        
+        if      ( source == rdoNoLimit || source == rdoLimit ) {
+            setComponentsEnabled( ! rdoNoLimit.isSelected() );
+        }
+        
+    }
+
+
+   // if the window is closed w/ the filter being "set", we should go ahead and "reset" in case
+   // some of the buttons and what not have been altered
+   public void windowClosed( WindowEvent e ) {
+      fromFilter( savedFilter );
+   }
+   public void windowActivated( WindowEvent e ) { /* do nothing */ }
+   public void windowClosing( WindowEvent e ) { /* do nothing */ }
+   public void windowDeactivated( WindowEvent e ) { /* do nothing */ }
+   public void windowDeiconified( WindowEvent e ) { /* do nothing */ }
+   public void windowIconified( WindowEvent e ) { /* do nothing */ }
+   public void windowOpened( WindowEvent e ) { /* do nothing */ }
+
+
+
+
+    /* ***************************************************************************************** */
+    /* Inner Class Def'n
+    /* ***************************************************************************************** */
     public class DateRangeDialog extends CPSDialog implements ItemListener, ActionListener, PropertyChangeListener {
         
         private Date startDate, endDate;

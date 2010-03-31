@@ -34,7 +34,7 @@ import CPS.Module.CPSModule;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class CPSPlanting extends CPSRecord {
+public final class CPSPlanting extends CPSRecord {
 
    // Core Data
    public static final int PROP_CROP_NAME     = CPSDataModelConstants.PROP_CROP_NAME;
@@ -430,7 +430,6 @@ public class CPSPlanting extends CPSRecord {
           }
        }
        else if ( this.isSingleRecord() && p.isNotNull() ) {
-          debug( "getting PLANNED date for " + a.getName() );
           e.setState( p.getState() );
           switch ( prop_plan ) {
              case PROP_DATE_PLANT_PLAN:   return getDateToPlantPlanned();
@@ -1107,8 +1106,8 @@ public class CPSPlanting extends CPSRecord {
    public CPSDatumState getKeywordsState() { return getStateOf( PROP_KEYWORDS ); }
    public void setKeywords( String e ) { set( keywords, e ); }
 
-   public String getOtherRequirments() { return get( PROP_OTHER_REQ ); }
-   public CPSDatumState getOtherRequirmentsState() { return getStateOf( PROP_OTHER_REQ ); }
+   public String getOtherRequirements() { return get( PROP_OTHER_REQ ); }
+   public CPSDatumState getOtherRequirementsState() { return getStateOf( PROP_OTHER_REQ ); }
    public void setOtherRequirements( String e ) { set( other_req, e ); }
 
    public String getNotes() { return get( PROP_NOTES ); }
@@ -1313,7 +1312,7 @@ public class CPSPlanting extends CPSRecord {
 
    public Date parseDate( String s ) {
        if ( s == null || s.equals("") )
-           return new Date(0);
+           return null;
      
        return dateValidator.parse(s);
    }

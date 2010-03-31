@@ -30,44 +30,44 @@ import java.util.*;
  * Crop - data structure to hold information about a crop
  *        NOT for a planting of a crop, but just for the crop
  */
-public class CPSCrop extends CPSRecord {
+public final class CPSCrop extends CPSRecord {
 
-   public final int PROP_CROP_NAME = CPSDataModelConstants.PROP_CROP_NAME;
-   public final int PROP_CROP_DESC = CPSDataModelConstants.PROP_CROP_DESC;
-   public final int PROP_VAR_NAME = CPSDataModelConstants.PROP_VAR_NAME;
-   public final int PROP_FAM_NAME = CPSDataModelConstants.PROP_FAM_NAME;
-   public final int PROP_BOT_NAME = CPSDataModelConstants.PROP_BOT_NAME;
+   public final static int PROP_CROP_NAME = CPSDataModelConstants.PROP_CROP_NAME;
+   public final static int PROP_CROP_DESC = CPSDataModelConstants.PROP_CROP_DESC;
+   public final static int PROP_VAR_NAME = CPSDataModelConstants.PROP_VAR_NAME;
+   public final static int PROP_FAM_NAME = CPSDataModelConstants.PROP_FAM_NAME;
+   public final static int PROP_BOT_NAME = CPSDataModelConstants.PROP_BOT_NAME;
 
-   public final int PROP_MATURITY = CPSDataModelConstants.PROP_MATURITY;
-   public final int PROP_GROUPS = CPSDataModelConstants.PROP_GROUPS;
-   public final int PROP_KEYWORDS = CPSDataModelConstants.PROP_KEYWORDS;
-   public final int PROP_OTHER_REQ = CPSDataModelConstants.PROP_OTHER_REQ;
-   public final int PROP_NOTES = CPSDataModelConstants.PROP_NOTES;
+   public final static int PROP_MATURITY = CPSDataModelConstants.PROP_MATURITY;
+   public final static int PROP_GROUPS = CPSDataModelConstants.PROP_GROUPS;
+   public final static int PROP_KEYWORDS = CPSDataModelConstants.PROP_KEYWORDS;
+   public final static int PROP_OTHER_REQ = CPSDataModelConstants.PROP_OTHER_REQ;
+   public final static int PROP_NOTES = CPSDataModelConstants.PROP_NOTES;
 
-   public final int PROP_FROST_HARDY = CPSDataModelConstants.PROP_FROST_HARDY;
+   public final static int PROP_FROST_HARDY = CPSDataModelConstants.PROP_FROST_HARDY;
    
-   public final int PROP_DIRECT_SEED = CPSDataModelConstants.PROP_DIRECT_SEED;
-   public final int PROP_DS_MAT_ADJUST = CPSDataModelConstants.PROP_DS_MAT_ADJUST;
-   public final int PROP_DS_ROWS_P_BED = CPSDataModelConstants.PROP_DS_ROWS_P_BED;
-   public final int PROP_DS_SPACE_BETROW = CPSDataModelConstants.PROP_DS_SPACE_BETROW;
-   public final int PROP_DS_PLANT_NOTES = CPSDataModelConstants.PROP_DS_PLANT_NOTES;
+   public final static int PROP_DIRECT_SEED = CPSDataModelConstants.PROP_DIRECT_SEED;
+   public final static int PROP_DS_MAT_ADJUST = CPSDataModelConstants.PROP_DS_MAT_ADJUST;
+   public final static int PROP_DS_ROWS_P_BED = CPSDataModelConstants.PROP_DS_ROWS_P_BED;
+   public final static int PROP_DS_SPACE_BETROW = CPSDataModelConstants.PROP_DS_SPACE_BETROW;
+   public final static int PROP_DS_PLANT_NOTES = CPSDataModelConstants.PROP_DS_PLANT_NOTES;
    
-   public final int PROP_TRANSPLANT = CPSDataModelConstants.PROP_TRANSPLANT;
-   public final int PROP_TP_MAT_ADJUST = CPSDataModelConstants.PROP_TP_MAT_ADJUST;
-   public final int PROP_TP_ROWS_BED = CPSDataModelConstants.PROP_TP_ROWS_P_BED;
-   public final int PROP_TP_SPACE_BETROW = CPSDataModelConstants.PROP_TP_SPACE_BETROW;
-   public final int PROP_TP_SPACE_INROW = CPSDataModelConstants.PROP_TP_SPACE_INROW;
-   public final int PROP_TP_TIME_IN_GH = CPSDataModelConstants.PROP_TP_TIME_IN_GH;
-   public final int PROP_FLAT_SIZE = CPSDataModelConstants.PROP_FLAT_SIZE;
-   public final int PROP_TP_PLANT_NOTES = CPSDataModelConstants.PROP_TP_PLANT_NOTES;
-   public final int PROP_POT_UP = CPSDataModelConstants.PROP_TP_POT_UP;
-   public final int PROP_POT_UP_NOTES = CPSDataModelConstants.PROP_TP_POT_UP_NOTES;
+   public final static int PROP_TRANSPLANT = CPSDataModelConstants.PROP_TRANSPLANT;
+   public final static int PROP_TP_MAT_ADJUST = CPSDataModelConstants.PROP_TP_MAT_ADJUST;
+   public final static int PROP_TP_ROWS_BED = CPSDataModelConstants.PROP_TP_ROWS_P_BED;
+   public final static int PROP_TP_SPACE_BETROW = CPSDataModelConstants.PROP_TP_SPACE_BETROW;
+   public final static int PROP_TP_SPACE_INROW = CPSDataModelConstants.PROP_TP_SPACE_INROW;
+   public final static int PROP_TP_TIME_IN_GH = CPSDataModelConstants.PROP_TP_TIME_IN_GH;
+   public final static int PROP_FLAT_SIZE = CPSDataModelConstants.PROP_FLAT_SIZE;
+   public final static int PROP_TP_PLANT_NOTES = CPSDataModelConstants.PROP_TP_PLANT_NOTES;
+   public final static int PROP_POT_UP = CPSDataModelConstants.PROP_TP_POT_UP;
+   public final static int PROP_POT_UP_NOTES = CPSDataModelConstants.PROP_TP_POT_UP_NOTES;
    
-   public final int PROP_YIELD_FOOT = CPSDataModelConstants.PROP_YIELD_P_FOOT;
-   public final int PROP_YIELD_WEEKS = CPSDataModelConstants.PROP_YIELD_NUM_WEEKS;
-   public final int PROP_YIELD_PER_WEEK = CPSDataModelConstants.PROP_YIELD_P_WEEK;
-   public final int PROP_CROP_UNIT = CPSDataModelConstants.PROP_CROP_UNIT;
-   public final int PROP_CROP_UNIT_VALUE = CPSDataModelConstants.PROP_CROP_UNIT_VALUE;
+   public final static int PROP_YIELD_FOOT = CPSDataModelConstants.PROP_YIELD_P_FOOT;
+   public final static int PROP_YIELD_WEEKS = CPSDataModelConstants.PROP_YIELD_NUM_WEEKS;
+   public final static int PROP_YIELD_PER_WEEK = CPSDataModelConstants.PROP_YIELD_P_WEEK;
+   public final static int PROP_CROP_UNIT = CPSDataModelConstants.PROP_CROP_UNIT;
+   public final static int PROP_CROP_UNIT_VALUE = CPSDataModelConstants.PROP_CROP_UNIT_VALUE;
    
    /** 
     * from CPSDataModelConstants: this is the highest value defined there
@@ -294,8 +294,8 @@ public class CPSCrop extends CPSRecord {
     public CPSDatumState getNotesState() { return getStateOf( PROP_NOTES ); }
     public void setNotes( String e ) { set( notes, e ); }
 
-    public String getOtherRequirments() { return get( PROP_OTHER_REQ ); }
-    public CPSDatumState getOtherRequirmentsState() { return getStateOf( PROP_OTHER_REQ ); }
+    public String getOtherRequirements() { return get( PROP_OTHER_REQ ); }
+    public CPSDatumState getOtherRequirementsState() { return getStateOf( PROP_OTHER_REQ ); }
     public void setOtherRequirements( String e ) { set( otherRequirements, e ); }
     
     public Boolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }

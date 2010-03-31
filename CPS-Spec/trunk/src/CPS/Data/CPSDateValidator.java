@@ -75,7 +75,7 @@ public class CPSDateValidator {
     }
     
     public static String format( Date d, String format ) {
-        if ( d == null )
+        if ( d == null || d.getTime() == 0 )
             return "";
         else
             return new SimpleDateFormat( format ).format( d );

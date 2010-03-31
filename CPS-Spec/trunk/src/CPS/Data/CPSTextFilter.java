@@ -1,4 +1,4 @@
-/* CPSComplexFilter.java - created: Feb 1, 2008
+/* CPSTextFilter.java - created: Feb 1, 2008
  * Copyright (C) 2008 Clayton Carter
  * 
  * This file is part of the project "Crop Planning Software".  For more
@@ -23,18 +23,30 @@
 
 package CPS.Data;
 
-public class CPSComplexFilter {
+import ca.odell.glazedlists.TextFilterator;
+import ca.odell.glazedlists.matchers.MatcherEditor;
+import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
+import javax.swing.text.JTextComponent;
 
-    private String filterString;
+public class CPSTextFilter<T> extends TextComponentMatcherEditor<CPSRecord> {
 
-    public CPSComplexFilter() {
-        setFilterString("");
+    private String filterString = "";
+    private MatcherEditor<T> textMatcher;
+   
+    public CPSTextFilter( JTextComponent comp, TextFilterator<CPSRecord> filt ) {
+       super( comp, filt, true );
     }
 
-    public CPSComplexFilter( String filterString ) { setFilterString(filterString); }
-    
+    public MatcherEditor<T> getTextMatcherEditor() {
+       return textMatcher;
+    }
+
+    public MatcherEditor<T> getMatcherEditor() { return getTextMatcherEditor(); }
+
+    @Deprecated
     public String getFilterString() { return filterString; }
 
+    @Deprecated
     public void setFilterString( String filterString ) { this.filterString = filterString; }
 
     

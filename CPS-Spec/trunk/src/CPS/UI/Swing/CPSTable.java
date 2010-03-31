@@ -82,12 +82,7 @@ public class CPSTable extends JTable {
 
         dateValidator = new CPSDateValidator();
         dateValidator.addFormat( CPSDateValidator.DATE_FORMAT_SQL );
-    }
-
-    @Override
-    public void setModel( TableModel tm ) {
-        super.setModel( tm );
-        
+    
         setAutoResizeMode(AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         
         /* reset column widths for certain column types */
@@ -112,9 +107,9 @@ public class CPSTable extends JTable {
         
          // install custom table renderes and editors
        for ( int i = 0 ; i < getColumnModel().getColumnCount() ; i++ ) {
-          
+
 //          System.out.println("CPSTab: Column " + getColumnName(i) + " is a " + getColumnClass(i).getName() );
-          
+
           // install date renderers and editors on all Date columns
           if ( getColumnClass( i ).equals( new Date().getClass() ) ) {
              getColumnModel().getColumn( i ).setCellRenderer( new DateCellRenderer() );
@@ -262,7 +257,7 @@ public class CPSTable extends JTable {
            else if ( value == null )
               setText( "" );
            else
-              setText( (String) value );
+              setText( value.toString() );
            
 //            setToolTipText((String)value);
             

@@ -24,8 +24,9 @@ package CPS.UI.Modules;
 
 import CPS.Data.CPSRecord;
 import java.util.Comparator;
+import java.util.Date;
 
-public class CPSComparator implements Comparator<CPSRecord> {
+public class CPSComparator implements Comparator {
 
     int propNum = -1;
 
@@ -37,24 +38,26 @@ public class CPSComparator implements Comparator<CPSRecord> {
         propNum = pNum;
     }
 
-    public int compare( CPSRecord a, CPSRecord b ) {
-        Object oa = a.get( propNum );
-
-        if ( oa instanceof Integer ) {
-            return a.getInt( propNum ) - b.getInt( propNum );
-        }
-        else if ( oa instanceof Float ) {
-            return (int) Math.floor( a.getFloat( propNum ) - b.getFloat( propNum ) );
-        }
-        else if ( oa instanceof Boolean ) {
-            return ((Boolean) oa).compareTo( (Boolean) b.get(propNum) );
-        }
-        else if ( oa instanceof String ) {
-            return ((String) oa).compareToIgnoreCase( (String) b.get( propNum ));
-        }
-        else
-            // otherwise don't sort and leave as is
-            return 0;
+    public int compare( Object a, Object b ) {
+//        Object oa = a.get( propNum );
+       if ( a instanceof Integer ) {
+          return (Integer) a - (Integer) b;
+       }
+       else if ( a instanceof Float ) {
+          return (int) Math.floor( (Float) a - (Float) b );
+       }
+       else if ( a instanceof Boolean ) {
+          return ( (Boolean) a ).compareTo( (Boolean) b );
+       }
+       else if ( a instanceof String ) {
+          return ( (String) a ).compareToIgnoreCase( (String) b );
+       }
+       else if ( a instanceof Date ) {
+          return ( (Date) a ).compareTo( (Date) b );
+       }
+       else
+          // otherwise don't sort and leave as is
+          return 0;
         
     }
 

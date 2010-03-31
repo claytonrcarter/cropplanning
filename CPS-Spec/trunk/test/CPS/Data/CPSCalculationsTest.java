@@ -256,14 +256,18 @@ public class CPSCalculationsTest extends TestCase {
     */
    public void testCalcBedsToPlantFromRowFtToPlant() {
       System.out.println( "calcBedsToPlantFromRowFtToPlant" );
-      int rowFt = 0;
-      int rowsPerBed = 0;
-      int bedLength = 0;
-      float expResult = 0.0F;
+
+      int rowFt = 100;
+      int rowsPerBed = 1;
+      int bedLength = 100;
+
+      float expResult = 1.0F;
       float result = CPSCalculations.calcBedsToPlantFromRowFtToPlant( rowFt, rowsPerBed, bedLength );
       assertEquals( expResult, result );
-      // TODO review the generated test code and remove the default call to fail.
-      fail( "The test case is a prototype." );
+
+      // TODO more tests here
+
+      System.out.println( "Done testing calcBedsToPlantFromRowFtToPlant" );
    }
 
    /**

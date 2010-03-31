@@ -34,7 +34,7 @@ import java.util.GregorianCalendar;
  *
  * @author Clayton Carter
  */
-public class CPSCalculations {
+public final class CPSCalculations {
 
    /**
     * Calculates a date to plant based upon a desired harvest date and the crops maturity days.
