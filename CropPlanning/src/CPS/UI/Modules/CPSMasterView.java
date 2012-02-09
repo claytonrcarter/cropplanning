@@ -56,7 +56,6 @@ import ca.odell.glazedlists.matchers.Matchers;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
-import com.sun.tools.javac.tree.Tree.ForeachLoop;
 import java.awt.event.FocusListener;
 import javax.swing.text.JTextComponent;
 
@@ -107,7 +106,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected BasicEventList<CPSRecord> masterList = new BasicEventList<CPSRecord>();
     protected FilterList<CPSRecord> masterListFiltered = new FilterList<CPSRecord>( masterList );
     protected SortedList<CPSRecord> masterListSorted = new SortedList<CPSRecord>( masterListFiltered, new CPSComparator( CPSPlanting.PROP_ID ));
-    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterList );
+//    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterList );
+    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterListFiltered );
 
     protected CompositeMatcherEditor<CPSRecord> compositeFilter = null;
     protected EventList<MatcherEditor<CPSRecord>> filterList;
@@ -222,6 +222,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
        int i = 0;
        for ( CPSRecord r : masterListSorted ) {
            if ( r.getID() == recordID ) {
+               CPSModule.debug( "CPSMasterView", "Unselecting row: " + i );
                selectModel.removeIndexInterval( i, i );
                break;
            }
@@ -625,12 +626,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
       if ( source == masterListFiltered ) {
 
          // look through the list of selected elements and remove any that aren't in the current filtered list
-         EventList<CPSRecord> selected = selectModel.getSelected();
-         for ( int i = 0; i < selected.size(); i++ ) {
-            CPSRecord record = selected.get( i );
-            if ( ! masterListFiltered.contains( record ) )
-               setUnselectedRowByRecordID( record.getID() );
-         }
+//         EventList<CPSRecord> selected = selectModel.getSelected();
+//         
+//         for ( int i = 0; i < selected.size(); i++ ) {
+//            CPSRecord record = selected.get( i );
+//            if ( ! masterListFiltered.contains( record ) )
+//               setUnselectedRowByRecordID( record.getID() );
+//         }
 
          // no data in table
          if ( masterListFiltered.size() < 1 ) {

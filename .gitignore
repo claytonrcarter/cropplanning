@@ -1,3 +1,7 @@
 /CropPlanning/nbproject/private/
 .DS_Store
 
+/CropPlanning/build/
+/TableUtil/dist/
+/TableUtil/build/
+/CropPlanning/dist/
