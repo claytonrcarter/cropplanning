@@ -67,6 +67,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    HSQLSettings localSettings;
    
    public HSQLDB() {
+      super();
 
        setModuleName( "HSQLDB" );
        setModuleDescription( "A full featured DataModel based on HSQLDB.");

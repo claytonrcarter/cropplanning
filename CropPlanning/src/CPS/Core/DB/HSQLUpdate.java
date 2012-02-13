@@ -23,13 +23,19 @@
 
 package CPS.Core.DB;
 
+import CPS.Data.CPSCrop;
+import CPS.Data.CPSPlanting;
 import CPS.Module.CPSModule;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import net.sf.persist.Persist;
 
 /**
@@ -94,7 +100,11 @@ public class HSQLUpdate {
            // version 0.1.5
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 1, 5 ))
              updateVersion = updateForV000_001_005( con );
-           
+
+           // version 0.3.0
+           if ( previousVersion < CPSModule.versionAsLongInt( 0, 3, 0 ))
+             updateVersion = updateForV000_003_000( con );
+
            if ( updateVersion != 0 )
              HSQLDBCreator.setLastUpdateVersion( p, updateVersion );
        }
@@ -139,7 +149,7 @@ public class HSQLUpdate {
        
        // DELETE unused table PLANTING_METHODS
        update = "DROP TABLE planting_methods";
-       HSQLDB.debug( "DBUpdater", "Executing update: " + update );
+       CPSModule.debug( "DBUpdater", "Executing update: " + update );
        st.executeUpdate( update );
        
        // DELETE "common_plantings" table and remove it from list of crop plans
@@ -347,4 +357,62 @@ public class HSQLUpdate {
 
       return CPSModule.versionAsLongInt( 0, 1, 5 );
    }
+
+
+    private static long updateForV000_003_000( Connection con ) throws java.sql.SQLException {
+
+      CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.3.0" );
+
+      Statement st = con.createStatement();
+      String update = "";
+
+      Persist p = new Persist( con );
+//      p.executeUpdate("ALTER TABLE CROPS_VARIETIES RENAME TO CROPS_VARIETIES_OLD");
+      p.executeUpdate("DROP TABLE CROPS_VARIETIES");
+      List<Map<String,Object>> crops = p.readMapList("select * from CROPS_VARIETIES_OLD");
+      try {
+        p.create( "CROPS_VARIETIES", new CPSCrop() );
+      }
+      catch ( Exception e ) { e.printStackTrace();  System.exit(-1); }
+
+      Iterator i  = crops.iterator();
+      while ( i.hasNext() ) {
+        Map<String,Object> m = (Map<String, Object>) i.next();
+        CPSCrop c = HSQLUpdateHelpers.convertPersistMapToCrop(m);
+        System.out.println( c.toString() );
+        c.useRawOutput(true);
+        p.insert( "CROPS_VARIETIES", c );
+
+      }
+//        System.exit(1);
+
+//      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
+//      update = "";
+//
+//      for ( String plan : plans ) {
+//
+//      }
+      // 1. read through every entry in the cropdb and create an entry in a new crop db table
+      // 2. read through every plan and
+      //     1. read every planting and create a new Persist-based entry in a new plan
+      // 3. remove the old plans
+      // 4. rename the new plans
+      // 5. remove the old cropdb
+      // 6. rename the new cropdb
+
+
+//      if ( ! update.equals( "" ) ) {
+//         CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
+//         st.executeUpdate( update );
+//      }
+//
+//
+//      System.exit(-1);
+
+//      return CPSModule.versionAsLongInt( 0, 3, 0 );
+      return 0;
+    }
+
+
+
 }

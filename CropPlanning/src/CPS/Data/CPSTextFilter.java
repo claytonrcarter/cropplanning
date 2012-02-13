@@ -25,16 +25,17 @@ package CPS.Data;
 
 import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.matchers.MatcherEditor;
-import ca.odell.glazedlists.swing.TextComponentMatcherEditor;
-import javax.swing.text.JTextComponent;
+import ca.odell.glazedlists.swing.SearchEngineTextFieldMatcherEditor;
+import javax.swing.JTextField;
 
-public class CPSTextFilter<T> extends TextComponentMatcherEditor<CPSRecord> {
+//public class CPSTextFilter<T> extends TextComponentMatcherEditor<CPSRecord> {
+public class CPSTextFilter<T> extends SearchEngineTextFieldMatcherEditor<CPSRecord> {
 
     private String filterString = "";
     private MatcherEditor<T> textMatcher;
    
-    public CPSTextFilter( JTextComponent comp, TextFilterator<CPSRecord> filt ) {
-       super( comp, filt, true );
+    public CPSTextFilter( JTextField comp, TextFilterator<CPSRecord> filt ) {
+       super( comp, filt );
     }
 
     public MatcherEditor<T> getTextMatcherEditor() {

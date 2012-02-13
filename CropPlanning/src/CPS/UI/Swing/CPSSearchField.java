@@ -57,7 +57,7 @@ import javax.swing.text.PlainDocument;
 public class CPSSearchField extends JTextField {
     
     private static final Border CANCEL_BORDER = new CancelBorder();
-    private boolean sendsNotificationForEachKeystroke = false;
+    private boolean sendsNotificationForEachKeystroke = true;
     private boolean showingPlaceholderText = false;
     private boolean armed = false;
 

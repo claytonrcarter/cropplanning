@@ -329,6 +329,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
        // setup the text filtering mechanism
        textFilter = new CPSTextFilter<CPSRecord>( tfldFilter, getTextFilterator() );
+       // TODO add call to textFilter.setFields( .... ) to enable advanced field matching
 
        // setup the list of filters and add an "all" matcher
        filterList = new BasicEventList<MatcherEditor<CPSRecord>>();
@@ -512,7 +513,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected abstract List getMasterListData();
     protected abstract AdvancedTableFormat getTableFormat();
     protected abstract TextFilterator<CPSRecord> getTextFilterator();
-//    protected abstract TextComponentMatcherEditor<CPSRecord> getTextCompMatcherEditor();
 
 
     protected void addFilter( MatcherEditor me ) {
