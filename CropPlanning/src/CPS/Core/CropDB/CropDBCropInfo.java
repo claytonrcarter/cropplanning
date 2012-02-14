@@ -85,10 +85,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       }
       else
          setRecordDisplayed( true );
-
-
-      if ( CPSGlobalSettings.getDebug() )
-         System.out.println( "Displaying record: " + displayedCrop.toString() );
       
       tfldCropName.setInitialText( displayedCrop.getCropName() );
       tfldVarName.setInitialText( displayedCrop.getVarietyName() );

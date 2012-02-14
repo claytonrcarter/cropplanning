@@ -232,7 +232,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
             return new ArrayList<CPSPlanting>();
 
         String selectedPlan = getSelectedPlanName();
-//        if ( selectedPlan != null && listOfValidCropPlans.contains( selectedPlan ) )
         if ( selectedPlan != null )
             return getDataSource().getCropPlan( selectedPlan );
        else
@@ -321,14 +320,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         jplFilter.add( new JLabel( "matching"));
         
         return super.buildFilterComponent( false );
-    }
-
-    @Override
-    protected void updateFilter() {
-//       removeFilter( plantingFilter );
-//       plantingFilter = dlgFilter.getFilter();
-//       addFilter( plantingFilter );
-       super.updateFilter();
     }
     
     public class CropPlanBoxActionListener implements ActionListener {
@@ -505,8 +496,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
    @Override
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
-
-        CPSModule.debug( "CropPlanList", "Action performed in CropPlanList: " + action );
 
        if ( action.equalsIgnoreCase( btnChangePlans.getActionCommand() ) ) {
             if ( ! isDataAvailable() ) {

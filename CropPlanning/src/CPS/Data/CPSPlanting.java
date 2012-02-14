@@ -748,11 +748,9 @@ public final class CPSPlanting extends CPSRecord {
    public String getRowsPerBedString() { return formatInt( getRowsPerBed() ); }
    public void setRowsPerBed( Integer i ) {
       if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() ) {
-         CPSModule.debug( "CPSPlanting", "planting is DIRECT SEEDED, recording rows per bed as " + i );
          set( ds_rows_p_bed, i );
       }
       else {
-         CPSModule.debug( "CPSPlanting", "planting is TRANSPLANTED, recording rows per bed as " + i );
          set( tp_rows_p_bed, i );
       }
    }

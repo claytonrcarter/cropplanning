@@ -106,7 +106,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected BasicEventList<CPSRecord> masterList = new BasicEventList<CPSRecord>();
     protected FilterList<CPSRecord> masterListFiltered = new FilterList<CPSRecord>( masterList );
     protected SortedList<CPSRecord> masterListSorted = new SortedList<CPSRecord>( masterListFiltered, new CPSComparator( CPSPlanting.PROP_ID ));
-//    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterList );
     EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterListFiltered );
 
     protected CompositeMatcherEditor<CPSRecord> compositeFilter = null;
@@ -190,7 +189,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
            
            selectedIDs.clear();
            for ( CPSRecord r : selectModel.getSelected() ) {
-              CPSModule.debug( "CPSMasterView", "Record selected: " + r.getID() + " " + r.toString() );
+//              CPSModule.debug( "CPSMasterView", "Record selected: " + r.getID() + " " + r.toString() );
               selectedIDs.add( new Integer( r.getID() ));
            }
            
@@ -222,7 +221,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
        int i = 0;
        for ( CPSRecord r : masterListSorted ) {
            if ( r.getID() == recordID ) {
-               CPSModule.debug( "CPSMasterView", "Unselecting row: " + i );
+//               CPSModule.debug( "CPSMasterView", "Unselecting row: " + i );
                selectModel.removeIndexInterval( i, i );
                break;
            }
@@ -501,6 +500,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
         masterList.addAll( getMasterListData() );
         masterList.getReadWriteLock().writeLock().unlock();
 
+        CPSModule.debug( "CPSMasterView", "Items in masterList:         " + masterList.size() );
+        CPSModule.debug( "CPSMasterView", "Items in masterListFiltered: " + masterListFiltered.size() );
+
     }
     
     protected void setStatus( String s ) {
@@ -625,19 +627,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
       if ( source == masterListFiltered ) {
 
-         // look through the list of selected elements and remove any that aren't in the current filtered list
-//         EventList<CPSRecord> selected = selectModel.getSelected();
-//         
-//         for ( int i = 0; i < selected.size(); i++ ) {
-//            CPSRecord record = selected.get( i );
-//            if ( ! masterListFiltered.contains( record ) )
-//               setUnselectedRowByRecordID( record.getID() );
-//         }
-
          // no data in table
          if ( masterListFiltered.size() < 1 ) {
-
-//            clearSelection();
 
             // if no records returned, we can't very well duplicate or delete any
             btnDupeRecord.setEnabled( false );

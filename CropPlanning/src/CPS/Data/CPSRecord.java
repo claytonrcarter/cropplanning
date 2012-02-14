@@ -234,9 +234,9 @@ public abstract class CPSRecord {
    public abstract CPSRecord diff( CPSRecord comparedTo );
    public CPSRecord diff( CPSRecord thatRecord, CPSRecord diffs ) {
        
-       debug( "Calculating difference between:\n" +
-               this.toString() + "\n" +
-               thatRecord.toString() );
+//       debug( "Calculating difference between:\n" +
+//               this.toString() + "\n" +
+//               thatRecord.toString() );
        
        boolean diffsExists = false;
        
@@ -337,7 +337,7 @@ public abstract class CPSRecord {
    public abstract List<Integer> getListOfInheritableProperties();
    public CPSRecord inheritFrom( CPSRecord thatRecord ) { 
        
-       if ( thatRecord.getID() != -1 ){ 
+       if ( thatRecord.getID() != -1 ) {
        
            CPSDatum thisDat, thatDat;
        
@@ -347,23 +347,16 @@ public abstract class CPSRecord {
                thisDat = this.getDatum( prop );
                thatDat = thatRecord.getDatum( prop );
                        
-//          System.out.print("DEBUG Inheriting " + thisDat.getName() );
-
               /* IF: this IS valid
                * THEN: ignore this datum, no inheritance needed */
                if ( thisDat.isConcrete() || thatDat == null ) {
-//                   System.out.println( " SKIPPED" );
                    continue;
                }
                /* IF: this IS NOT valid AND that IS valid
                 * THEN: this datum will be inherited */
                else if ( ( thisDat.isNull() || thisDat.isInherited() ) && thatDat.isNotNull() ) {
-//                   System.out.println( " DONE" );
                    this.inherit( prop, thatDat.getValue() );
-//                   updateCalculations( prop );
                }
-//               else
-//                   System.out.println( " SKIPPED FOR OTHER REASONS" );
            }
        }
        

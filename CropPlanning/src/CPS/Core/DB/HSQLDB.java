@@ -379,6 +379,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       debug( "Retrieving crop plan: " + plan_name );
       List<CPSPlanting> cropPlan = p.readList( plan_name, CPSPlanting.class );
 
+      debug( "Crop plan contains " + cropPlan.size() + " plantings." );
+
       for ( CPSPlanting planting : cropPlan ) {
          performInheritanceForPlanting( planting );
       }
@@ -484,11 +486,11 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
       String selectSQL = tm.getSelectWhereSql() + condExp;
 
-      debug( "Looking up variety info with query: " + selectSQL );
+//      debug( "Looking up variety info with query: " + selectSQL );
       
       CPSCrop c = p.read( CPSCrop.class, selectSQL );
       if ( c == null ) {
-          debug( "Couldn't ready variety info, returning empty crop" );
+//          debug( "Couldn't ready variety info, returning empty crop" );
           c = new CPSCrop();
       }
       else
@@ -529,11 +531,11 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
       if ( crop.isVariety() ) {
 
-         debug( "Crop [ "+ crop.getCropName() + ": " + crop.getVarietyName() + " ] is a variety, looking up inheritance info." );
+//         debug( "Crop [ "+ crop.getCropName() + ": " + crop.getVarietyName() + " ] is a variety, looking up inheritance info." );
          
          CPSCrop parent = getCropInfo( crop.getCropName() );
          if ( parent != null && parent.getID() != -1 ) {
-            debug( "Inheriting from crop " + parent.getCropName() );
+//            debug( "Inheriting from crop " + parent.getCropName() );
             crop.inheritFrom( parent );
          }
 
