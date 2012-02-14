@@ -376,14 +376,38 @@ public class HSQLUpdate {
       catch ( Exception e ) { e.printStackTrace();  System.exit(-1); }
 
       Iterator i  = crops.iterator();
+      int j = 0;
       while ( i.hasNext() ) {
         Map<String,Object> m = (Map<String, Object>) i.next();
         CPSCrop c = HSQLUpdateHelpers.convertPersistMapToCrop(m);
-        System.out.println( c.toString() );
+//        System.out.println( c.toString() );
         c.useRawOutput(true);
         p.insert( "CROPS_VARIETIES", c );
+        j++;
 
       }
+      HSQLDB.debug( "HSQLUpdate", "Imported " + j + " crops/varieties." );
+
+      p.executeUpdate("DROP TABLE " + HSQLDB.escapeTableName( "2012" ) );
+      List<Map<String,Object>> plantings = p.readMapList("select * from " + HSQLDB.escapeTableName( "2012_OLD" ) );
+      try {
+        p.create( "2012", new CPSPlanting() );
+      }
+      catch ( Exception e ) { e.printStackTrace();  System.exit(-1); }
+
+      i  = plantings.iterator();
+      j = 0;
+      while ( i.hasNext() ) {
+        Map<String,Object> m = (Map<String, Object>) i.next();
+        CPSPlanting pp = HSQLUpdateHelpers.convertPersistMapToPlanting(m);
+//        System.out.println( pp.toString() );
+        pp.useRawOutput(true);
+        p.insert( "2012", pp );
+        j++;
+
+      }
+      HSQLDB.debug( "HSQLUpdate", "Imported " + j + " plantings." );
+
 //        System.exit(1);
 
 //      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );

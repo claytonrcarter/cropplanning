@@ -619,20 +619,51 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
       if ( planting == null ) return;
 
-      debug( "Looking up inheritance info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ]" );
-      debug( "Before inheritance, planting looks like:\n" + planting.toString() );
+      TableMapping tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE );
+      String selectSQL = tm.getSelectWhereSql();
+      selectSQL += tm.getColumnNameForMethod( "getCropName" ) + " = " + escapeValue( planting.getCropName() );
+      selectSQL += " AND ( " + tm.getColumnNameForMethod( "getVarietyName" ) + " = " + escapeValue( planting.getVarietyName() );
+      selectSQL += " OR " + tm.getColumnNameForMethod( "getVarietyName" ) + " IS NULL ) ";
 
-      CPSCrop parent = getVarietyInfo( planting.getCropName(), planting.getVarietyName() );
+      List<CPSCrop> vars = p.readList( CPSCrop.class, selectSQL );
+
+      CPSCrop parent = null;
+      if ( vars.isEmpty() ) {
+        // no inheritance to do
+        return;
+      } else if ( vars.size() > 1 ) {
+        // multiple matches == there is a crop && a variety
+        // so we need to remove the crop
+        CPSCrop c = null;
+
+        for ( CPSCrop v : vars)
+          if ( v.isCrop() )
+            c = v;
+
+        if ( c != null )
+          vars.remove(c);
+
+        if ( vars.size() == 1 )
+          parent = vars.get(0);
+        else
+           debug( "Uh Oh!! Still have more than on variety in list!!" );
+
+        if ( parent != null && c != null )
+          parent.inheritFrom( c );
+
+      } else {
+
+        // only one match, so there is nothing to inherit from
+        parent = vars.get(0);
+
+      }
+
 
       if ( parent != null && parent.getID() != -1 ) {
          debug( "Inheriting info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ] from crop [ " +
                  parent.getCropName() + " : " + parent.getVarietyName() + " ]" );
          planting.inheritFrom( parent );
       }
-      else
-         debug( "Couldn't find crop/var info to inherit." );
-
-      debug( "After inheritance, planting looks like:\n" + planting.toString() );
 
    }
 

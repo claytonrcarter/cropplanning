@@ -107,12 +107,12 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
 
    public boolean matches( CPSPlanting item ) {
 
+      if ( ! isViewLimited() )
+         return true;
 
       if ( item.getIgnore() )
          return false;
 
-      if ( ! isViewLimited() )
-         return true;
 
       return ( filterOnPlantingMethod() ? (( filterMethodDirectSeed() ? item.isDirectSeeded() : true ) &&
                                            ( filterMethodTransplant() ? item.isTransplanted() : true ))

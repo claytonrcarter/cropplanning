@@ -82,8 +82,14 @@ public abstract class CPSRecord {
    public int getID() { 
        if ( doesRepresentMultipleRecords() )
           return recordID.getBlankValue();
-       else
-         return recordID.getValueAsInt();
+       else {
+         if ( recordID.isNull() )
+//           return recordID.getNullValue();
+           return -1;
+         else
+           return recordID.getValueAsInt();
+//           return recordID.getValue(true);
+       }
    }
    public void setID( int i ) {
        if ( ! doesRepresentMultipleRecords() )
