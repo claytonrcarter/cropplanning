@@ -132,7 +132,6 @@ public class CPSDatum<T> {
    }
 
    public int getValueAsInt() {
-//      System.out.println( "getValueAsInt: " + (( value == null ) ? "null" : value.toString() ) + " => " + getName() );
       if      ( isNull() || ! ( value instanceof Integer ) && ! ( value instanceof String ))
          return 0;
       else if ( value instanceof String )

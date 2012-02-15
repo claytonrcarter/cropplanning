@@ -46,7 +46,9 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    
     private static final boolean DEBUG = true;
 
-    protected static final String CROP_VAR_TABLE = "CROPS_VARIETIES";
+    static final String CROP_VAR_TABLE = "CROPS_VARIETIES";
+    static final String CROP_PLAN_TABLE = "CROP_PLANS";
+    static final String CPS_META_TABLE = "CPS_METADATA";
 
     protected static final boolean ESCAPE_WITH_SINGLE_QUOTES = true;
     protected static final boolean ESCAPE_WITH_DOUBLE_QUOTES = false;
@@ -530,12 +532,9 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       if ( crop == null ) return;
 
       if ( crop.isVariety() ) {
-
-//         debug( "Crop [ "+ crop.getCropName() + ": " + crop.getVarietyName() + " ] is a variety, looking up inheritance info." );
          
          CPSCrop parent = getCropInfo( crop.getCropName() );
          if ( parent != null && parent.getID() != -1 ) {
-//            debug( "Inheriting from crop " + parent.getCropName() );
             crop.inheritFrom( parent );
          }
 
@@ -657,7 +656,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
         parent = vars.get(0);
 
       }
-
 
       if ( parent != null && parent.getID() != -1 ) {
          debug( "Inheriting info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ] from crop [ " +

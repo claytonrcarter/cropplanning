@@ -86,6 +86,7 @@
       <entry key="program.BUILDDATE" type="date" value="now" pattern="yyyyMMDDHHmmss" />
     </propertyfile>
     <copy file="appinfo.properties" todir="${build.classes.dir}"/>
+    <copy file="log4j.properties" todir="${build.classes.dir}"/>
   </target>
 
   <target name="dist" depends="init,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j" />

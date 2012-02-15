@@ -45,6 +45,8 @@ public abstract class CPSRecord {
    private boolean representsMultiIDs;
    protected CPSDatum<Integer> recordID;
    protected CPSDatum<ArrayList<Integer>> commonIDs;
+
+   protected List<Integer> listOfInheritableProperties = null;
    
    protected abstract int lastValidProperty();
    protected ArrayList<Integer> changedProps = new ArrayList<Integer>();
@@ -85,10 +87,10 @@ public abstract class CPSRecord {
        else {
          if ( recordID.isNull() )
 //           return recordID.getNullValue();
+           // TODO should this be fixed to be more robust?
            return -1;
          else
            return recordID.getValueAsInt();
-//           return recordID.getValue(true);
        }
    }
    public void setID( int i ) {

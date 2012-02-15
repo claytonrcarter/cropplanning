@@ -30,9 +30,9 @@ package CPS.Data;
 
 import CPS.Data.CPSDatum.CPSDatumState;
 import CPS.Module.CPSDataModelConstants;
-import CPS.Module.CPSModule;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public final class CPSPlanting extends CPSRecord {
 
@@ -347,33 +347,35 @@ public final class CPSPlanting extends CPSRecord {
 
    }
    
-   public ArrayList<Integer> getListOfInheritableProperties() {
-      ArrayList<Integer> a = new ArrayList<Integer>();
-      a.add( PROP_MATURITY );
-      a.add( PROP_DS_MAT_ADJUST );
-      a.add( PROP_TP_MAT_ADJUST );
-      a.add( PROP_TIME_TO_TP );
-      a.add( PROP_DS_ROWS_P_BED );
-      a.add( PROP_TP_ROWS_P_BED );
-      a.add( PROP_INROW_SPACE );
-      a.add( PROP_DS_ROW_SPACE );
-      a.add( PROP_TP_ROW_SPACE );
-      a.add( PROP_FLAT_SIZE );
-      a.add( PROP_DS_CROP_NOTES );
-      a.add( PROP_TP_CROP_NOTES );
-      a.add( PROP_YIELD_P_FOOT );
-      a.add( PROP_YIELD_NUM_WEEKS );
-      a.add( PROP_YIELD_P_WEEK );
-      a.add( PROP_CROP_UNIT );
-      a.add( PROP_CROP_UNIT_VALUE );
-      a.add( PROP_FROST_HARDY  );
-      a.add( PROP_OTHER_REQ );
-      return a;
+   public List<Integer> getListOfInheritableProperties() {
+      if ( listOfInheritableProperties == null ) {
+        listOfInheritableProperties = new ArrayList<Integer>();
+        listOfInheritableProperties.add( PROP_MATURITY );
+        listOfInheritableProperties.add( PROP_DS_MAT_ADJUST );
+        listOfInheritableProperties.add( PROP_TP_MAT_ADJUST );
+        listOfInheritableProperties.add( PROP_TIME_TO_TP );
+        listOfInheritableProperties.add( PROP_DS_ROWS_P_BED );
+        listOfInheritableProperties.add( PROP_TP_ROWS_P_BED );
+        listOfInheritableProperties.add( PROP_INROW_SPACE );
+        listOfInheritableProperties.add( PROP_DS_ROW_SPACE );
+        listOfInheritableProperties.add( PROP_TP_ROW_SPACE );
+        listOfInheritableProperties.add( PROP_FLAT_SIZE );
+        listOfInheritableProperties.add( PROP_DS_CROP_NOTES );
+        listOfInheritableProperties.add( PROP_TP_CROP_NOTES );
+        listOfInheritableProperties.add( PROP_YIELD_P_FOOT );
+        listOfInheritableProperties.add( PROP_YIELD_NUM_WEEKS );
+        listOfInheritableProperties.add( PROP_YIELD_P_WEEK );
+        listOfInheritableProperties.add( PROP_CROP_UNIT );
+        listOfInheritableProperties.add( PROP_CROP_UNIT_VALUE );
+        listOfInheritableProperties.add( PROP_FROST_HARDY  );
+        listOfInheritableProperties.add( PROP_OTHER_REQ );
+      }
+      return listOfInheritableProperties;
    }
 
    @Override
    public void finishUp () {
-    
+   
    }
 
    @Override
@@ -479,11 +481,13 @@ public final class CPSPlanting extends CPSRecord {
                  ! plant.isConcrete()  &&
                    harv.isNotNull()    &&
                    m.isNotNull() ) {
-          set( plant, CPSCalculations.calcDatePlantFromDateHarvest( (Date) harv.getValue(),
+          try {
+            set( plant, CPSCalculations.calcDatePlantFromDateHarvest( (Date) harv.getValue(),
                                                                         m.getValueAsInt(),
                                                                         getMatAdjust(),
                                                                         w.getValueAsInt() ));
-          plant.setCalculated( true );
+            plant.setCalculated( true );
+          } catch ( NullPointerException e ) { /* basically, leave plant as it was */ }
        }
        
       return (Date) get( prop_plant );
@@ -553,10 +557,12 @@ public final class CPSPlanting extends CPSRecord {
                 ! t.isConcrete() &&
                   w.isNotNull() &&
                   h.isNotNull() && m.isNotNull() ) {
-         set( t, CPSCalculations.calcDateTPFromDateHarvest( (Date) h.getValue(),
+        try {
+          set( t, CPSCalculations.calcDateTPFromDateHarvest( (Date) h.getValue(),
                                                                 m.getValueAsInt(),
                                                                 getMatAdjust() ) );
-         t.setCalculated( true );
+          t.setCalculated( true );
+        } catch ( NullPointerException e ) { /* basically, leave t as it was */ }
       }
       
       return (Date) get( prop_tp );
@@ -612,23 +618,25 @@ public final class CPSPlanting extends CPSRecord {
         * DATE_PLANTING AND MATURITY *ARE* valid
         * otherwise just return the harvest date or a default */
        if ( this.isSingleRecord() &&
-            ! h.isNotNull() &&
+              h.isNull() &&
               t.isNotNull() && m.isNotNull() ) {
-          debug( "Calculating the harvest date from the TP date." );
-          set( h, CPSCalculations.calcDateHarvestFromDateTP( (Date) t.getValue(),
-                                                                 m.getValueAsInt(),
-                                                                 getMatAdjust() ) );
-          h.setCalculated( true );
+          try {
+            set( h, CPSCalculations.calcDateHarvestFromDateTP( (Date) t.getValue(),
+                                                                   m.getValueAsInt(),
+                                                                   getMatAdjust() ) );
+            h.setCalculated( true );
+          } catch ( NullPointerException e ) { /* basically, leave h as null */ }
        }
        else if ( this.isSingleRecord() &&
-                 ! h.isNotNull() &&
+                   h.isNull() &&
                    p.isNotNull() && m.isNotNull() ) {
-          debug( "Calculating the harvest date from the planting date." );
-          set( h, CPSCalculations.calcDateHarvestFromDatePlant( (Date) p.getValue(),
-                                                                    m.getValueAsInt(),
-                                                                    getMatAdjust(),
-                                                                    w.getValueAsInt() ));
-          h.setCalculated( true );
+          try {
+            set( h, CPSCalculations.calcDateHarvestFromDatePlant( (Date) p.getValue(),
+                                                                      m.getValueAsInt(),
+                                                                      getMatAdjust(),
+                                                                      w.getValueAsInt() ));
+            h.setCalculated( true );
+          } catch ( NullPointerException e ) { /* basically, leave h as null */ }
        }
 
       return (Date) get( prop_harv );
