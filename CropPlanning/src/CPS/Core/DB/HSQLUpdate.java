@@ -363,15 +363,25 @@ public class HSQLUpdate {
 
       CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.3.0" );
 
-      Statement st = con.createStatement();
-      String update = "";
+      boolean redoImport = HSQLConnect.tableExists( con, HSQLDB.CROP_VAR_TABLE + "_OLD" );
+
 
       Persist p = new Persist( con );
-//      p.executeUpdate("ALTER TABLE CROPS_VARIETIES RENAME TO CROPS_VARIETIES_OLD");
-      p.executeUpdate("DROP TABLE CROPS_VARIETIES");
-      List<Map<String,Object>> crops = p.readMapList("select * from CROPS_VARIETIES_OLD");
+
+      String oldTable = HSQLDB.CROP_VAR_TABLE;
+      String newTable = oldTable + "_NEW";
+
+      if ( redoImport ) {
+        oldTable += "_OLD";
+        p.executeUpdate("DROP TABLE " + HSQLDB.CROP_VAR_TABLE );
+      }
+
+      List<Map<String,Object>> crops = p.readMapList( "SELECT * FROM " + oldTable );
+
       try {
-        p.create( "CROPS_VARIETIES", new CPSCrop() );
+        if ( HSQLConnect.tableExists( con, newTable ) )
+          p.executeUpdate("DROP TABLE " + HSQLDB.escapeTableName( newTable ) );
+        p.create( newTable, new CPSCrop() );
       }
       catch ( Exception e ) { e.printStackTrace();  System.exit(-1); }
 
@@ -380,42 +390,69 @@ public class HSQLUpdate {
       while ( i.hasNext() ) {
         Map<String,Object> m = (Map<String, Object>) i.next();
         CPSCrop c = HSQLUpdateHelpers.convertPersistMapToCrop(m);
-//        System.out.println( c.toString() );
         c.useRawOutput(true);
-        p.insert( "CROPS_VARIETIES", c );
+        p.insert( newTable, c );
         j++;
 
       }
+
+      if ( ! redoImport )
+        p.executeUpdate("ALTER TABLE CROPS_VARIETIES RENAME TO CROPS_VARIETIES_OLD");
+      p.executeUpdate("ALTER TABLE CROPS_VARIETIES_NEW RENAME TO CROPS_VARIETIES");
+
       HSQLDB.debug( "HSQLUpdate", "Imported " + j + " crops/varieties." );
 
-      p.executeUpdate("DROP TABLE " + HSQLDB.escapeTableName( "2012" ) );
-      List<Map<String,Object>> plantings = p.readMapList("select * from " + HSQLDB.escapeTableName( "2012_OLD" ) );
-      try {
-        p.create( "2012", new CPSPlanting() );
+
+
+      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, HSQLDB.CROP_PLAN_TABLE, "plan_name" );
+      for ( String plan : plans ) {
+
+        oldTable = plan;
+        newTable = plan + "_NEW";
+
+        if ( redoImport ) {
+          oldTable +=  "_OLD";
+          p.executeUpdate("DROP TABLE " + HSQLDB.escapeTableName( plan ) );
+        }
+
+        HSQLConnect.tableExists( con, oldTable );
+        HSQLConnect.tableExists( con, newTable );
+
+        List<Map<String,Object>> plantings = p.readMapList( "SELECT * FROM " + HSQLDB.escapeTableName( oldTable ) );
+        try {
+          p.create( newTable, new CPSPlanting() );
+          HSQLDB.debug( "HSQLUpdate", "Table created: " + newTable );
+        }
+        catch ( Exception e ) { e.printStackTrace();  System.exit(-1); }
+
+        HSQLConnect.tableExists( con, newTable );
+        
+        try {
+          i  = plantings.iterator();
+          j = 0;
+          while ( i.hasNext() ) {
+            Map<String,Object> m = (Map<String, Object>) i.next();
+            CPSPlanting pp = HSQLUpdateHelpers.convertPersistMapToPlanting(m);
+    //        System.out.println( pp.toString() );
+            pp.useRawOutput(true);
+            p.insert( newTable, pp );
+            j++;
+
+          }
+          p.commit();
+          HSQLDB.debug( "HSQLUpdate", "Imported " + j + " plantings into " + newTable );
+
+          if ( ! redoImport ) {
+            HSQLDB.debug( "HSQLUpdate", "Moving old table out of the way: " + plan + " ==> " + plan + "_OLD" );
+            p.executeUpdate("ALTER TABLE " + HSQLDB.escapeTableName( plan ) + " RENAME TO " + HSQLDB.escapeTableName( plan + "_OLD" ));
+          }
+          p.commit();
+          HSQLDB.debug( "HSQLUpdate", "Moving new table into the way: " + newTable + " ==> " + plan );
+          p.executeUpdate("ALTER TABLE " + HSQLDB.escapeTableName( newTable ) + " RENAME TO " + HSQLDB.escapeTableName( plan ));
+        } catch ( Exception e ) { e.printStackTrace(); System.exit(-1); }
+
       }
-      catch ( Exception e ) { e.printStackTrace();  System.exit(-1); }
 
-      i  = plantings.iterator();
-      j = 0;
-      while ( i.hasNext() ) {
-        Map<String,Object> m = (Map<String, Object>) i.next();
-        CPSPlanting pp = HSQLUpdateHelpers.convertPersistMapToPlanting(m);
-//        System.out.println( pp.toString() );
-        pp.useRawOutput(true);
-        p.insert( "2012", pp );
-        j++;
-
-      }
-      HSQLDB.debug( "HSQLUpdate", "Imported " + j + " plantings." );
-
-//        System.exit(1);
-
-//      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, "CROP_PLANS", "plan_name" );
-//      update = "";
-//
-//      for ( String plan : plans ) {
-//
-//      }
       // 1. read through every entry in the cropdb and create an entry in a new crop db table
       // 2. read through every plan and
       //     1. read every planting and create a new Persist-based entry in a new plan
@@ -423,15 +460,6 @@ public class HSQLUpdate {
       // 4. rename the new plans
       // 5. remove the old cropdb
       // 6. rename the new cropdb
-
-
-//      if ( ! update.equals( "" ) ) {
-//         CPSModule.debug( "HSQLUpdate", "Executing update: " + update );
-//         st.executeUpdate( update );
-//      }
-//
-//
-//      System.exit(-1);
 
 //      return CPSModule.versionAsLongInt( 0, 3, 0 );
       return 0;
