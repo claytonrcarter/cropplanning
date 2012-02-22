@@ -45,6 +45,7 @@ public final class CPSCalculations {
    public static Date calcDatePlantFromDateHarvest( Date dateHarvest, int maturityDays, int matAdjust ) {
       return calcDatePlantFromDateHarvest( dateHarvest, maturityDays, matAdjust, 0 );
    }
+
    public static Date calcDatePlantFromDateHarvest( Date dateHarvest, int maturityDays, int matAdjust, int weeksInGH ) {
       GregorianCalendar c = new GregorianCalendar();
       c.setTime( dateHarvest );
@@ -52,12 +53,14 @@ public final class CPSCalculations {
       c.add( GregorianCalendar.DAY_OF_YEAR, -1 * ( maturityDays + matAdjust + weeksInGH * 7 ) );
       return c.getTime();
    }
-   
+
    public static Date calcDatePlantFromDateTP( Date dateTP, int weeksInGH ) {
       /* tricky tricky or smarty smarty? */
       return calcDatePlantFromDateHarvest( dateTP, weeksInGH * 7, 0 );
    }
-   
+
+
+//****************************************************************************//
    public static Date calcDateTPFromDatePlant( Date datePlant, int weeksInGH ) {
       return calcDateHarvestFromDatePlant( datePlant, weeksInGH * 7, 0 );
    }
@@ -65,7 +68,9 @@ public final class CPSCalculations {
    public static Date calcDateTPFromDateHarvest( Date dateHarvest, int maturityDays, int matAdjust ) {
        return calcDatePlantFromDateHarvest( dateHarvest, maturityDays, matAdjust );
    }
-   
+
+
+//****************************************************************************//
    public static Date calcDateHarvestFromDatePlant( Date datePlant, int maturityDays, int matAdjust ) {
       return calcDateHarvestFromDatePlant( datePlant, maturityDays, matAdjust, 0 );
    }
@@ -80,13 +85,10 @@ public final class CPSCalculations {
                                                  int maturityDays,
                                                  int matAdjust ) {
        return calcDateHarvestFromDatePlant( dateTP, maturityDays, matAdjust );
-//      return calcDateHarvestFromDatePlant( calcDatePlantFromDateTP( dateTP, weeksInGH ), maturityDays );
    }
-   
-   
-   /* this one will be a bit more complicated */
-//   public static Date calcDateHarvestFromDateTP
-   
+
+
+//****************************************************************************//
    public static float calcBedsToPlantFromRowFtToPlant( int rowFt, int rowsPerBed, int bedLength ) {
       return (float) ( ( 1.0 * rowFt / rowsPerBed ) / bedLength );
    }
@@ -109,7 +111,9 @@ public final class CPSCalculations {
                                                rowsPerBed, 
                                                bedLength );
    }
-   
+
+
+//****************************************************************************//
    public static int calcPlantsNeededFromBedsToPlant( float bedsToPlant,
                                                       int inRowSpacing,
                                                       int rowsPerBed,
@@ -135,7 +139,14 @@ public final class CPSCalculations {
                                                                                 yieldPerFt ),
                                                 inRowSpacing );
    }
- 
+
+   public static int calcPlantsNeededFromPlantsToStart( int plantsToStart ) {
+       float fudgeFactor = CPSGlobalSettings.getFudgeFactor();
+      return (int) ( plantsToStart / ( 1 + fudgeFactor ) );
+   }
+
+
+//****************************************************************************//
    public static int calcRowFtToPlantFromBedsToPlant( float bedsToPlant, int rowsPerBed, int bedLength ) {
       /* rowft = beds * rowsPerBed * BED_LENGTH */
       return (int) ( bedsToPlant * rowsPerBed * bedLength );
@@ -150,17 +161,34 @@ public final class CPSCalculations {
    public static int calcRowFtToPlantFromTotalYield( float totalYield, float yieldPerFt ) {
        return (int) ( totalYield / yieldPerFt );
    }
-   
+
+
+//****************************************************************************//
    public static int calcPlantsToStart( int plantsNeeded ) {
        float fudgeFactor = CPSGlobalSettings.getFudgeFactor();
       return (int) ( plantsNeeded * ( 1 + fudgeFactor ) );
    }
-   
+
+   public static int calcPlantsToStart( float flatsToStart, int flatCapacity ) {
+     return (int) ( flatsToStart * flatCapacity );
+   }
+
+
+//****************************************************************************//
    public static float calcFlatsNeeded( int plantsToStart, int flatCapacity ) {
       return roundQuarter( plantsToStart / (float) flatCapacity );
-//      return plantsToStart / (float) flatCapacity;
    }
-   
+
+
+//****************************************************************************//
+   public static float calcTotalYieldFromRowFtToPlant( int rowFt, float yieldPerFt ) {
+      return precision3( rowFt * yieldPerFt );
+   }
+
+
+//****************************************************************************//
+//  Public Utility Methods
+//****************************************************************************//
    /**
     * Given a flat size string, calculates a flat capacity.
     * @param flatSize The flat size string ot parse.  
@@ -190,7 +218,8 @@ public final class CPSCalculations {
       }
       return cap;
    }
-   
+
+
    /**
     * Given a field name string, extracts a bed length.
     * @param fieldName The field name string to parse.  
@@ -207,12 +236,11 @@ public final class CPSCalculations {
        
        return len;
    }
-   
-   public static float calcTotalYieldFromRowFtToPlant( int rowFt, float yieldPerFt ) {
-      return precision3( rowFt * yieldPerFt );
-//      return roundQuarter( rowFt * yieldPerFt );
-   }
-   
+
+
+//****************************************************************************//
+// Private Utility Methods
+//****************************************************************************//
    private static float precision3( float f ) {
        return (float) ((int) ( f * 1000 )) / 1000f;
    }

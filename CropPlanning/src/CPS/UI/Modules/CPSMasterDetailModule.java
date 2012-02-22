@@ -65,6 +65,10 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
     protected void displayDetail( CPSRecord r ) {
         detail.displayRecord(r);
     }
+    protected CPSRecord getDetailsForID( int id ) {
+        return master.getDetailsForID( id );
+    }
+    
     protected void clearDetailDisplay() {
        detail.clearDisplay();
     }
@@ -73,6 +77,9 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
     }
     protected void selectRecordInMasterView( int id ) {
         master.selectRecord( id );
+    }
+    protected void updateRecordInMasterView( CPSRecord r ) {
+      master.updateRecord( r );
     }
     
     

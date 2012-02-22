@@ -583,7 +583,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    public void updatePlanting( String planName, CPSPlanting planting ) {
       HSQLDBCreator.updatePlanting( p, planName, planting );
-      updateDataListeners();
+//      updateDataListeners();
    }
    
    public void updatePlantings( String planName, CPSPlanting changes, List<Integer> changedIDs ) {

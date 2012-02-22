@@ -216,6 +216,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
        if ( diff.getID() == -1 )
           return;
+
+       updateRecordInMasterView(diff);
        
        if ( ! displayedPlanting.isSingleRecord() )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
@@ -223,6 +225,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
           getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
        
        selectRecordInMasterView( displayedPlanting.getID() );
+       
+       displayRecord( diff.getID() );
+
     }
 
    /** asPlanting - create a planting data struct to represent this detail view

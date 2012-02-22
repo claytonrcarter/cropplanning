@@ -129,7 +129,7 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
       switch ( colNum ) {
          case 0: return p.getCropName();
          case 1: return p.getVarietyName();
-         case 2: return p.getMaturityDays();
+         case 2: return p.getMaturityDaysString();
          case 3: return p.getLocation();
 
          // Dates
@@ -154,32 +154,32 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
          // Static Data
          // inheritable
-         case 17: return p.getMatAdjust();
-         case 18: return p.getRowsPerBed();
-         case 19: return p.getRowSpacing();
+         case 17: return p.getMatAdjustString();
+         case 18: return p.getRowsPerBedString();
+         case 19: return p.getRowSpacingString();
          case 20: return p.getNotes();
 
-         case 21: return p.getTimeToTP();
-         case 22: return p.getInRowSpacing();
+         case 21: return p.getTimeToTPString();
+         case 22: return p.getInRowSpacingString();
          case 23: return p.getFlatSize();
          case 24: return p.getPlantingNotes();
 
          // Calculated Data
-         case 25: return p.getBedsToPlant();
-         case 26: return p.getPlantsNeeded();
-         case 27: return p.getRowFtToPlant();
-         case 28: return p.getPlantsToStart();
-         case 29: return p.getFlatsNeeded();
+         case 25: return p.getBedsToPlantString();
+         case 26: return p.getPlantsNeededString();
+         case 27: return p.getRowFtToPlantString();
+         case 28: return p.getPlantsToStartString();
+         case 29: return p.getFlatsNeededString();
 
          // Yield
          // static
-         case 30: return p.getYieldPerFoot();
-         case 31: return p.getYieldNumWeeks();
-         case 32: return p.getYieldPerWeek();
+         case 30: return p.getYieldPerFootString();
+         case 31: return p.getYieldNumWeeksString();
+         case 32: return p.getYieldPerWeekString();
          case 33: return p.getCropYieldUnit();
-         case 34: return p.getCropYieldUnitValue();
+         case 34: return p.getCropYieldUnitValueString();
          // calculated
-         case 35: return p.getTotalYield();
+         case 35: return p.getTotalYieldString();
 
          // Misc Metadata
          // bools

@@ -204,7 +204,16 @@ public abstract class CPSDetailView extends CPSDataModelUser
     protected void selectRecordInMasterView( int id ) {
         uiManager.selectRecordInMasterView( id );
     }
+
+    protected void updateRecordInMasterView( CPSRecord r ) {
+      uiManager.updateRecordInMasterView( r );
+    }
+
     public abstract void displayRecord( CPSRecord r );
+    public void displayRecord( int id ) {
+      displayRecord( uiManager.getDetailsForID( id ));
+    }
+
     public void clearDisplay() {
        setRecordDisplayed( false );
        clearMainPanel();

@@ -33,6 +33,8 @@ public class CPSDatum<T> {
     int propertyNum;
     CPSDatumState state;
 
+    private boolean locked = false;
+
     public final int DATA_MODE_RAW = 0;
     public final int DATA_MODE_NORMAL = 1;
     int dataMode = DATA_MODE_NORMAL;
@@ -245,6 +247,11 @@ public class CPSDatum<T> {
       this.setInherited( c.isInherited() );
       this.setCalculated( c.isCalculated() );
    }
+
+
+    public boolean isLocked() { return locked; }
+    public void lock()   { locked = true; }
+    public void unlock() { locked = false; }
 
     public class CPSDatumState {
 

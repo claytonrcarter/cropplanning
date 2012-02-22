@@ -156,16 +156,22 @@ public abstract class CPSRecord {
        return useRawOutput;
    }
 
+   public String getString( int prop ) {
+     CPSDatum c = getDatum( prop );
+     if ( c.isNull() || c.isBlank() )
+       return "";
+     else
+       return c.getValue().toString();
+   }
+
    public Integer getInt( int prop ) {
       if ( useRawOutput() )
          return (Integer) getDatum( prop ).getValue( useRawOutput() );
       else
          return getDatum( prop ).getValueAsInt();
-//      Integer i = get( prop );
-//      return i.intValue();
    }
-   public String formatInt( int i ) {
-      if ( i == -1 )
+   public String formatInt( Integer i ) {
+      if ( i == null || i.intValue() == -1 )
          return "";
       else 
          return "" + i;
@@ -175,32 +181,29 @@ public abstract class CPSRecord {
          return (Boolean) getDatum( prop ).getValue( useRawOutput() );
       else
          return new Boolean( getDatum( prop ).getValueAsBoolean() );
-//      Boolean b = get( prop );
-//      return b.booleanValue();
    }
    public Float getFloat( int prop ) {
       if ( useRawOutput() )
          return (Float) getDatum( prop ).getValue( useRawOutput() );
       else
          return getDatum( prop ).getValueAsFloat();
-//      Float f = get( prop );
-//      return f.floatValue();
    }
    public String formatFloat( float f ) {
       return formatFloat( f, -1 );
    }
-   public static String formatFloat( float n, int precision ) {
+   public static String formatFloat( Float n, int precision ) {
       
-       if      ( n == -1f )
+       if      ( n == null || n.floatValue() == -1f )
            return "";
        else if ( precision < 1 )
-           return "" + n;
+           return n.toString();
        else {
           // prepare our multiplcation factor
           double p = Math.pow( 10, precision );
           // if there is NO fractional part
-          if ( Math.floor( n ) == n )
-             return "" + (int) n;
+          // guess we could also do: n % 1 == 0 ??
+          if ( Math.floor( n.floatValue() ) == n.floatValue() )
+             return "" + n.intValue();
           else
              return "" + (float) ( (int) ( n * p ) ) / p;
        }
@@ -213,7 +216,6 @@ public abstract class CPSRecord {
      * @param prop Property number to retrieve
      */
    public <T> T get( int prop ) {
-//      debug( "Getting value of " + getDatum(prop).getName() + " as " + getDatum( prop ).getValue( useRawOutput() ));
       return (T) getDatum( prop ).getValue( useRawOutput() );
    }
    
@@ -242,9 +244,9 @@ public abstract class CPSRecord {
    public abstract CPSRecord diff( CPSRecord comparedTo );
    public CPSRecord diff( CPSRecord thatRecord, CPSRecord diffs ) {
        
-//       debug( "Calculating difference between:\n" +
-//               this.toString() + "\n" +
-//               thatRecord.toString() );
+       debug( "Calculating difference between:\n" +
+               this.toString() + "\n" +
+               thatRecord.toString() );
        
        boolean diffsExists = false;
        
@@ -271,8 +273,6 @@ public abstract class CPSRecord {
                     ( thi.isNotNull() && that.isNotNull() ) &&
                     ! thi.getValue().equals( that.getValue() ) ) {
              diffs.set( that.getPropertyNum(), that.getValue() );
-//             if ( diffs.getDatum( that.getPropertyNum() ).isNull() )
-//                diffs.set( that.getPropertyNum(), that.getBlankValue() );
              diffsExists = true;
           }
        }
@@ -327,14 +327,7 @@ public abstract class CPSRecord {
           else if ( (   thisItem.isNull() && changedItem.isNotNull() ) ||
                     (   thisItem.isNotNull() && changedItem.isNotNull() ) &&
                       ! thisItem.getValue().equals( changedItem.getValue() ) ) {
-//              debug( "Recording difference for datum: " +
-//                      this.getDatum( changedItem.getPropertyNum() ).getName() + " => " +
-//                      changes.getDatum( changedItem.getPropertyNum()).getValue().toString() );
               this.set( changedItem.getPropertyNum(), changedItem.getValue() );
-
-//              if ( this.getDatum( changedItem.getPropertyNum() ).isNull() )
-//                  this.set( changedItem.getPropertyNum(), changedItem.getBlankValue() );
-
           }
        }
 
@@ -419,7 +412,9 @@ public abstract class CPSRecord {
     * @param v value to which the datum should be set
     */
    protected <T> void set( CPSDatum<T> d, T v ) {
-//      debug( "Setting value of " + d.getName() + " to " + v );
+     if ( d.isLocked() )
+       return;
+     
       d.setInherited( false );
       d.setCalculated( false );
       d.setValue( v );

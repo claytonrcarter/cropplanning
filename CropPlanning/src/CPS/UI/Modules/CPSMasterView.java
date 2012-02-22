@@ -106,7 +106,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected BasicEventList<CPSRecord> masterList = new BasicEventList<CPSRecord>();
     protected FilterList<CPSRecord> masterListFiltered = new FilterList<CPSRecord>( masterList );
     protected SortedList<CPSRecord> masterListSorted = new SortedList<CPSRecord>( masterListFiltered, new CPSComparator( CPSPlanting.PROP_ID ));
-    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterListFiltered );
+    EventSelectionModel<CPSRecord> selectModel = new EventSelectionModel( masterListSorted );
 
     protected CompositeMatcherEditor<CPSRecord> compositeFilter = null;
     protected EventList<MatcherEditor<CPSRecord>> filterList;
@@ -163,7 +163,41 @@ public abstract class CPSMasterView extends CPSDataModelUser
            uiManager.displayDetail( getDetailsForIDs( selectedIDs ));
         
     }
-    
+
+    protected void updateRecord( CPSRecord r ) {
+
+      boolean found = findRecordAndUpdate( r, masterListFiltered );
+      
+      if ( ! found )
+        found = findRecordAndUpdate( r, masterList );
+
+      if ( ! found )
+        ;
+
+    }
+
+    private boolean findRecordAndUpdate( CPSRecord r, List<CPSRecord> l ) {
+
+      int id = r.getID();
+      boolean found = false;
+
+      for ( int i = 0; i < l.size(); i++ ) {
+
+        CPSRecord r2 = l.get(i);
+
+        if ( r2.getID() != id )
+          continue;
+
+        found = true;
+
+        l.set( i, r2.merge( r ));
+        
+      }
+
+      return found;
+
+    }
+
     // pertinent method for TableModelListener
     // what does it listen for?  general changes to the table?
     public void tableChanged(TableModelEvent e) {
@@ -189,7 +223,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
            
            selectedIDs.clear();
            for ( CPSRecord r : selectModel.getSelected() ) {
-//              CPSModule.debug( "CPSMasterView", "Record selected: " + r.getID() + " " + r.toString() );
+              CPSModule.debug( "CPSMasterView", "Record selected: " + r.getID() + " " + r.toString() );
               selectedIDs.add( new Integer( r.getID() ));
            }
            
@@ -549,7 +583,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
            
         }
         
-        updateMasterList();
+//        updateMasterList();
     }
     public void mouseEntered(MouseEvent mouseEvent) {}
     public void mouseExited(MouseEvent mouseEvent) {}

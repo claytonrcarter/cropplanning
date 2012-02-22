@@ -461,8 +461,8 @@ public class HSQLUpdate {
       // 5. remove the old cropdb
       // 6. rename the new cropdb
 
-//      return CPSModule.versionAsLongInt( 0, 3, 0 );
-      return 0;
+      return CPSModule.versionAsLongInt( 0, 3, 0 );
+//      return 0;
     }
 
 
