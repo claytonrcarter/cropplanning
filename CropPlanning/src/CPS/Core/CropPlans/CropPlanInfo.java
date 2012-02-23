@@ -214,8 +214,16 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        CPSPlanting currentlyDisplayed = this.asPlanting();
        CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( currentlyDisplayed );
 
-       if ( diff.getID() == -1 )
-          return;
+       if ( diff.getID() == -1 ) {
+         // TODO this would be great to optimize as follows, though it isn't a priority:
+         // if there were no changes, then just return; if there the user changed
+         // values which the software isn't taking as changes (blank value, spaces, etc)
+         // then redisplay the displayed planting
+
+         // for now, just reset the display w/ the current planting
+         displayRecord( displayedPlanting );
+         return;
+       }
 
        updateRecordInMasterView(diff);
        

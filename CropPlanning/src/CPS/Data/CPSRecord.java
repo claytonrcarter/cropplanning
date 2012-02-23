@@ -285,6 +285,8 @@ public abstract class CPSRecord {
           else
              diffs.setID( this.getID() );
        }
+       else
+          System.out.println("Differences DO NOT EXIST" );
        
        return diffs;
     }
@@ -370,7 +372,9 @@ public abstract class CPSRecord {
    }
 
    public Integer parseInteger( String s ) {
-      if ( isObjectNull(s) || s.equals("") )
+     // TODO should this also catch when the user might enter "-1" since that's
+     // a bogus value for most of the software and will confuse things?
+      if ( isObjectNull(s) || s.trim().equals("") )
          return null;
       else
          return new Integer( parseInt(s) );
@@ -385,13 +389,13 @@ public abstract class CPSRecord {
 
 
    public Float parseFloatBigF( String s ) {
-      if ( isObjectNull(s) || s.equals("") )
+      if ( isObjectNull(s) || s.trim().equals("") )
          return null;
       else
          return new Float( parseFloat(s));
    }
    public float parseFloat( String s ) {
-      if ( isObjectNull(s) || s.equals("") )
+      if ( isObjectNull(s) || s.trim().equals("") )
          return -1;
       else
          // remove whitespace and ignore a leading '+"
@@ -411,10 +415,7 @@ public abstract class CPSRecord {
     * @param d datum to be set
     * @param v value to which the datum should be set
     */
-   protected <T> void set( CPSDatum<T> d, T v ) {
-     if ( d.isLocked() )
-       return;
-     
+   protected <T> void set( CPSDatum<T> d, T v ) {     
       d.setInherited( false );
       d.setCalculated( false );
       d.setValue( v );

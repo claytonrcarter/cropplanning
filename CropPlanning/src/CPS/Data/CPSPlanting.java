@@ -208,10 +208,10 @@ public final class CPSPlanting extends CPSRecord {
       date_tp_actual = new CPSDatum<Date>( "Transplant Date (Actual)", "When this will be transplanted to the field", new Date( 0 ), PROP_DATE_TP_ACTUAL );
       date_harvest_actual = new CPSDatum<Date>( "Harvest Date (Actual)", "When this will be harvested", new Date( 0 ), PROP_DATE_HARVEST_ACTUAL );
 
-      done_plant = new CPSDatum<Boolean>( "Planted?", "Has this been planted?", new Boolean( false ), PROP_DONE_PLANTING);
-      done_tp = new CPSDatum<Boolean>( "Transplanted?", "Has this been transplanted?", new Boolean( false ), PROP_DONE_TP );
-      done_harvest = new CPSDatum<Boolean>( "Harvested?", "Has this been harvested", new Boolean( false ), PROP_DONE_HARVEST );
-      ignore = new CPSDatum<Boolean>( "Ignore?", "Ignore this planting", new Boolean( false ), PROP_IGNORE );
+      done_plant = new CPSDatum<Boolean>( "Planted?", "Has this been planted?", Boolean.FALSE, PROP_DONE_PLANTING);
+      done_tp = new CPSDatum<Boolean>( "Transplanted?", "Has this been transplanted?", Boolean.FALSE, PROP_DONE_TP );
+      done_harvest = new CPSDatum<Boolean>( "Harvested?", "Has this been harvested", Boolean.FALSE, PROP_DONE_HARVEST );
+      ignore = new CPSDatum<Boolean>( "Ignore?", "Ignore this planting", Boolean.FALSE, PROP_IGNORE );
 
       ds_mat_adjust = new CPSDatum<Integer>( "DS Mat. Adj.", new Integer(-1), PROP_DS_MAT_ADJUST );
       tp_mat_adjust = new CPSDatum<Integer>( "TP Mat. Adj.", new Integer(-1), PROP_TP_MAT_ADJUST );
@@ -239,8 +239,8 @@ public final class CPSPlanting extends CPSRecord {
       crop_unit_value = new CPSDatum<Float>( "Value per Yield Unit", new Float(-1.0), PROP_CROP_UNIT_VALUE );
       total_yield = new CPSDatum<Float>( "Total Yield", new Float( -1.0 ), PROP_TOTAL_YIELD );
 
-      direct_seed = new CPSDatum<Boolean>( "Direct seeded?", new Boolean( true ), PROP_DIRECT_SEED );
-      frost_hardy = new CPSDatum<Boolean>( "Frost hardy?", new Boolean( false ) , PROP_FROST_HARDY );
+      direct_seed = new CPSDatum<Boolean>( "Direct seeded?", Boolean.TRUE, PROP_DIRECT_SEED );
+      frost_hardy = new CPSDatum<Boolean>( "Frost hardy?", Boolean.FALSE , PROP_FROST_HARDY );
 
       groups = new CPSDatum<String>( "Groups", "", PROP_GROUPS );
       keywords = new CPSDatum<String>( "Keywords", "", PROP_KEYWORDS );
@@ -379,18 +379,6 @@ public final class CPSPlanting extends CPSRecord {
    
    }
 
-   @Override
-   protected <T> void set( CPSDatum<T> d, T v ) {
-     if ( d.isLocked() )
-       return;
-     
-     super.set( d, v );
-     d.lock();
-     updateCalculations( d.getPropertyNum() );
-     d.unlock();
-   }
-
-
    
    /* *********************************************************************************************/
    /* GETTERS and SETTERS
@@ -415,99 +403,115 @@ public final class CPSPlanting extends CPSRecord {
    public CPSDatumState getLocationState() { return getStateOf( PROP_LOCATION ); }
    public void setLocation( String s ) { set( location, s ); }
 
-   /* *********************************************************************************************/
-   /* Dates */
-   /* *********************************************************************************************/
-   protected Date getEffectiveDate( int prop_effective, int prop_actual, int prop_plan ) {
+   // *********************************************************************************************/
+   // Dates
+   // *********************************************************************************************/
+   protected CPSDatum<Date> getEffectiveDate( int prop_effective, int prop_actual, int prop_plan ) {
+
+      CPSDatum p, a;
       CPSDatum e = getDatum( prop_effective );
-      CPSDatum p = getDatum( prop_plan );
-      CPSDatum a = getDatum( prop_actual );
+
+      if ( prop_effective == PROP_DATE_PLANT ) {
+        p = getDateToPlantDatum( DATE_TYPE_PLANNED );
+        a = getDateToPlantDatum( DATE_TYPE_ACTUAL );
+      } else if ( prop_effective == PROP_DATE_TP ) {
+        p = getDateToTPDatum( DATE_TYPE_PLANNED );
+        a = getDateToTPDatum( DATE_TYPE_ACTUAL );
+      } else { // if ( prop_effective == PROP_DATE_HARVEST ) {
+        p = getDateToHarvestDatum( DATE_TYPE_PLANNED );
+        a = getDateToHarvestDatum( DATE_TYPE_ACTUAL );
+      }
 
        /* If date_plant_actual is valid, return it
         * else return date_plant_plan
         * or just return a default */
        if ( this.isSingleRecord() && a.isNotNull() ) {
-
           e.setState( a.getState() );
-
-          switch ( prop_actual ) {
-             case PROP_DATE_PLANT_ACTUAL:   return getDateToPlantActual();
-             case PROP_DATE_TP_ACTUAL:      return getDateToTPActual();
-             case PROP_DATE_HARVEST_ACTUAL: return getDateToHarvestActual();
-             default:                       return new Date(0);
-          }
+          return a;
        }
        else if ( this.isSingleRecord() && p.isNotNull() ) {
           e.setState( p.getState() );
-          switch ( prop_plan ) {
-             case PROP_DATE_PLANT_PLAN:   return getDateToPlantPlanned();
-             case PROP_DATE_TP_PLAN:      return getDateToTPPlanned();
-             case PROP_DATE_HARVEST_PLAN: return getDateToHarvestPlanned();
-             default:                     return new Date(0);
-          }
+          return p;
        }
        else
-          return get( prop_effective );
+          return e;
       
    }
 
-   protected Date getDateToPlantAbstract ( int date_type ) {
+
+   private CPSDatum<Date> getDateToPlantDatum ( int date_type ) {
+      return getDateToPlantDatum ( date_type, new ArrayList() );
+   }
+   private CPSDatum<Date> getDateToPlantDatum ( int date_type, List source_path ) {
 
       int prop_plant, prop_tp, prop_harv;
 
       if ( date_type == DATE_TYPE_ACTUAL ) {
+
          prop_plant = PROP_DATE_PLANT_ACTUAL;
          prop_tp = PROP_DATE_TP_ACTUAL;
          prop_harv = PROP_DATE_HARVEST_ACTUAL;
+
       }
-      else { // if ( date_type == DATE_TYPE_PLANNED ) {
+      else {
+
          prop_plant = PROP_DATE_PLANT_PLAN;
          prop_tp = PROP_DATE_TP_PLAN;
          prop_harv = PROP_DATE_HARVEST_PLAN;
+
       }
 
-      CPSDatum plant = getDatum( prop_plant );
-      CPSDatum tp = getDatum( prop_tp );
-      CPSDatum harv = getDatum( prop_harv );
-      CPSDatum m = getDatum( PROP_MATURITY );
+      CPSDatum p = getDatum( prop_plant );
+
+      if ( p.isConcrete() ||
+           source_path.contains( p.propertyNum ) ||
+           this.doesRepresentMultipleRecords() )
+        return p;
+
+      source_path.add( p.propertyNum );
+
+
       CPSDatum w = getDatum( PROP_TIME_TO_TP );
 
-       /* Only calculate the planting date if:
-        * DATE_PLANT is *NOT* valid AND
-        * DATE_HARVEST AND MATURITY *ARE* valid
-        * otherwise just return the planting date or a default */
-       if ( this.isSingleRecord() &&
-            ! plant.isConcrete() &&
-              tp.isNotNull() && w.isNotNull() ) {
-          set( plant,  CPSCalculations.calcDatePlantFromDateTP( (Date) tp.getValue(),
-                                                                   w.getValueAsInt() ));
-          plant.setCalculated( true );
-       }
-       else if ( this.isSingleRecord() &&
-                 ! plant.isConcrete()  &&
-                   harv.isNotNull()    &&
-                   m.isNotNull() ) {
+
+      if ( ! source_path.contains( prop_tp ) && isTransplanted() ) {
+
+        CPSDatum tp = getDateToTPDatum( date_type, source_path );
+
+        if ( tp.isNotNull() && w.isNotNull() ) {
+            set( p,  CPSCalculations.calcDatePlantFromDateTP( (Date) tp.getValue(),
+                                                                    w.getValueAsInt() ));
+            p.setCalculated( true );
+        }
+      }
+      else if ( ! source_path.contains( prop_harv )) {
+
+        CPSDatum harv = getDateToHarvestDatum( date_type, source_path );
+        CPSDatum m = getDatum( PROP_MATURITY );
+
+        if ( harv.isNotNull() && m.isNotNull() ) {
           try {
-            set( plant, CPSCalculations.calcDatePlantFromDateHarvest( (Date) harv.getValue(),
+            set( p, CPSCalculations.calcDatePlantFromDateHarvest( (Date) harv.getValue(),
                                                                         m.getValueAsInt(),
                                                                         getMatAdjust(),
                                                                         w.getValueAsInt() ));
-            plant.setCalculated( true );
+            p.setCalculated( true );
           } catch ( NullPointerException e ) { /* basically, leave plant as it was */ }
-       }
-       
-      return (Date) get( prop_plant );
-//      return (Date) plant.getValue();
+        }
+      }
+
+      return p;
+
    }
 
    public Date getDateToPlant() {
-      return getEffectiveDate( PROP_DATE_PLANT, PROP_DATE_PLANT_ACTUAL, PROP_DATE_PLANT_PLAN );
+      return getEffectiveDate( PROP_DATE_PLANT, PROP_DATE_PLANT_ACTUAL, PROP_DATE_PLANT_PLAN ).getValue( useRawOutput() );
    }
    public String getDateToPlantString() { return formatDate( getDateToPlant() ); }
    public CPSDatumState getDateToPlantState() { return getStateOf( PROP_DATE_PLANT ); }
 
    public Date getDateToPlantPlanned() {
-      return getDateToPlantAbstract( DATE_TYPE_PLANNED );
+      return getDateToPlantDatum( DATE_TYPE_PLANNED ).getValue( useRawOutput() );
    }
    public String getDateToPlantPlannedString() { return formatDate( getDateToPlantPlanned() ); }
    public CPSDatumState getDateToPlantPlannedState() { return getStateOf( PROP_DATE_PLANT_PLAN ); }
@@ -515,7 +519,7 @@ public final class CPSPlanting extends CPSRecord {
    public void setDateToPlantPlanned( String d ) { setDateToPlantPlanned( parseDate(d) ); }
 
    public Date getDateToPlantActual() {
-      return getDateToPlantAbstract( DATE_TYPE_ACTUAL );
+      return getDateToPlantDatum( DATE_TYPE_ACTUAL ).getValue( useRawOutput() );
    }
    public String getDateToPlantActualString() { return formatDate( getDateToPlantActual() ); }
    public CPSDatumState getDateToPlantActualState() { return getStateOf( PROP_DATE_PLANT_ACTUAL ); }
@@ -523,66 +527,82 @@ public final class CPSPlanting extends CPSRecord {
    public void setDateToPlantActual( String d ) { setDateToPlantActual( parseDate(d) ); }
 
 
-   public Date getDateToTPAbstract( int date_type ) {
-      
+
+   private CPSDatum<Date> getDateToTPDatum( int date_type ) {
+      return getDateToTPDatum( date_type, new ArrayList() );
+   }
+   private CPSDatum<Date> getDateToTPDatum( int date_type, List source_path ) {
+
       int prop_plant, prop_tp, prop_harv;
       
-      if ( date_type == DATE_TYPE_ACTUAL ) {
+      boolean actual = date_type == DATE_TYPE_ACTUAL;
+
+      if ( actual ) {
+
          prop_plant = PROP_DATE_PLANT_ACTUAL;
          prop_tp = PROP_DATE_TP_ACTUAL;
          prop_harv = PROP_DATE_HARVEST_ACTUAL;
+
       } 
-      else { // if ( date_type == DATE_TYPE_PLANNED ) {
+      else {
+
          prop_plant = PROP_DATE_PLANT_PLAN;
          prop_tp = PROP_DATE_TP_PLAN;
          prop_harv = PROP_DATE_HARVEST_PLAN;
+
       }
 
-      CPSDatum p = getDatum( prop_plant );
       CPSDatum t = getDatum( prop_tp );
-      CPSDatum h = getDatum( prop_harv );
-      CPSDatum w = getDatum( PROP_TIME_TO_TP );
-      CPSDatum m = getDatum( PROP_MATURITY );
 
-      /* If DATE_TP valid, return
-       * If DATE_PLANT valid
-       *   If TIME_TP valid, add TIME_TP to DATE_PLANT
-       *   Else return null
-       * Else return null
-       * LATER throw DATE_HARVEST into the mix
-       */
-      if ( this.isSingleRecord() &&
-           ! t.isConcrete() &&
-             p.isNotNull() && w.isNotNull() ) {
-         set( t, CPSCalculations.calcDateTPFromDatePlant( (Date) p.getValue(),
-                                                              w.getValueAsInt() ) );
-         t.setCalculated( true );
-         
-      }
-      else if ( this.isSingleRecord() &&
-                ! t.isConcrete() &&
-                  w.isNotNull() &&
-                  h.isNotNull() && m.isNotNull() ) {
-        try {
-          set( t, CPSCalculations.calcDateTPFromDateHarvest( (Date) h.getValue(),
-                                                                m.getValueAsInt(),
-                                                                getMatAdjust() ) );
+      if ( t.isConcrete() ||
+           source_path.contains( t.propertyNum ) ||
+           this.doesRepresentMultipleRecords() )
+        return t;
+
+      source_path.add( t.propertyNum );
+
+
+      CPSDatum w = getDatum( PROP_TIME_TO_TP );
+
+
+      if ( ! source_path.contains( prop_plant )) {
+
+        CPSDatum p = getDateToPlantDatum( date_type, source_path );
+
+        if ( p.isNotNull() && w.isNotNull() ) {
+          set( t, CPSCalculations.calcDateTPFromDatePlant( (Date) p.getValue(),
+                                                                w.getValueAsInt() ) );
           t.setCalculated( true );
-        } catch ( NullPointerException e ) { /* basically, leave t as it was */ }
+
+        }
       }
-      
-      return (Date) get( prop_tp );
-//      return (Date) t.getValue();
+      else if ( ! source_path.contains( prop_harv )) {
+
+        CPSDatum h = getDateToHarvestDatum( date_type, source_path );
+        CPSDatum m = getDatum( PROP_MATURITY );
+
+        if ( w.isNotNull() && h.isNotNull() && m.isNotNull() ) {
+          try {
+            set( t, CPSCalculations.calcDateTPFromDateHarvest( (Date) h.getValue(),
+                                                                  m.getValueAsInt(),
+                                                                  getMatAdjust() ) );
+            t.setCalculated( true );
+          } catch ( NullPointerException e ) { /* basically, leave t as it was */ }
+        }
+      }
+
+      return t;
+
    }
 
    public Date getDateToTP() {
-      return getEffectiveDate( PROP_DATE_TP, PROP_DATE_TP_ACTUAL, PROP_DATE_TP_PLAN );
+      return getEffectiveDate( PROP_DATE_TP, PROP_DATE_TP_ACTUAL, PROP_DATE_TP_PLAN ).getValue( useRawOutput() );
    }
    public String getDateToTPString() { return formatDate( getDateToTP() ); }
    public CPSDatumState getDateToTPState() { return getStateOf( PROP_DATE_TP ); }
 
    public Date getDateToTPPlanned () {
-      return getDateToTPAbstract( DATE_TYPE_PLANNED );
+      return getDateToTPDatum( DATE_TYPE_PLANNED ).getValue( useRawOutput() );
    }
    public String getDateToTPPlannedString() { return formatDate( getDateToTPPlanned() ); }
    public CPSDatumState getDateToTPPlannedState() { return getStateOf( PROP_DATE_TP_PLAN ); }
@@ -590,7 +610,7 @@ public final class CPSPlanting extends CPSRecord {
    public void setDateToTPPlanned( String d ) { setDateToTPPlanned( parseDate( d ) ); }
 
    public Date getDateToTPActual() {
-      return getDateToTPAbstract( DATE_TYPE_ACTUAL );
+      return getDateToTPDatum( DATE_TYPE_ACTUAL ).getValue( useRawOutput() );
    }
    public String getDateToTPActualString() { return formatDate( getDateToTPActual() ); }
    public CPSDatumState getDateToTPActualState() { return getStateOf( PROP_DATE_TP_ACTUAL ); }
@@ -598,70 +618,95 @@ public final class CPSPlanting extends CPSRecord {
    public void setDateToTPActual( String d ) { setDateToTPActual( parseDate( d ) ); }
 
 
-   public Date getDateToHarvestAbstract( int date_type ) {
+
+   private CPSDatum<Date> getDateToHarvestDatum( int date_type ) {
+      return getDateToHarvestDatum( date_type, new ArrayList() );
+   }
+   private CPSDatum<Date> getDateToHarvestDatum( int date_type, List source_path ) {
 
       int prop_plant, prop_tp, prop_harv;
 
       if ( date_type == DATE_TYPE_ACTUAL ) {
+
          prop_plant = PROP_DATE_PLANT_ACTUAL;
          prop_tp = PROP_DATE_TP_ACTUAL;
          prop_harv = PROP_DATE_HARVEST_ACTUAL;
+
       }
-      else { // if ( date_type == DATE_TYPE_PLANNED ) {
+      else {
+
          prop_plant = PROP_DATE_PLANT_PLAN;
          prop_tp = PROP_DATE_TP_PLAN;
          prop_harv = PROP_DATE_HARVEST_PLAN;
+
       }
 
-      CPSDatum p = getDatum( prop_plant );
-      CPSDatum t = getDatum( prop_tp );
       CPSDatum h = getDatum( prop_harv );
+
+      if ( h.isConcrete() ||
+           source_path.contains( h.propertyNum ) ||
+           this.doesRepresentMultipleRecords() )
+        return h;
+
+      source_path.add( h.propertyNum );
+
+
       CPSDatum m = getDatum( PROP_MATURITY );
-      CPSDatum w = getDatum( PROP_TIME_TO_TP );
 
-       /* Only calculate the harvest date if:
-        * DATE_HARVEST is *NOT* valid AND
-        * DATE_PLANTING AND MATURITY *ARE* valid
-        * otherwise just return the harvest date or a default */
-       if ( this.isSingleRecord() &&
-              h.isNull() &&
-              t.isNotNull() && m.isNotNull() ) {
-          try {
-            set( h, CPSCalculations.calcDateHarvestFromDateTP( (Date) t.getValue(),
-                                                                   m.getValueAsInt(),
-                                                                   getMatAdjust() ) );
-            h.setCalculated( true );
-          } catch ( NullPointerException e ) { /* basically, leave h as null */ }
-       }
-       else if ( this.isSingleRecord() &&
-                   h.isNull() &&
-                   p.isNotNull() && m.isNotNull() ) {
-          try {
-            set( h, CPSCalculations.calcDateHarvestFromDatePlant( (Date) p.getValue(),
-                                                                      m.getValueAsInt(),
-                                                                      getMatAdjust(),
-                                                                      w.getValueAsInt() ));
-            h.setCalculated( true );
-          } catch ( NullPointerException e ) { /* basically, leave h as null */ }
-       }
+      if ( ! source_path.contains( prop_tp ) && isTransplanted() ) {
 
-      return (Date) get( prop_harv );
-//      return (Date) h.getValue();
+        CPSDatum t = getDateToTPDatum( date_type, source_path );
+
+        if ( t.isNotNull() && m.isNotNull() ) {
+            try {
+              set( h, CPSCalculations.calcDateHarvestFromDateTP( (Date) t.getValue(),
+                                                                    m.getValueAsInt(),
+                                                                    getMatAdjust() ) );
+              h.setCalculated( true );
+            } catch ( NullPointerException e ) { /* basically, leave h as null */ }
+        }
+
+      }
+      else if ( ! source_path.contains( prop_plant )) {
+
+        CPSDatum p = getDateToPlantDatum( date_type, source_path );
+        CPSDatum w = getDatum( PROP_TIME_TO_TP );
+
+        // w can be null, ie == 0
+        if ( p.isNotNull() && m.isNotNull() ) {
+          
+            try {
+              set( h, CPSCalculations.calcDateHarvestFromDatePlant( (Date) p.getValue(),
+                                                                        m.getValueAsInt(),
+                                                                        getMatAdjust(),
+                                                                        w.getValueAsInt() ));
+              h.setCalculated( true );
+            } catch ( NullPointerException e ) { /* basically, leave h as null */ }
+
+        }
+      }
+
+      return h;
+
    }
 
    public Date getDateToHarvest() {
-      return getEffectiveDate( PROP_DATE_HARVEST, PROP_DATE_HARVEST_ACTUAL, PROP_DATE_HARVEST_PLAN );
+      return getEffectiveDate( PROP_DATE_HARVEST, PROP_DATE_HARVEST_ACTUAL, PROP_DATE_HARVEST_PLAN ).getValue(useRawOutput());
    }
    public String getDateToHarvestString() { return formatDate( getDateToHarvest() ); }
    public CPSDatumState getDateToHarvestState() { return getStateOf( PROP_DATE_HARVEST ); }
 
-   public Date getDateToHarvestPlanned() { return getDateToHarvestAbstract( DATE_TYPE_PLANNED ); }
+   public Date getDateToHarvestPlanned() { 
+     return getDateToHarvestDatum( DATE_TYPE_PLANNED ).getValue(useRawOutput());
+   }
    public String getDateToHarvestPlannedString() { return formatDate( getDateToHarvestPlanned() ); }
    public CPSDatumState getDateToHarvestPlannedState() { return getStateOf( PROP_DATE_HARVEST_PLAN ); }
    public void setDateToHarvestPlanned( Date d ) { set( date_harvest_plan, d ); }
    public void setDateToHarvestPlanned( String d ) { setDateToHarvestPlanned( parseDate( d ) ); }
 
-   public Date getDateToHarvestActual() { return getDateToHarvestAbstract( DATE_TYPE_ACTUAL ); }
+   public Date getDateToHarvestActual() { 
+     return getDateToHarvestDatum( DATE_TYPE_ACTUAL ).getValue(useRawOutput());
+   }
    public String getDateToHarvestActualString() { return formatDate( getDateToHarvestActual() ); }
    public CPSDatumState getDateToHarvestActualState() { return getStateOf( PROP_DATE_HARVEST_ACTUAL ); }
    public void setDateToHarvestActual( Date d ) { set( date_harvest_actual, d ); }
@@ -849,8 +894,8 @@ public final class CPSPlanting extends CPSRecord {
 /* *********************************************************************************************/
 /* Calculated Values */
 /* *********************************************************************************************/
-   protected CPSDatum getBedsToPlantDatum() { return getBedsToPlantDatum( new ArrayList() ); }
-   protected CPSDatum getBedsToPlantDatum( List source_path ) {
+   protected CPSDatum<Float> getBedsToPlantDatum() { return getBedsToPlantDatum( new ArrayList() ); }
+   protected CPSDatum<Float> getBedsToPlantDatum( List source_path ) {
 
       CPSDatum b = getDatum( PROP_BEDS_PLANT );
 
@@ -875,7 +920,7 @@ public final class CPSPlanting extends CPSRecord {
       
       return b;
    }
-   public Float getBedsToPlant() { return (Float) getBedsToPlantDatum().getValue( useRawOutput() ); }
+   public Float getBedsToPlant() { return getBedsToPlantDatum().getValue( useRawOutput() ); }
    public String getBedsToPlantString() { return formatFloat( getBedsToPlant(), 3 ); }
    public CPSDatumState getBedsToPlantState() { return getStateOf( PROP_BEDS_PLANT ); }
    public void setBedsToPlant( Float i ) { set( beds_to_plant, i ); }
