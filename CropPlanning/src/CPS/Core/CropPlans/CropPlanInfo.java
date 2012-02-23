@@ -173,10 +173,18 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        chkIgnore.setInitialState( displayedPlanting.getIgnore(),
                                   displayedPlanting.getIgnoreState() );
 
-       if ( displayedPlanting.isDirectSeeded().booleanValue() )
+       if ( displayedPlanting.isDirectSeeded().booleanValue() ) {
+          boolean d = rdoDS.isEnabled();
+          rdoDS.setEnabled( true );
           bgSeedMethod.setInitialSelection( rdoDS, true, displayedPlanting.getDirectSeededState() );
-       else
+          rdoDS.setEnabled( d );
+       }
+       else {
+          boolean t = rdoTP.isEnabled();
+          rdoTP.setEnabled( true );
           bgSeedMethod.setInitialSelection( rdoTP, true, displayedPlanting.getDirectSeededState() );
+          rdoTP.setEnabled( t );
+       }
 
        displayDates();
 
@@ -196,7 +204,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        }
 
 
-       setAllComponentsEnabled( isRecordDisplayed() );
+       setAllComponentsEnabled( isRecordDisplayed() && ! displayedPlanting.getIgnore() );
            
     }
 
@@ -674,12 +682,14 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       Object source = arg0.getItemSelectable();
 
       if ( source == rdoDS ) {
-         setTPComponentsEnabled( ! rdoDS.isSelected() && ! chkIgnore.isSelected() );
+        if ( ! chkIgnore.isSelected() )
+         setTPComponentsEnabled( ! rdoDS.isSelected() );
          // redisplay the DS/TP values
          displayDSTPProperties();
       }
       else if ( source == rdoTP ) {
-         setTPComponentsEnabled( rdoTP.isSelected() && ! chkIgnore.isSelected() );
+        if ( ! chkIgnore.isSelected() )
+         setTPComponentsEnabled( rdoTP.isSelected() );
          // redisplay the DS/TP values
          displayDSTPProperties();
       }
@@ -847,7 +857,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
    private void displayDSTPProperties() {
       if ( ! isDataAvailable() ) {
-//      if ( displayedPlanting == null ) {
          CropPlans.debug( "CPInfo", "data unavailable, not displaying DS/TP values" );
          return;
       }

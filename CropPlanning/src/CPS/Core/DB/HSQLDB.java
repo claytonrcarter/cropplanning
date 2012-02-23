@@ -658,8 +658,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       }
 
       if ( parent != null && parent.getID() != -1 ) {
-         debug( "Inheriting info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ] from crop [ " +
-                 parent.getCropName() + " : " + parent.getVarietyName() + " ]" );
+//         debug( "Inheriting info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ] from crop [ " +
+//                 parent.getCropName() + " : " + parent.getVarietyName() + " ]" );
          planting.inheritFrom( parent );
       }
 

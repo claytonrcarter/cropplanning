@@ -56,12 +56,6 @@ public class CPSCheckBox extends JCheckBox implements CPSButtonComponent {
     public void setInitialState( boolean b, CPSDatumState c ) {
        setInitialState( b, c, (String) null );
     }
-//    public void setInitialState( CPSBoolean b, CPSDatumState c ) {
-//       if ( b == null || b.isNull() )
-//          setInitialState( false, c, (String) null );
-//       else
-//          setInitialState( b.booleanValue(), c, (String) null );
-//    }
     
     /**
      * Set the initial state of the button.
