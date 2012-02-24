@@ -500,7 +500,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    public void updateCrop( CPSCrop crop ) {
       HSQLDBCreator.updateCrop( p, crop );
-//      updateDataListeners();
+      // we have to do this because it may (will?) change the inheritance stuff
+      updateDataListeners();
    }
    
    public void updateCrops( CPSCrop changes, List<Integer> ids ) {
@@ -642,8 +643,10 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
         if ( vars.size() == 1 )
           parent = vars.get(0);
-        else
-           debug( "Uh Oh!! Still have more than on variety in list!!" );
+        else {
+           debug( "More than one crop/var match: " + vars.toString() );
+           parent = vars.get(0);
+        }
 
         if ( parent != null && c != null )
           parent.inheritFrom( c );

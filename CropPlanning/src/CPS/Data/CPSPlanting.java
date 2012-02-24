@@ -865,7 +865,7 @@ public final class CPSPlanting extends CPSRecord {
       return CPSCalculations.extractFlatCapacity( getFlatSize() );
    }
    public CPSDatumState getFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
-   public void setFlatSize( String i ) { set( flat_size, i ); }
+   public void setFlatSize( String i ) { set( flat_size, parseInheritableString(i) ); }
 
    public String getPlantingNotesInherited() {
       if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
@@ -881,9 +881,9 @@ public final class CPSPlanting extends CPSRecord {
    }
    public void setPlantingNotesInherited( String i ) {
       if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
-         set( ds_crop_notes, i );
+         set( ds_crop_notes, parseInheritableString(i) );
       else
-         set( tp_crop_notes, i );
+         set( tp_crop_notes, parseInheritableString(i) );
    }
 
    public String getPlantingNotes() { return get( PROP_PLANTING_NOTES ); }
@@ -1135,7 +1135,7 @@ public final class CPSPlanting extends CPSRecord {
 
    public String getCropYieldUnit() { return get( PROP_CROP_UNIT ); }
    public CPSDatumState getCropYieldUnitState() { return getStateOf( PROP_CROP_UNIT ); }
-   public void setCropYieldUnit( String i ) { set( crop_unit, i ); }
+   public void setCropYieldUnit( String i ) { set( crop_unit, parseInheritableString(i) ); }
 
    public Float getCropYieldUnitValue() { return getFloat( PROP_CROP_UNIT_VALUE ); }
    public String getCropYieldUnitValueString() { return formatFloat( (Float) get( PROP_CROP_UNIT_VALUE ) ); }

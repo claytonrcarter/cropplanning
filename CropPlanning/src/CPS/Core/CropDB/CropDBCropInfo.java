@@ -521,9 +521,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
        updateRecordInMasterView(diff);
 
+       // this automatically displays the record in the detail panel
        selectRecordInMasterView( displayedCrop.getID() );
 
-       displayRecord( diff.getID() );
        
     }
  

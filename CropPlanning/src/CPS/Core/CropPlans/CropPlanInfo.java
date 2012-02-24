@@ -239,18 +239,14 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        else
           getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
 
-       // if the crop or var name has changed, then we need to reload the
-       // planting to make sure inheritance happens
-       if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() ) {
-         diff = getDataSource().getPlanting( selectedPlan, diff.getID() );
-       }
+       // need to get update planting to make sure we have the best inheritance data
+       diff = getDataSource().getPlanting( selectedPlan, diff.getID() );
        
        updateRecordInMasterView(diff);
 
-       selectRecordInMasterView( displayedPlanting.getID() );
+       // this triggers the selected record to be displayed in the info window
+       selectRecordInMasterView( diff.getID() );
        
-       displayRecord( diff.getID() );
-
     }
 
    /** asPlanting - create a planting data struct to represent this detail view

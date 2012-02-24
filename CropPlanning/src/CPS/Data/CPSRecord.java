@@ -257,7 +257,7 @@ public abstract class CPSRecord {
        while ( thisIt.hasNext() && thatIt.hasNext() ) {
           thi = thisIt.next();
           that = thatIt.next();
-          
+
           /*
            * if this is CALCULATED and that IS NOT VALID, then skip
            * if this IS NOT valid AND that IS valid OR   (means: new info added)
@@ -270,6 +270,7 @@ public abstract class CPSRecord {
           if ( ( thi.isCalculated() || thi.isInherited() ) && ! that.isConcrete() )
              continue;
           else if ( ( thi.isNull() && that.isNotNull() ) ||
+                    ( thi.isNotNull() && that.isNull() ) ||
                     ( thi.isNotNull() && that.isNotNull() ) &&
                     ! thi.getValue().equals( that.getValue() ) ) {
              diffs.set( that.getPropertyNum(), that.getValue() );
@@ -279,7 +280,7 @@ public abstract class CPSRecord {
        
        // by default, a cropID of -1 means no differences.
        if ( diffsExists ) {
-//          System.out.println("Differences EXIST: " + diffs.toString() );
+          debug("Differences EXIST:\nThis: " + this.toString() + "\nThat: " + thatRecord.toString() + "\nDifferences: " + diffs.toString() );
           if ( ! this.isSingleRecord() )
              diffs.setID( 1 );
           else
@@ -365,9 +366,17 @@ public abstract class CPSRecord {
     }
 
 
+  @Override
    public boolean equals( Object o ) {
       return ( o instanceof CPSRecord && this.diff( (CPSRecord) o ).getID() == -1 );
    }
+
+  public String parseInheritableString( String s ) {
+    if ( isObjectNull(s) || s.trim().equals("") )
+      return null;
+    else
+      return s;
+  }
 
    public Integer parseInteger( String s ) {
      // TODO should this also catch when the user might enter "-1" since that's

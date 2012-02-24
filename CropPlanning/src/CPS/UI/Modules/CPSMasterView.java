@@ -226,11 +226,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
       int i = findRecord( r.getID(), masterListFiltered );
       
       if ( i != -1 )
-        masterListFiltered.set( i, masterListFiltered.get(i).merge(r) );
+        masterListFiltered.set( i, r );
       else {
         i = findRecord( r.getID(), masterList );
         if ( i != -1 )
-          masterList.set( i, masterList.get(i).merge(r) );
+          masterList.set( i, r );
       }
 
     }
@@ -580,6 +580,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void updateMasterList() {
         if ( !isDataAvailable() )
             return;
+
+        CPSModule.debug( "CPSMasterView", "Removing items from masterList: " + masterList.size() );
 
         // obtaining locks on the list before we edit it seems to have
         // fixed sporadic NullPointerExceptions related to concurrency
