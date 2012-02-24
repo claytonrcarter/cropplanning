@@ -148,20 +148,23 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
         // TODO uh oh; this out of here
         return "CROPS_VARIETIES";
     }
-    
+
     @Override
-    public CPSRecord createNewRecord() {
-        return getDataSource().createCrop( new CPSCrop() );
+    public CPSCrop getBlankRecord() {
+      return new CPSCrop();
+    }
+
+    @Override
+    public CPSRecord createNewRecord( CPSRecord r ) {
+      CPSCrop c = getDataSource().createCrop( (CPSCrop) r );
+      return super.createNewRecord(c);
     }
     
-    @Override
-    public CPSRecord duplicateRecord( int id ) {
-        return getDataSource().createCrop( getDataSource().getCropInfo( id ));
-    }
     @Override
     public void deleteRecord( int id ) {
-        clearSelection();
-        getDataSource().deleteCrop( id );
+      super.deleteRecord(id);
+      clearSelection();
+      getDataSource().deleteCrop( id );
     }
     
      @Override

@@ -488,11 +488,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
       String selectSQL = tm.getSelectWhereSql() + condExp;
 
-//      debug( "Looking up variety info with query: " + selectSQL );
-      
       CPSCrop c = p.read( CPSCrop.class, selectSQL );
       if ( c == null ) {
-//          debug( "Couldn't ready variety info, returning empty crop" );
           c = new CPSCrop();
       }
       else
@@ -503,17 +500,17 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    public void updateCrop( CPSCrop crop ) {
       HSQLDBCreator.updateCrop( p, crop );
-      updateDataListeners();
+//      updateDataListeners();
    }
    
    public void updateCrops( CPSCrop changes, List<Integer> ids ) {
       HSQLDBCreator.updateCrops( p, columnMap, changes, ids );
-      updateDataListeners();
+//      updateDataListeners();
    }
 
    public CPSCrop createCrop(CPSCrop crop) {
       int newID = HSQLDBCreator.insertCrop( p, crop );
-      updateDataListeners();
+//      updateDataListeners();
       if ( newID == -1 )
          return new CPSCrop();
       else
@@ -522,8 +519,9 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    
    public void deleteCrop( int cropID ) {
        CPSCrop c = p.readByPrimaryKey( CROP_VAR_TABLE, CPSCrop.class, cropID );
-       p.delete( CROP_VAR_TABLE, c );
-       updateDataListeners();
+       if ( c != null )
+         p.delete( CROP_VAR_TABLE, c );
+//       updateDataListeners();
    }
 
 
@@ -550,14 +548,14 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public void deletePlanting( String planName, int plantingID ) {
        CPSPlanting planting = p.readByPrimaryKey( planName, CPSPlanting.class, plantingID );
        p.delete( planName, planting );
-       updateDataListeners();
+//       updateDataListeners();
    }
    
    // also called with "empty" or new CPSPlantings, so should handle case where
    // the "cropID" is not valid
    public CPSPlanting createPlanting( String planName, CPSPlanting planting ) {
       int newID = HSQLDBCreator.insertPlanting( p, planName, planting );
-      updateDataListeners();
+//      updateDataListeners();
       if ( newID == -1 )
          return new CPSPlanting();
       else
@@ -611,7 +609,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       }
       
       HSQLDBCreator.updatePlantings( p, columnMap, planName, changes, changedIDs, cropIDs );
-      updateDataListeners();
+//      updateDataListeners();
    }
 
    protected void performInheritanceForPlanting( CPSPlanting planting ) {

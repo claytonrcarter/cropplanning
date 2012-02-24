@@ -1185,7 +1185,8 @@ public final class CPSPlanting extends CPSRecord {
    public Boolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
    public Boolean isTransplanted() {
       if ( isDirectSeeded() == null ) 
-         return null;
+         return Boolean.FALSE;
+//         return null;
       else 
          return ! isDirectSeeded().booleanValue();
    }

@@ -140,8 +140,18 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     
     protected abstract String getDisplayedTableName();
-    protected abstract CPSRecord getDetailsForID( int id );
+
+    protected CPSRecord getDetailsForID( int id ) {
+      int i = findRecord(id, masterList );
+
+      if ( i != -1 )
+        return masterList.get(i);
+      else
+        return null;
+    }
+    
     protected abstract CPSRecord getDetailsForIDs( List<Integer> ids );
+
     
     protected CPSRecord getRecordToDisplay() {
        if ( selectedIDs.size() < 1 ) {
@@ -164,35 +174,79 @@ public abstract class CPSMasterView extends CPSDataModelUser
         
     }
 
-    protected void updateRecord( CPSRecord r ) {
 
-      boolean found = findRecordAndUpdate( r, masterListFiltered );
-      
-      if ( ! found )
-        found = findRecordAndUpdate( r, masterList );
 
-      if ( ! found )
-        ;
+    public abstract CPSRecord getBlankRecord();
+    public CPSRecord createNewRecord() {
+      return createNewRecord( getBlankRecord() );
+    }
+    protected CPSRecord createNewRecord( CPSRecord r ) {
+      masterList.add(r);
+      return r;
+    }
+
+    public CPSRecord duplicateRecord( int id ) {
+      return duplicateRecord( getDetailsForID(id) );
+    }
+    protected CPSRecord duplicateRecord( CPSRecord d ) {
+
+      if ( d == null )
+        return null;
+
+      int id = d.getID();
+      int i = findRecord( id, masterListFiltered );
+
+      if ( i != -1 ) {
+        return createNewRecord( masterListFiltered.get(i) );
+      }
+      else {
+        i = findRecord( id, masterList );
+        if ( i != -1 ) {
+          return createNewRecord( masterList.get(i) );
+        }
+      }
+
+      return null;
+    }
+
+    public void deleteRecord( int id ) {
+
+      int i = findRecord( id, masterList );
+
+      if ( i != -1 ) {
+        masterList.remove(i);
+      }
 
     }
 
-    private boolean findRecordAndUpdate( CPSRecord r, List<CPSRecord> l ) {
 
-      int id = r.getID();
-      boolean found = false;
 
-      for ( int i = 0; i < l.size(); i++ ) {
+    protected void updateRecord( CPSRecord r ) {
 
-        CPSRecord r2 = l.get(i);
-
-        if ( r2.getID() != id )
-          continue;
-
-        found = true;
-
-        l.set( i, r2.merge( r ));
-        
+      int i = findRecord( r.getID(), masterListFiltered );
+      
+      if ( i != -1 )
+        masterListFiltered.set( i, masterListFiltered.get(i).merge(r) );
+      else {
+        i = findRecord( r.getID(), masterList );
+        if ( i != -1 )
+          masterList.set( i, masterList.get(i).merge(r) );
       }
+
+    }
+
+    
+    private int findRecord( int id, List<CPSRecord> l ) {
+
+      int found = -1;
+
+      if ( id != -1 )
+        for ( int i = 0; i < l.size(); i++ ) {
+
+          if ( l.get(i).getID() == id )
+            return i;
+
+        }
 
       return found;
 
@@ -583,18 +637,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
            
         }
         
-//        updateMasterList();
     }
     public void mouseEntered(MouseEvent mouseEvent) {}
     public void mouseExited(MouseEvent mouseEvent) {}
     public void mousePressed(MouseEvent mouseEvent) {}
     public void mouseReleased(MouseEvent mouseEvent) {}
 
-    
-    public abstract CPSRecord createNewRecord();
-    public abstract CPSRecord duplicateRecord( int id );
-    public abstract void deleteRecord( int id );
-    
+
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
 

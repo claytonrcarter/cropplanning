@@ -496,14 +496,15 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    
     protected void saveChangesToRecord() {
 
-
-
        CPSCrop currentlyDisplayed = this.asCrop();
        CPSCrop diff = (CPSCrop) displayedCrop.diff( currentlyDisplayed );
 
-       if ( diff.getID() == -1 )
-          return; // no differences!
-       
+       if ( diff.getID() == -1 ) {
+         displayRecord( displayedCrop );
+         return;
+       }
+
+       // update items in db
        if ( ! displayedCrop.isSingleRecord() )
            // TODO this doesn't work anymore (with Persist)
            // all values will be set to the values of diff, whether they're null or not
@@ -511,8 +512,19 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
        else
            // TODO ideally this would only update the differences, not the whole thing
           getDataSource().updateCrop( currentlyDisplayed );
-       
+
+       // if the crop or var name has changed, then we need to reload the
+       // planting to make sure inheritance happens
+       if ( tfldCropName.hasChanged() ) {
+         diff = getDataSource().getCropInfo( diff.getID() );
+       }
+
+       updateRecordInMasterView(diff);
+
        selectRecordInMasterView( displayedCrop.getID() );
+
+       displayRecord( diff.getID() );
+       
     }
  
 

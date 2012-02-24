@@ -192,11 +192,11 @@ public class HSQLDBCreator {
        crop.useRawOutput( false );
 
        // retrieve the new ID
-       crop.setID( getLastIdentity( p ) );
+       int newID = getLastIdentity( p );
 
-       CPSModule.debug( "HSQLDBCreator", "Inserted " + crop.getCropName() + " with id " + crop.getID() );
+       CPSModule.debug( "HSQLDBCreator", "Inserted " + crop.getCropName() + " with id " + newID );
          
-       return crop.getID();
+       return newID;
 
    }
    
@@ -234,11 +234,11 @@ public class HSQLDBCreator {
        p.insert( planName, planting );
        planting.useRawOutput( false );
 
-       planting.setID( getLastIdentity( p ) );
+       int newID = getLastIdentity( p );
 
-       CPSModule.debug( "HSQLDBCreator", "Inserted " + planting.getCropName() + " with id " + planting.getID() );
+       CPSModule.debug( "HSQLDBCreator", "Inserted " + planting.getCropName() + " with id " + newID );
 
-       return planting.getID();   
+       return newID;
       
    }
 

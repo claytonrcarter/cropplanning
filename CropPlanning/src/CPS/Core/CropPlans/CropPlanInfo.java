@@ -233,13 +233,20 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          return;
        }
 
-       updateRecordInMasterView(diff);
-       
+       // update items in db
        if ( ! displayedPlanting.isSingleRecord() )
           getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
        else
           getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
+
+       // if the crop or var name has changed, then we need to reload the
+       // planting to make sure inheritance happens
+       if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() ) {
+         diff = getDataSource().getPlanting( selectedPlan, diff.getID() );
+       }
        
+       updateRecordInMasterView(diff);
+
        selectRecordInMasterView( displayedPlanting.getID() );
        
        displayRecord( diff.getID() );

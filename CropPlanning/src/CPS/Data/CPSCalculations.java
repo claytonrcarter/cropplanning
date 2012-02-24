@@ -198,24 +198,26 @@ public final class CPSCalculations {
    public static int extractFlatCapacity( String flatSize ) {
       // TODO - Is 0 a reasonable default?  perhaps 1 would be better
        int cap = 0;
-      
-       // For the case where FlatSize is eg "128" or "72"
-      if ( flatSize.matches( "\\d+" )) {
-          try {
-              cap = Integer.parseInt( flatSize );
-          } catch ( NumberFormatException ignore ) {}
-      }
-      // For the case where FlatSize is eg "1020 tray (500)" or "mini ( 50 )"
-      else if ( flatSize.matches( ".*\\(\\s*\\d+\\s*\\).*" )) {
-         int openPar = flatSize.lastIndexOf( "(" );
-         int closePar = flatSize.lastIndexOf( ")" );
-         
-         try {
-            cap = Integer.parseInt( flatSize.substring( openPar + 1, closePar ).trim() );
-         } catch ( NumberFormatException ignore ) {
-            System.err.println( "ERROR: couldn't deduce the capacity of given flat size: " + flatSize );
-         }
-      }
+
+       if ( flatSize != null ) {
+          // For the case where FlatSize is eg "128" or "72"
+          if ( flatSize.matches( "\\d+" )) {
+              try {
+                  cap = Integer.parseInt( flatSize );
+              } catch ( NumberFormatException ignore ) {}
+          }
+          // For the case where FlatSize is eg "1020 tray (500)" or "mini ( 50 )"
+          else if ( flatSize.matches( ".*\\(\\s*\\d+\\s*\\).*" )) {
+            int openPar = flatSize.lastIndexOf( "(" );
+            int closePar = flatSize.lastIndexOf( ")" );
+
+            try {
+                cap = Integer.parseInt( flatSize.substring( openPar + 1, closePar ).trim() );
+            } catch ( NumberFormatException ignore ) {
+                System.err.println( "ERROR: couldn't deduce the capacity of given flat size: " + flatSize );
+            }
+          }
+       }
       return cap;
    }
 

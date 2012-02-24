@@ -244,9 +244,9 @@ public abstract class CPSRecord {
    public abstract CPSRecord diff( CPSRecord comparedTo );
    public CPSRecord diff( CPSRecord thatRecord, CPSRecord diffs ) {
        
-       debug( "Calculating difference between:\n" +
-               this.toString() + "\n" +
-               thatRecord.toString() );
+//       debug( "Calculating difference between:\n" +
+//               this.toString() + "\n" +
+//               thatRecord.toString() );
        
        boolean diffsExists = false;
        
@@ -279,14 +279,12 @@ public abstract class CPSRecord {
        
        // by default, a cropID of -1 means no differences.
        if ( diffsExists ) {
-          System.out.println("Differences EXIST: " + diffs.toString() );
+//          System.out.println("Differences EXIST: " + diffs.toString() );
           if ( ! this.isSingleRecord() )
              diffs.setID( 1 );
           else
              diffs.setID( this.getID() );
        }
-       else
-          System.out.println("Differences DO NOT EXIST" );
        
        return diffs;
     }

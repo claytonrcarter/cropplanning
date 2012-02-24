@@ -162,15 +162,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
    }
    
     
-    /** 
-     * Retrieve the details (as a Planting) for a given ID 
-     * @param id The integer id of the planting to retrieve.
-     * @return The CPSPlanting object representing the retrieved record.
-     */
-    protected CPSPlanting getDetailsForID( int id ) {
-       return getDataSource().getPlanting( getDisplayedTableName(), id );
-    }
-
     protected CPSPlanting getDetailsForIDs( List<Integer> ids ) {
        return getDataSource().getCommonInfoForPlantings( getDisplayedTableName(), ids );
     }
@@ -197,7 +188,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        if ( ! isDataAvailable() )
           return;
        
-        listOfFields = getDataSource().getFieldNameList( getSelectedPlanName() );
+        listOfFields = getDataSource().getFieldNameList( getDisplayedTableName() );
        Collections.sort( listOfFields, String.CASE_INSENSITIVE_ORDER);
        cmbxFieldList.removeAllItems();
        cmbxFieldList.addItem("");
@@ -231,7 +222,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         if ( !isDataAvailable() )
             return new ArrayList<CPSPlanting>();
 
-        String selectedPlan = getSelectedPlanName();
+        String selectedPlan = getDisplayedTableName();
         if ( selectedPlan != null )
             return getDataSource().getCropPlan( selectedPlan );
        else
@@ -252,10 +243,9 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     }
        
     
-//    protected String getDisplayedTableName() { return (String) cmbxPlanList.getSelectedItem(); }
     protected String getDisplayedTableName() { return planMan.getSelectedPlanName(); }
-    String getSelectedPlanName() { return getDisplayedTableName(); }
 
+    
     @Override
     protected void buildAboveListPanel() {
         initAboveListPanel();
@@ -360,26 +350,28 @@ class CropPlanList extends CPSMasterView implements ActionListener,
          }
        }   
     }
-        
+
+
     @Override
-    public CPSPlanting createNewRecord() {
-       if ( getSelectedPlanName().equals("") ) {
+    public CPSPlanting getBlankRecord() {
+      return new CPSPlanting();
+    }
+
+
+    @Override
+    protected CPSPlanting createNewRecord( CPSRecord r ) {
+       if ( getDisplayedTableName().equals("") ) {
           System.err.println("ERROR cannot create record unless a crop plan is selected");
           return null;
        }
-       return getDataSource().createPlanting( getSelectedPlanName(), new CPSPlanting() );
-    }
-    
-    @Override
-    public CPSRecord duplicateRecord( int id ) {
-        return getDataSource().createPlanting( getSelectedPlanName(),
-                                         getDataSource().getPlanting( getSelectedPlanName(),
-                                                                id ) );     
+       CPSPlanting p = getDataSource().createPlanting( getDisplayedTableName(), (CPSPlanting) r );
+       return (CPSPlanting) super.createNewRecord(p);
     }
     
     @Override
     public void deleteRecord( int id ) {
-        getDataSource().deletePlanting( getSelectedPlanName(), id );
+      super.deleteRecord(id);
+      getDataSource().deletePlanting( getDisplayedTableName(), id );
     }
     
    @Override
@@ -398,7 +390,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
     @Override
     protected String getTableStatisticsString() {
-        if ( ! isDataAvailable() || getSelectedPlanName() == null )
+        if ( ! isDataAvailable() || getDisplayedTableName() == null )
             return "";
 
        String s = "";
@@ -429,7 +421,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     }
     
     protected void updateSelectedPlanLabel() {
-       String plan = getSelectedPlanName();
+       String plan = getDisplayedTableName();
        
        if ( plan == null )
           plan = "No Plan Selected!";
@@ -443,7 +435,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         
         updateSelectedPlanLabel();
         
-        if ( getSelectedPlanName() == null ) {
+        if ( getDisplayedTableName() == null ) {
             setStatus( CPSMasterView.STATUS_NO_PLAN_SELECTED );
         }
         else {
