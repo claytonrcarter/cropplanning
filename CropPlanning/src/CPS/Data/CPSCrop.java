@@ -252,7 +252,7 @@ public final class CPSCrop extends CPSRecord {
    @Override
    public void finishUp () { /* nothing to do here */ }
    @Override
-   protected void updateCalculations( int propNum ) { /* nothing to do here */ }
+   public void updateCalculations() { /* nothing to do here */ }
 
     
     public String getCropName() { return get( PROP_CROP_NAME ); }

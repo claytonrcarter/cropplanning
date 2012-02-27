@@ -28,11 +28,17 @@ import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
+import CPS.UI.Modules.CPSAdvancedTableFormat;
+import CPS.UI.Modules.CPSComparator;
 import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.LayoutAssist;
 import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.FilterList;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -44,20 +50,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import java.util.*;
+import javax.swing.*;
 
 public class TODOLists extends CPSDisplayableDataUserModule implements ActionListener, ItemListener, PropertyChangeListener {
 
@@ -73,6 +67,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private JButton btnSelectFile,  btnPlantList,  btnGHList;
     private JButton btnAllPlantings;
     private GregorianCalendar tempCal;
+
+    private BasicEventList<CPSPlanting> data;
+    private FilterList<CPSPlanting> dataFiltered;
+    private SortedList<CPSPlanting> dataSorted;
+    CPSAdvancedTableFormat<CPSPlanting> tableFormat;
+
+
+
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
     PDFExporter exporter = new PDFExporter();
 
@@ -82,6 +84,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         setModuleVersion( CPSGlobalSettings.getVersion() );
 
         tempCal = new GregorianCalendar();
+
+        data = new BasicEventList<CPSPlanting>();
+        dataFiltered = new FilterList<CPSPlanting>( data );
+        dataSorted = new SortedList<CPSPlanting>( dataFiltered, new CPSComparator() );
+        
     }
 
     @Override
@@ -232,26 +239,38 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                 prefix + " - " + new SimpleDateFormat("MMM dd yyyy").format(d) + ".pdf";
     }
 
+    private void filterAndSortList( List<CPSPlanting> l, CPSComplexPlantingFilter f, int sortProp ) {
+
+      if ( l != null )
+        data.clear();
+
+      dataFiltered.setMatcher( f );
+      dataSorted.setComparator( new CPSComparator( sortProp ));
+
+      if ( l != null )
+        data.addAll( l );
+
+//      for ( CPSPlanting p : dataFiltered )
+//        p.updateCalculations();
+
+//      for ( CPSPlanting p : dataSorted )
+//        System.out.println( p.getCropName() + "\t" + p.getDateToPlant().toString() );
+
+      System.out.println("Entries in full crop plan: " + data.size() );
+      System.out.println("Entries in filtered crop plan: " + dataFiltered.size() );
+
+    }
+
+
     private void exportGHPlantings(String planName) {
 
-//        String cols = "date_plant, crop_name, var_name, plants_needed, plants_to_start, flat_size, flats_needed";
-//        String sortCol = "date_plant";
-        ArrayList<Integer> props = new ArrayList<Integer>(Arrays.asList(
-                new Integer[]{CPSDataModelConstants.PROP_DATE_PLANT,
-                    CPSDataModelConstants.PROP_CROP_NAME,
-                    CPSDataModelConstants.PROP_VAR_NAME,
-                    CPSDataModelConstants.PROP_PLANTS_NEEDED,
-                    CPSDataModelConstants.PROP_PLANTS_START,
-                    CPSDataModelConstants.PROP_FLAT_SIZE,
-                    CPSDataModelConstants.PROP_FLATS_NEEDED
-                }));
         // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
-        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
+//        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
+        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT_PLAN;
 
-//        String filename = "GH Seeding List - " + new SimpleDateFormat( "MMM dd yyyy" ).format( dtcDateOtherStart.getDate() ) + ".pdf";
-        String filename = createOutputFileName(filFile.getSelectedFile(),
-                "GH Seeding List",
-                dtcDateOtherStart.getDate());
+        String filename = createOutputFileName( filFile.getSelectedFile(),
+                                                "GH Seeding List",
+                                                dtcDateOtherStart.getDate() );
 
 
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
@@ -283,13 +302,16 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         }
 
 
+        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
+        tableFormat = new GHSeedingTableFormat();
+
         CPSTable jt = new CPSTable();
-//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-        BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
-        data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new GHSeedingTableFormat() ));
-//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
-//        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
+        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ) );
+
+        TableComparatorChooser.install( jt,
+                                        dataSorted,
+                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
+
 
         exporter.export(jt, filename,
                 CPSGlobalSettings.getFarmName(),
@@ -300,8 +322,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     private void exportFieldPlantings(String planName) {
 
-//        String cols = "date_plant, crop_name, var_name, location, beds_to_plant, rows_p_bed, rowft_to_plant";
-//        cols += ", planter, planter_setting";
         ArrayList<Integer> props = new ArrayList<Integer>(Arrays.asList(
                 new Integer[]{CPSDataModelConstants.PROP_DATE_PLANT,
                     CPSDataModelConstants.PROP_CROP_NAME,
@@ -310,12 +330,10 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                     CPSDataModelConstants.PROP_BEDS_PLANT,
                     CPSDataModelConstants.PROP_ROWS_P_BED,
                     CPSDataModelConstants.PROP_ROWFT_PLANT,
-                    CPSDataModelConstants.PROP_PLANT_NOTES, //                                CPSDataModelConstants.PROP_PLANTER_SETTING
+                    CPSDataModelConstants.PROP_PLANT_NOTES,
                 }));
-//        String sortCol = "date_plant";
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
 
-//        String filename = "Field Planting List.pdf";
         String filename = createOutputFileName(filFile.getSelectedFile(),
                 "Field Planting List",
                 dtcDateOtherStart.getDate());
@@ -352,15 +370,15 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
         }
 
+        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
+        tableFormat = new DSFieldPlantingTableFormat();
 
         CPSTable jt = new CPSTable();
-//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-        BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
-        data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new DSFieldPlantingTableFormat() ));
+        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ));
 
-//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
-//        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
+        TableComparatorChooser.install( jt,
+                                        dataSorted,
+                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
 
         exporter.startExport(jt, filename,
                 CPSGlobalSettings.getFarmName(),
@@ -372,10 +390,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
          * Select just uncompleted, transplanted plantings whose TRANSPLANT date
          * is w/i range
          */
-
-//        cols = "date_tp, date_plant, crop_name, var_name, location, beds_to_plant, rows_p_bed, rowft_to_plant, inrow_space";
-//        sortCol = "date_tp";
-
         props = new ArrayList<Integer>(Arrays.asList(
                 new Integer[]{CPSDataModelConstants.PROP_DATE_TP,
                     CPSDataModelConstants.PROP_DATE_PLANT,
@@ -418,17 +432,17 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             filter.setTpRangeStart(dtcDateOtherStart.getDate());
         }
 
+        filterAndSortList( null, filter, sortProp );
+        tableFormat = new TPFieldPlantingTableFormat();
 
-//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
-//        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
-
-        data.clear();
-        data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new TPFieldPlantingTableFormat() ));
+        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ));
+        TableComparatorChooser.install( jt,
+                                        dataSorted,
+                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
 
 
-        exporter.addPage(jt, "Transplanted Field Plantings");
+
+        exporter.addPage( jt, "Transplanted Field Plantings");
         exporter.endExport();
 
     }

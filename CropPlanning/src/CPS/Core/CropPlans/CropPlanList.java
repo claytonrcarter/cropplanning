@@ -22,12 +22,10 @@
 
 package CPS.Core.CropPlans;
 
-import CPS.Data.CPSComplexPlantingFilter;
-import CPS.Data.CPSCrop;
-import CPS.Data.CPSRecord;
+import CPS.Data.*;
 import CPS.UI.Modules.CPSMasterView;
 import CPS.Module.*;
-import CPS.Data.CPSPlanting;
+import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.CPSTable.CPSComboBoxCellEditor;
@@ -36,7 +34,6 @@ import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.calculation.Calculation;
 import ca.odell.glazedlists.calculation.Calculations;
-import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -232,7 +229,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     }
 
     @Override
-    protected AdvancedTableFormat getTableFormat() {
+    protected CPSAdvancedTableFormat getTableFormat() {
         return new CropPlanTableFormat();
     }
 
@@ -275,8 +272,8 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        cmbxFieldList.setEditable(true);
        AutoCompleteDecorator.decorate(cmbxFieldList);
        
-       
-       
+
+
     }
 
     @Override
@@ -398,7 +395,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        if ( summaryPlantings != null && summaryPlantings.getValue() > 0 ) {
            s += "Plantings:" + summaryPlantings.getValue();
        
-           String t = summaryBeds.getValue().toString();
+           String t = "" + CPSCalculations.precision3( summaryBeds.getValue() );
            if ( ! t.equals("") ) 
                s += "/Beds:" + t;
            

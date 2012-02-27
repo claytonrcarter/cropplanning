@@ -23,10 +23,7 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.CPSCrop;
-import CPS.Data.CPSRecord;
-import CPS.UI.Modules.CPSComparator;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
-import java.util.Comparator;
 
 public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
 
@@ -34,6 +31,11 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
 
    @Override
    public CPSCrop getBlankRecord() { return new CPSCrop(); }
+
+   @Override
+   public int getDefaultSortColumn() {
+     return 0; // crop name
+   }
 
 
    public int getPropNumForColumn( int colNum ) {

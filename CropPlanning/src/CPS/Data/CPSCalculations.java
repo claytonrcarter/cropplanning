@@ -243,21 +243,21 @@ public final class CPSCalculations {
 //****************************************************************************//
 // Private Utility Methods
 //****************************************************************************//
-   private static float precision3( float f ) {
+   public static float precision3( float f ) {
        return (float) ((int) ( f * 1000 )) / 1000f;
    }
    
-   private static float precision2( float f ) {
+   public static float precision2( float f ) {
        return (float) ((int) ( f * 100 )) / 100f;
    }
    
-   private static float roundQuarter( float f ) {
+   public static float roundQuarter( float f ) {
        return (float) Math.ceil( f * 4 ) / 4;
    }
-   private static float roundHalf( float f ) {
+   public static float roundHalf( float f ) {
        return (float) Math.ceil( f * 2 ) / 2;
    }
-   private static float roundThird( float f ) {
+   public static float roundThird( float f ) {
        return (float) Math.ceil( f * 3 ) / 3;
    }
    

@@ -25,10 +25,10 @@ package CPS.Core.CropDB;
 import CPS.Data.CPSRecord;
 import CPS.Module.*;
 import CPS.Data.CPSCrop;
+import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Modules.CPSMasterView;
 import ca.odell.glazedlists.TextFilterator;
-import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -91,23 +91,6 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
    
     protected List getMasterListData() {
-//        List l;
-//
-//       if ( ! isDataAvailable() )
-//          l = new ArrayList<CPSCrop>();
-//
-//       if      ( radioAll.isSelected() )
-//          l =  getDataSource().getCropAndVarietyList();
-//       else if ( radioCrops.isSelected() )
-//          l = getDataSource().getCropList();
-//       else if ( radioVar.isSelected() )
-//          l = getDataSource().getVarietyList();
-//       else // nothing selected (not useful)
-//          l = new ArrayList<CPSCrop>();
-//
-//        System.out.println( "\nReturn master crop list with " + l.size() + " elements\n" );
-//
-//        return l;
         
         if ( ! isDataAvailable() )
           return new ArrayList<CPSCrop>();
@@ -123,11 +106,11 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     }
 
     @Override
-    protected AdvancedTableFormat getTableFormat() {
+    protected CPSAdvancedTableFormat getTableFormat() {
         return new CropDBTableFormat();
     }
 
-
+    
     @Override
     protected TextFilterator getTextFilterator() {
         return new CropDBFilterator();

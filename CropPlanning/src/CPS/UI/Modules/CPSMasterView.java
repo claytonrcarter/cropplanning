@@ -23,40 +23,34 @@
 package CPS.UI.Modules;
 
 import CPS.Data.CPSPlanting;
-import CPS.Data.CPSTextFilter;
 import CPS.Data.CPSRecord;
+import CPS.Data.CPSTextFilter;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSModule;
-import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.CPSSearchField;
-import ca.odell.glazedlists.matchers.Matcher;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
-import ca.odell.glazedlists.matchers.AbstractMatcherEditor;
-import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
-import ca.odell.glazedlists.matchers.MatcherEditor;
-import ca.odell.glazedlists.matchers.Matchers;
+import ca.odell.glazedlists.matchers.*;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
-import java.awt.event.FocusListener;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.Preferences;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.*;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -432,7 +426,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
        compositeFilter.setMode( CompositeMatcherEditor.AND );
 
        // setup the filtered list
-//       masterListFiltered = new FilterList<CPSRecord>( masterList );
        masterListFiltered.setMatcherEditor( compositeFilter );
 
        // add the focus listener so that the the compositeFilter box behaves correctly
@@ -470,13 +463,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
         jplList.setLayout( new BoxLayout( jplList, BoxLayout.LINE_AXIS ) );
     }
     protected void buildListPanel() {
-       
-       EventList<CPSRecord> el = masterListSorted;
 
-       // in case masterListFiltered hasn't been init;ed yet
-//       if ( el == null )
-//           el = masterListSorted;
-       masterTable = new CPSTable( new EventTableModel<CPSRecord>( el, getTableFormat() ) );
+       masterTable = new CPSTable( new EventTableModel<CPSRecord>( masterListSorted, getTableFormat() ) );
        
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
        masterTable.setPreferredScrollableViewportSize( d );
@@ -490,10 +478,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        TableComparatorChooser tcc =
        TableComparatorChooser.install( masterTable, masterListSorted, TableComparatorChooser.SINGLE_COLUMN );
 
-//       for ( int i = 0; i < masterTable.getColumnCount(); i++ ) {
-//          tcc.getComparatorsForColumn( i ).clear();
-//          tcc.getComparatorsForColumn( i ).add( getTableFormat().getColumnComparator( i ) );
-//       }
+       // specify the default sort column
+       tcc.appendComparator( getTableFormat().getDefaultSortColumn(), 0, false );
 
        initListPanel(); // init listPanel
        jplList.add( new JScrollPane( masterTable ) );
@@ -501,6 +487,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        buildColumnListPopUpMenu();
 
     }
+
+
 
     protected void clearSelection() {
         selectModel.clearSelection();
@@ -603,7 +591,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     // JTable to display.  Overriding class should do the fancy work of
     // figuring out which table to query, etc.  Returns a TableModel.
     protected abstract List getMasterListData();
-    protected abstract AdvancedTableFormat getTableFormat();
+    protected abstract CPSAdvancedTableFormat getTableFormat();
     protected abstract TextFilterator<CPSRecord> getTextFilterator();
 
 

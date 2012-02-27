@@ -34,6 +34,12 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
       return new CPSPlanting();
    }
 
+  @Override
+  public int getDefaultSortColumn() {
+    return 4; // planting date
+  }
+
+
    @Override
    public int getPropNumForColumn( int colNum ) {
 

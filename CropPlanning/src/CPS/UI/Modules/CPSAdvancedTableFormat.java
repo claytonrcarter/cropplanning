@@ -10,7 +10,6 @@
 package CPS.UI.Modules;
 
 import CPS.Data.CPSRecord;
-import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import java.util.Comparator;
 
@@ -18,6 +17,9 @@ public abstract class CPSAdvancedTableFormat<T> implements AdvancedTableFormat<T
 
    /** @return true is the column at index colNum should be displayed by default, false otherwise */
    public abstract boolean isDefaultColumn( int colNum );
+
+   /** @return the column number which is the default column to sort on */
+   public abstract int getDefaultSortColumn();
 
    /** @return the property number for the data displayed in column at index colNum */
    public abstract int getPropNumForColumn( int colNum );

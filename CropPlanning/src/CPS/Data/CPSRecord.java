@@ -69,11 +69,11 @@ public abstract class CPSRecord {
    public abstract void finishUp();
 
    /**
-    * Forces recalculation of data values which depend upon a certain property.
-    * @param propNum The property number whose dependent values will be
-    *        recalcuated, or -1 to recalculate all calculable values.
+    * Forces recalculation of data values.  This is only needed for operations
+    * that iterate through the properties or otherwise access the data without
+    * calling the normal getter or setter methods.
     */
-   protected abstract void updateCalculations( int propNum );
+   public abstract void updateCalculations();
 
 
    protected void debug( String message ) {

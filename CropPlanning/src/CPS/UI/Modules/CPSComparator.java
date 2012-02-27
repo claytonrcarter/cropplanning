@@ -23,15 +23,20 @@
 package CPS.UI.Modules;
 
 import CPS.Data.CPSRecord;
+import CPS.Module.CPSDataModelConstants;
 import java.util.Comparator;
 import java.util.Date;
 
 public class CPSComparator implements Comparator {
 
-    int propNum = -1;
+    protected int propNum = -1;
+
+    public CPSComparator() {
+        propNum = CPSDataModelConstants.PROP_CROP_NAME;
+    }
 
     public CPSComparator( int pNum ) {
-        setPropertyNum( pNum );
+        propNum = pNum;
     }
 
     public void setPropertyNum( int pNum ) {
@@ -39,7 +44,6 @@ public class CPSComparator implements Comparator {
     }
 
     public int compare( Object a, Object b ) {
-//        Object oa = a.get( propNum );
        if ( a instanceof Integer ) {
           return (Integer) a - (Integer) b;
        }
@@ -55,6 +59,9 @@ public class CPSComparator implements Comparator {
        else if ( a instanceof Date ) {
           return ( (Date) a ).compareTo( (Date) b );
        }
+//       else if ( a instanceof CPSRecord ) {
+//         return compare( ((CPSRecord) a).get( propNum ), ((CPSRecord) b).get( propNum ) );
+//       }
        else
           // otherwise don't sort and leave as is
           return 0;

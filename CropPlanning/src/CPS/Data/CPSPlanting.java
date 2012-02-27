@@ -408,8 +408,8 @@ public final class CPSPlanting extends CPSRecord {
    // *********************************************************************************************/
    protected CPSDatum<Date> getEffectiveDate( int prop_effective, int prop_actual, int prop_plan ) {
 
-      CPSDatum p, a;
-      CPSDatum e = getDatum( prop_effective );
+      CPSDatum<Date> p, a;
+      CPSDatum<Date> e = getDatum( prop_effective );
 
       if ( prop_effective == PROP_DATE_PLANT ) {
         p = getDateToPlantDatum( DATE_TYPE_PLANNED );
@@ -426,15 +426,15 @@ public final class CPSPlanting extends CPSRecord {
         * else return date_plant_plan
         * or just return a default */
        if ( this.isSingleRecord() && a.isNotNull() ) {
-          e.setState( a.getState() );
-          return a;
+         e.setState( a.getState() );
+         return a;
        }
        else if ( this.isSingleRecord() && p.isNotNull() ) {
-          e.setState( p.getState() );
-          return p;
+         e.setState( p.getState() );
+         return p;
        }
-       else
-          return e;
+
+       return e;
       
    }
 

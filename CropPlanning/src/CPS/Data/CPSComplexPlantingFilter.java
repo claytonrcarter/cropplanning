@@ -23,17 +23,12 @@
 
 package CPS.Data;
 
-import ca.odell.glazedlists.BasicEventList;
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.matchers.AbstractMatcherEditor;
-import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import javax.swing.text.JTextComponent;
 
 /**
  * A class to hold/represent information about a "view" or filter of a data
@@ -113,13 +108,50 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
       if ( item.getIgnore() )
          return false;
 
+      boolean m = true;
 
-      return ( filterOnPlantingMethod() ? (( filterMethodDirectSeed() ? item.isDirectSeeded() : true ) &&
-                                           ( filterMethodTransplant() ? item.isTransplanted() : true ))
-                                        : true ) &&
-             ( filterOnPlanting() ? isDonePlanting() == item.getDonePlanting() : true ) &&
-             ( filterOnTransplanting() ? isDoneTransplanting() == item.getDoneTP() : true ) &&
-             ( filterOnHarvest() ? isDoneHarvesting() == item.getDoneHarvest() : true );
+      if ( filterOnPlantingMethod() )
+        m &= filterMethodDirectSeed() == item.isDirectSeeded();
+
+      if ( filterOnPlanting() )
+        m &= isDonePlanting() == item.getDonePlanting();
+
+      if ( filterOnTransplanting() )
+        m &= isDoneTransplanting() == item.getDoneTP();
+
+      if ( filterOnHarvest())
+        m &= isDoneHarvesting() == item.getDoneHarvest();
+
+      if ( filterOnPlantingDate() )
+        // they only defined a start date for the range
+        if ( getPlantingRangeEnd() == null )
+          m &= item.getDateToPlant().after( bumpDateByDay( getPlantingRangeStart(), -1 ) );
+        // they only defined an end date for the range
+        else if ( getPlantingRangeStart() == null )
+          m &= item.getDateToPlant().before( bumpDateByDay( getPlantingRangeEnd(), 1 ) );
+        else
+          m &= item.getDateToPlant().after( bumpDateByDay( getPlantingRangeStart(), -1 ) ) &&
+               item.getDateToPlant().before( bumpDateByDay( getPlantingRangeEnd(), 1 ) );
+
+      if ( filterOnTPDate() )
+        if ( getTpRangeEnd() == null )
+          m &= item.getDateToTP().after( bumpDateByDay( getTpRangeStart(), -1 ) );
+        else if ( getTpRangeStart() == null )
+          m &= item.getDateToTP().before( bumpDateByDay( getTpRangeEnd(), 1 ) );
+        else
+          m &= item.getDateToTP().after( bumpDateByDay( getTpRangeStart(), -1 ) ) &&
+                item.getDateToTP().before( bumpDateByDay( getTpRangeEnd(), 1 ) );
+      
+      if ( filterOnHarvestDate() )
+        if ( getHarvestRangeEnd() == null )
+          m &= item.getDateToHarvest().after( bumpDateByDay( getHarvestRangeStart(), -1 ) );
+        else if ( getHarvestRangeStart() == null )
+          m &= item.getDateToHarvest().before( bumpDateByDay( getHarvestRangeEnd(), 1 ) );
+        else
+          m &= item.getDateToHarvest().after( bumpDateByDay( getHarvestRangeStart(), -1 ) ) &&
+                item.getDateToHarvest().before( bumpDateByDay( getHarvestRangeEnd(), 1 ) );
+
+      return m;
 
 //           if ( filterOnAnyDate() ) {
 //               if      ( getAnyDateRangeEnd() == null )
@@ -140,39 +172,7 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
 //               }
 //              filterString += " AND ";
 //           }
-//           else {
-//              if ( filterOnPlantingDate() ) {
-//                 if ( getPlantingRangeEnd() == null )
-//                    filterString += "date_plant >= " + escapeValue( getPlantingRangeStart() );
-//                 else if ( getPlantingRangeStart() == null )
-//                    filterString += "date_plant <= " + escapeValue( getPlantingRangeEnd() );
-//                 else // both != null
-//                    filterString += "date_plant BETWEEN " + escapeValue( getPlantingRangeStart() ) + " AND " +
-//                                                            escapeValue( getPlantingRangeEnd() );
-//                 filterString += " AND ";
-//              }
-//
-//              if ( filterOnTPDate() ) {
-//                 if ( getTpRangeEnd() == null )
-//                    filterString += "date_tp >= " + escapeValue( getTpRangeStart() );
-//                 else if ( getTpRangeStart() == null )
-//                    filterString += "date_tp <= " + escapeValue( getTpRangeEnd() );
-//                 else // both != null
-//                    filterString += "date_tp BETWEEN " + escapeValue( getTpRangeStart() ) + " AND " +
-//                                                         escapeValue( getTpRangeEnd() );
-//                 filterString += " AND ";
-//              }
-//
-//              if ( filterOnHarvestDate() ) {
-//                 if ( getHarvestDateEnd() == null )
-//                    filterString += "date_harvest >= " + escapeValue( getHarvestDateStart() );
-//                 else if ( getHarvestDateStart() == null )
-//                    filterString += "date_harvest <= " + escapeValue( getHarvestDateEnd() );
-//                 else // both != null
-//                    filterString += "date_harvest BETWEEN " + escapeValue( getHarvestDateStart() ) + " AND " +
-//                                                              escapeValue( getHarvestDateEnd() );
-//                 filterString += " AND ";
-//              }
+
    }
 
 
@@ -238,11 +238,17 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
     public Date getPlantingRangeEnd() { return plantingRageEnd; }
     public Date getTpRangeStart() { return tpRangeStart; }
     public Date getTpRangeEnd() { return tpRangeEnd; }
-    public Date getHarvestDateStart() { return harvestRangeStart; }
-    public Date getHarvestDateEnd() { return harvestRangeEnd; }
+    public Date getHarvestRangeStart() { return harvestRangeStart; }
+    public Date getHarvestRangeEnd() { return harvestRangeEnd; }
     public Date getAnyDateRangeStart() { return anyDateRangeStart; }
     public Date getAnyDateRangeEnd() { return anyDateRangeEnd; }
 
+    private Date bumpDateByDay( Date d, int i ) {
+      GregorianCalendar cal = new GregorianCalendar();
+      cal.setTime( d );
+      cal.add( GregorianCalendar.DAY_OF_YEAR, i );
+      return cal.getTime();
+    }
 
     /* ***************************************************************** */
     /* methods to alter the filter in place

@@ -74,10 +74,29 @@ public class ModuleManager implements CPSModuleMediator {
    
    /* Perhaps we should do more error checking here?  What about unfound core modules? */
    public void loadCoreModules() {
-      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
-      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
-      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "TODOLists.TODOLists" ) );
 
+     java.util.Date start;
+     java.util.Date direct;
+//     java.util.Date reflect;
+
+     start = new java.util.Date();
+
+     coreMods.add( new CPS.Core.CropPlans.CropPlans() );
+     coreMods.add( new CPS.Core.CropDB.CropDB() );
+     coreMods.add( new CPS.Core.TODOLists.TODOLists() );
+
+     direct = new java.util.Date();
+
+//      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
+//      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
+//      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "TODOLists.TODOLists" ) );
+//
+//      reflect = new java.util.Date();
+
+      System.out.println( "Time to instantiate modules: " + ( direct.getTime() - start.getTime() ) );
+//      System.out.println( "Time to reflect  instantiate: " + ( reflect.getTime() - direct.getTime() ) );
+//      System.exit(0);
+      
       for ( CPSModule mod : coreMods ) {
           CPSModule.debug( "ModuleManager", "Examining module: " + mod.getModuleName() );
           if ( mod.getModuleName().equals( "CropPlans" )) {

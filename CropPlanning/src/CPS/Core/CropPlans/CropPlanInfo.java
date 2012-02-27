@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.*;
 
@@ -57,6 +58,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    private CPSButtonGroup /* bgDates, */ bgSeedMethod;
    private ArrayList<JLabel> anonLabels = new ArrayList<JLabel>();
 
+   private Date lastDatePlant, lastDateTP, lastDateHarvest;
+
    private final String DATE_EFFECTIVE = "Effective Dates";
    private final String DATE_ACTUAL    = "Actual Dates";
    private final String DATE_PLANNED   = "Planned Dates";
@@ -65,6 +68,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    
    CropPlanInfo( CPSMasterDetailModule mdm ) {
       super( mdm, "Planting Info" );
+
+      lastDatePlant = null;
+      lastDateTP = null;
+      lastDateHarvest = null;
+      
    }
 
    /** this constructor does nothing and is meant for testing purposes only */
@@ -273,22 +281,28 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
         */
        String s = (String) cmbDates.getSelectedItem();
        if ( tfldDatePlant.hasChanged() )
-          if ( s.equalsIgnoreCase( DATE_ACTUAL ))
+          if ( s.equalsIgnoreCase( DATE_ACTUAL )) {
              changes.setDateToPlantActual( tfldDatePlant.getText() );
+             lastDatePlant = changes.getDateToPlantActual();
+          }
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
              changes.setDateToPlantPlanned( tfldDatePlant.getText() );
           // else do nothing for "effective" dates
 
        if ( tfldDateTP.hasChanged() )
-          if ( s.equalsIgnoreCase( DATE_ACTUAL ))
+          if ( s.equalsIgnoreCase( DATE_ACTUAL )) {
              changes.setDateToTPActual( tfldDateTP.getText() );
+             lastDateTP = changes.getDateToTPActual();
+          }
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
              changes.setDateToTPPlanned( tfldDateTP.getText() );
           // else do nothing for "effective" dates
 
        if ( tfldDateHarvest.hasChanged() )
-          if ( s.equalsIgnoreCase( DATE_ACTUAL ))
+          if ( s.equalsIgnoreCase( DATE_ACTUAL )) {
              changes.setDateToHarvestActual( tfldDateHarvest.getText() );
+             lastDateHarvest = changes.getDateToHarvestActual();
+          }
           else if ( s.equalsIgnoreCase( DATE_PLANNED ))
              changes.setDateToHarvestPlanned( tfldDateHarvest.getText() );
           // else do nothing for "effective" dates
@@ -705,24 +719,36 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          // AND the textbox is blank OR the textbox is calculated
          if ( ((String) cmbDates.getSelectedItem()).equalsIgnoreCase( DATE_ACTUAL ) &&
                ( tfldDatePlant.getText().equalsIgnoreCase( "" ) ||
-                 ! displayedPlanting.getDateToPlantState().isCalculated() ))
-            tfldDatePlant.setText( CPSDateValidator.format( new java.util.Date() ));
+                 ! displayedPlanting.getDateToPlantState().isCalculated() )) {
+          Date d = lastDatePlant;
+          if ( d == null )
+            d = new Date();
+          tfldDatePlant.setText( CPSDateValidator.format( d ));
+        }
       }
       else if ( source == chkDoneTP ) {
          // IF  the actual dates are displayed
          // AND the textbox is blank OR the textbox is calculated
          if ( ((String) cmbDates.getSelectedItem()).equalsIgnoreCase( DATE_ACTUAL ) &&
                ( tfldDateTP.getText().equalsIgnoreCase( "" ) || 
-                 ! displayedPlanting.getDateToTPState().isCalculated() )) 
-            tfldDateTP.setText( CPSDateValidator.format( new java.util.Date() ));
+                 ! displayedPlanting.getDateToTPState().isCalculated() )) {
+            Date d = lastDateTP;
+            if ( d == null )
+              d = new Date();
+            tfldDateTP.setText( CPSDateValidator.format( d ));
+         }
       }
       else if ( source == chkDoneHarvest ) {
          // IF  the actual dates are displayed
          // AND the textbox is blank OR the textbox is calculated
          if ( ((String) cmbDates.getSelectedItem()).equalsIgnoreCase( DATE_ACTUAL ) &&
                ( tfldDateHarvest.getText().equalsIgnoreCase( "" ) ||
-                 ! displayedPlanting.getDateToHarvestState().isCalculated() ))
-            tfldDateHarvest.setText( CPSDateValidator.format( new java.util.Date() ));
+                 ! displayedPlanting.getDateToHarvestState().isCalculated() )) {
+            Date d = lastDateHarvest;
+            if ( d == null )
+                d = new Date();
+            tfldDateHarvest.setText( CPSDateValidator.format( d ));
+         }
       }
 
    }
