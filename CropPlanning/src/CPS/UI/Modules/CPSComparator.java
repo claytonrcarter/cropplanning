@@ -31,10 +31,6 @@ public class CPSComparator implements Comparator {
 
     protected int propNum = -1;
 
-    public CPSComparator() {
-        propNum = CPSDataModelConstants.PROP_CROP_NAME;
-    }
-
     public CPSComparator( int pNum ) {
         propNum = pNum;
     }

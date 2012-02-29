@@ -10,7 +10,12 @@ import CPS.UI.Modules.CPSComparator;
  * This currently doesn't do anything.
  * @deprecated 
  */
-public class CPSPlantingComarator extends CPSComparator {
+public class CPSPlantingComparator extends CPSComparator {
+
+  public CPSPlantingComparator() {
+    super( CPSPlanting.PROP_CROP_NAME );
+  }
+
 
   @Override
   public int compare( Object a, Object b ) {
@@ -90,7 +95,7 @@ public class CPSPlantingComarator extends CPSComparator {
 //      case CPSPlanting.PROP_CUSTOM4:  return super.compare( c.get, d.get );
 //      case CPSPlanting.PROP_CUSTOM5:  return super.compare( c.get, d.get );
 
-      default: return CPSPlanting.PROP_ID;
+      default: return 0;
 
     }
 

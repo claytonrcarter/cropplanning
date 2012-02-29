@@ -73,7 +73,7 @@ public abstract class CPSRecord {
     * that iterate through the properties or otherwise access the data without
     * calling the normal getter or setter methods.
     */
-   public abstract void updateCalculations();
+   protected abstract void updateCalculations();
 
 
    protected void debug( String message ) {
@@ -280,7 +280,7 @@ public abstract class CPSRecord {
        
        // by default, a cropID of -1 means no differences.
        if ( diffsExists ) {
-          debug("Differences EXIST:\nThis: " + this.toString() + "\nThat: " + thatRecord.toString() + "\nDifferences: " + diffs.toString() );
+//          debug("Differences EXIST:\nThis: " + this.toString() + "\nThat: " + thatRecord.toString() + "\nDifferences: " + diffs.toString() );
           if ( ! this.isSingleRecord() )
              diffs.setID( 1 );
           else

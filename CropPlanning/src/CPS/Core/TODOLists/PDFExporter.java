@@ -84,7 +84,9 @@ public class PDFExporter {
     
     public void addTable( JTable jtable, String tableTitle ) {
         try {
+          if ( tableTitle != null ) {
             tempDoc.add( new Paragraph( tableTitle, fontPageHeader ) );
+          }
             tempDoc.add( new Paragraph( Chunk.NEWLINE ) ); // TODO halve the height of this
             PdfPTable t = convertJTable( jtable );
             t.setWidthPercentage( 100 ); // 100% page width

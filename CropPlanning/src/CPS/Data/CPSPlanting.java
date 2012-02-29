@@ -193,7 +193,7 @@ public final class CPSPlanting extends CPSRecord {
       
       crop_name = new CPSDatum<String>( "Crop", "Name of crop to be planted", "", PROP_CROP_NAME );
       var_name = new CPSDatum<String>( "Variety", "Name of variety to be planted", "", PROP_VAR_NAME );
-      maturity = new CPSDatum<Integer>( "Maturity Days", new Integer(-1), PROP_MATURITY );
+      maturity = new CPSDatum<Integer>( "Maturity Days", new Integer(0), PROP_MATURITY );
       location = new CPSDatum<String>( "Location", "Where will this be planted", "", PROP_LOCATION );
 
       date_plant = new CPSDatum<Date>( "Planting Date", "When this will be seeded in the greenhouse or field", new Date( 0 ), PROP_DATE_PLANT  );
@@ -213,30 +213,30 @@ public final class CPSPlanting extends CPSRecord {
       done_harvest = new CPSDatum<Boolean>( "Harvested?", "Has this been harvested", Boolean.FALSE, PROP_DONE_HARVEST );
       ignore = new CPSDatum<Boolean>( "Ignore?", "Ignore this planting", Boolean.FALSE, PROP_IGNORE );
 
-      ds_mat_adjust = new CPSDatum<Integer>( "DS Mat. Adj.", new Integer(-1), PROP_DS_MAT_ADJUST );
-      tp_mat_adjust = new CPSDatum<Integer>( "TP Mat. Adj.", new Integer(-1), PROP_TP_MAT_ADJUST );
-      time_to_tp = new CPSDatum<Integer>( "Weeks to TP", new Integer( -1 ), PROP_TIME_TO_TP );
-      ds_rows_p_bed = new CPSDatum<Integer>( "DS Rows/Bed", new Integer(-1), PROP_DS_ROWS_P_BED );
-      tp_rows_p_bed = new CPSDatum<Integer>( "TP Rows/Bed", new Integer(-1), PROP_TP_ROWS_P_BED );
-      inrow_space = new CPSDatum<Integer>( "In-row Spacing", new Integer( -1 ), PROP_INROW_SPACE );
-      ds_row_space = new CPSDatum<Integer>( "DS Row Spacing", new Integer( -1 ), PROP_DS_ROW_SPACE );
-      tp_row_space = new CPSDatum<Integer>( "TP Row Spacing", new Integer( -1 ), PROP_TP_ROW_SPACE );
+      ds_mat_adjust = new CPSDatum<Integer>( "DS Mat. Adj.", new Integer(0), PROP_DS_MAT_ADJUST );
+      tp_mat_adjust = new CPSDatum<Integer>( "TP Mat. Adj.", new Integer(0), PROP_TP_MAT_ADJUST );
+      time_to_tp = new CPSDatum<Integer>( "Weeks to TP", new Integer(0), PROP_TIME_TO_TP );
+      ds_rows_p_bed = new CPSDatum<Integer>( "DS Rows/Bed", new Integer(0), PROP_DS_ROWS_P_BED );
+      tp_rows_p_bed = new CPSDatum<Integer>( "TP Rows/Bed", new Integer(0), PROP_TP_ROWS_P_BED );
+      inrow_space = new CPSDatum<Integer>( "In-row Spacing", new Integer(0), PROP_INROW_SPACE );
+      ds_row_space = new CPSDatum<Integer>( "DS Row Spacing", new Integer(0), PROP_DS_ROW_SPACE );
+      tp_row_space = new CPSDatum<Integer>( "TP Row Spacing", new Integer(0), PROP_TP_ROW_SPACE );
       flat_size = new CPSDatum<String>( "Flat size", "", PROP_FLAT_SIZE );
       ds_crop_notes = new CPSDatum<String>( "DS Planting Notes (from CropDB)", "", PROP_DS_CROP_NOTES );
       tp_crop_notes = new CPSDatum<String>( "TP Planting Notes (from CropDB)", "", PROP_TP_CROP_NOTES );
       planting_notes = new CPSDatum<String>( "Planting Notes", "", PROP_PLANTING_NOTES );
 
-      beds_to_plant = new CPSDatum<Float>( "Num. Beds to Plants", new Float(-1.0), PROP_BEDS_PLANT );
-      plants_needed = new CPSDatum<Integer>( "Num. Plants Needed", new Integer(-1), PROP_PLANTS_NEEDED );
-      rowft_to_plant = new CPSDatum<Integer>( "Row Feet To Plant", new Integer(-1), PROP_ROWFT_PLANT );
-      plants_to_start = new CPSDatum<Integer>( "Num. Plants to Start", new Integer(-1), PROP_PLANTS_START );
-      flats_needed = new CPSDatum<Float>( "Num. Flats Needed", new Float(-1.0), PROP_FLATS_NEEDED );
+      beds_to_plant = new CPSDatum<Float>( "Num. Beds to Plants", new Float(0.0), PROP_BEDS_PLANT );
+      plants_needed = new CPSDatum<Integer>( "Num. Plants Needed", new Integer(0), PROP_PLANTS_NEEDED );
+      rowft_to_plant = new CPSDatum<Integer>( "Row Feet To Plant", new Integer(0), PROP_ROWFT_PLANT );
+      plants_to_start = new CPSDatum<Integer>( "Num. Plants to Start", new Integer(0), PROP_PLANTS_START );
+      flats_needed = new CPSDatum<Float>( "Num. Flats Needed", new Float(0.0), PROP_FLATS_NEEDED );
             
-      yield_p_foot = new CPSDatum<Float>( "Yield/Ft", new Float(-1.0), PROP_YIELD_P_FOOT );
-      yield_num_weeks = new CPSDatum<Integer>( "Will Yield for (weeks)", new Integer(-1), PROP_YIELD_NUM_WEEKS );
-      yield_p_week = new CPSDatum<Float>( "Yield/Week", new Float(-1.0), PROP_YIELD_P_WEEK );
+      yield_p_foot = new CPSDatum<Float>( "Yield/Ft", new Float(0.0), PROP_YIELD_P_FOOT );
+      yield_num_weeks = new CPSDatum<Integer>( "Will Yield for (weeks)", new Integer(0), PROP_YIELD_NUM_WEEKS );
+      yield_p_week = new CPSDatum<Float>( "Yield/Week", new Float(0.0), PROP_YIELD_P_WEEK );
       crop_unit = new CPSDatum<String>( "Unit of Yield", "", PROP_CROP_UNIT );
-      crop_unit_value = new CPSDatum<Float>( "Value per Yield Unit", new Float(-1.0), PROP_CROP_UNIT_VALUE );
+      crop_unit_value = new CPSDatum<Float>( "Value per Yield Unit", new Float(0.0), PROP_CROP_UNIT_VALUE );
       total_yield = new CPSDatum<Float>( "Total Yield", new Float( -1.0 ), PROP_TOTAL_YIELD );
 
       direct_seed = new CPSDatum<Boolean>( "Direct seeded?", Boolean.TRUE, PROP_DIRECT_SEED );
@@ -1254,7 +1254,7 @@ public final class CPSPlanting extends CPSRecord {
    /* *********************************************************************************************/
 
    // don't need this any more
-   protected void updateCalculations( int propNum ) { }
+   protected void updateCalculations() { }
 
    /* *********************************************************************************************/
    /* META METHODS - Operate on entire objects. */

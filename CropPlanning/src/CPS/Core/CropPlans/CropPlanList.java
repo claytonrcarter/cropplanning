@@ -395,7 +395,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        if ( summaryPlantings != null && summaryPlantings.getValue() > 0 ) {
            s += "Plantings:" + summaryPlantings.getValue();
        
-           String t = "" + CPSCalculations.precision3( summaryBeds.getValue() );
+           String t = "" + CPSCalculations.precision3( summaryBeds.getValue() + .001f );
            if ( ! t.equals("") ) 
                s += "/Beds:" + t;
            

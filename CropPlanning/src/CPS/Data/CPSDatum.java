@@ -111,7 +111,6 @@ public class CPSDatum<T> {
     public T getValue( boolean rawAccess ) {
         if ( ( isCalculated() || isInherited() || isNull() ) &&
              ( getDataMode() == DATA_MODE_RAW || rawAccess ) ) {
-//           System.out.println( "get: " + getNullValue()  + " (null value) => "+ getName() );
             return getNullValue();
         }
         else if ( isNull() && ! rawAccess ) {

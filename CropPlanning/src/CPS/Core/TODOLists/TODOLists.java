@@ -35,8 +35,16 @@ import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.LayoutAssist;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.FilterList;
+import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.calculation.Calculation;
+import ca.odell.glazedlists.calculation.Calculations;
 import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.matchers.AbstractMatcherEditor;
+import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
+import ca.odell.glazedlists.matchers.Matcher;
+import ca.odell.glazedlists.matchers.MatcherEditor;
+import ca.odell.glazedlists.matchers.Matchers;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.toedter.calendar.JDateChooser;
@@ -87,7 +95,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         data = new BasicEventList<CPSPlanting>();
         dataFiltered = new FilterList<CPSPlanting>( data );
-        dataSorted = new SortedList<CPSPlanting>( dataFiltered, new CPSComparator() );
+        dataSorted = new SortedList<CPSPlanting>( dataFiltered, null );
         
     }
 
@@ -250,12 +258,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
       if ( l != null )
         data.addAll( l );
 
-//      for ( CPSPlanting p : dataFiltered )
-//        p.updateCalculations();
-
-//      for ( CPSPlanting p : dataSorted )
-//        System.out.println( p.getCropName() + "\t" + p.getDateToPlant().toString() );
-
       System.out.println("Entries in full crop plan: " + data.size() );
       System.out.println("Entries in filtered crop plan: " + dataFiltered.size() );
 
@@ -265,8 +267,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private void exportGHPlantings(String planName) {
 
         // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
-//        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
-        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT_PLAN;
+        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
 
         String filename = createOutputFileName( filFile.getSelectedFile(),
                                                 "GH Seeding List",
@@ -322,16 +323,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     private void exportFieldPlantings(String planName) {
 
-        ArrayList<Integer> props = new ArrayList<Integer>(Arrays.asList(
-                new Integer[]{CPSDataModelConstants.PROP_DATE_PLANT,
-                    CPSDataModelConstants.PROP_CROP_NAME,
-                    CPSDataModelConstants.PROP_VAR_NAME,
-                    CPSDataModelConstants.PROP_LOCATION,
-                    CPSDataModelConstants.PROP_BEDS_PLANT,
-                    CPSDataModelConstants.PROP_ROWS_P_BED,
-                    CPSDataModelConstants.PROP_ROWFT_PLANT,
-                    CPSDataModelConstants.PROP_PLANT_NOTES,
-                }));
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
 
         String filename = createOutputFileName(filFile.getSelectedFile(),
@@ -390,18 +381,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
          * Select just uncompleted, transplanted plantings whose TRANSPLANT date
          * is w/i range
          */
-        props = new ArrayList<Integer>(Arrays.asList(
-                new Integer[]{CPSDataModelConstants.PROP_DATE_TP,
-                    CPSDataModelConstants.PROP_DATE_PLANT,
-                    CPSDataModelConstants.PROP_CROP_NAME,
-                    CPSDataModelConstants.PROP_VAR_NAME,
-                    CPSDataModelConstants.PROP_LOCATION,
-                    CPSDataModelConstants.PROP_BEDS_PLANT,
-                    CPSDataModelConstants.PROP_ROWFT_PLANT,
-                    CPSDataModelConstants.PROP_ROWS_P_BED,
-                    CPSDataModelConstants.PROP_SPACE_INROW,
-                    CPSDataModelConstants.PROP_PLANT_NOTES
-                }));
         sortProp = CPSDataModelConstants.PROP_DATE_TP;
 
         // filter out all direct seeded plantings
@@ -449,25 +428,13 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     private void exportAllPlantings(String planName) {
 
-//        String cols = "date_plant, crop_name, var_name, plants_needed, plants_to_start, flat_size, flats_needed";
-//        String sortCol = "date_plant";
-        ArrayList<Integer> props = new ArrayList<Integer>(Arrays.asList(
-                new Integer[] { CPSDataModelConstants.PROP_CROP_NAME,
-                                CPSDataModelConstants.PROP_VAR_NAME,
-                                CPSDataModelConstants.PROP_IGNORE,
-                                CPSDataModelConstants.PROP_DATE_PLANT,
-                                CPSDataModelConstants.PROP_DATE_TP,
-                                CPSDataModelConstants.PROP_DIRECT_SEED,
-                                CPSDataModelConstants.PROP_BEDS_PLANT,
-                                CPSDataModelConstants.PROP_ROWFT_PLANT,
-                                CPSDataModelConstants.PROP_PLANTS_NEEDED,
-                                CPSDataModelConstants.PROP_FLATS_NEEDED,
-                                CPSDataModelConstants.PROP_TOTAL_YIELD
-                              }));
+      exportSeedOrderLists(planName);
+      if ( true )
+        return;
+
         // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
 
-//        String filename = "GH Seeding List - " + new SimpleDateFormat( "MMM dd yyyy" ).format( dtcDateOtherStart.getDate() ) + ".pdf";
         String filename = createOutputFileName(filFile.getSelectedFile(),
                 "All Plantings",
                 dtcDateOtherStart.getDate());
@@ -492,6 +459,128 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                          "All Plantings" );
 
     }
+
+
+
+    private void exportSeedOrderLists( String planName ) {
+
+        String filename = createOutputFileName( filFile.getSelectedFile(),
+                                                "Seed Order Info",
+                                                dtcDateOtherStart.getDate() );
+
+
+        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
+        filter.setViewLimited(true);
+
+        // fill up the list w/ the crop plan, then hide anything being ignored
+        data.clear();
+        data.addAll( getDataSource().getCropPlan( planName ) );
+
+
+        // setup the list of filters and add an "all" matcher
+        BasicEventList<MatcherEditor<CPSPlanting>> filterList = new BasicEventList<MatcherEditor<CPSPlanting>>();
+        filterList.add( filter );
+
+        // now setup the thing that will match all of the elements of the filter list
+        CompositeMatcherEditor<CPSPlanting> compositeFilter = new CompositeMatcherEditor<CPSPlanting>( filterList );
+        compositeFilter.setMode( CompositeMatcherEditor.AND );
+
+
+        dataFiltered.setMatcherEditor(compositeFilter);
+
+
+        // sort that plan by crop and var name, excluding anything ignored
+        SortedList<CPSPlanting> sortedPlan = new SortedList<CPSPlanting>( dataFiltered, new CropVarComparator() );
+
+
+        // create another filtered list which we'll use to do our processing
+        // base it on the "not ignored" list so we know we can start w/ that.
+        FilterList<CPSPlanting> filteredPlan = new FilterList<CPSPlanting>( dataFiltered );
+
+        // set our calculations
+        FunctionList rftList =
+              new FunctionList<CPSPlanting, Integer>( filteredPlan,
+                                                 new FunctionList.Function<CPSPlanting, Integer>() {
+                                                    public Integer evaluate( CPSPlanting p ) {
+                                                       return p.getRowFtToPlant();
+                                                    }} );
+
+        FunctionList plantsList =
+              new FunctionList<CPSPlanting, Integer>( filteredPlan,
+                                                 new FunctionList.Function<CPSPlanting, Integer>() {
+                                                    public Integer evaluate( CPSPlanting p ) {
+                                                       return p.getPlantsToStart();
+                                                    }} );
+
+        FunctionList bedsList =
+              new FunctionList<CPSPlanting, Float>( filteredPlan,
+                                                  new FunctionList.Function<CPSPlanting, Float>() {
+                                                     public Float evaluate( CPSPlanting p ) {
+                                                        return p.getBedsToPlant();
+                                                     }} );
+
+        FunctionList flatsList =
+              new FunctionList<CPSPlanting, Float>( filteredPlan,
+                                                  new FunctionList.Function<CPSPlanting, Float>() {
+                                                     public Float evaluate( CPSPlanting p ) {
+                                                        return p.getFlatsNeeded();
+                                                     }} );
+
+
+        Calculation<Integer> summaryPlantings = Calculations.count( filteredPlan );
+        Calculation<Integer> summaryRowFt = Calculations.sumIntegers( rftList );
+        Calculation<Integer> summaryPlants = Calculations.sumIntegers( plantsList );
+        Calculation<Float> summaryBeds = Calculations.sumFloats( bedsList );
+        Calculation<Float> summaryFlats = Calculations.sumFloats( flatsList );
+
+
+        BasicEventList<CPSPlanting> seedStats = new BasicEventList<CPSPlanting>();
+
+        while ( sortedPlan.size() > 0 ) {
+          // get the first entry on the sorted list
+          CPSPlanting p = sortedPlan.get(0);
+
+          // filter plan on the crop/var name for that first entry
+          CropVarMatcher cvm = new CropVarMatcher(p);
+          filteredPlan.setMatcher( cvm );
+
+
+          // create new planting based on the summary calculations for that filtered list
+          CPSPlanting s = new CPSPlanting();
+          s.setCropName( p.getCropName() );
+          s.setVarietyName( p.getVarietyName() );
+
+          s.setRowFtToPlant( summaryRowFt.getValue() );
+          s.setPlantsToStart( summaryPlants.getValue() );
+          s.setBedsToPlant( summaryBeds.getValue() + .001f );
+          s.setFlatsNeeded( summaryFlats.getValue() );
+          // this is a dirty dirty hack that is only used because we're
+          // controlling the table format for the output
+          s.setMaturityDays( summaryPlantings.getValue() );
+
+          // add that new planting to a separate list
+          seedStats.add(s);
+
+
+          // now add this to the list of shit to exclude from our list
+          filterList.add( cvm.invert() );
+
+        }
+
+        TableFormat tf = new SeedStatsTableFormat();
+
+        CPSTable jt = new CPSTable();
+        jt.setModel( new EventTableModel<CPSPlanting>( seedStats, tf ) );
+
+        exporter.export( jt, filename,
+                         CPSGlobalSettings.getFarmName(),
+                         "Seeding Stats for plan \"" + planName + "\"",
+                         null );
+
+    }
+
+
+
 
     @Override
     public void dataUpdated() {
@@ -602,4 +691,51 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     public int shutdown() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+
+
+    private class CropVarComparator implements Comparator<CPSPlanting> {
+
+      public int compare( CPSPlanting t, CPSPlanting t1 ) {
+        int i = t.getCropName().compareTo(t1.getCropName());
+        if ( i == 0 )
+          return t.getVarietyName().compareTo(t1.getVarietyName());
+        else
+          return i;
+      }
+
+    }
+
+    private class CropVarMatcher extends AbstractMatcherEditor<CPSPlanting> implements Matcher<CPSPlanting> {
+
+      private CPSPlanting p;
+      private boolean invert = false;
+
+      public CropVarMatcher( CPSPlanting p ) {
+        this.p = p;
+      }
+
+      public boolean matches(CPSPlanting item) {
+        boolean b = p.getCropName().equals(item.getCropName()) && p.getVarietyName().equals(item.getVarietyName());
+        if ( invert )
+          return !b;
+        else
+          return b;
+      }
+
+      @Override
+      public Matcher<CPSPlanting> getMatcher() {
+        return this;
+      }
+
+      public MatcherEditor<CPSPlanting> invert() {
+        invert = ! invert;
+        return this;
+      }
+
+
+
+
+    }
+
 }
