@@ -22,19 +22,23 @@
 
 package CPS.CSV;
 
+import CPS.Core.TODOLists.PDFExporter;
 import CPS.Data.*;
 import CPS.Module.CPSExporter;
 import CPS.Module.CPSImporter;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
+import CPS.UI.Swing.CPSTable;
 import java.util.ArrayList;
 import com.csvreader.*;
+import com.lowagie.text.Phrase;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JTable;
 
 
 public class CSV extends CPSModule implements CPSExporter, CPSImporter {
@@ -42,7 +46,6 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
   CSVTableModel ctm;
   boolean exportOnly;
-  CPSDateValidator dateValidator;
   private CSVColumnMap columnMap;
 
   public CSV() {
@@ -52,8 +55,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
       setModuleVersion( CPSGlobalSettings.getVersion() );
 
       exportOnly = true;
-      dateValidator = new CPSDateValidator();
-
+      
       columnMap = new CSVColumnMap();
   }
 
@@ -239,7 +241,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
                    Object o = d.getValue();
                    if ( o instanceof java.util.Date ||
                         o instanceof java.sql.Date )
-                       row[colForDatum] = dateValidator.format( (Date) o );
+                       row[colForDatum] = CPSDateValidator.format( (Date) o );
                    else
                        row[colForDatum] = o.toString();
                }
@@ -255,6 +257,81 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
        catch ( Exception ignore ) { ignore.printStackTrace(); }
 
    }
+
+
+  public void exportJTable( String filename, String title, JTable jtable) {
+
+    CsvWriter csvOut = new CsvWriter( filename );
+    // mark text with double quotes
+    csvOut.setTextQualifier('"');
+    // set default comment character to hash
+    csvOut.setComment('#');
+
+    int columnCount = jtable.getColumnCount();
+
+    try {
+      // write comment about date, time, etc
+      csvOut.writeComment( " Created by CropPlanning Software" );
+      csvOut.writeComment( " Available at http://cropplanning.googlecode.com" );
+      csvOut.writeComment( " Records exported: " + title );
+      csvOut.writeComment( " Exported: " + new Date().toString() );
+
+
+      String[] buffer = new String[columnCount];
+
+
+      // create header row
+      for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
+          String headName;
+          if ( jtable instanceof CPSTable )
+              headName = jtable.getColumnModel().getColumn(col).getHeaderValue().toString();
+          else
+              headName = jtable.getColumnName( col );
+          buffer[col] = headName;
+      }
+      csvOut.writeRecord( buffer );
+
+      // now do the rest of the data
+      int row;
+      for ( row = 0; row < jtable.getRowCount(); row++ ) {
+        buffer = new String[columnCount];
+
+         for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
+            Object o = jtable.getValueAt( row, col );
+//               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
+//               TODOLists.debug( "PDFExporter", "Value is " + (( o==null) ? "NULL" : o.toString()) );
+            if ( o == null ) {
+              buffer[col] = "";
+            }
+            else if ( o instanceof Date )
+              buffer[col] = CPSDateValidator.format( (Date) o );
+            else if ( o instanceof Float )
+              buffer[col] = CPSRecord.formatFloat( ((Float) o).floatValue(), 3);
+            else if ( o instanceof Double )
+              buffer[col] = CPSRecord.formatFloat( ((Double) o).floatValue(), 3);
+            else
+              buffer[col] = o.toString();
+
+         }
+         csvOut.writeRecord( buffer );
+      }
+
+      // write comment "EOF"
+      csvOut.writeComment( " End of file" );
+
+      // close
+      csvOut.close();
+
+      debug( "exported " + row + " records" );
+    }
+    catch ( Exception ignore ) { ignore.printStackTrace(); }
+
+
+  }
+
+
+
+
 
    public String getExportFileDefaultExtension() {
        return "csv";

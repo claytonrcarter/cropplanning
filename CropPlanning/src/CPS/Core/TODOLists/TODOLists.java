@@ -22,6 +22,7 @@
  */
 package CPS.Core.TODOLists;
 
+import CPS.CSV.CSV;
 import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
@@ -44,7 +45,6 @@ import ca.odell.glazedlists.matchers.AbstractMatcherEditor;
 import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
-import ca.odell.glazedlists.matchers.Matchers;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.toedter.calendar.JDateChooser;
@@ -110,6 +110,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     }
 
+    // <editor-fold defaultstate="collapsed" desc="buildTODOListPanel">
     private void buildTODOListPanel() {
 
         jplTodo = new JPanel();
@@ -215,6 +216,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         LayoutAssist.addButton(jplTodo, 1, 18, btnAllPlantings);
 
     }
+    // </editor-fold>
 
     protected void updateListOfPlans() {
         if (!isDataAvailable()) {
@@ -243,8 +245,12 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     }
 
     private String createOutputFileName(File dir, String prefix, Date d) {
+      return createOutputFileName(dir, prefix, d, "pdf" );
+    }
+    
+    private String createOutputFileName( File dir, String prefix, Date d, String ext ) {
         return dir.getAbsolutePath() + File.separator +
-                prefix + " - " + new SimpleDateFormat("MMM dd yyyy").format(d) + ".pdf";
+                prefix + " - " + new SimpleDateFormat("MMM dd yyyy").format(d) + "." + ext;
     }
 
     private void filterAndSortList( List<CPSPlanting> l, CPSComplexPlantingFilter f, int sortProp ) {
@@ -466,7 +472,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         String filename = createOutputFileName( filFile.getSelectedFile(),
                                                 "Seed Order Info",
-                                                dtcDateOtherStart.getDate() );
+                                                dtcDateOtherStart.getDate(),
+                                                "csv" );
 
 
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
@@ -549,6 +556,10 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           CPSPlanting s = new CPSPlanting();
           s.setCropName( p.getCropName() );
           s.setVarietyName( p.getVarietyName() );
+          s.setDirectSeeded( p.isDirectSeeded() );
+
+          s.setInRowSpacing( p.getInRowSpacing() );
+          s.setFlatSize( p.getFlatSize() );
 
           s.setRowFtToPlant( summaryRowFt.getValue() );
           s.setPlantsToStart( summaryPlants.getValue() );
@@ -572,10 +583,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         CPSTable jt = new CPSTable();
         jt.setModel( new EventTableModel<CPSPlanting>( seedStats, tf ) );
 
-        exporter.export( jt, filename,
-                         CPSGlobalSettings.getFarmName(),
-                         "Seeding Stats for plan \"" + planName + "\"",
-                         null );
+        if ( true ) {
+          new CSV().exportJTable( filename, "Seed Order Worksheet for plan \"" + planName + "\"", jt );
+        } else {
+          exporter.export( jt, filename,
+                           CPSGlobalSettings.getFarmName(),
+                           "Seed Order Worksheet for plan \"" + planName + "\"",
+                           null );
+        }
 
     }
 

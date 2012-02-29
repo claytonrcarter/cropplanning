@@ -25,8 +25,8 @@ package CPS.Module;
 
 import CPS.Data.CPSCrop;
 import CPS.Data.CPSPlanting;
-import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JTable;
 
 /**
  * A simple interface for classes that provide the capabilty to export
@@ -39,6 +39,9 @@ public interface CPSExporter {
     public void exportCropPlan( String filename,
                                 String planName, 
                                 List<CPSPlanting> plantings );
+
+    public void exportJTable( String filename, String title, JTable table );
+    
     /**
      * Returns the default file extension used by this exporter.
      * @return the default file extension WITHOUT a leading period (".")
