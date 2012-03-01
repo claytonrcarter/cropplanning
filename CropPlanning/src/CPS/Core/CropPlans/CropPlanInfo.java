@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.*;
@@ -204,11 +205,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
           setStatus( CPSMasterDetailModule.STATUS_BLANK );
        
         if ( ! displayedPlanting.isSingleRecord() ) {
-           String ids = "";
-           for ( Integer i : displayedPlanting.getCommonIDs() )
-              ids += i.toString() + ", ";
-           ids = ids.substring( 0, ids.lastIndexOf(", ") );
-           setStatus( "Displaying common data for records: " + ids );
+//           String ids = "";
+//           for ( Integer i : displayedPlanting.getCommonIDs() )
+//              ids += i.toString() + ", ";
+//           ids = ids.substring( 0, ids.lastIndexOf(", ") );
+           setStatus( "showing identical fields for selected rows" );
        }
 
 
@@ -242,18 +243,22 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        }
 
        // update items in db
-       if ( ! displayedPlanting.isSingleRecord() )
-          getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
-       else
+       if ( ! displayedPlanting.isSingleRecord() ) {
+         getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
+       }
+       else {
           getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
 
-       // need to get update planting to make sure we have the best inheritance data
-       diff = getDataSource().getPlanting( selectedPlan, diff.getID() );
-       
-       updateRecordInMasterView(diff);
+          // need to get update planting to make sure we have the best inheritance data
+          diff = getDataSource().getPlanting( selectedPlan, diff.getID() );
 
-       // this triggers the selected record to be displayed in the info window
-       selectRecordInMasterView( diff.getID() );
+          updateRecordInMasterView(diff);
+
+          // this triggers the selected record to be displayed in the info window
+          selectRecordsInMasterView( Arrays.asList( diff.getID() ) );
+
+       }
+
        
     }
 

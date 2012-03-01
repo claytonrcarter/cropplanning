@@ -253,8 +253,7 @@ public class HSQLDBCreator {
                                        HSQLColumnMap map,
                                        String planName,
                                        CPSPlanting changes, 
-                                       List<Integer> ids,
-                                       List<Integer> cropIDs ) {
+                                       List<Integer> ids ) {
        
        CPSPlanting tempPlant;
        for ( Integer I : ids ) {

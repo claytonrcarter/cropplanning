@@ -170,24 +170,43 @@ public abstract class CPSRecord {
       else
          return getDatum( prop ).getValueAsInt();
    }
+
+   public String formatInt( CPSDatum<Integer> d ) {
+     if ( d.isNull() )
+       return "";
+     else
+       return formatInt( d.getValue( useRawOutput() ) );
+   }
    public String formatInt( Integer i ) {
       if ( i == null || i.intValue() == -1 )
          return "";
       else 
          return "" + i;
    }
+
+
    public Boolean getBoolean( int prop ) {
       if ( useRawOutput() )
          return (Boolean) getDatum( prop ).getValue( useRawOutput() );
       else
          return new Boolean( getDatum( prop ).getValueAsBoolean() );
    }
+
+
    public Float getFloat( int prop ) {
       if ( useRawOutput() )
          return (Float) getDatum( prop ).getValue( useRawOutput() );
       else
          return getDatum( prop ).getValueAsFloat();
    }
+
+   public String formatFloat( CPSDatum<Float> d, int precision ) {
+     if ( d.isNull() )
+       return "";
+     else
+       return formatFloat( d.getValue( useRawOutput() ), precision );
+   }
+
    public String formatFloat( float f ) {
       return formatFloat( f, -1 );
    }

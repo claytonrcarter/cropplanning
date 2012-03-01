@@ -401,33 +401,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
        return new CPSPlanting();
 
-       // began porting this section of code to Persist but gave up because -- in theory --
-       // the sums and such will happen in the "Master" view modules, not in the db
-//       TableMapping tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE );
-//
-//       final ArrayList<String> colsToSum = new ArrayList<String>( 6 );
-//       colsToSum.add( tm.getColumnNameForMethod( "getBedsToPlant" ));
-//       colsToSum.add( tm.getColumnNameForMethod( "getRowFtToPlant()" ));
-//       colsToSum.add( tm.getColumnNameForMethod( "getPlantsNeeded()" ));
-//       colsToSum.add( tm.getColumnNameForMethod( "getPlantsToStart()" ));
-//       colsToSum.add( tm.getColumnNameForMethod( "getFlatsNeeded()" ));
-//       colsToSum.add( tm.getColumnNameForMethod( "getTotalYield()" ));
-
-
-
-       // this is original code and has not been altered
-//       try {
-//           return resultSetAsPlanting( query.submitSummedCropPlanQuery( plan_name,
-//                                                                        getPlantingCropColumnMapping(),
-//                                                                        getCropInheritanceColumnMapping(),
-//                                                                        colsToSum,
-//                                                                        buildComplexFilterExpression( this.getCropPlanFilterColumnNames(),
-//                                                                                                      filter )));
-//       }
-//       catch ( SQLException e ) {
-//           e.printStackTrace();
-//           return new CPSPlanting();
-//       }
    }
    
    
@@ -438,8 +411,11 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public CPSPlanting getCommonInfoForPlantings( String plan_name, List<Integer> plantingIDs ) {
       
        TableMapping tm = (TableMapping) p.getMapping( CPSPlanting.class, plan_name);
-         
-       CPSPlanting planting = p.read( CPSPlanting.class, query.buildCommonInfoQuery( plan_name, tm.getColumns(), plantingIDs ) );
+
+       // TODO maybe this should more elegantly handle situations w/ more than 1 primary key
+       CPSPlanting planting = p.read( CPSPlanting.class, query.buildCommonInfoQuery( plan_name, tm.getPrimaryKeys()[0], tm.getNotPrimaryKeys(), plantingIDs ) );
+
+       performInheritanceForPlanting(planting);
 
        planting.setCommonIDs( plantingIDs );
        return planting;
@@ -450,7 +426,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
        TableMapping tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE);
 
-       CPSCrop crop = p.read( CPSCrop.class, query.buildCommonInfoQuery( CROP_VAR_TABLE, tm.getColumns(), cropIDs ) );
+       CPSCrop crop = p.read( CPSCrop.class, query.buildCommonInfoQuery( CROP_VAR_TABLE, tm.getPrimaryKeys()[0], tm.getNotPrimaryKeys(), cropIDs ) );
 
        crop.setCommonIDs( cropIDs );
        return crop;
@@ -588,29 +564,10 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public void updatePlantings( String planName, CPSPlanting changes, List<Integer> changedIDs ) {
 
       debug( "saving changes to plan " + planName + ": " + changes.toString() );
-
-      ArrayList<Integer> cropIDs = new ArrayList();
-      for ( Integer i : changedIDs ) {
-         CPSPlanting planting = getPlanting( planName, i.intValue() );
-
-         // I'm not really sure what these are doing or if they're necessary.  Can anyone clarify?
-         if ( changes.getDatum( CPSPlanting.PROP_CROP_NAME ).isNotNull() )
-            planting.setCropName( changes.getCropName() );
-         if ( changes.getDatum( CPSPlanting.PROP_VAR_NAME).isNotNull() )
-            planting.setVarietyName( changes.getVarietyName() );
-         
-         int cropID = getVarietyInfo( planting.getCropName(), planting.getVarietyName() ).getID();
-         
-         if ( cropID == -1 )
-            cropID = getCropInfo( planting.getCropName() ).getID();
-         
-         // TODO error if cropID == -1 again
-         
-         cropIDs.add( new Integer( cropID  ));
-      }
       
-      HSQLDBCreator.updatePlantings( p, columnMap, planName, changes, changedIDs, cropIDs );
-//      updateDataListeners();
+      HSQLDBCreator.updatePlantings( p, columnMap, planName, changes, changedIDs );
+      updateDataListeners();
+      
    }
 
    protected void performInheritanceForPlanting( CPSPlanting planting ) {

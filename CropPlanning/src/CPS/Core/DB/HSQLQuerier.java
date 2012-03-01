@@ -266,8 +266,9 @@ public class HSQLQuerier {
     * @return an SQL statement, ready to be handed off to the db
     */
    public String buildCommonInfoQuery( String table,
-                                       String[] columns,
-                                       List<Integer> ids ) {
+                                        String idColumn,
+                                        String[] columns,
+                                        List<Integer> ids ) {
 
       String idString = HSQLDB.intListToIDString(ids);
       
@@ -280,13 +281,13 @@ public class HSQLQuerier {
          query += "( CASE WHEN count(*)=1 ";
          query += "THEN MIN( " + col + " ) ELSE null END ) ";
          query += "FROM( SELECT DISTINCT " + col + " FROM " + HSQLDB.escapeTableName( table ) + " ";
-         query += "WHERE id IN ( " + idString + " ) ) ) AS " + col + ", "; 
+         query += "WHERE " + idColumn + " IN ( " + idString + " ) ) ) AS " + col + ", ";
       }
       query = query.substring( 0, query. lastIndexOf( ", " ));
       
       query += " FROM " + HSQLDB.escapeTableName( table );
 
-      HSQLDB.debug( "HSQLQuerier", "COMMON INFO query:\n" + query );
+//      HSQLDB.debug( "HSQLQuerier", "COMMON INFO query:\n" + query );
       
       return query;
       

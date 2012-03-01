@@ -43,6 +43,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -92,8 +93,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     /// selectedID is the ID of the currently selected record (as opposed to
     // the row number of the selected row.
     private int[] selectedRows = {};
-    private ArrayList<Integer> selectedIDs = new ArrayList();
-    private ArrayList<ColumnNameStruct> columnList = new ArrayList();
+    private ArrayList<Integer> selectedIDs = new ArrayList<Integer>();
+    private ArrayList<ColumnNameStruct> columnList = new ArrayList<ColumnNameStruct>();
 
 
     // lists and such for the GlazedList sorting, filtering and such
@@ -111,6 +112,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        uiManager = ui;
        
        buildMainPanel( null );
+
+       selectModel.setSelectionMode( ListSelection.MULTIPLE_INTERVAL_SELECTION );
     }
     
     public int init() { return 0; }
@@ -279,24 +282,42 @@ public abstract class CPSMasterView extends CPSDataModelUser
         }
     }
     
-    protected void selectRecord( int id ) {
-        setSelectedRowByRecordID( id );
+    protected void selectRecords( List<Integer> ids ) {
+      setSelection( ids );
     }
 
-    private void setSelectedRowByRecordID( int recordID ) {
-       
-       masterTable.clearSelection();
+    protected void selectRecord( int id ) {
+      setSelection( id );
+    }
 
-       int i = 0;
-       for ( CPSRecord r : masterListSorted ) {
-           if ( r.getID() == recordID ) {
-               selectModel.setSelectionInterval( i, i );
-               break;
-           }
-           i++; // count rows
-       }
+    /**
+     * Selects a single row in the table.
+     * @param recordID the record id (not row number) of the item to select
+     */
+    private void setSelection( int recordID ) {
+       
+       setSelection( Arrays.asList( recordID ));
           
     }
+    private void setSelection( List<Integer> ids ) {
+
+      masterTable.clearSelection();
+
+      int s = 0;
+      int i = 0;
+      for ( CPSRecord r : masterListSorted ) {
+        if ( ids.contains( r.getID() )) {
+          selectModel.addSelectionInterval( i, i );
+          s++;
+          if ( ids.size() == s )
+            break;
+        }
+        i++; // count rows
+      }
+
+    }
+
+
 
     private void setUnselectedRowByRecordID( int recordID ) {
 
@@ -504,7 +525,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
         }
         else {
             lblStats.setText( stats );
-            lblStats.setToolTipText("Statistics regarding displayed or selected rows in the table.");
+            lblStats.setToolTipText("Statistics regarding displayed or selected rows.");
         }
         
     }
@@ -653,7 +674,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
             int newID = newRecord.getID();
             uiManager.displayDetail( newRecord );
             uiManager.setDetailViewForEditting();
-            setSelectedRowByRecordID( newID );
+            setSelection( newID );
             setStatus( STATUS_NEW_RECORD );
         }
         else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
@@ -670,7 +691,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
             int newID = newRecord.getID();
             uiManager.displayDetail( newRecord );
             uiManager.setDetailViewForEditting();
-            setSelectedRowByRecordID( newID );
+            setSelection( newID );
         }
         else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
             if (!isDataAvailable()) {

@@ -28,6 +28,7 @@ import CPS.Module.CPSDataModel;
 import CPS.Module.CPSModuleSettings;
 import CPS.Module.CPSUI;
 import java.awt.Dimension;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -75,8 +76,8 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
     protected void setDetailViewForEditting() {
         detail.setForEditting();
     }
-    protected void selectRecordInMasterView( int id ) {
-        master.selectRecord( id );
+    protected void selectRecordsInMasterView( List<Integer> ids ) {
+        master.selectRecords( ids );
     }
     protected void updateRecordInMasterView( CPSRecord r ) {
       master.updateRecord( r );

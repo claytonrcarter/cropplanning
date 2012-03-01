@@ -30,6 +30,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -201,8 +202,8 @@ public abstract class CPSDetailView extends CPSDataModelUser
 //    public void refreshView() {
 //        displayRecord( getDisplayedRecord() );
 //    }
-    protected void selectRecordInMasterView( int id ) {
-        uiManager.selectRecordInMasterView( id );
+    protected void selectRecordsInMasterView( List<Integer> ids ) {
+        uiManager.selectRecordsInMasterView( ids );
     }
 
     protected void updateRecordInMasterView( CPSRecord r ) {

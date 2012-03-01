@@ -425,11 +425,11 @@ public final class CPSPlanting extends CPSRecord {
        /* If date_plant_actual is valid, return it
         * else return date_plant_plan
         * or just return a default */
-       if ( this.isSingleRecord() && a.isNotNull() ) {
+       if ( a.isNotNull() ) {
          e.setState( a.getState() );
          return a;
        }
-       else if ( this.isSingleRecord() && p.isNotNull() ) {
+       else if ( p.isNotNull() ) {
          e.setState( p.getState() );
          return p;
        }
@@ -505,7 +505,7 @@ public final class CPSPlanting extends CPSRecord {
    }
 
    public Date getDateToPlant() {
-      return getEffectiveDate( PROP_DATE_PLANT, PROP_DATE_PLANT_ACTUAL, PROP_DATE_PLANT_PLAN ).getValue( useRawOutput() );
+      return getEffectiveDate( PROP_DATE_PLANT ).getValue( useRawOutput() );
    }
    public String getDateToPlantString() { return formatDate( getDateToPlant() ); }
    public CPSDatumState getDateToPlantState() { return getStateOf( PROP_DATE_PLANT ); }
@@ -596,7 +596,7 @@ public final class CPSPlanting extends CPSRecord {
    }
 
    public Date getDateToTP() {
-      return getEffectiveDate( PROP_DATE_TP, PROP_DATE_TP_ACTUAL, PROP_DATE_TP_PLAN ).getValue( useRawOutput() );
+      return getEffectiveDate( PROP_DATE_TP ).getValue( useRawOutput() );
    }
    public String getDateToTPString() { return formatDate( getDateToTP() ); }
    public CPSDatumState getDateToTPState() { return getStateOf( PROP_DATE_TP ); }
@@ -691,7 +691,7 @@ public final class CPSPlanting extends CPSRecord {
    }
 
    public Date getDateToHarvest() {
-      return getEffectiveDate( PROP_DATE_HARVEST, PROP_DATE_HARVEST_ACTUAL, PROP_DATE_HARVEST_PLAN ).getValue(useRawOutput());
+      return getEffectiveDate( PROP_DATE_HARVEST ).getValue(useRawOutput());
    }
    public String getDateToHarvestString() { return formatDate( getDateToHarvest() ); }
    public CPSDatumState getDateToHarvestState() { return getStateOf( PROP_DATE_HARVEST ); }
@@ -921,7 +921,7 @@ public final class CPSPlanting extends CPSRecord {
       return b;
    }
    public Float getBedsToPlant() { return getBedsToPlantDatum().getValue( useRawOutput() ); }
-   public String getBedsToPlantString() { return formatFloat( getBedsToPlant(), 3 ); }
+   public String getBedsToPlantString() { return formatFloat( getBedsToPlantDatum(), 3 ); }
    public CPSDatumState getBedsToPlantState() { return getStateOf( PROP_BEDS_PLANT ); }
    public void setBedsToPlant( Float i ) { set( beds_to_plant, i ); }
    public void setBedsToPlant( float i ) { setBedsToPlant( new Float( i ) ); }
