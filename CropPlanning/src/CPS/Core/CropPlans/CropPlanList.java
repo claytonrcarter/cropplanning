@@ -109,21 +109,21 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
       // setup for the summary string
 
-      FunctionList rftList =
+      FunctionList<CPSRecord, Integer> rftList =
               new FunctionList<CPSRecord, Integer>( masterListFiltered,
                                                  new FunctionList.Function<CPSRecord, Integer>() {
                                                     public Integer evaluate( CPSRecord p ) {
                                                        return ( (CPSPlanting) p ).getRowFtToPlant();
                                                     }} );
 
-      FunctionList bedsList =
+      FunctionList<CPSRecord, Float> bedsList =
               new FunctionList<CPSRecord, Float>( masterListFiltered,
                                                   new FunctionList.Function<CPSRecord, Float>() {
                                                      public Float evaluate( CPSRecord p ) {
                                                         return ( (CPSPlanting) p ).getBedsToPlant();
                                                      }} );
 
-      FunctionList flatsList =
+      FunctionList<CPSRecord, Float> flatsList =
               new FunctionList<CPSRecord, Float>( masterListFiltered,
                                                   new FunctionList.Function<CPSRecord, Float>() {
                                                      public Float evaluate( CPSRecord p ) {
@@ -136,10 +136,10 @@ class CropPlanList extends CPSMasterView implements ActionListener,
       summaryBeds = Calculations.sumFloats( bedsList );
       summaryFlats = Calculations.sumFloats( flatsList );
 
-//      masterListFiltered.addListEventListener( this );
-//      rftList.addListEventListener( this );
+      // this propertyChangeListener will notice when this calculation is updated
+      // and will fire the property change to update the stat string
       summaryFlats.addPropertyChangeListener( this );
-//      updateStatisticsLabel();
+      updateStatisticsLabel();
      
    }
 

@@ -505,28 +505,28 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         FilterList<CPSPlanting> filteredPlan = new FilterList<CPSPlanting>( dataFiltered );
 
         // set our calculations
-        FunctionList rftList =
+        FunctionList<CPSPlanting, Integer> rftList =
               new FunctionList<CPSPlanting, Integer>( filteredPlan,
                                                  new FunctionList.Function<CPSPlanting, Integer>() {
                                                     public Integer evaluate( CPSPlanting p ) {
                                                        return p.getRowFtToPlant();
                                                     }} );
 
-        FunctionList plantsList =
+        FunctionList<CPSPlanting, Integer> plantsList =
               new FunctionList<CPSPlanting, Integer>( filteredPlan,
                                                  new FunctionList.Function<CPSPlanting, Integer>() {
                                                     public Integer evaluate( CPSPlanting p ) {
                                                        return p.getPlantsToStart();
                                                     }} );
 
-        FunctionList bedsList =
+        FunctionList<CPSPlanting, Float> bedsList =
               new FunctionList<CPSPlanting, Float>( filteredPlan,
                                                   new FunctionList.Function<CPSPlanting, Float>() {
                                                      public Float evaluate( CPSPlanting p ) {
                                                         return p.getBedsToPlant();
                                                      }} );
 
-        FunctionList flatsList =
+        FunctionList<CPSPlanting, Float> flatsList =
               new FunctionList<CPSPlanting, Float>( filteredPlan,
                                                   new FunctionList.Function<CPSPlanting, Float>() {
                                                      public Float evaluate( CPSPlanting p ) {

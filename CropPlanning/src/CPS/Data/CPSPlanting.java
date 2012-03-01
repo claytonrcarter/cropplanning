@@ -188,8 +188,8 @@ public final class CPSPlanting extends CPSRecord {
       
       // name, desc, value, nullValue, blankValue, propNum, inherited, calculated
 
-      recordID = new CPSDatum<Integer>( "ID", "Unique ID", null, PROP_ID );
-      commonIDs = new CPSDatum<ArrayList<Integer>>( "Common IDs", "Planting IDs represented", new ArrayList(), PROP_COMMON_ID );
+      recordID = new CPSDatum<Integer>( "ID", "Unique ID", new Integer(-1), PROP_ID );
+      commonIDs = new CPSDatum<ArrayList<Integer>>( "Common IDs", "Planting IDs represented", new ArrayList<Integer>(), PROP_COMMON_ID );
       
       crop_name = new CPSDatum<String>( "Crop", "Name of crop to be planted", "", PROP_CROP_NAME );
       var_name = new CPSDatum<String>( "Variety", "Name of variety to be planted", "", PROP_VAR_NAME );
@@ -406,7 +406,7 @@ public final class CPSPlanting extends CPSRecord {
    // *********************************************************************************************/
    // Dates
    // *********************************************************************************************/
-   protected CPSDatum<Date> getEffectiveDate( int prop_effective, int prop_actual, int prop_plan ) {
+   protected CPSDatum<Date> getEffectiveDate( int prop_effective ) {
 
       CPSDatum<Date> p, a;
       CPSDatum<Date> e = getDatum( prop_effective );
@@ -641,7 +641,7 @@ public final class CPSPlanting extends CPSRecord {
 
       }
 
-      CPSDatum h = getDatum( prop_harv );
+      CPSDatum<Date> h = getDatum( prop_harv );
 
       if ( h.isConcrete() ||
            source_path.contains( h.propertyNum ) ||
@@ -929,8 +929,8 @@ public final class CPSPlanting extends CPSRecord {
 
 
 //****************************************************************************//
-   protected CPSDatum getPlantsNeededDatum() { return getPlantsNeededDatum( new ArrayList() ); }
-   protected CPSDatum getPlantsNeededDatum( List source_path ) {
+   protected CPSDatum<Integer> getPlantsNeededDatum() { return getPlantsNeededDatum( new ArrayList() ); }
+   protected CPSDatum<Integer> getPlantsNeededDatum( List source_path ) {
 
       CPSDatum p = getDatum( PROP_PLANTS_NEEDED );
 
@@ -963,8 +963,8 @@ public final class CPSPlanting extends CPSRecord {
       
       return p;
    }
-   public Integer getPlantsNeeded() { return (Integer) getPlantsNeededDatum().getValue( useRawOutput() ); }
-   public String getPlantsNeededString() { return formatInt( getPlantsNeeded() ); }
+   public Integer getPlantsNeeded() { return getPlantsNeededDatum().getValue( useRawOutput() ); }
+   public String getPlantsNeededString() { return formatInt( getPlantsNeededDatum() ); }
    public CPSDatumState getPlantsNeededState() { return getStateOf( PROP_PLANTS_NEEDED ); }
    public void setPlantsNeeded( Integer i ) { set( plants_needed, i ); }
    public void setPlantsNeeded( int i ) { setPlantsNeeded( new Integer( i ) ); }
@@ -972,8 +972,8 @@ public final class CPSPlanting extends CPSRecord {
 
 
 //****************************************************************************//
-   protected CPSDatum getRowFtToPlantDatum() { return getRowFtToPlantDatum( new ArrayList() ); }
-   protected CPSDatum getRowFtToPlantDatum( List source_path ) {
+   protected CPSDatum<Integer> getRowFtToPlantDatum() { return getRowFtToPlantDatum( new ArrayList() ); }
+   protected CPSDatum<Integer> getRowFtToPlantDatum( List source_path ) {
 
       CPSDatum r = getDatum( PROP_ROWFT_PLANT );
 
@@ -1025,8 +1025,8 @@ public final class CPSPlanting extends CPSRecord {
       
       return r;
    }
-   public Integer getRowFtToPlant() { return (Integer) getRowFtToPlantDatum().getValue( useRawOutput() ); }
-   public String getRowFtToPlantString() { return formatInt( getRowFtToPlant() ); }
+   public Integer getRowFtToPlant() { return getRowFtToPlantDatum().getValue( useRawOutput() ); }
+   public String getRowFtToPlantString() { return formatInt( getRowFtToPlantDatum() ); }
    public CPSDatumState getRowFtToPlantState() { return getStateOf( PROP_ROWFT_PLANT ); }
    public void setRowFtToPlant( Integer i ) { set( rowft_to_plant, i ); }
    public void setRowFtToPlant( int i ) { setRowFtToPlant( new Integer( i ) ); }
@@ -1034,8 +1034,8 @@ public final class CPSPlanting extends CPSRecord {
 
 
 //****************************************************************************//
-   protected CPSDatum getPlantsToStartDatum() { return getPlantsToStartDatum( new ArrayList() ); }
-   protected CPSDatum getPlantsToStartDatum( List source_path ) {
+   protected CPSDatum<Integer> getPlantsToStartDatum() { return getPlantsToStartDatum( new ArrayList() ); }
+   protected CPSDatum<Integer> getPlantsToStartDatum( List source_path ) {
 
       CPSDatum ps = getDatum( PROP_PLANTS_START );
 
@@ -1067,8 +1067,8 @@ public final class CPSPlanting extends CPSRecord {
 
       return ps;
    }
-   public Integer getPlantsToStart() { return (Integer) getPlantsToStartDatum().getValue( useRawOutput() ); }
-   public String getPlantsToStartString() { return formatInt( getPlantsToStart() ); }
+   public Integer getPlantsToStart() { return getPlantsToStartDatum().getValue( useRawOutput() ); }
+   public String getPlantsToStartString() { return formatInt( getPlantsToStartDatum() ); }
    public CPSDatumState getPlantsToStartState() { return getStateOf( PROP_PLANTS_START ); }
    public void setPlantsToStart( Integer i ) { set( plants_to_start, i ); }
    public void setPlantsToStart( int i ) { setPlantsToStart( new Integer( i ) ); }
@@ -1076,8 +1076,8 @@ public final class CPSPlanting extends CPSRecord {
 
 
 //****************************************************************************//
-   protected CPSDatum getFlatsNeededDatum() { return getFlatsNeededDatum( new ArrayList() ); }
-   protected CPSDatum getFlatsNeededDatum( List source_path ) {
+   protected CPSDatum<Float> getFlatsNeededDatum() { return getFlatsNeededDatum( new ArrayList() ); }
+   protected CPSDatum<Float> getFlatsNeededDatum( List source_path ) {
 
       CPSDatum n = getDatum( PROP_FLATS_NEEDED );
 
@@ -1101,8 +1101,8 @@ public final class CPSPlanting extends CPSRecord {
 
       return n;
    }
-   public Float getFlatsNeeded() { return (Float) getFlatsNeededDatum().getValue( useRawOutput() ); }
-   public String getFlatsNeededString() { return formatFloat( getFlatsNeeded(), 3 ); }
+   public Float getFlatsNeeded() { return getFlatsNeededDatum().getValue( useRawOutput() ); }
+   public String getFlatsNeededString() { return formatFloat( getFlatsNeededDatum(), 3 ); }
    public CPSDatumState getFlatsNeededState() { return getStateOf( PROP_FLATS_NEEDED ); }
    public void setFlatsNeeded( Float i ) { set( flats_needed, i ); }
    public void setFlatsNeeded( float i ) { setFlatsNeeded( new Float( i ) ); }
@@ -1113,7 +1113,7 @@ public final class CPSPlanting extends CPSRecord {
 /* Yield Data */
 /* *********************************************************************************************/
    public Float getYieldPerFoot() { return getFloat( PROP_YIELD_P_FOOT ); }
-   public String getYieldPerFootString() { return formatFloat( (Float) get( PROP_YIELD_P_FOOT ), 3 ); }
+   public String getYieldPerFootString() { return formatFloat( getDatum( PROP_YIELD_P_FOOT ), 2 ); }
    public CPSDatumState getYieldPerFootState() { return getStateOf( PROP_YIELD_P_FOOT ); }
    public void setYieldPerFoot( Float i ) { set( yield_p_foot, i ); }
    public void setYieldPerFoot( float i ) { setYieldPerFoot( new Float( i ) ); }
@@ -1138,14 +1138,14 @@ public final class CPSPlanting extends CPSRecord {
    public void setCropYieldUnit( String i ) { set( crop_unit, parseInheritableString(i) ); }
 
    public Float getCropYieldUnitValue() { return getFloat( PROP_CROP_UNIT_VALUE ); }
-   public String getCropYieldUnitValueString() { return formatFloat( (Float) get( PROP_CROP_UNIT_VALUE ) ); }
+   public String getCropYieldUnitValueString() { return formatFloat( getDatum( PROP_CROP_UNIT_VALUE ), 2 ); }
    public CPSDatumState getCropYieldUnitValueState() { return getStateOf( PROP_CROP_UNIT_VALUE ); }
    public void setCropYieldUnitValue( Float i ) { set( crop_unit_value, i ); }
    public void setCropYieldUnitValue( float i ) { setCropYieldUnitValue( new Float( i ) ); }
    public void setCropYieldUnitValue( String s ) { setCropYieldUnitValue( parseFloatBigF(s) ); }
 
-   protected CPSDatum getTotalYieldDatum() { return getTotalYieldDatum( new ArrayList() ); }
-   protected CPSDatum getTotalYieldDatum( List source_path ) {
+   protected CPSDatum<Float> getTotalYieldDatum() { return getTotalYieldDatum( new ArrayList() ); }
+   protected CPSDatum<Float> getTotalYieldDatum( List source_path ) {
 
       CPSDatum t = getDatum( PROP_TOTAL_YIELD );
 
@@ -1168,8 +1168,8 @@ public final class CPSPlanting extends CPSRecord {
       
       return t;
    }
-   public Float getTotalYield() { return (Float) getTotalYieldDatum().getValue( useRawOutput() ); }
-   public String getTotalYieldString() { return formatFloat( getTotalYield(), 3 ); }
+   public Float getTotalYield() { return getTotalYieldDatum().getValue( useRawOutput() ); }
+   public String getTotalYieldString() { return formatFloat( getTotalYieldDatum(), 3 ); }
    public CPSDatumState getTotalYieldState() { return getStateOf( PROP_TOTAL_YIELD ); }
    public void setTotalYield( Float i ) { set( total_yield, i ); }
    public void setTotalYield( float i ) { setTotalYield( new Float( i ) ); }

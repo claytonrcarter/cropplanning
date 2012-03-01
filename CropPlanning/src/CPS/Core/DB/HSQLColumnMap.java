@@ -109,7 +109,7 @@ public class HSQLColumnMap {
         return getColumnNameShortNameMapping( plantingColumnMap );
     }
     private ArrayList<String[]> getColumnNameShortNameMapping( ArrayList<ColumnStruct> m ) {
-        ArrayList<ColumnStruct> l = new ArrayList();
+        ArrayList<ColumnStruct> l = new ArrayList<ColumnStruct>();
         
         /* collect displayable columns */
         for ( ColumnStruct cs : m ) {
@@ -132,7 +132,7 @@ public class HSQLColumnMap {
                              } );
         
         /* now just collect the column names from the sorted list  */
-        ArrayList<String[]> als = new ArrayList();
+        ArrayList<String[]> als = new ArrayList<String[]>();
         for ( ColumnStruct cs : l )
             if ( cs.displayable )
                 if ( cs.shortColumnName == null )
@@ -151,7 +151,7 @@ public class HSQLColumnMap {
         return getColumnNamePrettyNameMapping(cropColumnMap);
     }
     private ArrayList<String[]> getColumnNamePrettyNameMapping( ArrayList<ColumnStruct> m ) {
-        ArrayList<ColumnStruct> l = new ArrayList();
+        ArrayList<ColumnStruct> l = new ArrayList<ColumnStruct>();
         
         /* collect displayable columns */
         for ( ColumnStruct cs : m ) {
@@ -174,7 +174,7 @@ public class HSQLColumnMap {
                              } );
         
         /* now just collect the column names from the sorted list  */
-        ArrayList<String[]> als = new ArrayList();
+        ArrayList<String[]> als = new ArrayList<String[]>();
         for ( ColumnStruct cs : l )
             if ( cs.displayable )
                 als.add( new String[] { cs.columnName, cs.prettyColumnName, "" + cs.editable } );
@@ -226,7 +226,7 @@ public class HSQLColumnMap {
     }
     
     private ArrayList<String> getDisplayableColumns( ArrayList<ColumnStruct> m ) {
-        ArrayList<ColumnStruct> l = new ArrayList();
+        ArrayList<ColumnStruct> l = new ArrayList<ColumnStruct>();
         
         /* collect displayable columns */
         for ( ColumnStruct cs : m ) {
@@ -249,7 +249,7 @@ public class HSQLColumnMap {
                              } );
         
         /* now just collect the column names from the sorted list  */
-        ArrayList<String> als = new ArrayList();
+        ArrayList<String> als = new ArrayList<String>();
         for ( ColumnStruct cs : l )
             als.add( cs.columnName );
                           
@@ -296,7 +296,7 @@ public class HSQLColumnMap {
     
     
     private void buildCropColumnMap() {
-        ArrayList<ColumnStruct> l = new ArrayList();
+        ArrayList<ColumnStruct> l = new ArrayList<ColumnStruct>();
 
         /*
          * If a column is inheritable from a crop to a var, then duplicate the

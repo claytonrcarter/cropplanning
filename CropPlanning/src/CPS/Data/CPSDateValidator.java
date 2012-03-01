@@ -42,7 +42,7 @@ public class CPSDateValidator {
     private static String defaultFormat = DATE_FORMAT_FULLYEAR;
     
     public CPSDateValidator() {
-        formatList = new ArrayList();
+        formatList = new ArrayList<String>();
         formatList.add( DATE_FORMAT_BRIEFYEAR );
         formatList.add( DATE_FORMAT_SHORT );
 //        formatList.add( DATE_FORMAT_FULLYEAR );

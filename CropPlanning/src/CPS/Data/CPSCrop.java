@@ -122,7 +122,7 @@ public final class CPSCrop extends CPSRecord {
        
       setRepresentsSingleRecord();
       recordID = new CPSDatum<Integer>( "Unique ID", new Integer( -1 ), PROP_ID );
-      commonIDs = new CPSDatum<ArrayList<Integer>>( "Crop IDs represented", new ArrayList(), PROP_COMMON_ID );
+      commonIDs = new CPSDatum<ArrayList<Integer>>( "Crop IDs represented", new ArrayList<Integer>(), PROP_COMMON_ID );
        
       cropName = new CPSDatum<String>( "Crop", "Crop name", "", PROP_CROP_NAME );
       cropDescription = new CPSDatum<String>( "Description", "Description of crop or variety", "", PROP_CROP_DESC );

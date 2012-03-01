@@ -53,7 +53,7 @@ public abstract class CPSRecord {
 
    private boolean useRawOutput = false;
    
-   public CPSDatum getDatum( int prop ) {
+   public CPSDatum<?> getDatum( int prop ) {
 
        switch ( prop ) {
            case PROP_ID:        return recordID;
@@ -216,7 +216,7 @@ public abstract class CPSRecord {
      * @param prop Property number to retrieve
      */
    public <T> T get( int prop ) {
-      return (T) getDatum( prop ).getValue( useRawOutput() );
+      return (T) ( getDatum( prop ).getValue( useRawOutput() ) );
    }
    
    public CPSDatumState getStateOf( int prop ) {
@@ -422,7 +422,7 @@ public abstract class CPSRecord {
     * @param d datum to be set
     * @param v value to which the datum should be set
     */
-   protected <T> void set( CPSDatum<T> d, T v ) {     
+   protected <T> void set( CPSDatum d, T v ) {     
       d.setInherited( false );
       d.setCalculated( false );
       d.setValue( v );
@@ -432,7 +432,7 @@ public abstract class CPSRecord {
        changedProps.add( prop );
    }
    
-   public abstract Iterator iterator();
+   public abstract Iterator<CPSDatum> iterator();
    public abstract class CPSRecordIterator implements Iterator {
        
        protected int currentProp;

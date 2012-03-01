@@ -77,7 +77,7 @@ public class CPSTable extends JTable {
        this.setRowSelectionAllowed( true );
        // allow multiple rows to be selected
 //       this.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-       this.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+//       this.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
        this.getTableHeader().setReorderingAllowed(false);
 
         dateValidator = new CPSDateValidator();

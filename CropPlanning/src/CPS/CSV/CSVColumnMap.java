@@ -80,7 +80,7 @@ public class CSVColumnMap {
 
 
    private void buildCropColumnMap() {
-       ArrayList<ColumnStruct> l = new ArrayList();
+       ArrayList<ColumnStruct> l = new ArrayList<ColumnStruct>();
 
 
 //      l.add( new ColumnStruct( colName,          propNum));
