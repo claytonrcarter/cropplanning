@@ -64,7 +64,7 @@ import javax.swing.*;
 public class TODOLists extends CPSDisplayableDataUserModule implements ActionListener, ItemListener, PropertyChangeListener {
 
     private JPanel jplTodo;
-    private JComboBox cmbPlanName;
+    private JComboBox cmbPlanName, cmbWhatToExport;
     private JRadioButton rdoDateThisWeek,  rdoDateNextWeek,  rdoDateThisNextWeek,  rdoDateOther;
     private JDateChooser dtcDateOtherStart,  dtcDateOtherEnd;
     private JRadioButton rdoUncompThisWeek,  rdoUncompLastWeek,  rdoUncompAll;
@@ -72,8 +72,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private JLabel lblDirectory;
 //    private JTextField fldFile;
     private JFileChooser filFile;
-    private JButton btnSelectFile,  btnPlantList,  btnGHList;
-    private JButton btnAllPlantings;
+    private JButton btnSelectFile;
+    private JButton btnFormatPDF, btnFormatCSV;
     private GregorianCalendar tempCal;
 
     private BasicEventList<CPSPlanting> data;
@@ -81,6 +81,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private SortedList<CPSPlanting> dataSorted;
     CPSAdvancedTableFormat<CPSPlanting> tableFormat;
 
+
+    private final String TL_GH_SEEDING = "GH Seeding List (PDF only)";
+    private final String TL_FIELD_PLANTING = "Field Planting List (PDF only)";
+    private final String TL_ALL_PLANTINGS = "List of All Plantings";
+    private final String TL_SEED_ORDER_WORKSHEET = "Seed Order Worksheet";
+
+    private final int TL_FORMAT_PDF = 1;
+    private final int TL_FORMAT_CSV = 2;
 
 
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
@@ -181,12 +189,18 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         btnSelectFile = new JButton("Select Output Directory");
         btnSelectFile.addActionListener(this);
 
-        btnGHList = new JButton("GH Seeding List");
-        btnPlantList = new JButton("Field Planting List");
-        btnAllPlantings = new JButton( "List of All Plantings" );
-        btnGHList.addActionListener(this);
-        btnPlantList.addActionListener(this);
-        btnAllPlantings.addActionListener(this);
+
+        cmbWhatToExport = new JComboBox();
+        cmbWhatToExport.setEditable(false);
+        cmbWhatToExport.addItem( TL_GH_SEEDING );
+        cmbWhatToExport.addItem( TL_FIELD_PLANTING );
+        cmbWhatToExport.addItem( TL_ALL_PLANTINGS );
+        cmbWhatToExport.addItem( TL_SEED_ORDER_WORKSHEET );
+
+        btnFormatPDF = new JButton( "Export as PDF" );
+        btnFormatCSV = new JButton( "Export as CSV" );
+        btnFormatPDF.addActionListener(this);
+        btnFormatCSV.addActionListener(this);
 
 
         LayoutAssist.addLabelLeftAlign(jplTodo, 0, 0, 4, 1, new JLabel("Create list from crop plan:"));
@@ -211,9 +225,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         LayoutAssist.addButton(jplTodo, 1, 14, btnSelectFile);
 
         LayoutAssist.addLabelLeftAlign(jplTodo, 0, 15, new JLabel("Export:"));
-        LayoutAssist.addButton(jplTodo, 1, 16, btnGHList);
-        LayoutAssist.addButton(jplTodo, 1, 17, btnPlantList);
-        LayoutAssist.addButton(jplTodo, 1, 18, btnAllPlantings);
+        LayoutAssist.addComboBox(jplTodo, 1, 16, cmbWhatToExport );
+        LayoutAssist.addButton(jplTodo, 1, 17, btnFormatPDF);
+//        LayoutAssist.addLabelLeftAlign( jplTodo, 2, 17, new JLabel("(for printing)"));
+        LayoutAssist.addButton(jplTodo, 1, 18, btnFormatCSV);
+//        LayoutAssist.addLabelLeftAlign( jplTodo, 2, 18, new JLabel("(for loading into a spreadsheet)"));
 
     }
     // </editor-fold>
@@ -247,6 +263,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private String createOutputFileName(File dir, String prefix, Date d) {
       return createOutputFileName(dir, prefix, d, "pdf" );
     }
+
+    private String createOutputFileName(File dir, String prefix, Date d, int format ) {
+      String ext = format == TL_FORMAT_PDF ? "pdf" : "csv";
+      return createOutputFileName(dir, prefix, d, ext );
+    }
     
     private String createOutputFileName( File dir, String prefix, Date d, String ext ) {
         return dir.getAbsolutePath() + File.separator +
@@ -270,7 +291,10 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     }
 
 
-    private void exportGHPlantings(String planName) {
+    private void exportGHPlantings(String planName, int format ) {
+
+      if ( format != TL_FORMAT_PDF )
+        throw new UnsupportedOperationException("Not supported yet.");
 
         // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
@@ -327,7 +351,10 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     }
 
-    private void exportFieldPlantings(String planName) {
+    private void exportFieldPlantings(String planName, int format ) {
+
+      if ( format != TL_FORMAT_PDF )
+        throw new UnsupportedOperationException("Not supported yet.");
 
         int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
 
@@ -432,48 +459,40 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     }
 
-    private void exportAllPlantings(String planName) {
+    private void exportAllPlantings(String planName, int format ) {
 
-      exportSeedOrderLists(planName);
-      if ( true )
-        return;
-
-        // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
-        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
-
-        String filename = createOutputFileName(filFile.getSelectedFile(),
-                "All Plantings",
-                dtcDateOtherStart.getDate());
+        String filename = createOutputFileName( filFile.getSelectedFile(),
+                                                "All Plantings",
+                                                dtcDateOtherStart.getDate(),
+                                                format );
 
 
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
         filter.setViewLimited(false);
 
         CPSTable jt = new CPSTable();
-//        jt.setModel(getDataSource().getCropPlan(planName, props, sortProp, filter));
-//        jt.setColumnNamesAndToolTips(getDataSource().getPlantingShortNames());
-//        jt.setColumnNamesAndToolTips( getDataSource().getPlantingPrettyNames() );
 
-        BasicEventList<CPSPlanting> data = new BasicEventList<CPSPlanting>();
+        data.clear();
         data.addAll( getDataSource().getCropPlan( planName ));
         jt.setModel( new EventTableModel<CPSPlanting>( data, new AllPlantingsTableFormat() ));
 
-
-        exporter.export( jt, filename,
-                         CPSGlobalSettings.getFarmName(),
-                         "All Plantings for plan \"" + planName + "\"",
-                         "All Plantings" );
+        if ( format == TL_FORMAT_CSV ) {
+          new CSV().exportJTable( filename, "All Plantings for plan \"" + planName + "\"", jt );
+        } else {
+          exporter.export( jt, filename,
+                          CPSGlobalSettings.getFarmName(),
+                          "All Plantings for plan \"" + planName + "\"",
+                          "All Plantings" );
+        }
 
     }
 
-
-
-    private void exportSeedOrderLists( String planName ) {
+    private void exportSeedOrderLists( String planName, int format ) {
 
         String filename = createOutputFileName( filFile.getSelectedFile(),
                                                 "Seed Order Info",
                                                 dtcDateOtherStart.getDate(),
-                                                "csv" );
+                                                format );
 
 
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
@@ -583,7 +602,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         CPSTable jt = new CPSTable();
         jt.setModel( new EventTableModel<CPSPlanting>( seedStats, tf ) );
 
-        if ( true ) {
+        if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "Seed Order Worksheet for plan \"" + planName + "\"", jt );
         } else {
           exporter.export( jt, filename,
@@ -614,17 +633,39 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         String action = arg0.getActionCommand();
 
         String planName = (String) cmbPlanName.getSelectedItem();
-        if (planName == null) {
-            System.err.println("ERROR: must select a crop plan");
+        if ( planName == null ) {
+            debug( "ERROR: must select a crop plan" );
             return;
         }
 
-        if (action.equalsIgnoreCase(btnPlantList.getText())) {
-            exportFieldPlantings(planName);
-        } else if (action.equalsIgnoreCase(btnGHList.getText())) {
-            exportGHPlantings(planName);
-        } else if ( action.equalsIgnoreCase( btnAllPlantings.getText() )) {
-            exportAllPlantings(planName);
+        if ( action.equalsIgnoreCase(btnFormatPDF.getText()) ||
+             action.equalsIgnoreCase(btnFormatCSV.getText()) ) {
+
+          int format;
+          if ( action.equalsIgnoreCase(btnFormatPDF.getText()) )
+            format = TL_FORMAT_PDF;
+          else
+            format = TL_FORMAT_CSV;
+
+          String whatToExport = (String) cmbWhatToExport.getSelectedItem();
+
+          debug( "Exporting \"" + whatToExport + "\" from plan \"" + planName + "\"" );
+
+          if ( ! isDataAvailable() ) {
+            debug( "No data available, nothing to export.");
+            return;
+          }
+
+          if ( whatToExport.equals( TL_GH_SEEDING ) ) {
+            exportGHPlantings( planName, format );
+          } else if ( whatToExport.equals( TL_FIELD_PLANTING ) ) {
+            exportFieldPlantings( planName, format );
+          } else if ( whatToExport.equals( TL_ALL_PLANTINGS ) ) {
+            exportAllPlantings( planName, format );
+          } else if ( whatToExport.equals( TL_SEED_ORDER_WORKSHEET ) ) {
+            exportSeedOrderLists( planName, format );
+          }
+
         } else if (action.equalsIgnoreCase(btnSelectFile.getText())) {
             int status = filFile.showDialog(jplTodo, "Accept");
             if (status == JFileChooser.APPROVE_OPTION) {
@@ -673,7 +714,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         Object source = arg0.getSource();
         GregorianCalendar temp = new GregorianCalendar();
 
-        if (source == dtcDateOtherStart) {
+        if ( source == null )
+          return;
+        if ( source == dtcDateOtherStart ) {
             if (dtcDateOtherEnd.getDate() == null ||
                     dtcDateOtherEnd.getDate().getTime() <= dtcDateOtherStart.getDate().getTime()) {
                 temp.setTime(dtcDateOtherStart.getDate());
@@ -681,7 +724,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                 dtcDateOtherEnd.setDate(temp.getTime());
             }
 //            dtcDateOtherEnd.setMinSelectableDate( dtcDateOtherStart.getDate() );
-        } else if (source == dtcDateOtherEnd) {
+        } else if ( source == dtcDateOtherEnd ) {
             if (dtcDateOtherStart.getDate() == null ||
                     dtcDateOtherEnd.getDate().getTime() <= dtcDateOtherStart.getDate().getTime()) {
                 temp.setTime(dtcDateOtherEnd.getDate());
@@ -752,5 +795,21 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
 
     }
+
+       /* for testing only */
+   public static void main( String[] args ) {
+      // "test" construtor
+      TODOLists tl = new TODOLists();
+      tl.buildTODOListPanel();
+      tl.rdoDateThisWeek.doClick();
+
+     JFrame frame = new JFrame();
+     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+     frame.setContentPane( tl.display() );
+     frame.setTitle( "TODOList Layout" );
+     frame.pack();
+     frame.setVisible(true);
+   }
+
 
 }
