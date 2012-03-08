@@ -12,10 +12,9 @@ import CPS.UI.Modules.CPSComparator;
  */
 public class CPSPlantingComparator extends CPSComparator {
 
-  public CPSPlantingComparator() {
-    super( CPSPlanting.PROP_CROP_NAME );
+  public CPSPlantingComparator(int pNum) {
+    super(pNum);
   }
-
 
   @Override
   public int compare( Object a, Object b ) {
@@ -23,6 +22,7 @@ public class CPSPlantingComparator extends CPSComparator {
     CPSPlanting c = (CPSPlanting) a;
     CPSPlanting d = (CPSPlanting) b;
 
+    
     switch ( propNum ) {
 
       case CPSPlanting.PROP_CROP_NAME: return super.compare( c.getCropName(), d.getCropName() );

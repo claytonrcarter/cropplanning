@@ -26,15 +26,7 @@ package CPS.Core.TODOLists;
 import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSRecord;
 import CPS.UI.Swing.CPSTable;
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.ExceptionConverter;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.Rectangle;
+import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
@@ -200,9 +192,7 @@ public class PDFExporter {
              headName = jtable.getColumnModel().getColumn( col ).getHeaderValue().toString();
           else
              headName = jtable.getColumnName( col );
-          if ( headName.equalsIgnoreCase( "notes" ) ) {
-//             TODOLists.debug( "PDFExporter", "found notes column; col number " + col );
-             // do not add the notes header
+          if ( headName.equalsIgnoreCase( "Planting Notes" ) ) {
              tableIncludesNotes = true;
              notesIndex = col;
           }
@@ -218,8 +208,19 @@ public class PDFExporter {
                 headName = jtable.getColumnModel().getColumn(col).getHeaderValue().toString();
             else
                 headName = jtable.getColumnName( col );
-           if ( ! tableIncludesNotes || col != notesIndex )
-              table.addCell( new headCell( headName ) );
+           if ( ! tableIncludesNotes || col != notesIndex ) {
+             HeadCell hc = new HeadCell( headName );
+
+             if ( jtable.getColumnClass( col ).equals( Boolean.TRUE.getClass() ) ||
+                  jtable.getColumnClass( col ).equals( new Integer( 0 ).getClass() ) ||
+                  jtable.getColumnClass( col ).equals( new Double( 0 ).getClass() ) ||
+                  jtable.getColumnClass( col ).equals( new Float( 0 ).getClass() ) ) {
+               hc.setRotation(90);
+               hc.setFixedHeight( 60f );
+             }
+
+             table.addCell( hc );
+           }
         }
         table.setHeaderRows( 1 );
         
@@ -229,30 +230,32 @@ public class PDFExporter {
            
            for ( int col = 0; col < jtable.getColumnCount(); col++ ) {
                 Object o = jtable.getValueAt( row, col );
-//               TODOLists.debug( "PDFExporter", "Row " + row + " column " + col );
-//               TODOLists.debug( "PDFExporter", "Value is " + (( o==null) ? "NULL" : o.toString()) );
+
                 if ( o == null ) {
                    if ( ! tableIncludesNotes || col != notesIndex )
-                    table.addCell( new regCell( "" ) );
+                    table.addCell( new RegCell( "" ) );
                 }
+
                 else if ( o instanceof Date )
-                    table.addCell( new regCell( CPSDateValidator.format( (Date) o, 
+                    table.addCell( new RegCell( CPSDateValidator.format( (Date) o,
                                                                          CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK )));
+
                 else if ( o instanceof Boolean )
                     if ( ( (Boolean) o ).booleanValue() )
-//                        table.addCell( new regCell( "yes" ) );
-                        table.addCell( new centerCell( "X" ) );
+                        table.addCell( new CenterCell( "X" ) );
                     else
-                        table.addCell( new regCell( "" ) );
+                        table.addCell( new RegCell( "" ) );
+
                 else if ( o instanceof Float )
-                    table.addCell( new regCell( CPSRecord.formatFloat( ((Float) o).floatValue(), 3) ));
+                    table.addCell( new RegCell( CPSRecord.formatFloat( ((Float) o).floatValue(), 3) ));
+
                 else if ( o instanceof Double )
-                    table.addCell( new regCell( CPSRecord.formatFloat( ((Double) o).floatValue(), 3) ));
+                    table.addCell( new RegCell( CPSRecord.formatFloat( ((Double) o).floatValue(), 3) ));
+
                 else {
-//                   String cellValue = o.toString();
                    
                    if ( tableIncludesNotes && col == notesIndex ) {
-                      if ( o == null )
+                      if ( o == null || o.equals(""))
                          rowHasNotes = false;
                       else {
                          rowHasNotes = true;
@@ -260,23 +263,19 @@ public class PDFExporter {
                       }
                    }
                    else
-                      table.addCell( new regCell( o.toString() ) );
+                      table.addCell( new RegCell( o.toString() ) );
                 }
             }
            
            // now deal w/ the Notes data
            if ( tableIncludesNotes && rowHasNotes ) {
-//              TODOLists.debug( "PDFExporter", "Adding notes entry." );
-              table.addCell( new noteCell() );
-              regCell c = new regCell( notesValue );
+              table.addCell( new NoteHeadCell() );
+              NoteCell c = new NoteCell( notesValue );
               // reset the font to be smaller
-//              c.getPhrase().setFont(fontHeadFootReg);
               c.setPhrase( new Phrase( notesValue, fontHeadFootReg ));
               c.setColspan( colCount - 1 );
               table.addCell( c );
            }
-//           else
-//              TODOLists.debug( "PDFExporter", "No notes entry for this row." );
         }
             
         // set the widths for the columns
@@ -305,9 +304,9 @@ public class PDFExporter {
     }
 
     
-    public class regCell extends PdfPCell {
+    public class RegCell extends PdfPCell {
         
-        public regCell( String s ) {
+        public RegCell( String s ) {
             super( new Phrase( s, fontTableReg ));
             setBackgroundColor( Color.WHITE );
             setHorizontalAlignment( PdfPCell.ALIGN_LEFT );
@@ -315,17 +314,17 @@ public class PDFExporter {
         }
     }
 
-    public class centerCell extends regCell {
+    public class CenterCell extends RegCell {
 
-        public centerCell( String s ) {
+        public CenterCell( String s ) {
             super( s );
             setHorizontalAlignment( PdfPCell.ALIGN_CENTER );
         }
     }
 
-    public class headCell extends PdfPCell {
+    public class HeadCell extends PdfPCell {
         
-        public headCell( String s ) {
+        public HeadCell( String s ) {
             super( new Phrase( s, fontTableHead ));
             setBackgroundColor( Color.LIGHT_GRAY );
             setHorizontalAlignment( PdfPCell.ALIGN_CENTER );
@@ -333,15 +332,26 @@ public class PDFExporter {
         }
     }
     
-    public class noteCell extends  PdfPCell {
-       public noteCell() {
+    public class NoteHeadCell extends  PdfPCell {
+       public NoteHeadCell() {
             super( new Phrase( "Notes:", fontHeadFootItal ));
             setBackgroundColor( Color.WHITE );
             setHorizontalAlignment( PdfPCell.ALIGN_RIGHT );
             disableBorderSide( Rectangle.LEFT );
-            disableBorderSide( Rectangle.BOTTOM );
+            disableBorderSide( Rectangle.RIGHT );
             setBorderWidth( .25f );
         }
+    }
+
+    public class NoteCell extends RegCell {
+
+      public NoteCell(String s) {
+        super(s);
+        disableBorderSide( Rectangle.LEFT );
+        disableBorderSide( Rectangle.RIGHT );
+        setMinimumHeight( 20f );
+      }
+
     }
     
 }

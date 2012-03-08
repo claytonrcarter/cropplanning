@@ -22,8 +22,6 @@
 
 package CPS.UI.Modules;
 
-import CPS.Data.CPSRecord;
-import CPS.Module.CPSDataModelConstants;
 import java.util.Comparator;
 import java.util.Date;
 

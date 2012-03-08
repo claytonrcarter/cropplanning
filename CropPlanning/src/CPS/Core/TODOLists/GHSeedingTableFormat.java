@@ -14,7 +14,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
  */
 public class GHSeedingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
-  public int getColumnCount() { return 7; }
+  public int getColumnCount() { return 8; }
 
   public Object getColumnValue( CPSPlanting p, int arg1 ) {
 
@@ -26,6 +26,7 @@ public class GHSeedingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
         case 4: return p.getPlantsToStart();
         case 5: return p.getFlatSize();
         case 6: return p.getFlatsNeeded();
+        case 7: return p.getPlantingNotesInherited();
         default: return "";
     }
   }
@@ -51,6 +52,7 @@ public class GHSeedingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
         case 4: return  CPSPlanting.PROP_PLANTS_START;
         case 5: return  CPSPlanting.PROP_FLAT_SIZE;
         case 6: return  CPSPlanting.PROP_FLATS_NEEDED;
+        case 7: return  CPSPlanting.PROP_PLANTING_NOTES;
         default: return CPSPlanting.PROP_ID;
     }
   }

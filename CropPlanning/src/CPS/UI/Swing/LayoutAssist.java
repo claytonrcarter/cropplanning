@@ -309,6 +309,9 @@ public class LayoutAssist {
     }
 
     public static void addComboBox( JPanel p, int col, int row, JComboBox cb ) {
+      addComboBox( p, col, row, 1, cb );
+    }
+    public static void addComboBox( JPanel p, int colStart, int row, int colSpan, JComboBox cb ) {
       
        Insets i  = new Insets( 0, 2, 2, 5 );
        GridBagConstraints c = new GridBagConstraints();
@@ -317,8 +320,10 @@ public class LayoutAssist {
 							Color.GRAY,
 							Color.WHITE ));
 
-       c.gridx = col;
+       c.gridx = colStart;
        c.gridy = row;
+       c.gridwidth = colSpan;
+       c.gridheight = 1;
        c.anchor = GridBagConstraints.FIRST_LINE_START;
        c.insets = i;
 	

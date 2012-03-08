@@ -10,9 +10,7 @@
 package CPS.Core.TODOLists;
 
 import CPS.Data.CPSPlanting;
-import CPS.Module.CPSDataModelConstants;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
-import ca.odell.glazedlists.gui.TableFormat;
 
 /**
  *
@@ -34,7 +32,7 @@ public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
           case 6: return p.getRowsPerBed();
           case 7: return p.getRowFtToPlant();
           case 8: return p.getInRowSpacing();
-          case 9: return p.getPlantingNotes();
+          case 9: return p.getPlantingNotesInherited();
           default: return "";
       }
   }

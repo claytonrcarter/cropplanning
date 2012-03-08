@@ -226,7 +226,7 @@ public final class CPSPlanting extends CPSRecord {
       tp_crop_notes = new CPSDatum<String>( "TP Planting Notes (from CropDB)", "", PROP_TP_CROP_NOTES );
       planting_notes = new CPSDatum<String>( "Planting Notes", "", PROP_PLANTING_NOTES );
 
-      beds_to_plant = new CPSDatum<Float>( "Num. Beds to Plants", new Float(0.0), PROP_BEDS_PLANT );
+      beds_to_plant = new CPSDatum<Float>( "Num. Beds to Plant", new Float(0.0), PROP_BEDS_PLANT );
       plants_needed = new CPSDatum<Integer>( "Num. Plants Needed", new Integer(0), PROP_PLANTS_NEEDED );
       rowft_to_plant = new CPSDatum<Integer>( "Row Feet To Plant", new Integer(0), PROP_ROWFT_PLANT );
       plants_to_start = new CPSDatum<Integer>( "Num. Plants to Start", new Integer(0), PROP_PLANTS_START );

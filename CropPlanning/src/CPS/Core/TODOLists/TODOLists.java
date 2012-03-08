@@ -25,12 +25,12 @@ package CPS.Core.TODOLists;
 import CPS.CSV.CSV;
 import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSPlanting;
+import CPS.Data.CPSPlantingComparator;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
-import CPS.UI.Modules.CPSComparator;
 import CPS.UI.Swing.CPSComplexFilterDialog;
 import CPS.UI.Swing.CPSTable;
 import CPS.UI.Swing.LayoutAssist;
@@ -46,7 +46,6 @@ import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
 import ca.odell.glazedlists.swing.EventTableModel;
-import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -84,7 +83,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     private final String TL_GH_SEEDING = "GH Seeding List (PDF only)";
     private final String TL_FIELD_PLANTING = "Field Planting List (PDF only)";
-    private final String TL_ALL_PLANTINGS = "List of All Plantings";
+    private final String TL_ALL_PLANTING_LISTS = "All Weekly Planting Lists (full season, PDF only)";
+    private final String TL_ALL_PLANTINGS = "Complete Crop Plan";
     private final String TL_SEED_ORDER_WORKSHEET = "Seed Order Worksheet";
 
     private final int TL_FORMAT_PDF = 1;
@@ -92,7 +92,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
 
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
-    PDFExporter exporter = new PDFExporter();
+    PDFExporter pdf = new PDFExporter();
 
     public TODOLists() {
         setModuleName("TODOLists");
@@ -194,6 +194,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         cmbWhatToExport.setEditable(false);
         cmbWhatToExport.addItem( TL_GH_SEEDING );
         cmbWhatToExport.addItem( TL_FIELD_PLANTING );
+        cmbWhatToExport.addItem( TL_ALL_PLANTING_LISTS );
         cmbWhatToExport.addItem( TL_ALL_PLANTINGS );
         cmbWhatToExport.addItem( TL_SEED_ORDER_WORKSHEET );
 
@@ -226,6 +227,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         LayoutAssist.addLabelLeftAlign(jplTodo, 0, 15, new JLabel("Export:"));
         LayoutAssist.addComboBox(jplTodo, 1, 16, cmbWhatToExport );
+        LayoutAssist.addComboBox(jplTodo, 1, 16, 2, cmbWhatToExport );
+
         LayoutAssist.addButton(jplTodo, 1, 17, btnFormatPDF);
 //        LayoutAssist.addLabelLeftAlign( jplTodo, 2, 17, new JLabel("(for printing)"));
         LayoutAssist.addButton(jplTodo, 1, 18, btnFormatCSV);
@@ -280,7 +283,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         data.clear();
 
       dataFiltered.setMatcher( f );
-      dataSorted.setComparator( new CPSComparator( sortProp ));
+      dataSorted.setComparator( new CPSPlantingComparator( sortProp ));
 
       if ( l != null )
         data.addAll( l );
@@ -339,15 +342,160 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         CPSTable jt = new CPSTable();
         jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ) );
 
-        TableComparatorChooser.install( jt,
-                                        dataSorted,
-                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
+//        TableComparatorChooser.install( jt,
+//                                        dataSorted,
+//                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
 
 
-        exporter.export(jt, filename,
+        pdf.export(jt, filename,
                 CPSGlobalSettings.getFarmName(),
                 "GH Seedings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
                 "GH Seedings");
+
+    }
+
+    private void exportAllWeeklyPlantings( String planName, int format ) {
+
+      if ( format != TL_FORMAT_PDF )
+        throw new UnsupportedOperationException("Not supported yet.");
+
+        // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
+        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
+
+        String filename = createOutputFileName( filFile.getSelectedFile(),
+                                                "Weekly Seeding Lists (GH)",
+                                                dtcDateOtherStart.getDate() );
+
+        CPSTable jt = new CPSTable();
+        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, new GHSeedingTableFormat() ) );
+
+
+        pdf.startExport( filename,
+                              CPSGlobalSettings.getFarmName(),
+                              "Weekly Seeding Lists (GH)",
+                              null );
+
+
+        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
+        filter.setViewLimited(false);
+
+        // figure out what start date to use
+        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
+
+        Date startDate = dataSorted.get(0).getDateToPlant();
+        Date endDate = dataSorted.get(dataSorted.size()-1).getDateToPlant();
+
+        System.out.println("First planting happens on " + startDate );
+        System.out.println(" Last planting happens on " + endDate );
+
+        // now start filtering the data
+        filter.setViewLimited(true);
+
+        // filter out all direct seeded plantings
+        filter.setFilterOnPlantingMethod(true);
+        filter.setFilterMethodDirectSeed(false);
+
+
+        // show only plantings in the correct date range
+        filter.setFilterOnPlantingDate(true);
+
+
+        tempCal.setTime( startDate );
+        tempCal.set( Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        
+        while ( tempCal.getTime().before( endDate ) ) {
+
+          String s = new SimpleDateFormat("MMM dd").format( tempCal.getTime() ) + " - ";
+          filter.setPlantingRangeStart(tempCal.getTime());
+
+          tempCal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+          s += new SimpleDateFormat("MMM dd, yyyy").format( tempCal.getTime() );
+          filter.setPlantingRangeEnd( tempCal.getTime() );
+
+
+          // refilter/sort the list
+          filterAndSortList( null, filter, sortProp );
+
+          if ( ! dataFiltered.isEmpty() )
+            pdf.addPage( jt, "GH Seedings for " + s );
+          
+          // bump the day by one
+          tempCal.add( Calendar.DAY_OF_YEAR, 1 );
+
+        }
+
+        pdf.endExport();
+
+
+        //****************************************************************************//
+        //
+        //****************************************************************************//
+
+        filename = createOutputFileName( filFile.getSelectedFile(),
+                                         "Weekly Planting Lists (Field)",
+                                         dtcDateOtherStart.getDate());
+
+
+        pdf.startExport( filename,
+                         CPSGlobalSettings.getFarmName(),
+                         "Weekly Planting Lists (Field)",
+                         null );
+
+
+        // reset the filter
+        filter = new CPSComplexPlantingFilter();
+        filter.setViewLimited(true);
+        filter.setFilterOnPlantingMethod(true);
+
+        tempCal.setTime( startDate );
+        tempCal.set( Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+
+        while ( tempCal.getTime().before( endDate ) ) {
+
+          // set the correct date ranges
+          String s = new SimpleDateFormat("MMM dd").format( tempCal.getTime() ) + " - ";
+          filter.setPlantingRangeStart(tempCal.getTime());
+          filter.setTpRangeStart( tempCal.getTime() );
+
+          tempCal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+          s += new SimpleDateFormat("MMM dd, yyyy").format( tempCal.getTime() );
+          filter.setPlantingRangeEnd( tempCal.getTime() );
+          filter.setTpRangeEnd( tempCal.getTime() );
+
+          //******************************************************************//
+          // First, direct seeded
+          //******************************************************************//
+          filter.setFilterMethodDirectSeed(true);
+          filter.setFilterOnPlantingDate(true);
+          filter.setFilterOnTPDate(false);
+
+          filterAndSortList( null, filter, CPSDataModelConstants.PROP_DATE_PLANT );
+
+          if ( ! dataFiltered.isEmpty() ) {
+            ((EventTableModel) jt.getModel()).setTableFormat( new DSFieldPlantingTableFormat() );
+            pdf.addPage( jt, "Direct Seeded Plantings for " + s );
+          }
+
+          //******************************************************************//
+          // Then, transplanted
+          //******************************************************************//
+          filter.setFilterMethodDirectSeed(false);
+          filter.setFilterOnPlantingDate(false);
+          filter.setFilterOnTPDate(true);
+
+          filterAndSortList( null, filter, CPSDataModelConstants.PROP_DATE_TP );
+
+          if ( ! dataFiltered.isEmpty() ) {
+            ((EventTableModel) jt.getModel()).setTableFormat( new TPFieldPlantingTableFormat() );
+            pdf.addPage( jt, "Transplanted Field Plantings for " + s );
+          }
+
+          // bump the day by one
+          tempCal.add( Calendar.DAY_OF_YEAR, 1 );
+
+        }
+
+        pdf.endExport();
 
     }
 
@@ -400,11 +548,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         CPSTable jt = new CPSTable();
         jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ));
 
-        TableComparatorChooser.install( jt,
-                                        dataSorted,
-                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
+//        TableComparatorChooser.install( jt,
+//                                        dataSorted,
+//                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
 
-        exporter.startExport(jt, filename,
+        pdf.startExport(jt, filename,
                 CPSGlobalSettings.getFarmName(),
                 "Field plantings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
                 "Direct Seeded Field Plantings");
@@ -448,19 +596,21 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         tableFormat = new TPFieldPlantingTableFormat();
 
         jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ));
-        TableComparatorChooser.install( jt,
-                                        dataSorted,
-                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
+//        TableComparatorChooser.install( jt,
+//                                        dataSorted,
+//                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
 
 
 
-        exporter.addPage( jt, "Transplanted Field Plantings");
-        exporter.endExport();
+        pdf.addPage( jt, "Transplanted Field Plantings");
+        pdf.endExport();
 
     }
 
     private void exportAllPlantings(String planName, int format ) {
 
+      int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
+      
         String filename = createOutputFileName( filFile.getSelectedFile(),
                                                 "All Plantings",
                                                 dtcDateOtherStart.getDate(),
@@ -472,14 +622,14 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         CPSTable jt = new CPSTable();
 
-        data.clear();
-        data.addAll( getDataSource().getCropPlan( planName ));
-        jt.setModel( new EventTableModel<CPSPlanting>( data, new AllPlantingsTableFormat() ));
+        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
+
+        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, new AllPlantingsTableFormat() ));
 
         if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "All Plantings for plan \"" + planName + "\"", jt );
         } else {
-          exporter.export( jt, filename,
+          pdf.export( jt, filename,
                           CPSGlobalSettings.getFarmName(),
                           "All Plantings for plan \"" + planName + "\"",
                           "All Plantings" );
@@ -560,6 +710,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         Calculation<Float> summaryFlats = Calculations.sumFloats( flatsList );
 
 
+
         BasicEventList<CPSPlanting> seedStats = new BasicEventList<CPSPlanting>();
 
         while ( sortedPlan.size() > 0 ) {
@@ -605,7 +756,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "Seed Order Worksheet for plan \"" + planName + "\"", jt );
         } else {
-          exporter.export( jt, filename,
+          pdf.export( jt, filename,
                            CPSGlobalSettings.getFarmName(),
                            "Seed Order Worksheet for plan \"" + planName + "\"",
                            null );
@@ -660,6 +811,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             exportGHPlantings( planName, format );
           } else if ( whatToExport.equals( TL_FIELD_PLANTING ) ) {
             exportFieldPlantings( planName, format );
+          } else if ( whatToExport.equals( TL_ALL_PLANTING_LISTS ) ) {
+            exportAllWeeklyPlantings(planName, format);
           } else if ( whatToExport.equals( TL_ALL_PLANTINGS ) ) {
             exportAllPlantings( planName, format );
           } else if ( whatToExport.equals( TL_SEED_ORDER_WORKSHEET ) ) {
