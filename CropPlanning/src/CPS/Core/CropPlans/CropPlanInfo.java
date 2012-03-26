@@ -242,7 +242,13 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
        // update items in db
        if ( ! displayedPlanting.isSingleRecord() ) {
+
+         List<Integer> ids = displayedPlanting.getCommonIDs();
+
          getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
+
+         selectRecordsInMasterView(ids);
+
        }
        else {
           getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
@@ -252,7 +258,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
           updateRecordInMasterView(diff);
 
-          // this triggers the selected record to be displayed in the info window
           selectRecordsInMasterView( Arrays.asList( diff.getID() ) );
 
        }

@@ -93,7 +93,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
     /// selectedID is the ID of the currently selected record (as opposed to
     // the row number of the selected row.
     private int[] selectedRows = {};
-    private ArrayList<Integer> selectedIDs = new ArrayList<Integer>();
     private ArrayList<ColumnNameStruct> columnList = new ArrayList<ColumnNameStruct>();
 
 
@@ -151,23 +150,29 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
     
     protected CPSRecord getRecordToDisplay() {
-       if ( selectedIDs.size() < 1 ) {
-          System.err.println("ERROR displaying record: no item selected from list");
+       if ( selectModel.getSelected().size() < 1 )
           return null;
+       else if ( selectModel.getSelected().size() == 1 )
+          return selectModel.getSelected().get(0);
+       else {
+         List<Integer> ids = new ArrayList<Integer> ();
+         for ( CPSRecord r : selectModel.getSelected() )
+           ids.add( r.getID() );
+         return getDetailsForIDs( ids );
        }
-       else if ( selectedIDs.size() == 1 )
-          return getDetailsForID( selectedIDs.get(0).intValue() );
-       else
-          return getDetailsForIDs( selectedIDs );
     }
     
     protected void updateDetailView() {
-        if ( selectedIDs.size() < 1 )
+        if ( selectModel.getSelected().size() < 1 )
             uiManager.clearDetailDisplay();
-        else if ( selectedIDs.size() == 1 )
-           uiManager.displayDetail( getDetailsForID( selectedIDs.get(0).intValue() ) );
-        else
-           uiManager.displayDetail( getDetailsForIDs( selectedIDs ));
+        else if ( selectModel.getSelected().size() == 1 )
+           uiManager.displayDetail( selectModel.getSelected().get(0) );
+        else {
+          List<Integer> ids = new ArrayList<Integer> ();
+          for ( CPSRecord r : selectModel.getSelected() )
+            ids.add( r.getID() );
+           uiManager.displayDetail( getDetailsForIDs( ids ));
+        }
         
     }
 
@@ -268,18 +273,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
         //Ignore extra messages.
         if ( e.getValueIsAdjusting() )
             return;
+
         ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
-        if ( ! lsm.isSelectionEmpty() ) {
-           
-           selectedIDs.clear();
-           for ( CPSRecord r : selectModel.getSelected() ) {
-              CPSModule.debug( "CPSMasterView", "Record selected: " + r.getID() + " " + r.toString() );
-              selectedIDs.add( new Integer( r.getID() ));
-           }
-           
+        if ( ! lsm.isSelectionEmpty() )
             updateDetailView();
-        }
+
     }
     
     protected void selectRecords( List<Integer> ids ) {
@@ -604,8 +603,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
         masterList.addAll( getMasterListData() );
         masterList.getReadWriteLock().writeLock().unlock();
 
-        setSelection( selectedIDs );
-
         CPSModule.debug( "CPSMasterView", "Items in masterList:         " + masterList.size() );
         CPSModule.debug( "CPSMasterView", "Items in masterListFiltered: " + masterListFiltered.size() );
 
@@ -683,34 +680,37 @@ public abstract class CPSMasterView extends CPSDataModelUser
             uiManager.setDetailViewForEditting();
             setSelection( newID );
             setStatus( STATUS_NEW_RECORD );
-        }
-        else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
+        
+        } else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
+
             if (!isDataAvailable()) {
+
                 System.err.println("ERROR: cannot duplicate planting, data unavailable");
                 return;
-            }
-            else if ( selectedIDs.size() != 1 ) {
+
+            } else if ( selectModel.getSelected().size() != 1 ) {
+              
                // TODO, support mupltiple row duplication
                System.err.println("ERROR: at present, can only duplicate single rows");
                return;
             }
-            CPSRecord newRecord = duplicateRecord( selectedIDs.get(0).intValue() );
+
+            CPSRecord newRecord = duplicateRecord( selectModel.getSelected().get(0) );
             int newID = newRecord.getID();
             uiManager.displayDetail( newRecord );
             uiManager.setDetailViewForEditting();
             setSelection( newID );
-        }
-        else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
+
+        } else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
+
             if (!isDataAvailable()) {
                 System.err.println("ERROR: cannon delete entry, data unavailable");
                 return;
             }
-            else if ( selectedIDs.size() != 1 ) {
-               // TODO support mupltiple row duplication
-               System.err.println("ERROR: at present, can only delete single rows");
-               return;
-            }
-            deleteRecord( selectedIDs.get(0).intValue() );
+            
+            for ( CPSRecord r : selectModel.getSelected() )
+              deleteRecord( r.getID() );
+
         }
         
     }
@@ -759,7 +759,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
             btnDupeRecord.setEnabled( true );
             tfldFilter.setEnabled( true );
 
-            if ( selectedIDs.size() > 0 ) {
+            if ( selectModel.getSelected().size() > 0 ) {
                // check that selected items are in table
                // if not, clear selection and display nothing
                setStatus( null );
