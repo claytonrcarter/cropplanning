@@ -57,7 +57,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    private CPSTextField tfldCustom1, tfldCustom2, tfldCustom3, tfldCustom4, tfldCustom5;
 
    private CPSButtonGroup /* bgDates, */ bgSeedMethod;
-   private ArrayList<JLabel> anonLabels = new ArrayList<JLabel>();
+   private ArrayList<JLabel> anonLabels;
 
    private Date lastDatePlant, lastDateTP, lastDateHarvest;
 
@@ -92,20 +92,20 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
     public void displayRecord( CPSRecord r ) { displayRecord( (CPSPlanting) r ); }
     public void displayRecord( CPSPlanting p ) {
 
-        displayedPlanting = p;
-
         if ( ! isMainPanelBuilt() ) {
             setMainPanelBuilt();
             rebuildMainPanel();
             updateAutocompletionComponents();
         }
 
-        if ( displayedPlanting == null ) {
+        if ( p == null ) {
           displayedPlanting = new CPSPlanting();
           setRecordDisplayed( false );
         }
-        else
-           setRecordDisplayed( true );
+        else {
+          displayedPlanting = p;
+          setRecordDisplayed( true );
+        }
 
 
        CropPlans.debug( "CropPlanInfo", "Displaying planting:\n" + displayedPlanting );
@@ -195,6 +195,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
           rdoTP.setEnabled( t );
        }
 
+       
+       setAllComponentsEnabled( isRecordDisplayed() && ! displayedPlanting.getIgnore() );
+
+
        displayDates();
 
        displayDSTPProperties();
@@ -205,16 +209,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
           setStatus( CPSMasterDetailModule.STATUS_BLANK );
        
         if ( ! displayedPlanting.isSingleRecord() ) {
-//           String ids = "";
-//           for ( Integer i : displayedPlanting.getCommonIDs() )
-//              ids += i.toString() + ", ";
-//           ids = ids.substring( 0, ids.lastIndexOf(", ") );
            setStatus( "showing identical fields for selected rows" );
        }
 
 
-       setAllComponentsEnabled( isRecordDisplayed() && ! displayedPlanting.getIgnore() );
-           
     }
 
     @Override
@@ -448,6 +446,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplName.setBorder( BorderFactory.createEmptyBorder() );
 
       int r = 0;
+      if ( anonLabels == null )
+        anonLabels = new ArrayList<JLabel>();
+
       anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Crop Name:" ));
       LayoutAssist.addTextField( jplName, 1, r++, tfldCropName );
 
@@ -672,10 +673,14 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    }
    
    protected void updateAutocompletionComponents() {
+     if ( ! isDataAvailable() )
+       return;
+     
        tfldCropName.updateAutocompletionList( getDataSource().getCropNameList(),
                                               CPSTextField.MATCH_PERMISSIVE );
-       tfldVarName.updateAutocompletionList( getDataSource().getVarietyNameList( displayedPlanting.getCropName(), getDisplayedTableName() ),
-                                             CPSTextField.MATCH_PERMISSIVE );
+       if ( displayedPlanting != null )
+        tfldVarName.updateAutocompletionList( getDataSource().getVarietyNameList( displayedPlanting.getCropName(), getDisplayedTableName() ),
+                                              CPSTextField.MATCH_PERMISSIVE );
        tfldLocation.updateAutocompletionList( getDataSource().getFieldNameList( this.getDisplayedTableName() ),
                                               CPSTextField.MATCH_PERMISSIVE );
        tfldFlatSize.updateAutocompletionList( getDataSource().getFlatSizeList( this.getDisplayedTableName() ),
@@ -684,13 +689,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    
    @Override
    public void dataUpdated() {
-      if ( isRecordDisplayed() ) {
-         CPSPlanting p = getDataSource().getPlanting( getDisplayedTableName(),
-                                                      getDisplayedRecord().getID() );
-         this.displayRecord( p );
-         updateAutocompletionComponents();
-         
-      }
+     updateAutocompletionComponents();
    }
 
     @Override
@@ -812,11 +811,17 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldCustom3.setEnabled( b );
       tfldCustom4.setEnabled( b );
       tfldCustom5.setEnabled( b );
-      
+
+      chkIgnore.setEnabled(b);
+
       setTPComponentsEnabled( b );
 
-      for ( JLabel jl : anonLabels )
+      for ( JLabel jl : anonLabels ) {
          jl.setEnabled( b );
+      }
+
+      btnSaveChanges.setEnabled(b);
+      btnDiscardChanges.setEnabled(b);
    }
 
    @Override
@@ -835,13 +840,12 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          return;
       
       String s = (String) cmbDates.getSelectedItem();
-      String temp;
-      // editTBox = should text boxes be edittable, enableCBox = should checkboxes be enabled
+     
       boolean editTBox, enableCBox;
       if ( s.equalsIgnoreCase( DATE_EFFECTIVE ) ) {
-         // "effective" dates
+
          editTBox = false;
-         enableCBox = true;
+         enableCBox = false;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantString(),
                                        displayedPlanting.getDateToPlantState() );
          if ( displayedPlanting.isTransplanted().booleanValue() )
@@ -852,8 +856,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestString(),
                                          displayedPlanting.getDateToHarvestState());
       } else if ( s.equalsIgnoreCase( DATE_ACTUAL ) ) {
-         // actual dates
+
          editTBox = enableCBox = true;
+         enableCBox = true;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantActualString(),
                                        displayedPlanting.getDateToPlantActualState() );
          if ( displayedPlanting.isTransplanted().booleanValue() )
@@ -864,7 +869,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          tfldDateHarvest.setInitialText( displayedPlanting.getDateToHarvestActualString(),
                                          displayedPlanting.getDateToHarvestActualState());
       } else {
-         // default to planned dates
+
          editTBox = true;
          enableCBox = false;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantPlannedString(),

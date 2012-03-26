@@ -314,6 +314,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
         }
         i++; // count rows
       }
+      
+      // if the record to select did not exist in the list, then
+      // clear the detail display
+      if ( selectModel.getSelected().isEmpty() )
+        uiManager.clearDetailDisplay();
 
     }
 
@@ -599,6 +604,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
         masterList.addAll( getMasterListData() );
         masterList.getReadWriteLock().writeLock().unlock();
 
+        setSelection( selectedIDs );
+
         CPSModule.debug( "CPSMasterView", "Items in masterList:         " + masterList.size() );
         CPSModule.debug( "CPSMasterView", "Items in masterListFiltered: " + masterListFiltered.size() );
 
@@ -711,6 +718,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
    @Override
    public void dataUpdated() {
       updateMasterList();
+      updateDetailView();
    }
 
 

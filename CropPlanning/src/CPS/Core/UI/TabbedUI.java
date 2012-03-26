@@ -512,7 +512,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
          
       // TODO automatically calculate size of the TabbedPane decorations (tabs and borders)
       // the numbers added to the dimension are to account for the decorations of the tabbed pane
-      maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() + 50 );
+      maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() );
       tabbedpane.setPreferredSize( maxDim );
       
       // TODO clean this up, add menubar and titlebar height

@@ -105,16 +105,15 @@ public abstract class CPSDetailView extends CPSDataModelUser
             mainPanel.setBorder( BorderFactory.createEtchedBorder() );
        
     }
-    protected void buildMainPanel( String title ) {
-        
+    protected void buildMainPanel( String title ) {    
         
         if ( ! isRecordDisplayed() ) {
             initMainPanel( title );
-            clearMainPanel();
+//            clearMainPanel();
         }
-        else
+//        else
             rebuildMainPanel();
-        
+
     }
     protected void rebuildMainPanel() {
         mainPanel.removeAll();
@@ -126,9 +125,11 @@ public abstract class CPSDetailView extends CPSDataModelUser
 
     }
     protected void clearMainPanel() {
-       mainPanel.removeAll();
+//       mainPanel.removeAll();
+      displayRecord(null);
        setStatus( CPSMasterDetailModule.STATUS_NO_SELECTION );
-       mainPanel.add( lblStatus, BorderLayout.CENTER );
+//       mainPanel.add( lblStatus, BorderLayout.CENTER );
+       panelBuilt = false;
        
        uiManager.signalUIChanged();
     }
@@ -254,8 +255,8 @@ public abstract class CPSDetailView extends CPSDataModelUser
                 System.err.println("ERROR: cannot save changes to record, data unavailable");
                 return;
             }
-            saveChangesToRecord();
             setStatus( CPSMasterDetailModule.STATUS_SAVED );
+            saveChangesToRecord();
         }
         else if ( action.equalsIgnoreCase( btnDiscardChanges.getText() ) ) {
            displayRecord( getDisplayedRecord() );

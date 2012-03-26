@@ -53,7 +53,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private CPSTextArea tareDesc, tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private CPSTextField tfldYieldPerWeek, tfldYieldWeeks, tfldYieldPerFoot, tfldYieldUnits, tfldYieldUnitValue;
 
-   private ArrayList<JLabel> anonLabels = new ArrayList<JLabel>();
+   private ArrayList<JLabel> anonLabels;
 
    // for the DS/TP checkboxes
 //   private CPSButtonGroup jbgPlantingMethod;
@@ -259,7 +259,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       /* ***********************************/
       JPanel jplName = initPanelWithGridBagLayout();
       jplName.setBorder( BorderFactory.createEmptyBorder() );
-      
+
+      if ( anonLabels == null )
+        anonLabels = new ArrayList<JLabel>();
+
       anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 0, "Crop Name:" ));
       LayoutAssist.addTextField( jplName, 1, 0, tfldCropName );
 
@@ -530,10 +533,14 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
     @Override
     protected void updateAutocompletionComponents() {
+      if ( ! isDataAvailable() )
+        return;
+      
         tfldCropName.updateAutocompletionList( getDataSource().getCropNameList(),
                                                CPSTextField.MATCH_PERMISSIVE );
-        tfldVarName.updateAutocompletionList( getDataSource().getVarietyNameList( displayedCrop.getCropName() ),
-                                              CPSTextField.MATCH_PERMISSIVE );
+        if ( displayedCrop != null )
+          tfldVarName.updateAutocompletionList( getDataSource().getVarietyNameList( displayedCrop.getCropName() ),
+                                                CPSTextField.MATCH_PERMISSIVE );
         tfldFamName.updateAutocompletionList( getDataSource().getFamilyNameList(),
                                               CPSTextField.MATCH_PERMISSIVE );
         tfldTPFlatSize.updateAutocompletionList( getDataSource().getFlatSizeList(),
