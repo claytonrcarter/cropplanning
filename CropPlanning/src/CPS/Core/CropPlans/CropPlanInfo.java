@@ -817,16 +817,22 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldCustom4.setEnabled( b );
       tfldCustom5.setEnabled( b );
 
-      chkIgnore.setEnabled(b);
-
+      if ( ! isRecordDisplayed() ) {
+        chkIgnore.setEnabled( false );
+        btnSaveChanges.setEnabled( false );
+        btnDiscardChanges.setEnabled( false );
+      } else if ( isRecordDisplayed() ) {
+        chkIgnore.setEnabled( true );
+        btnSaveChanges.setEnabled( true );
+        btnDiscardChanges.setEnabled( true );
+      }
+      
       setTPComponentsEnabled( b );
 
       for ( JLabel jl : anonLabels ) {
          jl.setEnabled( b );
       }
 
-      btnSaveChanges.setEnabled(b);
-      btnDiscardChanges.setEnabled(b);
    }
 
    @Override
