@@ -86,6 +86,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private JLabel lblPrefOutputDir;
     private JButton btnPrefOutputDir;
     private static JFileChooser flchPrefOutputDir = null;
+    private static String sTempOutputDir = null;
     // This should default to JFileChooser.FileSystemView.getDefaultDirectory()
 //    private static File prefOutputDirDefault = null;
     private static final String KEY_FIRSTTIME = "FIRST_TIME";
@@ -182,6 +183,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
     
     public static String getOutputDir() {
+        if ( sTempOutputDir != null )
+          return sTempOutputDir;
         if ( flchPrefOutputDir == null )    
             return getGlobalPreferences().get( KEY_OUTPUTDIR,
                                                new JFileChooser().getFileSystemView().getDefaultDirectory().getAbsolutePath() );
@@ -192,6 +195,10 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     public void setOutputDir( String dir ) {
         getGlobalPreferences().put( KEY_OUTPUTDIR, dir );
+    }
+
+    public static void setTempOutputDir( String tempDir ) {
+        sTempOutputDir = tempDir;
     }
 
     public static String getRowsOrBeds() {

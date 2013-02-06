@@ -1,5 +1,5 @@
 /* ResultSetTableModel.java
- * Copyright © 2000-2008 O'Reilly Media, Inc. All Rights Reserved.
+ * Copyright  2000-2008 O'Reilly Media, Inc. All Rights Reserved.
  * 
  * This file is distributed as part of the project "Crop Planning Software".
  * For more information:

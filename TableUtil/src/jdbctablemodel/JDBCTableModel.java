@@ -1,5 +1,5 @@
 /* JDBCTableModel.java
- * Copyright © 2008 SYS-CON Media. All Rights Reserved.
+ * Copyright  2008 SYS-CON Media. All Rights Reserved.
  * 
  * This file is distributed as part of the project "Crop Planning Software".
  * For more information:

@@ -64,6 +64,8 @@ public class CropPlanning implements Runnable {
        for ( String s : args ) {
           if ( s.equalsIgnoreCase( "-debug" ))
              CPSGlobalSettings.setDebug(true);
+          if ( s.startsWith( "-temp-output-dir=") )
+             CPSGlobalSettings.setTempOutputDir( s.substring( "-temp-output-dir=".length() ) );
           if ( s.equalsIgnoreCase( "-firstTime" ) )
              CPSGlobalSettings.setFirstTimeRun( true );
           if ( s.equalsIgnoreCase( "-version" ) || s.equalsIgnoreCase( "-versionsimple" )) {
