@@ -106,6 +106,19 @@ public class CPSDataModelConstants {
    public static final int PROP_LOCATION        = 92;
    public static final int PROP_CROP_UNIT       = 93;
    public static final int PROP_CROP_UNIT_VALUE = 94;
+
+   /** As in Seeds per ounce or gram */
+   public static final int PROP_SEEDS_PER_UNIT  = 95;
+   /** As ounce or gram */
+   public static final int PROP_SEED_UNIT       = 96;
+   /** Generic property for seeds needed to plant a unit or unit length */
+   public static final int PROP_SEEDS_PER       = 97;
+   /** Seeds need to direct seed a unit length */
+   public static final int PROP_SEEDS_PER_DS    = 98;
+   /** Seeds needed to transplant a single plant */
+   public static final int PROP_SEEDS_PER_TP    = 99;
+   /** Total seeds needed */
+   public static final int PROP_SEED_NEEDED     = 105;
    
    /* yield info */
    public static final int PROP_YIELD_P_FOOT    = 100;

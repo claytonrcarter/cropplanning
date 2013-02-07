@@ -68,7 +68,12 @@ public final class CPSCrop extends CPSRecord {
    public final static int PROP_YIELD_PER_WEEK = CPSDataModelConstants.PROP_YIELD_P_WEEK;
    public final static int PROP_CROP_UNIT = CPSDataModelConstants.PROP_CROP_UNIT;
    public final static int PROP_CROP_UNIT_VALUE = CPSDataModelConstants.PROP_CROP_UNIT_VALUE;
-   
+
+   public static final int PROP_SEEDS_PER_UNIT   = CPSDataModelConstants.PROP_SEEDS_PER_UNIT;
+   public static final int PROP_SEED_UNIT   = CPSDataModelConstants.PROP_SEED_UNIT;
+   public static final int PROP_SEEDS_PER_DS = CPSDataModelConstants.PROP_SEEDS_PER_DS;
+   public static final int PROP_SEEDS_PER_TP = CPSDataModelConstants.PROP_SEEDS_PER_TP;
+
    /** 
     * from CPSDataModelConstants: this is the highest value defined there
     * @return the last (ie highest) property supported by this CPSRecords iterator
@@ -113,6 +118,11 @@ public final class CPSCrop extends CPSRecord {
    private CPSDatum<Integer> yieldPerWeek;
    private CPSDatum<String> cropYieldUnit;
    private CPSDatum<Float> cropUnitValue;
+
+   private CPSDatum<Integer> seedsPerUnit;
+   private CPSDatum<String>  seedUnit;
+   private CPSDatum<Float>   seedsPerDS;
+   private CPSDatum<Float>   seedsPerTP;
    
 
    /**
@@ -162,7 +172,12 @@ public final class CPSCrop extends CPSRecord {
       yieldPerWeek = new CPSDatum<Integer>( "Yield/Week", new Integer( -1 ), PROP_YIELD_PER_WEEK );
       cropYieldUnit = new CPSDatum<String>( "Yield Unit", "", PROP_CROP_UNIT );
       cropUnitValue = new CPSDatum<Float>( "Value/Unit", new Float(-1.0) , PROP_CROP_UNIT_VALUE );
-        
+
+      seedsPerUnit = new CPSDatum<Integer>( "Seeds/Unit", new Integer(-1), PROP_SEEDS_PER_UNIT );
+      seedUnit = new CPSDatum<String>( "Units", "", PROP_SEED_UNIT );
+      seedsPerDS = new CPSDatum<Float>( "Seeds/RowFt (DS)", new Float( -1.0 ), PROP_SEEDS_PER_DS );
+      seedsPerTP = new CPSDatum<Float>( "Seeds/Plant (TP)", new Float( -1.0 ), PROP_SEEDS_PER_TP );
+
     }
 
     public CPSDatum getDatum( int prop ) {
@@ -206,6 +221,11 @@ public final class CPSCrop extends CPSRecord {
           case PROP_YIELD_PER_WEEK:  return yieldPerWeek;
           case PROP_CROP_UNIT:       return cropYieldUnit;
           case PROP_CROP_UNIT_VALUE: return cropUnitValue;
+            
+          case PROP_SEEDS_PER_UNIT:  return seedsPerUnit;
+          case PROP_SEED_UNIT:       return seedUnit;
+          case PROP_SEEDS_PER_DS:    return seedsPerDS;
+          case PROP_SEEDS_PER_TP:    return seedsPerTP;
           
           default:                   return super.getDatum( prop );
        }
@@ -245,6 +265,11 @@ public final class CPSCrop extends CPSRecord {
        a.add( PROP_YIELD_PER_WEEK );
        a.add( PROP_CROP_UNIT );
        a.add( PROP_CROP_UNIT_VALUE );
+       
+       a.add( PROP_SEEDS_PER_UNIT );
+       a.add( PROP_SEED_UNIT );
+       a.add( PROP_SEEDS_PER_DS );
+       a.add( PROP_SEEDS_PER_TP );
 
        return a;
    }
@@ -439,7 +464,7 @@ public final class CPSCrop extends CPSRecord {
    public void setYieldNumWeeks( String s ) { setYieldNumWeeks( parseInteger(s) ); }
    
    public Integer getYieldPerWeek() { return getInt( PROP_YIELD_PER_WEEK ); }
-   public String getYieldPerWeekString() { return getString( PROP_YIELD_WEEKS ); }
+   public String getYieldPerWeekString() { return getString( PROP_YIELD_PER_WEEK ); }
    public CPSDatumState getYieldPerWeekState() { return getStateOf( PROP_YIELD_PER_WEEK ); }
     public void setYieldPerWeek( Integer i ) { set( yieldPerWeek, i ); }
     public void setYieldPerWeek( int i ) { setYieldPerWeek( new Integer( i )); }
@@ -456,6 +481,32 @@ public final class CPSCrop extends CPSRecord {
     public void setCropUnitValue( float f ) { setCropUnitValue( new Float( f )); }
    public void setCropUnitValue( String s ) { setCropUnitValue( parseFloatBigF(s) ); }
    
+   
+    public Integer       getSeedsPerUnit() {            return getInt( seedsPerUnit.getPropertyNum() ); }
+    public String        getSeedsPerUnitString() {       return getString( seedsPerUnit.getPropertyNum() ); }
+    public CPSDatumState getSeedsPerUnitState() {        return getStateOf( seedsPerUnit.getPropertyNum() ); }
+    public void          setSeedsPerUnit( Integer i ) { set( seedsPerUnit, i ); }
+    public void          setSeedsPerUnit( int i ) {     setSeedsPerUnit( new Integer( i )); }
+    public void          setSeedsPerUnit( String s ) {  setSeedsPerUnit( parseInteger(s) ); }
+
+    public String        getSeedUnit() {           return get( seedUnit.getPropertyNum() ); }
+    public CPSDatumState getSeedUnitState() {       return getStateOf( seedUnit.getPropertyNum() ); }
+    public void          setSeedUnit( String s ) { set( seedUnit, s ); }
+
+    public Float         getSeedsPerDS() {           return getFloat( seedsPerDS.getPropertyNum() ); }
+    public String        getSeedsPerDSString() {      return getString( seedsPerDS.getPropertyNum() ); }
+    public CPSDatumState getSeedsPerDSState() {       return getStateOf( seedsPerDS.getPropertyNum() ); }
+    public void          setSeedsPerDS( Float i ) {  set( seedsPerDS, i ); }
+    public void          setSeedsPerDS( float i ) {  setSeedsPerDS( new Float( i )); }
+    public void          setSeedsPerDS( String s ) { setSeedsPerDS( parseFloatBigF(s) ); }
+   
+    public Float         getSeedsPerTP() {           return getFloat( seedsPerTP.getPropertyNum() ); }
+    public String        getSeedsPerTPString() {      return formatFloat( (Float) get( seedsPerTP.getPropertyNum() ) ); }
+    public CPSDatumState getSeedsPerTPState() {       return getStateOf( seedsPerTP.getPropertyNum() ); }
+    public void          setSeedsPerTP( Float f ) {  set( seedsPerTP, f ); }
+    public void          setSeedsPerTP( float f ) {  setSeedsPerTP( new Float( f )); }
+    public void          setSeedsPerTP( String s ) { setSeedsPerTP( parseFloatBigF(s) ); }
+
    
     
     public CPSRecord diff( CPSRecord thatCrop ) {

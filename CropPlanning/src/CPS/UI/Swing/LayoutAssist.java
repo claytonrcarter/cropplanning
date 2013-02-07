@@ -122,17 +122,6 @@ public class LayoutAssist {
                                  int align ) {
 
       addComponent( p, col, row, colSpan, rowSpan, b, align );
-//      Insets i = new Insets( 0, 2, 2, 5 );
-//      GridBagConstraints c = new GridBagConstraints();
-//
-//      c.gridx = col;
-//      c.gridy = row;
-//      c.gridwidth  = colSpan;
-//       c.gridheight = rowSpan;
-//      c.anchor = GridBagConstraints.FIRST_LINE_START;
-//      c.insets = i;
-//	
-//      p.add( b, c );
       
    }
    

@@ -26,6 +26,7 @@ import CPS.Data.*;
 import CPS.Module.*;
 import CPS.UI.Modules.*;
 import CPS.UI.Swing.*;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -52,6 +53,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private CPSTextField tfldTPFlatSize, tfldTPWeeksToTP, tfldTPPlantNotes;
    private CPSTextArea tareDesc, tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private CPSTextField tfldYieldPerWeek, tfldYieldWeeks, tfldYieldPerFoot, tfldYieldUnits, tfldYieldUnitValue;
+   private CPSTextField tfldSeedsPerUnit, tfldSeedUnit, tfldSeedsPerDS, tfldSeedsPerTP;
+   private JLabel lblSeedDS, lblSeedTP;
 
    private ArrayList<JLabel> anonLabels;
 
@@ -129,6 +132,15 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldYieldUnitValue.setInitialText( displayedCrop.getCropUnitValueString(),
                                          displayedCrop.getCropUnitValueState() );
 
+      tfldSeedsPerUnit.setInitialText( displayedCrop.getSeedsPerUnitString() ,
+                                       displayedCrop.getSeedsPerUnitState() );
+      tfldSeedUnit.setInitialText( displayedCrop.getSeedUnit() ,
+                                   displayedCrop.getSeedUnitState() );
+      tfldSeedsPerDS.setInitialText( displayedCrop.getSeedsPerDSString() ,
+                                     displayedCrop.getSeedsPerDSState() );
+      tfldSeedsPerTP.setInitialText( displayedCrop.getSeedsPerTPString() ,
+                                     displayedCrop.getSeedsPerTPState() );
+
       tareDesc.setInitialText( displayedCrop.getCropDescription() );
       tareGroups.setInitialText( displayedCrop.getGroups(),
                                  displayedCrop.getGroupsState() );
@@ -196,6 +208,11 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       if ( tfldYieldUnits.hasChanged() ) changes.setCropYieldUnit( tfldYieldUnits.getText() );
       if ( tfldYieldUnitValue.hasChanged() ) changes.setCropUnitValue( tfldYieldUnitValue.getText() );
 
+      if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
+      if ( tfldSeedUnit.hasChanged()     ) changes.setSeedUnit( tfldSeedUnit.getText() );
+      if ( tfldSeedsPerDS.hasChanged()   ) changes.setSeedsPerDS( tfldSeedsPerDS.getText() );
+      if ( tfldSeedsPerTP.hasChanged()   ) changes.setSeedsPerTP( tfldSeedsPerTP.getText() );
+
       if ( tareDesc.hasChanged() ) changes.setCropDescription( tareDesc.getText() );
       if ( tareGroups.hasChanged() ) changes.setGroups( tareGroups.getText() );
       if ( tareOtherReq.hasChanged() ) changes.setOtherRequirements( tareOtherReq.getText() );
@@ -207,6 +224,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    }
    
    protected void buildDetailsPanel() {
+
+     int r=0; // r as in row
+     JLabel tempLabel;
 
       tfldCropName = new CPSTextField(10);
       tfldVarName = new CPSTextField( 10 );
@@ -240,7 +260,12 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldYieldPerFoot = new CPSTextField( FIELD_LEN_SHORT );
       tfldYieldUnits = new CPSTextField( FIELD_LEN_MED );
       tfldYieldUnitValue = new CPSTextField( FIELD_LEN_SHORT );
-      
+
+      tfldSeedsPerUnit = new CPSTextField( FIELD_LEN_MED );
+      tfldSeedUnit     = new CPSTextField( FIELD_LEN_MED );
+      tfldSeedsPerDS   = new CPSTextField( FIELD_LEN_MED );
+      tfldSeedsPerTP   = new CPSTextField( FIELD_LEN_MED );
+
       tareDesc = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
       tareGroups = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
       tareKeywords = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
@@ -250,7 +275,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       
       JPanel columnOne = initPanelWithVerticalBoxLayout();
       JPanel columnTwo = initPanelWithVerticalBoxLayout();
-      JPanel columnThree = initPanelWithVerticalBoxLayout();
+//      JPanel columnThree = initPanelWithVerticalBoxLayout();
       JPanel columnFour = initPanelWithVerticalBoxLayout();
       
       /* the format for these calls is: panel, column, row, component */
@@ -263,81 +288,84 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       if ( anonLabels == null )
         anonLabels = new ArrayList<JLabel>();
 
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 0, "Crop Name:" ));
-      LayoutAssist.addTextField( jplName, 1, 0, tfldCropName );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Crop Name:" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldCropName );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 1, "Variety:" ));
-      LayoutAssist.addTextField( jplName, 1, 1, tfldVarName );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Variety:" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldVarName );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 2, "Family:" ));
-      LayoutAssist.addTextField( jplName, 1, 2, tfldFamName );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Family:" ));
+      LayoutAssist.addTextField( jplName, 1, r++, tfldFamName );
       
       // starts in column 0, row 3 and spans 2 columns
-      LayoutAssist.addSeparator( jplName, 0, 3, 2 );
+      LayoutAssist.addSeparator( jplName, 0, r++, 2 );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, 4, "Description:" ));
-      LayoutAssist.addTextArea(  jplName, 1, 4, tareDesc  );
+      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Description:" ));
+      LayoutAssist.addTextArea(  jplName, 1, r++, tareDesc  );
       
       LayoutAssist.addPanelToColumn( columnOne, jplName );
       LayoutAssist.finishColumn( columnOne );
       
       /* ***********************************/
-      /* COLUMN TWO (really two and three) */
+      /* COLUMN TWO (really two, three, 4 and 5) */
       /* ***********************************/
       JPanel jplPlanting = initPanelWithGridBagLayout();
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
-      
+      r=0;
+
       /* Applies to both DS & TP */
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 1, 0, "Maturity Days:" ));
-      LayoutAssist.addTextField( jplPlanting, 2, 0, 2, 1, tfldMatDays );
+      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 1, r, "Maturity Days:" ));
+      LayoutAssist.addTextField( jplPlanting, 2, r++, 2, 1, tfldMatDays );
       
       /* DS Column */
-      LayoutAssist.addButton(    jplPlanting, 0, 1, 2, 1, chkDS, GridBagConstraints.CENTER );
+      LayoutAssist.addButton(    jplPlanting, 0, r++, 2, 1, chkDS, GridBagConstraints.CENTER );
       
-      lblDSMat = LayoutAssist.createLabel(  jplPlanting, 0, 2, "Adjust Mat. Days" );
-      LayoutAssist.addTextField( jplPlanting, 1, 2, tfldDSMatAdjust );
+      lblDSMat = LayoutAssist.createLabel(  jplPlanting, 0, r, "Adjust Mat. Days" );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSMatAdjust );
       
-      lblDSRowsPB = LayoutAssist.createLabel(  jplPlanting, 0, 3, "Rows/Bed" );
-      LayoutAssist.addTextField( jplPlanting, 1, 3, tfldDSRowsPerBed );
+      lblDSRowsPB = LayoutAssist.createLabel(  jplPlanting, 0, r, "Rows/Bed" );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSRowsPerBed );
       
-      lblDSSpace = LayoutAssist.createLabel(  jplPlanting, 0, 4, "Row Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 1, 4, tfldDSSpaceBetRows );
-      
-      LayoutAssist.addSeparator( jplPlanting, 0, 6, 2 );
+      lblDSSpace = LayoutAssist.createLabel(  jplPlanting, 0, r, "Row Spacing" );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSSpaceBetRows );
 
-      lblDSNotes = LayoutAssist.createLabel(  jplPlanting, 0, 7, "DS Notes" );
-      LayoutAssist.addTextField( jplPlanting, 1, 7, tfldDSPlantNotes );
+      r++; // skip row 5
+
+      LayoutAssist.addSeparator( jplPlanting, 0, r++, 2 );
+
+      lblDSNotes = LayoutAssist.createLabel(  jplPlanting, 0, r, "DS Notes" );
+      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSPlantNotes );
 
       /* TP Column */
-      LayoutAssist.addVerticalSeparator( jplPlanting, 2, 1, 11 );
-      LayoutAssist.addButton(    jplPlanting, 3, 1, 2, 1, chkTP, GridBagConstraints.CENTER );
+      r=1;
+      LayoutAssist.addVerticalSeparator( jplPlanting, 2, r, 11 );
+      LayoutAssist.addButton(    jplPlanting, 3, r++, 2, 1, chkTP, GridBagConstraints.CENTER );
 
-      lblTPMat = LayoutAssist.createLabel(  jplPlanting, 3, 2, "Adjust Mat. Days" );
-      LayoutAssist.addTextField( jplPlanting, 4, 2, tfldTPMatAdjust );
+      lblTPMat = LayoutAssist.createLabel(  jplPlanting, 3, r, "Adjust Mat. Days" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPMatAdjust );
      
-      lblTPRows = LayoutAssist.createLabel(  jplPlanting, 3, 3, "Rows/Bed" );
-      LayoutAssist.addTextField( jplPlanting, 4, 3, tfldTPRowsPerBed );
+      lblTPRows = LayoutAssist.createLabel(  jplPlanting, 3, r, "Rows/Bed" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPRowsPerBed );
       
-      lblTPSpaceRow = LayoutAssist.createLabel(  jplPlanting, 3, 4, "Row Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 4, 4, tfldTPSpaceBetRows );
+      lblTPSpaceRow = LayoutAssist.createLabel(  jplPlanting, 3, r, "Row Spacing" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPSpaceBetRows );
       
-      lblTPSpace = LayoutAssist.createLabel(  jplPlanting, 3, 5, "Plant Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 4, 5, tfldTPSpaceInRow );
+      lblTPSpace = LayoutAssist.createLabel(  jplPlanting, 3, r, "Plant Spacing" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPSpaceInRow );
       
-      LayoutAssist.addSeparator( jplPlanting, 3, 6, 2);
+      LayoutAssist.addSeparator( jplPlanting, 3, r++, 2);
       
-      lblTPFlat = LayoutAssist.createLabel(  jplPlanting, 3, 7, "Flat Size" );
-      LayoutAssist.addTextField( jplPlanting, 4, 7, tfldTPFlatSize );
+      lblTPFlat = LayoutAssist.createLabel(  jplPlanting, 3, r, "Flat Size" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPFlatSize );
       
-      lblTPWeeks = LayoutAssist.createLabel(  jplPlanting, 3, 8, "Weeks to TP" );
-      LayoutAssist.addTextField( jplPlanting, 4, 8, tfldTPWeeksToTP );
+      lblTPWeeks = LayoutAssist.createLabel(  jplPlanting, 3, r, "Weeks to TP" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPWeeksToTP );
       
-      LayoutAssist.addSeparator( jplPlanting, 3, 9, 2);
+      LayoutAssist.addSeparator( jplPlanting, 3, r++, 2);
       
-      lblTPNotes = LayoutAssist.createLabel(  jplPlanting, 3, 10, "TP Notes" );
-      LayoutAssist.addTextField( jplPlanting, 4, 10, tfldTPPlantNotes );
+      lblTPNotes = LayoutAssist.createLabel(  jplPlanting, 3, r, "TP Notes" );
+      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPPlantNotes );
       
-//      LayoutAssist.addSubPanel(  jplDetails, 2, 1, 2, 13, jplPlanting );
       LayoutAssist.addPanelToColumn( columnTwo, jplPlanting );
       LayoutAssist.finishColumn( columnTwo );
       
@@ -346,50 +374,69 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
                                                        lblTPMat, lblTPRows, lblTPSpaceRow, lblTPSpace,
                                                        lblTPFlat, lblTPWeeks, lblTPNotes } ) );
 
-      /* *************************************/
-      /* COLUMN THREE (really four and five) */
-      /* *************************************/
+      /**************************************/
+      /* COLUMN FOUR (really seven and eight) */
+      /**************************************/
+
+
+      r=0;
       JPanel jplYield = initPanelWithGridBagLayout();
-      jplYield.setBorder( BorderFactory.createTitledBorder( "Yield Info" ) );
       
       /* unit, per foot, weeks, per week, value */
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, 0, "Yield Units" ));
-      LayoutAssist.addTextField( jplYield, 1, 0, tfldYieldUnits);
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Yield Units" ));
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldUnits);
       
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, 1, "Total Yield/Ft" ));
-      LayoutAssist.addTextField( jplYield, 1, 1, tfldYieldPerFoot );
+      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Total Yield/Ft" ));
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldPerFoot );
       
-//      LayoutAssist.createLabel(  jplYield, 0, 2, "Weeks of Yield" );
-//      LayoutAssist.addTextField( jplYield, 1, 2, tfldYieldWeeks );
-      
-//      LayoutAssist.createLabel(  jplYield, 0, 3, "Yield/Week" );
-//      LayoutAssist.addTextField( jplYield, 1, 3, tfldYieldPerWeek );
-      
-      LayoutAssist.createLabel(  jplYield, 0, 4, "Value/Unit" );
-      LayoutAssist.addTextField( jplYield, 1, 4, tfldYieldUnitValue );
-      
-//      LayoutAssist.addSubPanel(  jplDetails, 4, 1, 2, 6, jplYield );
-      LayoutAssist.addPanelToColumn( columnFour, jplYield );
-//      LayoutAssist.finishColumn( columnThree );
-      
-      /* *************************************/
-      /* COLUMN FOUR (actually six and seven */
-      /* *************************************/
-      
-      JPanel jplMisc = initPanelWithGridBagLayout();
-      jplMisc.setBorder( BorderFactory.createTitledBorder( "Misc Info" ) );
+      LayoutAssist.createLabel(  jplYield, 0, r, "Value/Unit" );
+      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldUnitValue );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, 0, "<html>Other <br>Requirements:</html>" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, 0, 1, 1, tareOtherReq );
+      // TODO these panels should all line up better than they do
+      // would like all fields to start at top of space (not centered)
+      // and ideally have
+
+
+      r=0;
+      JPanel jplSeeds = initPanelWithGridBagLayout();
+
+      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Unit" ));
+      tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
+      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerUnit);
+
+      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seed Units" ));
+      tempLabel.setToolTipText("oz or g, for example");
+      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedUnit );
+
+      lblSeedDS = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Ft (DS)" );
+      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerDS );
+
+      lblSeedTP = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Plant (TP)" );
+      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerTP );
+
+
+      r=0;
+      JPanel jplMisc = initPanelWithGridBagLayout();
+
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r, 
+                                                 "<html>Other <br>Req.:</html>" ));
+      LayoutAssist.addTextArea(  jplMisc, 1, r++, 1, 1, tareOtherReq );
+
+      r++; // skip row 1
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r, "<html>Belongs to <br>Groups:</html>" ));
+      LayoutAssist.addTextArea(  jplMisc, 1, r++, 1, 1, tareGroups );
+
+      r++; // skip row 3
+      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r, "Keywords:" ));
+      LayoutAssist.addTextArea(  jplMisc, 1, r++, 1, 1, tareKeywords );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, 2, "<html>Belongs to <br>Groups:</html>" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, 2, 1, 1, tareGroups );
-      
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, 4, "Keywords:" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, 4, 1, 1, tareKeywords );
-      
-//      LayoutAssist.addSubPanel( jplDetails, 6, 1, 2, 7, jplMisc);
-      LayoutAssist.addPanelToColumn( columnFour, jplMisc );
+      LayoutAssist.addPanelToColumn(
+              columnFour,
+              new CPSCardPanel( new String[] { "Yield Info", 
+                                               "Seed Info",
+                                               "Misc Info" },
+                                new JPanel[] { jplYield, jplSeeds, jplMisc } ));
+
       LayoutAssist.finishColumn( columnFour );
       
       
@@ -401,7 +448,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
       LayoutAssist.addSubPanel( jplDetails, 0, 0, 1, 1, columnOne );
       LayoutAssist.addSubPanel( jplDetails, 1, 0, 1, 1, columnTwo );
-      LayoutAssist.addSubPanel( jplDetails, 2, 0, 1, 1, columnThree );
       LayoutAssist.addSubPanel( jplDetails, 3, 0, 1, 1, columnFour );
 
       // Notes TextArea is set to span all remaining columns
@@ -438,6 +484,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldDSRowsPerBed.setEnabled( b );
       tfldDSSpaceBetRows.setEnabled( b );
       tfldDSPlantNotes.setEnabled( b );
+
+      lblSeedDS.setEnabled(b);
+      tfldSeedsPerDS.setEnabled(b);
    }
 
    private void setTPComponentsEnabled( boolean b ) {
@@ -456,6 +505,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldTPFlatSize.setEnabled( b );
       tfldTPWeeksToTP.setEnabled( b );
       tfldTPPlantNotes.setEnabled( b );
+
+      lblSeedTP.setEnabled(b);
+      tfldSeedsPerTP.setEnabled(b);
    }
 
    @Override
@@ -481,6 +533,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldYieldPerFoot.setEnabled( b );
       tfldYieldUnits.setEnabled( b );
       tfldYieldUnitValue.setEnabled( b );
+      tfldSeedsPerUnit.setEnabled( b );
+      tfldSeedUnit.setEnabled( b );
       tareDesc.setEnabled( b );
       tareGroups.setEnabled( b );
       tareOtherReq.setEnabled( b );

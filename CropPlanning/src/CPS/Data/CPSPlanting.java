@@ -96,8 +96,16 @@ public final class CPSPlanting extends CPSRecord {
    public static final int PROP_YIELD_P_WEEK  = CPSDataModelConstants.PROP_YIELD_P_WEEK;
    public static final int PROP_CROP_UNIT     = CPSDataModelConstants.PROP_CROP_UNIT;
    public static final int PROP_CROP_UNIT_VALUE = CPSDataModelConstants.PROP_CROP_UNIT_VALUE;
+
+   public static final int PROP_SEEDS_PER_UNIT = CPSDataModelConstants.PROP_SEEDS_PER_UNIT;
+   public static final int PROP_SEED_UNIT    = CPSDataModelConstants.PROP_SEED_UNIT;
+   public static final int PROP_SEEDS_PER    = CPSDataModelConstants.PROP_SEEDS_PER;
+   public static final int PROP_SEEDS_PER_DS = CPSDataModelConstants.PROP_SEEDS_PER_DS;
+   public static final int PROP_SEEDS_PER_TP = CPSDataModelConstants.PROP_SEEDS_PER_TP;
+
    // calculated
    public static final int PROP_TOTAL_YIELD   = CPSDataModelConstants.PROP_TOTAL_YIELD;
+   public static final int PROP_SEED_NEEDED   = CPSDataModelConstants.PROP_SEED_NEEDED;
 
    // Misc Metadata
    // bools
@@ -162,6 +170,12 @@ public final class CPSPlanting extends CPSRecord {
    private CPSDatum<String> crop_unit;
    private CPSDatum<Float> crop_unit_value;
    private CPSDatum<Float> total_yield;
+
+    private CPSDatum<Integer> seedsPerUnit;
+    private CPSDatum<String>  seedUnit;
+    private CPSDatum<Float>   seedsPerDS;
+    private CPSDatum<Float>   seedsPerTP;
+    private CPSDatum<Float>   seedNeeded;
 
    private CPSDatum<Boolean> direct_seed;
    private CPSDatum<Boolean> frost_hardy;
@@ -238,6 +252,12 @@ public final class CPSPlanting extends CPSRecord {
       crop_unit = new CPSDatum<String>( "Unit of Yield", "", PROP_CROP_UNIT );
       crop_unit_value = new CPSDatum<Float>( "Value per Yield Unit", new Float(0.0), PROP_CROP_UNIT_VALUE );
       total_yield = new CPSDatum<Float>( "Total Yield", new Float( -1.0 ), PROP_TOTAL_YIELD );
+
+      seedsPerUnit = new CPSDatum<Integer>( "Seeds/Unit", new Integer(-1), PROP_SEEDS_PER_UNIT );
+      seedUnit = new CPSDatum<String>( "Units", "", PROP_SEED_UNIT );
+      seedsPerDS = new CPSDatum<Float>( "Seeds/RowFt (DS)", new Float( -1.0 ), PROP_SEEDS_PER_DS );
+      seedsPerTP = new CPSDatum<Float>( "Seeds/Plant (TP)", new Float( -1.0 ), PROP_SEEDS_PER_TP );
+      seedNeeded    = new CPSDatum<Float>( "Seed Units Needed", new Float( -1.0 ), PROP_SEED_NEEDED );
 
       direct_seed = new CPSDatum<Boolean>( "Direct seeded?", Boolean.TRUE, PROP_DIRECT_SEED );
       frost_hardy = new CPSDatum<Boolean>( "Frost hardy?", Boolean.FALSE , PROP_FROST_HARDY );
@@ -329,6 +349,18 @@ public final class CPSPlanting extends CPSRecord {
           case PROP_CROP_UNIT_VALUE: return crop_unit_value;
           case PROP_TOTAL_YIELD:     return total_yield;
 
+            // TODO handle a generic "seeds per" request for DS/TP?
+          case PROP_SEEDS_PER_UNIT:  return seedsPerUnit;
+          case PROP_SEED_UNIT:       return seedUnit;
+          case PROP_SEEDS_PER:
+             if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
+                return getDatum( PROP_SEEDS_PER_DS );
+             else
+                return getDatum( PROP_SEEDS_PER_TP );
+          case PROP_SEEDS_PER_DS: return seedsPerDS;
+          case PROP_SEEDS_PER_TP: return seedsPerTP;
+          case PROP_SEED_NEEDED:     return seedNeeded;
+
           case PROP_DIRECT_SEED:   return direct_seed;
           case PROP_FROST_HARDY:   return frost_hardy;
           case PROP_GROUPS:        return groups;
@@ -370,6 +402,12 @@ public final class CPSPlanting extends CPSRecord {
         listOfInheritableProperties.add( PROP_CROP_UNIT_VALUE );
         listOfInheritableProperties.add( PROP_FROST_HARDY  );
         listOfInheritableProperties.add( PROP_OTHER_REQ );
+
+        listOfInheritableProperties.add( PROP_SEEDS_PER_UNIT );
+        listOfInheritableProperties.add( PROP_SEED_UNIT );
+        listOfInheritableProperties.add( PROP_SEEDS_PER_DS  );
+        listOfInheritableProperties.add( PROP_SEEDS_PER_TP );
+        
       }
       return listOfInheritableProperties;
    }
@@ -1175,6 +1213,103 @@ public final class CPSPlanting extends CPSRecord {
    public void setTotalYield( float i ) { setTotalYield( new Float( i ) ); }
    public void setTotalYield( String s ) { setTotalYield( parseFloatBigF(s) ); }
 
+
+    public Integer       getSeedsPerUnit() {            return getInt( seedsPerUnit.getPropertyNum() ); }
+    public String        getSeedsPerUnitString() {       return getString( seedsPerUnit.getPropertyNum() ); }
+    public CPSDatumState getSeedsPerUnitState() {        return getStateOf( seedsPerUnit.getPropertyNum() ); }
+    public void          setSeedsPerUnit( Integer i ) { set( seedsPerUnit, i ); }
+    public void          setSeedsPerUnit( int i ) {     setSeedsPerUnit( new Integer( i )); }
+    public void          setSeedsPerUnit( String s ) {  setSeedsPerUnit( parseInteger(s) ); }
+
+    public String        getSeedUnit() {           return get( seedUnit.getPropertyNum() ); }
+    public CPSDatumState getSeedUnitState() {       return getStateOf( seedUnit.getPropertyNum() ); }
+    public void          setSeedUnit( String s ) { set( seedUnit, s ); }
+
+    public Float getSeedsPer() {
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
+         return getFloat( seedsPerDS.getPropertyNum() );
+      else
+         return getFloat( seedsPerTP.getPropertyNum() );
+    }
+    public String getSeedsPerString() {
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
+         return getString( seedsPerDS.getPropertyNum() );
+      else
+         return getString( seedsPerTP.getPropertyNum() );
+    }
+    public CPSDatumState getSeedsPerState() {
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
+         return getStateOf( seedsPerDS.getPropertyNum() );
+      else
+         return getStateOf( seedsPerTP.getPropertyNum() );
+    }
+    public void setSeedsPer( Float i ) {
+      if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
+         set( seedsPerDS, i );
+      else
+         set( seedsPerTP, i );
+    }
+    public void setSeedsPer( float i ) { setSeedsPer( new Float( i )); }
+    public void setSeedsPer( String s ) { setSeedsPer( parseFloatBigF(s) ); }
+
+    public Float         getSeedsPerDS() {           return getFloat( seedsPerDS.getPropertyNum() ); }
+    public String        getSeedsPerDSString() {      return formatFloat( seedsPerDS.getPropertyNum() ); }
+    public CPSDatumState getSeedsPerDSState() {       return getStateOf( seedsPerDS.getPropertyNum() ); }
+    public void          setSeedsPerDS( Float i ) {  set( seedsPerDS, i ); }
+    public void          setSeedsPerDS( float i ) {  setSeedsPerDS( new Float( i )); }
+    public void          setSeedsPerDS( String s ) { setSeedsPerDS( parseFloatBigF(s) ); }
+
+    public Float         getSeedsPerTP() {           return getFloat( seedsPerTP.getPropertyNum() ); }
+    public String        getSeedsPerTPString() {      return formatFloat( (Float) get( seedsPerTP.getPropertyNum() ) ); }
+    public CPSDatumState getSeedsPerTPState() {       return getStateOf( seedsPerTP.getPropertyNum() ); }
+    public void          setSeedsPerTP( Float f ) {  set( seedsPerTP, f ); }
+    public void          setSeedsPerTP( float f ) {  setSeedsPerTP( new Float( f )); }
+    public void          setSeedsPerTP( String s ) { setSeedsPerTP( parseFloatBigF(s) ); }
+
+    protected CPSDatum<Float> gettSeedNeededDatum() { return gettSeedNeededDatum( new ArrayList() ); }
+    protected CPSDatum<Float> gettSeedNeededDatum( List source_path ) {
+
+      CPSDatum n = getDatum( PROP_SEED_NEEDED );
+
+      if ( n.isConcrete() || source_path.contains( n.propertyNum ))
+        return n;
+
+      source_path.add( n.propertyNum );
+
+//      if ( ! source_path.contains( PROP_OF_DATUM_THAT_MIGHT_CALL_THIS )) {
+
+      CPSDatum s = getDatum( seedsPerDS.getPropertyNum() );
+      CPSDatum p = getDatum( seedsPerTP.getPropertyNum() );
+      CPSDatum r = getRowFtToPlantDatum( source_path );
+
+      if ( ! n.isConcrete() ) {
+        if ( this.isDirectSeeded() &&
+             s.isNotNull() && r.isNotNull() ) {
+          set( n,
+               CPSCalculations.precision3( s.getValueAsInt() *
+                                           r.getValueAsInt() ));
+          // TODO need to take seed units into account
+          n.setCalculated( true );
+        }
+        else if ( this.isTransplanted() &&
+                  p.isNotNull() && r.isNotNull() ) {
+          set( n,
+               CPSCalculations.precision3( p.getValueAsFloat() *
+                                           r.getValueAsInt() ));
+          n.setCalculated( true );
+        }
+      }
+
+      return n;
+    }
+    public Float         getSeedNeeded() {           return getFloat( seedNeeded.getPropertyNum() ); }
+    public String        getSeedNeededString() {      return formatFloat( (Float) get( seedNeeded.getPropertyNum() ) ); }
+    public CPSDatumState getSeedNeededState() {       return getStateOf( seedNeeded.getPropertyNum() ); }
+    public void          setSeedNeeded( Float f ) {  set( seedNeeded, f ); }
+    public void          setSeedNeeded( float f ) {  setSeedNeeded( new Float( f )); }
+    public void          setSeedNeeded( String s ) { setSeedNeeded( parseFloatBigF(s) ); }
+
+
    /* *********************************************************************************************/
    /* Misc Metadata */
    /* *********************************************************************************************/
@@ -1288,8 +1423,10 @@ public final class CPSPlanting extends CPSRecord {
        
       public  boolean ignoreThisProperty() {
 //         return this.currentProp == PROP_ID || this.currentProp == PROP_CROP_ID;
-         return this.currentProp == PROP_ID      || this.currentProp == PROP_DATE_PLANT ||
-                this.currentProp == PROP_DATE_TP || this.currentProp == PROP_DATE_HARVEST;
+         return this.currentProp == PROP_ID      ||
+                this.currentProp == PROP_DATE_PLANT ||
+                this.currentProp == PROP_DATE_TP ||
+                this.currentProp == PROP_DATE_HARVEST;
       }
        
    }
