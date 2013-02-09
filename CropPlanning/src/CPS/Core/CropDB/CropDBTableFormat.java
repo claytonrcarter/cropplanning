@@ -27,7 +27,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
 
 public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
 
-   public int getColumnCount() { return 31; }
+   public int getColumnCount() { return 35; }
 
    @Override
    public CPSCrop getBlankRecord() { return new CPSCrop(); }
@@ -79,8 +79,13 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
             case 29: return CPSCrop.PROP_CROP_UNIT;
             case 30: return CPSCrop.PROP_CROP_UNIT_VALUE;
 
+            case 31: return CPSCrop.PROP_SEEDS_PER_UNIT;
+            case 32: return CPSCrop.PROP_SEED_UNIT;
+            case 33: return CPSCrop.PROP_SEEDS_PER_DS;
+            case 34: return CPSCrop.PROP_SEEDS_PER_TP;
+
             default: return -1;
-        }
+   }
    }
 
    public boolean isDefaultColumn( int colNum ) {
@@ -136,9 +141,14 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
             case 29: return c.getCropYieldUnit();
             case 30: return c.getCropUnitValueString();
 
+            case 31: return c.getSeedsPerUnitString();
+            case 32: return c.getSeedUnit();
+            case 33: return c.getSeedsPerDSString();
+            case 34: return c.getSeedsPerTPString();
+
             default: return "";
         }
     }
 
-   
+
 }

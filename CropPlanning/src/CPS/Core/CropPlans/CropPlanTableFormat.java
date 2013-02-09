@@ -27,7 +27,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
 
 public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
-   public int getColumnCount() { return 47; }
+   public int getColumnCount() { return 51; }
 
    @Override
    public CPSPlanting getBlankRecord() {
@@ -45,15 +45,15 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
       switch ( colNum ) {
          case 0: return CPSPlanting.PROP_CROP_NAME;
-         case 1: return CPSPlanting.PROP_VAR_NAME     ;
-         case 2: return CPSPlanting.PROP_MATURITY     ;
-         case 3: return CPSPlanting.PROP_LOCATION     ;
+         case 1: return CPSPlanting.PROP_VAR_NAME;
+         case 2: return CPSPlanting.PROP_MATURITY;
+         case 3: return CPSPlanting.PROP_LOCATION;
 
          // Dates
          // "effective" dates
-         case 4: return CPSPlanting.PROP_DATE_PLANT   ;
-         case 5: return CPSPlanting.PROP_DATE_TP      ;
-         case 6: return CPSPlanting.PROP_DATE_HARVEST ;
+         case 4: return CPSPlanting.PROP_DATE_PLANT;
+         case 5: return CPSPlanting.PROP_DATE_TP;
+         case 6: return CPSPlanting.PROP_DATE_HARVEST;
          // planned dates
          case 7: return CPSPlanting.PROP_DATE_PLANT_PLAN;
          case 8: return CPSPlanting.PROP_DATE_TP_PLAN;
@@ -65,54 +65,60 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
          // Status Booleans
          case 13: return CPSPlanting.PROP_DONE_PLANTING;
-         case 14: return CPSPlanting.PROP_DONE_TP      ;
-         case 15: return CPSPlanting.PROP_DONE_HARVEST ;
+         case 14: return CPSPlanting.PROP_DONE_TP;
+         case 15: return CPSPlanting.PROP_DONE_HARVEST;
          case 16: return CPSPlanting.PROP_IGNORE;
 
          // Static Data
          // inheritable
-         case 17: return CPSPlanting.PROP_MAT_ADJUST   ;
-         case 18: return CPSPlanting.PROP_ROWS_P_BED   ;
-         case 19: return CPSPlanting.PROP_ROW_SPACE    ;
-         case 20: return CPSPlanting.PROP_CROP_NOTES   ;
+         case 17: return CPSPlanting.PROP_MAT_ADJUST;
+         case 18: return CPSPlanting.PROP_ROWS_P_BED;
+         case 19: return CPSPlanting.PROP_ROW_SPACE;
+         case 20: return CPSPlanting.PROP_CROP_NOTES;
 
-         case 21: return CPSPlanting.PROP_TIME_TO_TP      ;
-         case 22: return CPSPlanting.PROP_INROW_SPACE  ;
-         case 23: return CPSPlanting.PROP_FLAT_SIZE    ;
+         case 21: return CPSPlanting.PROP_TIME_TO_TP;
+         case 22: return CPSPlanting.PROP_INROW_SPACE;
+         case 23: return CPSPlanting.PROP_FLAT_SIZE;
          case 24: return CPSPlanting.PROP_PLANTING_NOTES;
 
          // Calculated Data
-         case 25: return CPSPlanting.PROP_BEDS_PLANT   ;
+         case 25: return CPSPlanting.PROP_BEDS_PLANT;
          case 26: return CPSPlanting.PROP_PLANTS_NEEDED;
-         case 27: return CPSPlanting.PROP_ROWFT_PLANT  ;
-         case 28: return CPSPlanting.PROP_PLANTS_START ;
-         case 29: return CPSPlanting.PROP_FLATS_NEEDED ;
+         case 27: return CPSPlanting.PROP_ROWFT_PLANT;
+         case 28: return CPSPlanting.PROP_PLANTS_START;
+         case 29: return CPSPlanting.PROP_FLATS_NEEDED;
 
          // Yield
          // static
-         case 30: return CPSPlanting.PROP_YIELD_P_FOOT ;
+         case 30: return CPSPlanting.PROP_YIELD_P_FOOT;
          case 31: return CPSPlanting.PROP_YIELD_NUM_WEEKS;
-         case 32: return CPSPlanting.PROP_YIELD_P_WEEK ;
-         case 33: return CPSPlanting.PROP_CROP_UNIT    ;
+         case 32: return CPSPlanting.PROP_YIELD_P_WEEK;
+         case 33: return CPSPlanting.PROP_CROP_UNIT;
          case 34: return CPSPlanting.PROP_CROP_UNIT_VALUE;
          // calculated
-         case 35: return CPSPlanting.PROP_TOTAL_YIELD  ;
+         case 35: return CPSPlanting.PROP_TOTAL_YIELD;
+
+         // Seeds
+         case 36: return CPSPlanting.PROP_SEEDS_PER_UNIT;
+         case 37: return CPSPlanting.PROP_SEED_UNIT;
+         case 38: return CPSPlanting.PROP_SEEDS_PER;
+         case 39: return CPSPlanting.PROP_SEED_NEEDED;
 
          // Misc Metadata
          // bools
-         case 36: return CPSPlanting.PROP_DIRECT_SEED  ;
-         case 37: return CPSPlanting.PROP_FROST_HARDY  ;
+         case 40: return CPSPlanting.PROP_DIRECT_SEED;
+         case 41: return CPSPlanting.PROP_FROST_HARDY;
          // Strings
-         case 38: return CPSPlanting.PROP_GROUPS       ;
-         case 39: return CPSPlanting.PROP_KEYWORDS     ;
-         case 40: return CPSPlanting.PROP_OTHER_REQ    ;
-         case 41: return CPSPlanting.PROP_NOTES        ;
+         case 42: return CPSPlanting.PROP_GROUPS;
+         case 43: return CPSPlanting.PROP_KEYWORDS;
+         case 44: return CPSPlanting.PROP_OTHER_REQ;
+         case 45: return CPSPlanting.PROP_NOTES;
 
-         case 42: return CPSPlanting.PROP_CUSTOM1      ;
-         case 43: return CPSPlanting.PROP_CUSTOM2      ;
-         case 44: return CPSPlanting.PROP_CUSTOM3      ;
-         case 45: return CPSPlanting.PROP_CUSTOM4      ;
-         case 46: return CPSPlanting.PROP_CUSTOM5      ;
+         case 46: return CPSPlanting.PROP_CUSTOM1;
+         case 47: return CPSPlanting.PROP_CUSTOM2;
+         case 48: return CPSPlanting.PROP_CUSTOM3;
+         case 49: return CPSPlanting.PROP_CUSTOM4;
+         case 50: return CPSPlanting.PROP_CUSTOM5;
 
          default: return CPSPlanting.PROP_ID;
       }
@@ -187,21 +193,27 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
          // calculated
          case 35: return p.getTotalYieldString();
 
+         // Seeds
+         case 36: return p.getSeedsPerUnitString();
+         case 37: return p.getSeedUnit();
+         case 38: return p.getSeedsPerString();
+         case 39: return p.getSeedNeededString();
+         
          // Misc Metadata
          // bools
-         case 36: return p.isDirectSeeded();
-         case 37: return p.isFrostHardy();
+         case 40: return p.isDirectSeeded();
+         case 41: return p.isFrostHardy();
          // Strings
-         case 38: return p.getGroups();
-         case 39: return p.getKeywords();
-         case 40: return p.getOtherRequirements();
-         case 41: return p.getNotes();
+         case 42: return p.getGroups();
+         case 43: return p.getKeywords();
+         case 44: return p.getOtherRequirements();
+         case 45: return p.getNotes();
 
-         case 42: return p.getCustomField1();
-         case 43: return p.getCustomField2();
-         case 44: return p.getCustomField3();
-         case 45: return p.getCustomField4();
-         case 46: return p.getCustomField5();
+         case 46: return p.getCustomField1();
+         case 47: return p.getCustomField2();
+         case 48: return p.getCustomField3();
+         case 49: return p.getCustomField4();
+         case 50: return p.getCustomField5();
          
          default: return "";
       }

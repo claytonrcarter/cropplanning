@@ -701,6 +701,15 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                                                      public Float evaluate( CPSPlanting p ) {
                                                         return p.getFlatsNeeded();
                                                      }} );
+        FunctionList<CPSPlanting, Float> seedsList =
+              new FunctionList<CPSPlanting, Float>( filteredPlan,
+                                                  new FunctionList.Function<CPSPlanting, Float>() {
+                                                     public Float evaluate( CPSPlanting p ) {
+                                                       if ( p.getSeedNeeded() > 0 )
+                                                        return p.getSeedNeeded();
+                                                       else
+                                                         return 0f;
+                                                     }} );
 
 
         Calculation<Integer> summaryPlantings = Calculations.count( filteredPlan );
@@ -708,6 +717,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         Calculation<Integer> summaryPlants = Calculations.sumIntegers( plantsList );
         Calculation<Float> summaryBeds = Calculations.sumFloats( bedsList );
         Calculation<Float> summaryFlats = Calculations.sumFloats( flatsList );
+        Calculation<Float> summarySeeds = Calculations.sumFloats( seedsList );
 
 
 
@@ -721,8 +731,10 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           CropVarMatcher cvm = new CropVarMatcher(p);
           filteredPlan.setMatcher( cvm );
 
+          // TODO should also match on when a Crop+Var has a different seed count or weight unit
 
-          // create new planting based on the summary calculations for that filtered list
+          // create new empty planting to represent our summary
+          // and populate it with the summary calculations for the filtered list
           CPSPlanting s = new CPSPlanting();
           s.setCropName( p.getCropName() );
           s.setVarietyName( p.getVarietyName() );
@@ -735,13 +747,17 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           s.setPlantsToStart( summaryPlants.getValue() );
           s.setBedsToPlant( summaryBeds.getValue() + .001f );
           s.setFlatsNeeded( summaryFlats.getValue() );
+
+          s.setSeedsPer( p.getSeedsPer() );
+          s.setSeedUnit( p.getSeedUnit() );
+          s.setSeedNeeded( summarySeeds.getValue() );
+
           // this is a dirty dirty hack that is only used because we're
           // controlling the table format for the output
           s.setMaturityDays( summaryPlantings.getValue() );
 
           // add that new planting to a separate list
           seedStats.add(s);
-
 
           // now add this to the list of shit to exclude from our list
           filterList.add( cvm.invert() );

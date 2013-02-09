@@ -27,16 +27,14 @@ import CPS.Data.CPSCrop;
 import CPS.Data.CPSPlanting;
 import CPS.Module.CPSModule;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.sf.persist.Persist;
+import net.sf.persist.TableMapping;
 
 /**
  * A class to handle updating the database between versions.
@@ -105,13 +103,95 @@ public class HSQLUpdate {
            if ( previousVersion < CPSModule.versionAsLongInt( 0, 3, 0 ))
              updateVersion = updateForV000_003_000( con );
 
+           // version 0.5.5
+           // this will only affect me since version 0.3.0 never made it to the
+           // public
+           if ( previousVersion == CPSModule.versionAsLongInt( 0, 3, 0 ))
+             updateVersion = updateForV000_005_005( con );
+
            if ( updateVersion != 0 )
              HSQLDBCreator.setLastUpdateVersion( p, updateVersion );
+
+           CPSModule.debug( "HSQLUpdate", "DB updates complete. (" + currentVersion + ")" );
+
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
            
    }
    
+   
+    private static long updateForV000_005_005( Connection con ) throws java.sql.SQLException {
+
+      CPSModule.debug( "HSQLUpdate", "Updating DB for changes in version 0.5.5" );
+
+      Persist p = new Persist( con );
+
+      // create a new, temporary table to make this hack work
+      String tempTable = "temp055";
+      p.create( tempTable, new CPSCrop() );
+      TableMapping tm = (TableMapping) p.getMapping(CPSCrop.class, tempTable);
+
+
+      // 1. add columns for seed info to all crop var table
+      String table = HSQLDB.CROP_VAR_TABLE;
+      String[] newMeths = new String[] { "getSeedsPerUnit", "getSeedUnit",
+                                        "getSeedsPerDS", "getSeedsPerTP" };
+      for ( String meth : newMeths ) {
+        // ask the new table (with new new columns) what to call the new columns
+        String newcol     = tm.getColumnNameForMethod( meth );
+        String newcoltype = tm.getTypeNameForColumn( newcol ).toUpperCase();
+        p.executeUpdate( "ALTER TABLE " + HSQLDB.escapeTableName( table ) +
+                         " ADD COLUMN " + newcol + " " + newcoltype + "; " );
+      }
+
+      // now trop the temp table...
+      p.executeUpdate( "DROP TABLE " + HSQLDB.escapeTableName(tempTable));
+
+      // ...and recreate it as a Planting!
+      p.create( tempTable, new CPSPlanting() );
+      tm = (TableMapping) p.getMapping(CPSPlanting.class, tempTable);
+
+      List<String> plans = HSQLQuerier.getDistinctValuesForColumn( con, HSQLDB.CROP_PLAN_TABLE, "plan_name" );
+      for ( String plan : plans ) {
+        // 2. add columns for seed info to all crop plan tables
+        // 3. add new columns for the old fields that now have a @NoColumn annotation
+        newMeths = new String[] { "getDSMatAdjust", "getTPMatAdjust",
+                                  "getDSRowsPerBed", "getTPRowsPerBed",
+                                  "getDSRowSpacing", "getTPRowSpacing",
+                                  "getDSPlantingNotes", "getTPPlantingNotes",
+                                  "getSeedsPerDS", "getSeedsPerTP",
+                                  "getSeedsPerUnit", "getSeedUnit",
+                                  "getSeedNeeded" };
+
+        for ( String meth : newMeths ) {
+          String newcol     = tm.getColumnNameForMethod( meth );
+          String newcoltype = tm.getTypeNameForColumn( newcol ).toUpperCase();
+          p.executeUpdate( "ALTER TABLE " + HSQLDB.escapeTableName( plan ) +
+                           " ADD COLUMN " + newcol + " " + newcoltype + "; " );
+        }
+
+
+        // 3. drop the old "pseudo" columns that are now @NoColumn annotated
+        // cant just do this, have to reference actual column names
+        newMeths = new String[] { "mat_adjust", "rows_per_bed",
+                                  "row_spacing", "transplanted", "planting_notes_inherited" };
+        for ( String oldCol : newMeths ) {
+          // drop old cols
+          p.executeUpdate( "ALTER TABLE " + HSQLDB.escapeTableName( plan ) +
+                           " DROP COLUMN " + oldCol + "; " );
+
+        }
+      }
+      
+      // now trop the temp table...
+      p.executeUpdate( "DROP TABLE " + HSQLDB.escapeTableName(tempTable));
+
+
+      return CPSModule.versionAsLongInt( 0, 5, 5 );
+
+    }
+
+
    
    private static long updateForV000_001_002( Connection con ) throws java.sql.SQLException {
        
@@ -462,7 +542,6 @@ public class HSQLUpdate {
       // 6. rename the new cropdb
 
       return CPSModule.versionAsLongInt( 0, 3, 0 );
-//      return 0;
     }
 
 
