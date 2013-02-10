@@ -772,7 +772,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "Seed Order Worksheet for plan \"" + planName + "\"", jt );
         } else {
-          pdf.export( jt, filename,
+//          pdf.export( jt, filename,
+//                           CPSGlobalSettings.getFarmName(),
+//                           "Seed Order Worksheet for plan \"" + planName + "\"",
+//                           null );
+          pdf.exportLandscape( jt, filename,
                            CPSGlobalSettings.getFarmName(),
                            "Seed Order Worksheet for plan \"" + planName + "\"",
                            null );

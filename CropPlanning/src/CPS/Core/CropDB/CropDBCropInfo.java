@@ -53,7 +53,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private CPSTextField tfldTPFlatSize, tfldTPWeeksToTP, tfldTPPlantNotes;
    private CPSTextArea tareDesc, tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private CPSTextField tfldYieldPerWeek, tfldYieldWeeks, tfldYieldPerFoot, tfldYieldUnits, tfldYieldUnitValue;
-   private CPSTextField tfldSeedsPerUnit, tfldSeedUnit, tfldSeedsPerDS, tfldSeedsPerTP;
+   private CPSTextField tfldSeedsPerUnit, tfldSeedsPerDS, tfldSeedsPerTP;
+   private CPSComboBox cmbSeedUnit;
    private JLabel lblSeedDS, lblSeedTP;
 
    private ArrayList<JLabel> anonLabels;
@@ -134,8 +135,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
       tfldSeedsPerUnit.setInitialText( displayedCrop.getSeedsPerUnitString() ,
                                        displayedCrop.getSeedsPerUnitState() );
-      tfldSeedUnit.setInitialText( displayedCrop.getSeedUnit() ,
-                                   displayedCrop.getSeedUnitState() );
+      cmbSeedUnit.setInitialSelection( displayedCrop.getSeedUnit() ,
+                                       displayedCrop.getSeedUnitState() );
       tfldSeedsPerDS.setInitialText( displayedCrop.getSeedsPerDSString() ,
                                      displayedCrop.getSeedsPerDSState() );
       tfldSeedsPerTP.setInitialText( displayedCrop.getSeedsPerTPString() ,
@@ -209,7 +210,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       if ( tfldYieldUnitValue.hasChanged() ) changes.setCropUnitValue( tfldYieldUnitValue.getText() );
 
       if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
-      if ( tfldSeedUnit.hasChanged()     ) changes.setSeedUnit( tfldSeedUnit.getText() );
+      if ( cmbSeedUnit.hasChanged()     ) changes.setSeedUnit( cmbSeedUnit.getSelectedItem() );
       if ( tfldSeedsPerDS.hasChanged()   ) changes.setSeedsPerDS( tfldSeedsPerDS.getText() );
       if ( tfldSeedsPerTP.hasChanged()   ) changes.setSeedsPerTP( tfldSeedsPerTP.getText() );
 
@@ -262,7 +263,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldYieldUnitValue = new CPSTextField( FIELD_LEN_SHORT );
 
       tfldSeedsPerUnit = new CPSTextField( FIELD_LEN_MED );
-      tfldSeedUnit     = new CPSTextField( FIELD_LEN_MED );
+      cmbSeedUnit      = new CPSComboBox( CPSCrop.SEED_UNIT_STRINGS );
       tfldSeedsPerDS   = new CPSTextField( FIELD_LEN_MED );
       tfldSeedsPerTP   = new CPSTextField( FIELD_LEN_MED );
 
@@ -400,13 +401,13 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       r=0;
       JPanel jplSeeds = initPanelWithGridBagLayout();
 
+      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Units" ));
+      tempLabel.setToolTipText("oz or g, for example");
+      LayoutAssist.addComponent( jplSeeds, 1, r++, cmbSeedUnit );
+
       anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Unit" ));
       tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
       LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerUnit);
-
-      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seed Units" ));
-      tempLabel.setToolTipText("oz or g, for example");
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedUnit );
 
       lblSeedDS = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Ft (DS)" );
       LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerDS );
@@ -534,7 +535,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldYieldUnits.setEnabled( b );
       tfldYieldUnitValue.setEnabled( b );
       tfldSeedsPerUnit.setEnabled( b );
-      tfldSeedUnit.setEnabled( b );
+      cmbSeedUnit.setEnabled( b );
       tareDesc.setEnabled( b );
       tareGroups.setEnabled( b );
       tareOtherReq.setEnabled( b );

@@ -1273,7 +1273,7 @@ public final class CPSPlanting extends CPSRecord {
 
     public String        getSeedUnit() {           return get( seedUnit.getPropertyNum() ); }
     public CPSDatumState getSeedUnitState() {       return getStateOf( seedUnit.getPropertyNum() ); }
-    public void          setSeedUnit( String s ) { set( seedUnit, s ); }
+    public void          setSeedUnit( String s ) { set( seedUnit, parseInheritableString(s) ); }
 
     @NoColumn
     public Float getSeedsPer() {
@@ -1325,27 +1325,30 @@ public final class CPSPlanting extends CPSRecord {
 
 //      if ( ! source_path.contains( PROP_OF_DATUM_THAT_MIGHT_CALL_THIS )) {
 
-      CPSDatum s = getDatum( seedsPerDS.getPropertyNum() );
-      CPSDatum p = getDatum( seedsPerTP.getPropertyNum() );
+      CPSDatum d = getDatum( seedsPerDS.getPropertyNum() );
       CPSDatum r = getRowFtToPlantDatum( source_path );
+      CPSDatum t = getDatum( seedsPerTP.getPropertyNum() );
+      CPSDatum p = getPlantsNeededDatum( source_path );
+      CPSDatum u = getDatum( seedsPerUnit.getPropertyNum() );
 
       Boolean ds = this.isDirectSeeded();
       ds = ds == null || ds.booleanValue();
 
-      if ( ! n.isConcrete() ) {
+      if ( ! n.isConcrete() && u.isNotNull() ) {
         if ( ds &&
-             s.isNotNull() && r.isNotNull() ) {
+             d.isNotNull() && r.isNotNull() ) {
           set( n,
-               CPSCalculations.precision3( s.getValueAsFloat() *
-                                           r.getValueAsInt() ));
-          // TODO need to take seed units into account
+               CPSCalculations.precision3( ( d.getValueAsFloat() *
+                                             r.getValueAsInt() ) /
+                                            u.getValueAsInt() ));
           n.setCalculated( true );
         }
         else if ( ! ds &&
-                  p.isNotNull() && r.isNotNull() ) {
+                  t.isNotNull() && p.isNotNull() ) {
           set( n,
-               CPSCalculations.precision3( p.getValueAsFloat() *
-                                           r.getValueAsInt() ));
+               CPSCalculations.precision3( ( t.getValueAsFloat() *
+                                             p.getValueAsInt() ) /
+                                            u.getValueAsInt() ));
           n.setCalculated( true );
         }
       }

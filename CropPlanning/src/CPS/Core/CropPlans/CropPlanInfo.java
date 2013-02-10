@@ -22,10 +22,12 @@
 
 package CPS.Core.CropPlans;
 
+import CPS.Data.CPSCrop;
 import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSDetailView;
 import CPS.Data.CPSPlanting;
+import CPS.Module.CPSDataModelConstants;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.*;
 import java.awt.event.ActionEvent;
@@ -56,7 +58,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    private CPSTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private CPSTextField tfldCustom1, tfldCustom2, tfldCustom3, tfldCustom4, tfldCustom5;
 
-   private CPSTextField tfldSeedsPerUnit, tfldSeedUnit, tfldSeedsPer, tfldSeedNeeded;
+   private CPSTextField tfldSeedsPerUnit, tfldSeedsPer, tfldSeedNeeded;
+   private CPSComboBox cmbSeedUnit;
+   private JLabel lblSeedsPer;
 
    private CPSButtonGroup /* bgDates, */ bgSeedMethod;
    private ArrayList<JLabel> anonLabels;
@@ -165,8 +169,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
        tfldSeedsPerUnit.setInitialText( displayedPlanting.getSeedsPerUnitString(),
                                         displayedPlanting.getSeedsPerUnitState() );
-       tfldSeedUnit.setInitialText( displayedPlanting.getSeedUnit(),
-                                    displayedPlanting.getSeedUnitState() );
+       cmbSeedUnit.setInitialSelection( displayedPlanting.getSeedUnit(),
+                                        displayedPlanting.getSeedUnitState() );
        tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
                                     displayedPlanting.getSeedsPerState() );
        tfldSeedNeeded.setInitialText( displayedPlanting.getSeedNeededString(),
@@ -357,7 +361,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( tfldCropYieldUnitValue.hasChanged() ) changes.setCropYieldUnitValue( tfldCropYieldUnitValue.getText() );
 
        if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
-       if ( tfldSeedUnit.hasChanged() ) changes.setSeedUnit( tfldSeedUnit.getText() );
+       if ( cmbSeedUnit.hasChanged() ) changes.setSeedUnit( cmbSeedUnit.getSelectedItem() );
        if ( tfldSeedsPer.hasChanged() ) changes.setSeedsPer( tfldSeedsPer.getText() );
        if ( tfldSeedNeeded.hasChanged() ) changes.setSeedNeeded( tfldSeedNeeded.getText() );
 
@@ -441,7 +445,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldCropYieldUnitValue = new CPSTextField( FIELD_LEN_SHORT );
 
       tfldSeedsPerUnit = new CPSTextField( FIELD_LEN_MED );
-      tfldSeedUnit     = new CPSTextField( FIELD_LEN_MED );
+      cmbSeedUnit     = new CPSComboBox( CPSCrop.SEED_UNIT_STRINGS );
       tfldSeedsPer     = new CPSTextField( FIELD_LEN_MED );
       tfldSeedNeeded   = new CPSTextField( FIELD_LEN_MED );
 
@@ -616,18 +620,18 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       r=0;
       JPanel jplSeeds = initPanelWithGridBagLayout();
 
+      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Units" ));
+      tempLabel.setToolTipText("Usually this would be from the catalog. i.e. Do they sell by the oz or the gram or by count?");
+      LayoutAssist.addComponent( jplSeeds, 1, r++, cmbSeedUnit );
+
       anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Unit" ));
       tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
       LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerUnit );
 
-      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seed Units" ));
-      tempLabel.setToolTipText("oz or g, for example");
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedUnit );
-
-      anonLabels.add( LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Ft or Plant" ));
+      anonLabels.add(lblSeedsPer = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Ft or Plant" ));
       LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPer );
 
-      anonLabels.add(LayoutAssist.createLabel( jplSeeds, 0, r, "Seed Needed" ));
+      anonLabels.add(LayoutAssist.createLabel( jplSeeds, 0, r, "Units Needed" ));
       LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedNeeded );
 
 
@@ -778,6 +782,15 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldFlatSize.setEnabled( b );
       tfldFlatsNeeded.setEnabled( b );
       tfldPlantsToStart.setEnabled( b );
+
+      if ( b ) {
+        lblSeedsPer.setText("Seeds/Plug");
+        lblSeedsPer.setToolTipText("How many seeds get sown in each cell or plug?");
+      }
+      else {
+        lblSeedsPer.setText("Seeds/RowFt");
+        lblSeedsPer.setToolTipText("Appox. how many seeds are sown per row-foot?");
+      }
    }
 
    protected void setAllComponentsEnabled( boolean b ) {
@@ -811,7 +824,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldCropYieldUnit.setEnabled( b );
       tfldCropYieldUnitValue.setEnabled( b );
       tfldSeedsPerUnit.setEnabled( b );
-      tfldSeedUnit.setEnabled( b );
+      cmbSeedUnit.setEnabled( b );
       tfldSeedsPer.setEnabled( b );
       tfldSeedNeeded.setEnabled( b );
       tareGroups.setEnabled( b );

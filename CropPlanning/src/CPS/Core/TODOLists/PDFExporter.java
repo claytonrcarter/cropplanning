@@ -58,19 +58,46 @@ public class PDFExporter {
         startExport( jtable, filename, farmName, docTitle, tableTitle );
         endExport();
     }
-    
-    public void startExport( JTable jtable, String filename, 
-                             String farmName, String docTitle, String tableTitle ) {
+
+
+    public void exportLandscape( JTable jtable,
+                                 String filename,
+                                 String farmName,
+                                 String docTitle,
+                                 String tableTitle ) {
+
+        startExport( filename, farmName, docTitle, tableTitle, PageSize.LETTER.rotate() );
+        addTable( jtable, tableTitle );
+        endExport();
+    }
+
+
+    public void startExport( JTable jtable,
+                            String filename,
+                            String farmName,
+                            String docTitle,
+                            String tableTitle ) {
 
         startExport( filename, farmName, docTitle, tableTitle );
         addTable( jtable, tableTitle );
 
     }
 
-    public void startExport( String filename, String farmName, String docTitle, String tableTitle ) {
-        tempDoc = prepareDocument( filename,
-                                   docTitle, farmName, 
-                                   "CropPlanning Software - http://cropplanning.googlecode.com" );
+    public void startExport( String filename,
+                            String farmName,
+                            String docTitle,
+                            String tableTitle ) {
+        startExport( filename, farmName, docTitle, tableTitle, PageSize.LETTER );
+    }
+    
+    public void startExport( String filename,
+                            String farmName,
+                            String docTitle,
+                            String tableTitle,
+                            Rectangle pageSize ) {
+        tempDoc = prepareDocument( filename, docTitle, farmName,
+                                   "CropPlanning Software - http://cropplanning.googlecode.com",
+                                   pageSize );
         tempDoc.open();
     }
     
@@ -106,13 +133,17 @@ public class PDFExporter {
     
     
     private Document prepareDocument( String filename, 
-                                      final String title, final String author, final String creator ) {
+                                      final String title,
+                                      final String author,
+                                      final String creator,
+                                      final Rectangle pageSize ) {
         
         System.out.println( "DEBUG(PDFExporter): Creating document: " + filename );
         
         Document d = new Document();
 
-        d.setPageSize( PageSize.LETTER );
+        d.setPageSize( pageSize );
+        // TODO alter page orientation?  maybe useful for seed order worksheet
 
         d.addTitle( title );
         d.addAuthor( author );

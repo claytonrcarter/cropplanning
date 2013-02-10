@@ -74,6 +74,12 @@ public final class CPSCrop extends CPSRecord {
    public static final int PROP_SEEDS_PER_DS = CPSDataModelConstants.PROP_SEEDS_PER_DS;
    public static final int PROP_SEEDS_PER_TP = CPSDataModelConstants.PROP_SEEDS_PER_TP;
 
+
+   public static final String[] SEED_UNIT_STRINGS = { "", "oz", "lb",
+                                                      "g", "kg",
+                                                      "ea", "M (1k)" };
+
+
    /** 
     * from CPSDataModelConstants: this is the highest value defined there
     * @return the last (ie highest) property supported by this CPSRecords iterator
@@ -491,7 +497,7 @@ public final class CPSCrop extends CPSRecord {
 
     public String        getSeedUnit() {           return get( seedUnit.getPropertyNum() ); }
     public CPSDatumState getSeedUnitState() {       return getStateOf( seedUnit.getPropertyNum() ); }
-    public void          setSeedUnit( String s ) { set( seedUnit, s ); }
+    public void          setSeedUnit( String s ) { set( seedUnit, parseInheritableString(s) ); }
 
     public Float         getSeedsPerDS() {           return getFloat( seedsPerDS.getPropertyNum() ); }
     public String        getSeedsPerDSString() {      return getString( seedsPerDS.getPropertyNum() ); }
