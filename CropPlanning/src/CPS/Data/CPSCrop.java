@@ -520,14 +520,12 @@ public final class CPSCrop extends CPSRecord {
     }
     
     /* Iterator */
-    public CropIterator iterator() { return new CropIterator( true ); }
-    
+    public CropIterator iterator() { return new CropIterator(); }
+
     public class CropIterator extends CPSRecordIterator {
 
-        public CropIterator( boolean b ) { super(b); }
-
        public  boolean ignoreThisProperty() {
-          return !forDisplayOnly && ( this.currentProp == PROP_ID );
+          return this.currentProp == PROP_ID;
        }
        
     }

@@ -736,25 +736,27 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           // create new empty planting to represent our summary
           // and populate it with the summary calculations for the filtered list
           CPSPlanting s = new CPSPlanting();
+          // in displayed column order
           s.setCropName( p.getCropName() );
           s.setVarietyName( p.getVarietyName() );
-          s.setDirectSeeded( p.isDirectSeeded() );
-
-          s.setInRowSpacing( p.getInRowSpacing() );
-          s.setFlatSize( p.getFlatSize() );
-
-          s.setRowFtToPlant( summaryRowFt.getValue() );
-          s.setPlantsToStart( summaryPlants.getValue() );
-          s.setBedsToPlant( summaryBeds.getValue() + .001f );
-          s.setFlatsNeeded( summaryFlats.getValue() );
-
-          s.setSeedsPer( p.getSeedsPer() );
-          s.setSeedUnit( p.getSeedUnit() );
-          s.setSeedNeeded( summarySeeds.getValue() );
-
           // this is a dirty dirty hack that is only used because we're
           // controlling the table format for the output
           s.setMaturityDays( summaryPlantings.getValue() );
+          s.setDirectSeeded( p.isDirectSeeded() );
+
+          s.setBedsToPlant( summaryBeds.getValue() + .001f );
+          s.setRowFtToPlant( summaryRowFt.getValue() );
+
+          s.setInRowSpacing( p.getInRowSpacing() );
+          s.setPlantsToStart( summaryPlants.getValue() );
+          s.setFlatsNeeded( summaryFlats.getValue() );
+          s.setFlatSize( p.getFlatSize() );
+
+          if ( p.getSeedsPerUnit() > 0 )
+            s.setSeedsPerUnit( p.getSeedsPerUnit() );
+          s.setSeedUnit( p.getSeedUnit() );
+          s.setSeedsPer( p.getSeedsPer() );
+          s.setSeedNeeded( summarySeeds.getValue() );
 
           // add that new planting to a separate list
           seedStats.add(s);

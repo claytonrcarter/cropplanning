@@ -218,7 +218,6 @@ public class HSQLDBCreator {
            tempCrop.useRawOutput( false );
        }
 
-//      updateRecords( p.getConnection(), CPSDataModelConstants.RECORD_TYPE_CROP, map, HSQLDB.CROP_VAR_TABLE, changes, ids, null );
    }
 
 

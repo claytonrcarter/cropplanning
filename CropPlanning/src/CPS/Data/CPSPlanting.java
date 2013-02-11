@@ -1338,17 +1338,13 @@ public final class CPSPlanting extends CPSRecord {
         if ( ds &&
              d.isNotNull() && r.isNotNull() ) {
           set( n,
-               CPSCalculations.precision3( ( d.getValueAsFloat() *
-                                             r.getValueAsInt() ) /
-                                            u.getValueAsInt() ));
+               ( d.getValueAsFloat() * r.getValueAsInt()) / u.getValueAsInt() );
           n.setCalculated( true );
         }
         else if ( ! ds &&
                   t.isNotNull() && p.isNotNull() ) {
           set( n,
-               CPSCalculations.precision3( ( t.getValueAsFloat() *
-                                             p.getValueAsInt() ) /
-                                            u.getValueAsInt() ));
+               ( t.getValueAsFloat() * p.getValueAsInt()) / u.getValueAsInt() );
           n.setCalculated( true );
         }
       }

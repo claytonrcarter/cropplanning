@@ -564,12 +564,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
        // update items in db
        if ( ! displayedCrop.isSingleRecord() )
-           // TODO this doesn't work anymore (with Persist)
-           // all values will be set to the values of diff, whether they're null or not
-          getDataSource().updateCrops( diff, displayedCrop.getCommonIDs() );
+         getDataSource().updateCrops( diff, displayedCrop.getCommonIDs() );
        else
-           // TODO ideally this would only update the differences, not the whole thing
-          getDataSource().updateCrop( currentlyDisplayed );
+         // TODO ideally this would only update the differences, not the whole thing
+         getDataSource().updateCrop( currentlyDisplayed );
 
        // if the crop or var name has changed, then we need to reload the
        // planting to make sure inheritance happens

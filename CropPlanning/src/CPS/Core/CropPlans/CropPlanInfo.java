@@ -784,7 +784,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldPlantsToStart.setEnabled( b );
 
       if ( b ) {
-        lblSeedsPer.setText("Seeds/Plug");
+        lblSeedsPer.setText("Seeds/Cell");
         lblSeedsPer.setToolTipText("How many seeds get sown in each cell or plug?");
       }
       else {
