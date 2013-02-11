@@ -482,7 +482,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    
    public void updateCrops( CPSCrop changes, List<Integer> ids ) {
       HSQLDBCreator.updateCrops( p, columnMap, changes, ids );
-//      updateDataListeners();
+      updateDataListeners();
    }
 
    public CPSCrop createCrop(CPSCrop crop) {
@@ -558,7 +558,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    public void updatePlanting( String planName, CPSPlanting planting ) {
       HSQLDBCreator.updatePlanting( p, planName, planting );
-//      updateDataListeners();
    }
    
    public void updatePlantings( String planName, CPSPlanting changes, List<Integer> changedIDs ) {

@@ -538,6 +538,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected abstract List<String> getDisplayableColumnList();
     protected abstract List<Integer> getDefaultDisplayableColumnList();
     protected void buildColumnListPopUpMenu() {
+
        pupColumnList = new JPopupMenu();
        //  create the empty submenu
        JMenu subMenu = new JMenu( "More ..." );
@@ -555,9 +556,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        int j = 0;
        for ( ColumnMenuItem ci : columnListItems ) {
 
-          // if not a default column, then unselect it
-          if ( ! ci.isDefaultColumn() )
-             ci.doClick();
+         if ( ! ci.isDefaultColumn() )
+           model.removeColumn( ci.column );
 
           // We will only "feature" the first 20 entries, the rest will be buried in a submenu
           if ( j++ < 20 )
@@ -662,8 +662,14 @@ public abstract class CPSMasterView extends CPSDataModelUser
     public void actionPerformed(ActionEvent actionEvent) {
         String action = actionEvent.getActionCommand();
 
-        CPSModule.debug( "CPSMasterView", "Action performed: " + action);
-         
+        if ( actionEvent.getSource().getClass().equals( JComboBox.class ))
+          CPSModule.debug( "CPSMasterView",
+                           "Action Performed: " + action +
+                           " to " + ((JComboBox)actionEvent.getSource()).getSelectedItem() );
+        else
+          CPSModule.debug( "CPSMasterView",
+                           "Action Performed: " + action +
+                           " on " + ((JButton)actionEvent.getSource()).getText() );
         /*
          * OTHER BUTTONS: New, Dupe, Delete
          */
@@ -787,29 +793,30 @@ public abstract class CPSMasterView extends CPSDataModelUser
    class ColumnMenuItem extends JCheckBoxMenuItem implements ActionListener {
 
       private DefaultTableColumnModel columnModel;
-      private TableColumn column;
+      public final TableColumn column;
       private boolean defaultColumn = true;
-
+      
       public ColumnMenuItem( DefaultTableColumnModel columnModel, int columnIndex ) {
          // first arg to super: column name
-         super( columnModel.getColumn( columnIndex ).getHeaderValue().toString(), true );
+         super( columnModel.getColumn( columnIndex ).getHeaderValue().toString(),
+                true );
          this.columnModel = columnModel;
          this.column = columnModel.getColumn( columnIndex );
-         addActionListener( this );
 
          // record whether this column should be displayed by default
-         if ( getTableFormat() instanceof CPSAdvancedTableFormat )
+         if ( getTableFormat() instanceof CPSAdvancedTableFormat ) {
            defaultColumn = ( (CPSAdvancedTableFormat) getTableFormat() ).isDefaultColumn( columnIndex );
+           this.setSelected(defaultColumn);
+         }
+         addActionListener( this );
 
       }
 
       public void actionPerformed( ActionEvent e ) {
-         if ( isSelected() ) {
+         if ( isSelected() )
             columnModel.addColumn( column );
-         }
-         else {
+         else
             columnModel.removeColumn( column );
-         }
       }
 
       /** @return true if this column should be displayed by default */

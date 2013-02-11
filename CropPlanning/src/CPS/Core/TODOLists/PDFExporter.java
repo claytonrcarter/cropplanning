@@ -38,19 +38,31 @@ import javax.swing.JTable;
 
 public class PDFExporter {
 
-    private Font fontHeadFootItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 8 );
-    private Font fontHeadFootReg = FontFactory.getFont( FontFactory.HELVETICA, 8 );
-    
-    private Font fontTableReg = FontFactory.getFont( FontFactory.HELVETICA, 10 );
-    private Font fontTableHead = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 10 );
-    private Font fontTableItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 10 );
-    
-    private Font fontPageHeader = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 14 );
-        
-    CPSDateValidator dateValidator = new CPSDateValidator();
-    
+    private final Font fontHeadFootItal, fontHeadFootReg, fontTableReg, fontTableHead;
+//    private Font fontTableItal
+    private final Font fontPageHeader;
+
+    CPSDateValidator dateValidator;
+
     Document tempDoc = null;
-    
+
+  public PDFExporter() {
+    fontHeadFootItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 8 );
+    fontHeadFootReg = FontFactory.getFont( FontFactory.HELVETICA, 8 );
+
+    fontTableReg = FontFactory.getFont( FontFactory.HELVETICA, 10 );
+    fontTableHead = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 10 );
+//      fontTableItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 10 );
+
+    fontPageHeader = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 14 );
+
+    dateValidator = new CPSDateValidator();
+
+  }
+
+
+
+
     
     public void export( JTable jtable, String filename, 
                         String farmName, String docTitle, String tableTitle ) {

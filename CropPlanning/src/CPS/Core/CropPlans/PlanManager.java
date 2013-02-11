@@ -75,15 +75,15 @@ public class PlanManager extends CPSDialog implements ActionListener {
    public void setDataModel( CPSDataModel dm ) {
       this.dm = dm;
       updateListOfPlans();
-      selectPlan( (String) cmboPlanList.getItemAt(0) );
+//      selectPlan( (String) cmboPlanList.getItemAt(0) );
    }
    
    
    public void selectPlan( String planName ) {
-      if ( listOfValidCropPlans.contains(planName) ) {
-         cmboPlanList.setSelectedItem( planName );
-         selectedPlan = getCurrentSelection();
-      }
+     selectedPlan = planName;
+     if ( contentsPanelBuilt && listOfValidCropPlans.contains(planName) ) {
+       cmboPlanList.setSelectedItem( planName );
+     }
    }
    public String getSelectedPlanName() {
       return selectedPlan;
@@ -103,7 +103,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    private void updateListOfPlans() {
       
-      if ( dm == null )
+      if ( dm == null || ! contentsPanelBuilt )
          return;
       
       cmboPlanList.removeActionListener(this);
@@ -146,6 +146,9 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    @Override
    public void setVisible( boolean arg0 ) {
+     if ( ! contentsPanelBuilt )
+       buildContentsPanel();
+     
       oldSelection = (String) cmboPlanList.getSelectedItem();
       updateListOfPlans();
       super.setVisible( arg0 );
@@ -181,6 +184,8 @@ public class PlanManager extends CPSDialog implements ActionListener {
       LayoutAssist.addTextField( jplCont, 1, 2, tfldDesc );      
       
       jplCont.setBorder( BorderFactory.createEmptyBorder( 10, 10, 0, 10));
+
+      contentsPanelBuilt = true;
       add( jplCont );
       
    }
@@ -233,8 +238,16 @@ public class PlanManager extends CPSDialog implements ActionListener {
    public void actionPerformed( ActionEvent arg0 ) {
       String action = arg0.getActionCommand();
       Object source = arg0.getSource();
-      
-      CPSModule.debug( "PlanMan", "Action Performed: " + action );
+
+      if ( source.getClass().equals( JComboBox.class ))
+        CPSModule.debug( "PlanMan",
+                         "Action Performed: " + action +
+                         " to " + ((JComboBox)source).getSelectedItem() );
+      else
+        CPSModule.debug( "PlanMan",
+                         "Action Performed: " + action +
+                         " on " + ((JButton)source).getText() );
+
       
       if      ( source == btnNew )    { createPlan(); }
       else if ( source == btnDelete ) { deletePlan(); }

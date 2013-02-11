@@ -47,6 +47,10 @@ import org.netbeans.spi.wizard.WizardPage;
 
 
 
+
+
+
+
 public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigurable,
                                                                     ActionListener {
 
@@ -119,34 +123,6 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         globalPrefs = Preferences.userNodeForPackage( thisClass );
 
 //       globalPrefs = Preferences.userNodeForPackage( this.getClass() );
-
-        cmbxPrefRowOrBed = new JComboBox( prefRowOrBedOptions );
-
-        tfldRowOrBedLength = new JTextField( 5 );
-
-        cmbxPrefUnitLength = new JComboBox( prefUnitLengthOptions );
-
-        ckbxPrefHighlight = new JCheckBox();
-        
-        tfldFarmName = new JTextField( 15 );
-
-        btnPrefOutputDir = new JButton( "Change Output Directory" );
-        btnPrefOutputDir.addActionListener( this );
-        lblPrefOutputDir = new JLabel();
-        flchPrefOutputDir = new JFileChooser();
-        flchPrefOutputDir.setMultiSelectionEnabled( false );
-        flchPrefOutputDir.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-
-        jdtcLastFrost = new JDateChooser();
-        jdtcFirstFrost = new JDateChooser();
-        jdtcLastFrost.setDateFormatString( "MMMMM d" );
-        jdtcFirstFrost.setDateFormatString( "MMMMM d" );
-        
-        tfldFudge = new JTextField(5);
-        
-        chkDebug = new JCheckBox();
-        
-        buildConfigPanel();
 
     }
 
@@ -289,6 +265,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     
     public JPanel getConfigurationDisplay() {
         resetConfiguration();
+        if ( configPanel == null )
+          buildConfigPanel();
         return configPanel;
     }
 
@@ -342,7 +320,42 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         getGlobalPreferences().put( KEY_FUDGE, "" + Float.parseFloat( tfldFudge.getText() ) / 100 );
         setDebug( chkDebug.isSelected() );
     }
-  
+
+
+  @Override
+  protected void initConfigPanel() {
+    super.initConfigPanel();
+
+
+    cmbxPrefRowOrBed = new JComboBox( prefRowOrBedOptions );
+
+    tfldRowOrBedLength = new JTextField( 5 );
+
+    cmbxPrefUnitLength = new JComboBox( prefUnitLengthOptions );
+
+    ckbxPrefHighlight = new JCheckBox();
+
+    tfldFarmName = new JTextField( 15 );
+
+    btnPrefOutputDir = new JButton( "Change Output Directory" );
+    btnPrefOutputDir.addActionListener( this );
+    lblPrefOutputDir = new JLabel();
+    flchPrefOutputDir = new JFileChooser();
+    flchPrefOutputDir.setMultiSelectionEnabled( false );
+    flchPrefOutputDir.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+
+    jdtcLastFrost = new JDateChooser();
+    jdtcFirstFrost = new JDateChooser();
+    jdtcLastFrost.setDateFormatString( "MMMMM d" );
+    jdtcFirstFrost.setDateFormatString( "MMMMM d" );
+
+    tfldFudge = new JTextField(5);
+
+    chkDebug = new JCheckBox();
+
+   
+  }
+
     private void buildConfigPanel() {
 
         initConfigPanel();
@@ -399,10 +412,6 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
    
 }
-
-
-
-
 class OutDirWizardPage extends CPSWizardPage {
 
    static final String PAGE_OUT_DIR = "outDir";

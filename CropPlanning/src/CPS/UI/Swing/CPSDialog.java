@@ -40,6 +40,8 @@ public abstract class CPSDialog extends JDialog {
     private JPanel jplMain;
     protected JPanel jplContents;
     private JPanel jplButtons;
+
+    protected boolean contentsPanelBuilt = false;
     
     public CPSDialog ( String title ) {
         
@@ -50,7 +52,7 @@ public abstract class CPSDialog extends JDialog {
 //        header.setIcon(null);
         
         initContentsPanel();
-        buildContentsPanel();
+//        buildContentsPanel();
         
         initButtonPanel();
         fillButtonPanel();
@@ -76,9 +78,11 @@ public abstract class CPSDialog extends JDialog {
             return jplContents.add( arg0 ); 
     }
     
-    @Override public void setVisible( boolean arg0 ) { 
-        
-        if ( arg0 ) {
+    @Override public void setVisible( boolean show ) {
+      if ( ! contentsPanelBuilt )
+        buildContentsPanel();
+
+        if ( show ) {
             
             // I really don't get all of this, it would seem easier to just
             // have a setWidth method, but we don't have that option.  Having tried
@@ -112,7 +116,7 @@ public abstract class CPSDialog extends JDialog {
             pack();
                         
         }
-        super.setVisible( arg0 ); 
+        super.setVisible( show );
     }
     
     @Override

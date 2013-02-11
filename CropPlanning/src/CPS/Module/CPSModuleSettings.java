@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 public abstract class CPSModuleSettings {
     
     protected Preferences prefs = null;
-    protected JPanel configPanel;
+    protected JPanel configPanel = null;
    
     public CPSModuleSettings() {
 //        prefs = Preferences.userNodeForPackage( this.getClass() );

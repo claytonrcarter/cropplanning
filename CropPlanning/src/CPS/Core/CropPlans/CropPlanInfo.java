@@ -257,23 +257,25 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
        // update items in db
        if ( ! displayedPlanting.isSingleRecord() ) {
-
+         // multiple selection
          List<Integer> ids = displayedPlanting.getCommonIDs();
-
-         getDataSource().updatePlantings( selectedPlan, diff, displayedPlanting.getCommonIDs() );
-
+         // this triggers an update of all of the lists
+         getDataSource().updatePlantings( selectedPlan, diff, ids );
          selectRecordsInMasterView(ids);
-
        }
        else {
-          getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
+         // single selection
+         getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
 
-          // need to get update planting to make sure we have the best inheritance data
-          diff = getDataSource().getPlanting( selectedPlan, diff.getID() );
+         CPSPlanting p = currentlyDisplayed;
+         // do we need to get updated planting info to
+         // make sure we have the best inheritance data
+         if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() )
+           p = getDataSource().getPlanting( selectedPlan, diff.getID() );
 
-          updateRecordInMasterView(diff);
-
-          selectRecordsInMasterView( Arrays.asList( diff.getID() ) );
+         // now make sure
+         updateRecordInMasterView(p);
+         selectRecordsInMasterView( Arrays.asList( p.getID() ) );
 
        }
 

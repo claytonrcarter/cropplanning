@@ -32,17 +32,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.*;
 
 public class CropDBCropInfo extends CPSDetailView implements ItemListener {
-
-// these are from CPSCrop; leave unimplemented for now (11/26/08)
-//   public final int PROP_BOT_NAME = CPSDataModelConstants.PROP_BOT_NAME;
-//   public final int PROP_FROST_HARDY = CPSDataModelConstants.PROP_FROST_HARDY;
-//
-// leave these unimplemented, too (11/16/08)
-//   public final int PROP_POT_UP = CPSDataModelConstants.PROP_TP_POT_UP;
-//   public final int PROP_POT_UP_NOTES = CPSDataModelConstants.PROP_TP_POT_UP_NOTES;
 
    private CPSTextField tfldCropName, tfldVarName, tfldFamName, tfldMatDays;
    private CPSCheckBox chkDS, chkTP;
@@ -58,9 +51,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private JLabel lblSeedDS, lblSeedTP;
 
    private ArrayList<JLabel> anonLabels;
-
-   // for the DS/TP checkboxes
-//   private CPSButtonGroup jbgPlantingMethod;
    
    private CPSCrop displayedCrop;
       
@@ -563,22 +553,27 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
        }
 
        // update items in db
-       if ( ! displayedCrop.isSingleRecord() )
-         getDataSource().updateCrops( diff, displayedCrop.getCommonIDs() );
-       else
-         // TODO ideally this would only update the differences, not the whole thing
+       if ( ! displayedCrop.isSingleRecord() ) {
+         // multiple selection
+         List<Integer> ids = displayedCrop.getCommonIDs();
+         // this triggers an update of all of the lists
+         getDataSource().updateCrops( diff, ids );
+         selectRecordsInMasterView(ids);
+       }
+       else {
+         // single selection
+         // this triggers an update of all of the lists
          getDataSource().updateCrop( currentlyDisplayed );
 
-       // if the crop or var name has changed, then we need to reload the
-       // planting to make sure inheritance happens
-       if ( tfldCropName.hasChanged() ) {
-         diff = getDataSource().getCropInfo( diff.getID() );
+         // reload the crop/var in case inheritance needs to be updated
+         // reusing diff
+         //diff = getDataSource().getCropInfo( diff.getID() );
+         //updateRecordInMasterView(diff);
+
+         // this automatically displays the record in the detail panel
+         selectRecordsInMasterView( Arrays.asList( displayedCrop.getID() ));
        }
 
-       updateRecordInMasterView(diff);
-
-       // this automatically displays the record in the detail panel
-       selectRecordsInMasterView( Arrays.asList( displayedCrop.getID() ));
 
        
     }

@@ -113,10 +113,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
        
     }
 
-    /**
-     * Bring up the SwingSet2 demo by showing the frame (only
-     * applicable if coming up as an application, not an applet);
-     */
+
     public void showUI() {
        
        fm.getFrame().setTitle( "CropPlanning" );
@@ -125,11 +122,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
        
        // initialize tabs
        tabbedpane = new JTabbedPane();
-       tabbedpane.setPreferredSize(new Dimension( PREFERRED_WIDTH,
-                                                  PREFERRED_HEIGHT ));
        fm.getFrame().getContentPane().add( tabbedpane, BorderLayout.CENTER );
 
        addModules();
+       uiChanged();
        
        fm.getFrame().setVisible( true );
  
@@ -512,7 +508,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
          
       // TODO automatically calculate size of the TabbedPane decorations (tabs and borders)
       // the numbers added to the dimension are to account for the decorations of the tabbed pane
-      maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() );
+      maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() + 50 );
       tabbedpane.setPreferredSize( maxDim );
       
       // TODO clean this up, add menubar and titlebar height

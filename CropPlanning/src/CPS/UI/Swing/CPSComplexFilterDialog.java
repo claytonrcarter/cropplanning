@@ -92,7 +92,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         savedFilter = new CPSComplexPlantingFilter();
         dateValidator = new CPSDateValidator();
         
-        rdoNoLimit.doClick();
+        // rdoNoLimit.doClick();
+//        rdoNoLimit.setSelected(true);
         
     }
     
@@ -381,6 +382,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         add( jplStatus );
         jplDates.setAlignmentX(Component.LEFT_ALIGNMENT);
         add( jplDates );
+
+        contentsPanelBuilt = true;
         
     }
     
@@ -480,10 +483,13 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
     /* ***************************************************************************************** */
     /* Inner Class Def'n
     /* ***************************************************************************************** */
-    public class DateRangeDialog extends CPSDialog implements ItemListener, ActionListener, PropertyChangeListener {
+    public class DateRangeDialog extends CPSDialog
+                                 implements ItemListener,
+                                            ActionListener,
+                                            PropertyChangeListener {
         
         private Date startDate, endDate;
-        private boolean dateRangeSet;
+        private boolean dateRangeSet = false;
         private JRadioButton rdoAllDates, rdoLimitDates;
         private JDateChooser startDateChooser, endDateChooser;
         private JButton btnSetRange, btnCancel;
@@ -494,7 +500,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
             
             setDateRangeSet( false );
             
-            rdoAllDates.doClick();
+            // rdoAllDates.doClick();
+//            rdoAllDates.setSelected(true);
             
         }
 
@@ -543,7 +550,9 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
             
             LayoutAssist.addLabel(    jp, 0, 3, new JLabel( "Show dates before" ));
             LayoutAssist.addSubPanel( jp, 1, 3, 1, 1, endDateChooser );
-            
+
+            contentsPanelBuilt = true;
+            rdoAllDates.setSelected(true);
             add(jp);
             
         }
