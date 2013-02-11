@@ -30,14 +30,17 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -160,7 +163,16 @@ public abstract class CPSDetailView extends CPSDataModelUser
       
         lblChanges = new JLabel( "Changes: " );
         btnSaveChanges = new JButton( "Save" );
-        btnSaveChanges.setMnemonic( java.awt.event.KeyEvent.VK_ENTER );
+        // btnSaveChanges.setMnemonic( java.awt.event.KeyEvent.VK_ENTER );
+        btnSaveChanges.getInputMap( btnSaveChanges.WHEN_IN_FOCUSED_WINDOW )
+                      .put( KeyStroke.getKeyStroke( "meta ENTER" ), "save" );
+        btnSaveChanges.getActionMap().put( "save",
+                new AbstractAction() {
+                  public void actionPerformed(ActionEvent e) {
+                    btnSaveChanges.doClick();
+                  }
+                });
+
         btnDiscardChanges = new JButton( "Discard" );
         btnSaveChanges.addActionListener( this );
         btnDiscardChanges.addActionListener( this );

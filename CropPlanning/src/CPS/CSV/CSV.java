@@ -172,7 +172,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
    private void exportRecords( String filename, int recordType, String recordTypeDesc, ArrayList<CPSRecord> records ) {
 
-       final boolean EXPORT_SPARSE_DATA = true;
+       final boolean EXPORT_SPARSE_DATA = false;
 
        CsvWriter csvOut = new CsvWriter( filename );
        // mark text with double quotes
