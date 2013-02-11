@@ -87,8 +87,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private final String TL_ALL_PLANTINGS = "Complete Crop Plan";
     private final String TL_SEED_ORDER_WORKSHEET = "Seed Order Worksheet";
 
-    private final int TL_FORMAT_PDF = 1;
-    private final int TL_FORMAT_CSV = 2;
+    protected static final int TL_FORMAT_PDF = 1;
+    protected static final int TL_FORMAT_CSV = 2;
 
 
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
@@ -766,7 +766,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
         }
 
-        TableFormat tf = new SeedStatsTableFormat();
+        
+        SeedStatsTableFormat tf = new SeedStatsTableFormat();
+        tf.setOutputFormat( format ); // TL_FORMAT_CSV or TL_FORMAT_PDF
 
         CPSTable jt = new CPSTable();
         jt.setModel( new EventTableModel<CPSPlanting>( seedStats, tf ) );
@@ -774,10 +776,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "Seed Order Worksheet for plan \"" + planName + "\"", jt );
         } else {
-//          pdf.export( jt, filename,
-//                           CPSGlobalSettings.getFarmName(),
-//                           "Seed Order Worksheet for plan \"" + planName + "\"",
-//                           null );
           pdf.exportLandscape( jt, filename,
                            CPSGlobalSettings.getFarmName(),
                            "Seed Order Worksheet for plan \"" + planName + "\"",
