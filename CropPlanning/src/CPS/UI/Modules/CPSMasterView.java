@@ -27,6 +27,7 @@ import CPS.Data.CPSRecord;
 import CPS.Data.CPSTextFilter;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
+import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSSearchField;
 import CPS.UI.Swing.CPSTable;
@@ -117,7 +118,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     public int init() { return 0; }
     protected int saveState() {
-//       getPrefs().put( KEY_DISPLAYED_COLUMNS, getDisplayedColumnListAsString() );
        if ( getDisplayedTableName() == null )
           getPrefs().remove( KEY_DISPLAYED_TABLE );
        else
@@ -417,6 +417,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
         jplBelowList.add( lblStats );
       
     }
+    protected void enableRecordButtons( boolean enabled ) {
+      btnNewRecord.setEnabled(enabled);
+      btnDupeRecord.setEnabled(enabled);
+      btnDeleteRecord.setEnabled(enabled);
+    }
+
     
     protected void initFilterPanel() {
         jplFilter = new JPanel();
@@ -508,6 +514,27 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
        initListPanel(); // init listPanel
        jplList.add( new JScrollPane( masterTable ) );
+
+//       jplList.getInputMap( jplList.WHEN_IN_FOCUSED_WINDOW )
+//                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " UP" ), "prev" );
+//       jplList.getInputMap( jplList.WHEN_IN_FOCUSED_WINDOW )
+//                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " DOWN" ), "next" );
+//       jplList.getActionMap().put( "prev",
+//                                   new AbstractAction() {
+//                                     public void actionPerformed(ActionEvent e) {
+//                                       int i = selectModel.getMinSelectionIndex();
+//                                       if ( i > 0 )
+//                                         selectModel.setSelectionInterval(i-1, i-1);
+//                                     }
+//                                   });
+//       jplList.getActionMap().put( "next",
+//                                   new AbstractAction() {
+//                                     public void actionPerformed(ActionEvent e) {
+//                                       int i = selectModel.getMaxSelectionIndex();
+//                                       if ( i < masterListSorted.size()-1 )
+//                                         selectModel.setSelectionInterval(i+1, i+1);
+//                                     }
+//                                   });
 
        buildColumnListPopUpMenu();
 
@@ -670,11 +697,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
           CPSModule.debug( "CPSMasterView",
                            "Action Performed: " + action +
                            " on " + ((JButton)actionEvent.getSource()).getText() );
-        /*
-         * OTHER BUTTONS: New, Dupe, Delete
-         */
-        // Note the return above, this implies that the following list of if's
-        // should really start with an "else"
+
+//****************************************************************************//
+//      New
+//****************************************************************************//
         if ( action.equalsIgnoreCase( btnNewRecord.getActionCommand() ) ) {
             if ( !isDataAvailable() ) {
                 System.err.println("ERROR: cannot create new planting, data unavailable");
@@ -687,7 +713,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
             setSelection( newID );
             setStatus( STATUS_NEW_RECORD );
         
-        } else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
+        } 
+//****************************************************************************//
+//      Duplicate
+//****************************************************************************//
+        else if (action.equalsIgnoreCase(btnDupeRecord.getText())) {
 
             if (!isDataAvailable()) {
 
@@ -707,7 +737,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
             uiManager.setDetailViewForEditting();
             setSelection( newID );
 
-        } else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
+        }
+//****************************************************************************//
+//      DELETE
+//****************************************************************************//
+        else if (action.equalsIgnoreCase(btnDeleteRecord.getText())) {
 
             if (!isDataAvailable()) {
                 System.err.println("ERROR: cannon delete entry, data unavailable");
@@ -716,6 +750,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
             
             for ( CPSRecord r : selectModel.getSelected() )
               deleteRecord( r.getID() );
+
+            uiManager.clearDetailDisplay();
 
         }
         

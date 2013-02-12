@@ -25,6 +25,7 @@ package CPS.UI.Modules;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
+import CPS.Module.CPSGlobalSettings;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -165,7 +166,7 @@ public abstract class CPSDetailView extends CPSDataModelUser
         btnSaveChanges = new JButton( "Save" );
         // btnSaveChanges.setMnemonic( java.awt.event.KeyEvent.VK_ENTER );
         btnSaveChanges.getInputMap( btnSaveChanges.WHEN_IN_FOCUSED_WINDOW )
-                      .put( KeyStroke.getKeyStroke( "meta ENTER" ), "save" );
+                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " ENTER" ), "save" );
         btnSaveChanges.getActionMap().put( "save",
                 new AbstractAction() {
                   public void actionPerformed(ActionEvent e) {

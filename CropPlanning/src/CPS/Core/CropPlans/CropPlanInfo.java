@@ -171,8 +171,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                         displayedPlanting.getSeedsPerUnitState() );
        cmbSeedUnit.setInitialSelection( displayedPlanting.getSeedUnit(),
                                         displayedPlanting.getSeedUnitState() );
-       tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
-                                    displayedPlanting.getSeedsPerState() );
        tfldSeedNeeded.setInitialText( displayedPlanting.getSeedNeededString(),
                                       displayedPlanting.getSeedNeededState() );
 
@@ -270,9 +268,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          CPSPlanting p = currentlyDisplayed;
          // do we need to get updated planting info to
          // make sure we have the best inheritance data
-         if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() )
+         //if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() )
            p = getDataSource().getPlanting( selectedPlan, diff.getID() );
 
+         System.out.println(p);
          // now make sure
          updateRecordInMasterView(p);
          selectRecordsInMasterView( Arrays.asList( p.getID() ) );
@@ -945,6 +944,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                       tempPlanting.getRowSpacingState() );
       tfldPlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
                                             tempPlanting.getPlantingNotesInheritedState() );
+      tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
+                                   displayedPlanting.getSeedsPerState() );
+      
    }
 
    /* for testing only */

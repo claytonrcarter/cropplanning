@@ -96,9 +96,11 @@ class CropPlanList extends CPSMasterView implements ActionListener,
       
       planMan.setDataModel(dm);
       String plan = getPrefs().get( KEY_DISPLAYED_TABLE, "" );
-      if ( !plan.equals( "" ) )
-         planMan.selectPlan( plan );
-        
+      if ( !plan.equals( "" ) ) {
+        CPSModule.debug( "CPList", "Found last displayed table:" + plan );
+        planMan.selectPlan( plan );
+      }
+
       cmbxLimit.setSelectedItem( getPrefs().get( KEY_FILTER, LIMIT_ALL ) );
       
       dataUpdated();
@@ -198,19 +200,20 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     protected void updateMasterList() {
        super.updateMasterList();
 
-       if ( masterTable.getRowCount() > 0 )
-           // install custom table renderes and editors
-           for ( int i = 0; i < masterTable.getColumnModel().getColumnCount(); i++ ) {
-               // install autocomplete combobox in column "crop_name"
-               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "crop_name" ) ) {
-                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new CPSComboBoxCellEditor( cmbxCropList ) );
-                   continue;
-               }
-               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "location" ) ) {
-                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new CPSComboBoxCellEditor( cmbxFieldList ) );
-                   continue;
-               }
-           }
+       // 2/11/13 removed since the table isn't edittable anymore (for now?)
+//       if ( masterTable.getRowCount() > 0 )
+//           // install custom table renderes and editors
+//           for ( int i = 0; i < masterTable.getColumnModel().getColumnCount(); i++ ) {
+//               // install autocomplete combobox in column "crop_name"
+//               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "crop_name" ) ) {
+//                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new CPSComboBoxCellEditor( cmbxCropList ) );
+//                   continue;
+//               }
+//               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "location" ) ) {
+//                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new CPSComboBoxCellEditor( cmbxFieldList ) );
+//                   continue;
+//               }
+//           }
     }
 
 
@@ -434,9 +437,11 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         
         if ( getDisplayedTableName() == null ) {
             setStatus( CPSMasterView.STATUS_NO_PLAN_SELECTED );
+            enableRecordButtons(false);
         }
         else {
             updateListOfFieldNames();
+            enableRecordButtons(true);
         }
         
         

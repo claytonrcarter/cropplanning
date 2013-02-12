@@ -32,6 +32,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -49,12 +50,12 @@ import javax.swing.SpinnerDateModel;
 public class PlanManager extends CPSDialog implements ActionListener {
 
    private JButton btnNew, btnDelete, btnSave, btnSelect, btnCancel;
-   private JComboBox cmboPlanList;
+   private JComboBox cmboPlanList = null;
    private JTextField tfldDesc;
    private JSpinner spnYear;
    private GregorianCalendar tempCal;
    
-   private String selectedPlan = null, oldSelection;
+   private String selectedPlan = null;
    private List<String> listOfValidCropPlans;
    static CPSDataModel dm = null;
    
@@ -64,6 +65,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
       setDescription( "Manage crop plans: create, delete, alter properties and select for editting." );
       
       tempCal = new GregorianCalendar();
+      listOfValidCropPlans = new ArrayList<String>();
    }
    
    public PlanManager( CPSDataModel dm ) {
@@ -75,15 +77,15 @@ public class PlanManager extends CPSDialog implements ActionListener {
    public void setDataModel( CPSDataModel dm ) {
       this.dm = dm;
       updateListOfPlans();
-//      selectPlan( (String) cmboPlanList.getItemAt(0) );
+      CPSModule.debug( "PlanMan", "List of plans: " + listOfValidCropPlans );
    }
    
    
    public void selectPlan( String planName ) {
-     selectedPlan = planName;
-     if ( contentsPanelBuilt && listOfValidCropPlans.contains(planName) ) {
+     if ( listOfValidCropPlans.contains(planName) )
+       selectedPlan = planName;
+     if ( contentsPanelBuilt )
        cmboPlanList.setSelectedItem( planName );
-     }
    }
    public String getSelectedPlanName() {
       return selectedPlan;
@@ -102,26 +104,28 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    
    private void updateListOfPlans() {
-      
-      if ( dm == null || ! contentsPanelBuilt )
-         return;
-      
-      cmboPlanList.removeActionListener(this);
-      
-      String selected = getCurrentSelection();
-      listOfValidCropPlans = dm.getListOfCropPlans();
-      cmboPlanList.removeAllItems();
-      for ( String s : listOfValidCropPlans )
-         cmboPlanList.addItem( s );
-      
-      cmboPlanList.addActionListener(this);
-      
-      if ( selected != null && ! selected.equals( "" ) && 
-           listOfValidCropPlans.contains( selected ) )
-         cmboPlanList.setSelectedItem( selected );
-      else
-         cmboPlanList.setSelectedIndex(-1);
-      
+     if ( dm != null )
+       listOfValidCropPlans = dm.getListOfCropPlans();
+   }
+   private void updateComboBox() {
+
+    if ( ! contentsPanelBuilt )
+      return;
+
+    String oldSelection = (String) cmboPlanList.getSelectedItem();
+
+    cmboPlanList.removeActionListener(this);
+    cmboPlanList.removeAllItems();
+    for ( String s : listOfValidCropPlans )
+      cmboPlanList.addItem( s );
+    cmboPlanList.addActionListener(this);
+
+    if ( oldSelection != null && ! oldSelection.equals( "" ) &&
+         listOfValidCropPlans.contains( oldSelection ) )
+      cmboPlanList.setSelectedItem( oldSelection );
+    else
+      cmboPlanList.setSelectedIndex(-1);
+
    }
    
    private void createPlan() {
@@ -130,6 +134,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
                             getSelectedPlanYear(),
                             getSelectedPlanDescription() );
       updateListOfPlans();
+      updateComboBox();
    }
    private void updatePlan() {
       if ( dm != null )
@@ -141,6 +146,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
       if ( dm != null )
          dm.deleteCropPlan( getCurrentSelection() );
       updateListOfPlans();
+      updateComboBox();
    }
 
    
@@ -149,8 +155,9 @@ public class PlanManager extends CPSDialog implements ActionListener {
      if ( ! contentsPanelBuilt )
        buildContentsPanel();
      
-      oldSelection = (String) cmboPlanList.getSelectedItem();
       updateListOfPlans();
+      updateComboBox();
+
       super.setVisible( arg0 );
    }
    

@@ -561,9 +561,11 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
          selectRecordsInMasterView(ids);
        }
        else {
+         int id = displayedCrop.getID();
          // single selection
          // this triggers an update of all of the lists
          getDataSource().updateCrop( currentlyDisplayed );
+
 
          // reload the crop/var in case inheritance needs to be updated
          // reusing diff
@@ -571,7 +573,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
          //updateRecordInMasterView(diff);
 
          // this automatically displays the record in the detail panel
-         selectRecordsInMasterView( Arrays.asList( displayedCrop.getID() ));
+         selectRecordsInMasterView( Arrays.asList( id ));
        }
 
 

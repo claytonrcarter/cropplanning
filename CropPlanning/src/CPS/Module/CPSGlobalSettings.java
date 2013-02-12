@@ -243,7 +243,14 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public static boolean getDebug() {
        return getGlobalPreferences().getBoolean( KEY_DEBUG, prefDebugDefault );
     }
-    
+
+    public static String getModifierKey() {
+      if ( System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0 )
+        return "meta";
+      else
+        return "alt";
+    }
+
     public static void setDebug( boolean debug ) {
        getGlobalPreferences().putBoolean( KEY_DEBUG, debug );
     }
