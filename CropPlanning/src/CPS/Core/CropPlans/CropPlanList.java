@@ -498,7 +498,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
             }
             String s = planMan.getSelectedPlanName();
             planMan.setVisible(true);
-               dataUpdated();
+            dataUpdated();
         }
        else if ( actionEvent.getSource() == cmbxLimit &&
                 ((String) cmbxLimit.getSelectedItem()).equalsIgnoreCase( LIMIT_CUSTOM ) ) {

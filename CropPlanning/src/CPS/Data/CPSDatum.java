@@ -117,8 +117,6 @@ public class CPSDatum<T> {
            return blankValue;
         }
         else {
-//           System.out.println( "get: " + (( value == null ) ? "null" : value.toString() ) + " => " + getName() );
-           
            return value;
         }
     }

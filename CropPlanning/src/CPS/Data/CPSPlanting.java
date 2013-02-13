@@ -464,7 +464,7 @@ public final class CPSPlanting extends CPSRecord {
        /* If date_plant_actual is valid, return it
         * else return date_plant_plan
         * or just return a default */
-       if ( a.isNotNull() ) {
+       if ( a.isNotNull() && ! a.isBlank() ) {
          e.setState( a.getState() );
          return a;
        }

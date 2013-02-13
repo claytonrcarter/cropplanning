@@ -23,15 +23,19 @@
 
 package CPS.Core.CropPlans;
 
+import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSDialog;
 import CPS.UI.Swing.LayoutAssist;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,10 +43,13 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
@@ -112,30 +119,103 @@ public class PlanManager extends CPSDialog implements ActionListener {
     if ( ! contentsPanelBuilt )
       return;
 
-    String oldSelection = (String) cmboPlanList.getSelectedItem();
-
     cmboPlanList.removeActionListener(this);
     cmboPlanList.removeAllItems();
     for ( String s : listOfValidCropPlans )
       cmboPlanList.addItem( s );
     cmboPlanList.addActionListener(this);
 
-    if ( oldSelection != null && ! oldSelection.equals( "" ) &&
-         listOfValidCropPlans.contains( oldSelection ) )
-      cmboPlanList.setSelectedItem( oldSelection );
+    if ( selectedPlan != null && ! selectedPlan.equals( "" ) &&
+         listOfValidCropPlans.contains( selectedPlan ) )
+      cmboPlanList.setSelectedItem( selectedPlan );
     else
       cmboPlanList.setSelectedIndex(-1);
 
    }
    
    private void createPlan() {
-      if ( dm != null )
-         dm.createCropPlan( getCurrentSelection(),
-                            getSelectedPlanYear(),
-                            getSelectedPlanDescription() );
+//    if ( dm == null ) return;
+
+    CPSBasedOnDialog dia = new CPSBasedOnDialog( getCurrentSelection(),
+                                                 listOfValidCropPlans,
+                                                 dm );
+    dia.setVisible(true);
+
+    if ( dm == null ) return;
+
+    // if they did not Cancel
+    if ( dia.selectedCreate() ) {
+
+      // disable the buttons while we work
+      btnNew.setEnabled(false);
+      btnCancel.setEnabled(false);
+
+      String newPlan = getCurrentSelection();
+      // create a blank crop plan no matter what
+      dm.createCropPlan( newPlan,
+                        getSelectedPlanYear(),
+                        getSelectedPlanDescription() );
+
+      // if they didn't select "blank plan"
+      if ( ! dia.selectedBlankPlan() ) {
+
+        // get old crop plan
+        List<CPSPlanting> ps = dm.getCropPlan( dia.getPlanToBaseOn() );
+
+        // how much to bump to dates
+        int y = getSelectedPlanYear() -
+                  dm.getCropPlanYear( dia.getPlanToBaseOn() );
+        String yearBump = "+" + y + "y";
+
+        // create the new keyword
+        String fromTag = dia.getPlanToBaseOn();
+        fromTag = "from" + fromTag.replaceAll( "/ /", "" );
+
+        // now add new tag, bump the dates and save the planting in the new plan
+        for ( CPSPlanting p : ps ) {
+          // add the new tag
+          p.setKeywords( p.getKeywords() + " " + fromTag );
+          
+          // bump the planned dates
+          if ( ! p.getDateToPlantPlannedString().equals( "" ) &&
+               ! p.getDateToPlantPlannedState().isCalculated() )
+            p.setDateToPlantPlanned( p.getDateToPlantPlannedString() + yearBump );
+          if ( ! p.getDateToTPPlannedString().equals( "" ) &&
+               ! p.getDateToTPPlannedState().isCalculated() )
+            p.setDateToTPPlanned( p.getDateToTPPlannedString() + yearBump );
+          if ( ! p.getDateToHarvestPlannedString().equals( "" ) &&
+               ! p.getDateToHarvestPlannedState().isCalculated() )
+            p.setDateToHarvestPlanned( p.getDateToHarvestPlannedString() + yearBump );
+
+          // blank the actual dates
+          if ( ! p.getDateToPlantActualString().equals( "" ) )
+            p.setDateToPlantActual( "" );
+          if ( ! p.getDateToTPActualString().equals( "" ) )
+            p.setDateToTPActual( "" );
+          if ( ! p.getDateToHarvestActualString().equals( "" ) )
+            p.setDateToHarvestActual( "" );
+
+          // mark as not "done"
+          p.setDonePlanting(false);
+          p.setDoneTP(false);
+          p.setDoneHarvest(false);
+
+          // save into the new crop plan
+          dm.createPlanting( newPlan, p );
+        }
+
+        if ( dia.selectedLockOldPlan() )
+          dm.finalizeCropPlan(dia.getPlanToBaseOn());
+
+      }
+
+      selectedPlan = newPlan;
+      // these only need to be fiddled with is they did cancel
       updateListOfPlans();
       updateComboBox();
-   }
+    }
+  }
+
    private void updatePlan() {
       if ( dm != null )
          dm.updateCropPlan( getCurrentSelection(),
@@ -145,6 +225,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    private void deletePlan() {
       if ( dm != null )
          dm.deleteCropPlan( getCurrentSelection() );
+      selectedPlan = null;
       updateListOfPlans();
       updateComboBox();
    }
@@ -296,7 +377,169 @@ public class PlanManager extends CPSDialog implements ActionListener {
       }
    
    }
-    
+
+
+   class CPSBasedOnDialog extends CPSDialog
+                          implements ActionListener,
+                                     ItemListener {
+
+     JRadioButton rdoBlank = null, rdoBasedOn;
+     JComboBox<String> cmbPlans = null;
+     JCheckBox chkLockOld = null;
+     JButton btnCreate, btnCancel;
+
+     boolean create = false;
+
+     String newPlan;
+     List<String> oldPlans;
+
+     CPSDataModel dm = null;
+
+    public CPSBasedOnDialog( String newPlan,
+                             List<String> oldPlans,
+                             CPSDataModel dm ) {
+      super("Create New Plan");
+      setDescription("What kind of plan do you want to create?");
+
+      this.newPlan = newPlan;
+      this.oldPlans = oldPlans;
+      this.dm = dm;
+    }
+
+    public boolean selectedBlankPlan() {
+      if ( rdoBlank == null )
+        return true;
+      else
+        return rdoBlank.isSelected();
+    }
+
+    public boolean selectedLockOldPlan() {
+      if ( chkLockOld == null )
+        return false;
+      else
+        return chkLockOld.isSelected();
+    }
+
+    public String getPlanToBaseOn() {
+      if ( cmbPlans == null )
+        return "";
+      else
+        return cmbPlans.getItemAt( cmbPlans.getSelectedIndex() );
+    }
+
+    public boolean selectedCreate() {
+      return create;
+    }
+
+    @Override
+    protected void buildContentsPanel() {
+
+      rdoBlank = new JRadioButton("a shiney, new, blank crop plan");
+      rdoBlank.setSelected(true);
+      rdoBasedOn = new JRadioButton("crop plan based on");
+      rdoBlank.addItemListener(this);
+      rdoBasedOn.addItemListener(this);
+      ButtonGroup bg = new ButtonGroup();
+      bg.add( rdoBlank );
+      bg.add( rdoBasedOn );
+
+      cmbPlans = new JComboBox<String>( 
+              oldPlans.toArray( new String[ oldPlans.size() ]) );
+      cmbPlans.setEditable(false);
+      cmbPlans.setEnabled(false);
+
+      chkLockOld = new JCheckBox("Lock the old plan.");
+      chkLockOld.setSelected(false);
+      chkLockOld.setToolTipText("If selected, the old plan will be 'locked' so that " +
+                                "it can't be editted, but can still be " +
+                                "viewed and referenced and used to generate " +
+                                "lists." );
+      chkLockOld.setEnabled(false);
+
+
+
+      JPanel jplCont = new JPanel();
+      jplCont.setLayout( new GridBagLayout() );
+
+      JLabel lblBasedOn = new JLabel( "<html><font size=\"-2\">" +
+      "If you select the 'based on' option, all of your<br>" +
+      "plantings will be copied from the selected plan<br>" +
+      "into the new plan with these changes:" +
+      "<ol> " +
+      "<li>'Planned' dates will be adjusted<br>" +
+              "to the selected year." +
+      "<li>'Actual' dates (if any) will be blanked." +
+      "<li>The 'Done ...' checkboxes will be<br>unselected." +
+      "<li>They will all be given a keyword<br>" +
+           "of 'from" + newPlan +"' so that you can<br>" +
+           "search/filter for them as you<br>update them." +
+      "</ol></font></html>");
+
+      JLabel lblLock = new JLabel( "<html><font size=\"-2\">" +
+      "If selected, the old plan will be 'locked' so that<br> " +
+      "it can't be editted, but can still be viewed and<br>" +
+      "used to generate lists and such." +
+              "</font></html>" );
+
+      int r = 1;
+      LayoutAssist.addButton(         jplCont, 0, r++, 2, 1, rdoBlank );
+      LayoutAssist.addButton(         jplCont, 0, r,   rdoBasedOn );
+      LayoutAssist.addComboBox(       jplCont, 1, r++, cmbPlans );
+      LayoutAssist.addLabelLeftAlign( jplCont, 0, r++, 2, 1, lblBasedOn );
+      LayoutAssist.addComponent(      jplCont, 0, r++, 2, 1, chkLockOld,
+                                      GridBagConstraints.CENTER );
+      LayoutAssist.addLabelLeftAlign( jplCont, 0, r++, 2, 1, lblLock );
+
+      
+      jplCont.setBorder( BorderFactory.createEmptyBorder( 10, 10, 0, 10));
+
+      contentsPanelBuilt = true;
+      add( jplCont );
+
+    }
+
+    @Override
+    protected void fillButtonPanel() {
+
+      btnCreate = new JButton( "Create" );
+      btnCancel = new JButton( "Cancel" );
+
+      btnCreate.addActionListener( this );
+      btnCancel.addActionListener( this );
+
+      addButton( btnCreate );
+      addButton( btnCancel );
+
+    }
+
+    public void actionPerformed(ActionEvent e) {
+      Object source = e.getSource();
+
+      if      ( source == btnCreate )
+        create = true;
+      else if ( source == btnCancel )
+        create = false;
+
+      setVisible(false);
+    }
+
+    public void itemStateChanged(ItemEvent e) {
+      Object source = e.getItemSelectable();
+
+      if ( source == rdoBlank ) {
+        cmbPlans.setEnabled(false);
+        chkLockOld.setEnabled(false);
+      }
+      else if ( source == rdoBasedOn ) {
+        cmbPlans.setEnabled(true);
+        chkLockOld.setEnabled(true);
+      }
+    }
+
+
+
+   }
+
    
    // For testing.
    public static void main( String[] args ) {

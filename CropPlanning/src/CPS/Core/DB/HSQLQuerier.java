@@ -233,15 +233,12 @@ public class HSQLQuerier {
          String query = "SELECT DISTINCT " + column + " FROM " + HSQLDB.escapeTableName( table );
          Statement st = con.createStatement();
          ResultSet rs = st.executeQuery( query );
-      
-//         System.out.println("Executed query: " + query );
-         
+               
          ArrayList<String> l = new ArrayList<String>();
          while ( rs.next() ) {
             String s = (String) rs.getObject(1);
             if ( s == null || s.equals( "" ) )
                continue;
-//            System.out.println("DEBUG Adding item " + (String) rs.getObject(1) );
             l.add( s );
          }
          Collections.sort( l, String.CASE_INSENSITIVE_ORDER );

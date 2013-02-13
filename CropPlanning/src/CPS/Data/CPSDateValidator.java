@@ -153,7 +153,7 @@ public class CPSDateValidator {
             try {
                 // if the date parses, then break the for loop
                 date = sdf.parse( dateText );
-                System.out.println("DATE MATCHED: " + format );
+//                System.out.println("DATE MATCHED: " + format );
                 // if the matched format doesn't include a year component, 
                 // then shift the date into this year.
                 if ( format.indexOf("yy") == -1 ) {

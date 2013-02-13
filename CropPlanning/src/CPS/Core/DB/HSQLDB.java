@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.table.TableModel;
 import net.sf.persist.*;
@@ -201,10 +202,22 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
                                                       tm.getColumnNameForMethod( "getFamilyName" ));
    }
 
-   // TODO port to Persist
+
    public synchronized List<String> getListOfCropPlans() {
-      
-       return HSQLQuerier.getDistinctValuesForColumn( p.getConnection(), "CROP_PLANS", "plan_name" );
+
+     // read from the table into a List of Map objects
+     List<Map<String,Object>> plansMap =
+             p.readMapList( "SELECT plan_name, year" +
+                            " FROM " + CROP_PLAN_TABLE +
+                            " ORDER BY year DESC" );
+
+     List<String> plansList = new ArrayList<String>( plansMap.size() );
+
+     // convert the Map into just a List of Strings
+     for ( Map<String,Object> m : plansMap )
+       plansList.add( (String) m.get("plan_name") );
+
+     return plansList;
 
    }
    
@@ -375,7 +388,21 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public String getCropPlanDescription( String planName ) {
       return HSQLQuerier.getCropPlanDescription( p.getConnection(), planName );
    }
-   
+
+   public void finalizeCropPlan( String planName ) {
+
+     List<CPSPlanting> plan = getCropPlan(planName);
+
+     for ( CPSPlanting pl : plan ) {
+       if ( pl.getID() % 20 == 0 )
+         System.out.println( "\n" + pl + "\n" );
+       p.update( planName, pl );
+     }
+
+   }
+
+
+
    public List<CPSPlanting> getCropPlan(String plan_name) {
 
       debug( "Retrieving crop plan: " + plan_name );
