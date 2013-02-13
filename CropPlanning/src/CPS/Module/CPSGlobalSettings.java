@@ -288,6 +288,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
 
     public void resetConfiguration() {
+      if ( configPanel == null )
+          buildConfigPanel();
         cmbxPrefRowOrBed.setSelectedItem( getRowsOrBeds() );
         tfldRowOrBedLength.setText( "" + getBedLength() );
         cmbxPrefUnitLength.setSelectedItem( getMeasurementUnit() );
@@ -302,6 +304,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
 
     public void resetConfigurationToDefaults() {
+      if ( configPanel == null )
+          buildConfigPanel();
         cmbxPrefRowOrBed.setSelectedItem( prefRowOrBedDefault );
         tfldRowOrBedLength.setText( "" + prefRowOrBedLengthDefault );
         cmbxPrefUnitLength.setSelectedItem( prefUnitLengthDefault );
@@ -315,6 +319,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
 
     public void saveConfiguration() {
+      if ( configPanel == null )
+          buildConfigPanel();
         getGlobalPreferences().put( KEY_ROWSORBEDS, cmbxPrefRowOrBed.getSelectedItem().toString() );
         // TODO check this for improper input
         setBedLength( Integer.parseInt( tfldRowOrBedLength.getText() ) );

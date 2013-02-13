@@ -55,7 +55,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    private JSpinner spnYear;
    private GregorianCalendar tempCal;
    
-   private String selectedPlan = null;
+   private String selectedPlan = null, oldSelected = null;
    private List<String> listOfValidCropPlans;
    static CPSDataModel dm = null;
    
@@ -259,12 +259,14 @@ public class PlanManager extends CPSDialog implements ActionListener {
       if      ( source == btnNew )    { createPlan(); }
       else if ( source == btnDelete ) { deletePlan(); }
       else if ( source == btnSave )   { updatePlan(); }
-      else if ( source == btnSelect ) { 
+      else if ( source == btnSelect ) {
+        oldSelected = selectedPlan;
          selectedPlan = (String) cmboPlanList.getSelectedItem();
          setVisible( false ); 
       }
       else if ( source == btnCancel ) {
-         cmboPlanList.setSelectedItem( oldSelection );
+        // TODO is this right?
+         cmboPlanList.setSelectedItem( oldSelected );
          setVisible( false );
       }
       else if ( source == cmboPlanList && dm != null ) {
