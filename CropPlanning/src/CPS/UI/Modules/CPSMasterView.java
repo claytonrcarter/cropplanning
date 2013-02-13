@@ -29,6 +29,7 @@ import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
+import CPS.UI.Swing.CPSConfirmDialog;
 import CPS.UI.Swing.CPSSearchField;
 import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.*;
@@ -237,7 +238,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
     }
 
-    
+
+    /** Find record by ID, not List index. */
     private int findRecord( int id, List<CPSRecord> l ) {
 
       int found = -1;
@@ -747,11 +749,27 @@ public abstract class CPSMasterView extends CPSDataModelUser
                 System.err.println("ERROR: cannon delete entry, data unavailable");
                 return;
             }
-            
-            for ( CPSRecord r : selectModel.getSelected() )
-              deleteRecord( r.getID() );
 
-            uiManager.clearDetailDisplay();
+            int[] is = new int[selectModel.getSelected().size()];
+
+            CPSConfirmDialog dia =
+                    new CPSConfirmDialog( "delete " + is.length + " record" +
+                                          ( ( is.length > 1 ) ? "s" : "" ));
+            dia.setVisible(true);
+
+            if ( dia.didConfirm() ) {
+
+              masterList.getReadWriteLock().writeLock().lock();
+              int i = 0;
+              for ( CPSRecord r : selectModel.getSelected() )
+                is[i++] = r.getID();
+              for ( i = 0; i < is.length; i++ )
+                deleteRecord( is[i] );
+              masterList.getReadWriteLock().writeLock().unlock();
+
+              uiManager.clearDetailDisplay();
+              
+            }
 
         }
         
