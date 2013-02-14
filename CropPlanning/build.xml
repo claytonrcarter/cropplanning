@@ -73,20 +73,25 @@
     -->
 
   <target name="-pre-jar">
+
     <buildnumber file="buildnumber.properties"/>
+
     <propertyfile file="appinfo.properties"
                   comment="Everything can be manually updated except buildnum and builddate.">
       <entry key="program.PROGNAME" default="${main.class}" />
       <entry key="program.AUTHOR" default="" />
       <entry key="program.COMPANY" default="" />
       <entry key="program.COPYRIGHT" default="now" type="date" pattern="yyyy" />
+      <entry key="program.WEBSITE" default="" />
       <entry key="program.DESCRIPTION" default="" />
       <entry key="program.VERSION" default="1.0.0" />
       <entry key="program.BUILDNUM" value="${build.number}" />
       <entry key="program.BUILDDATE" type="date" value="now" pattern="yyyyMMDDHHmmss" />
     </propertyfile>
+
     <copy file="appinfo.properties" todir="${build.classes.dir}"/>
     <copy file="log4j.properties" todir="${build.classes.dir}"/>
+
   </target>
 
   <target name="dist" depends="init,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j" />
@@ -125,6 +130,59 @@
   </target>
 
 
+  <target name="dist-twinkle" depends="dist-jarbundler,dist-launch4j">
+
+    <echo>Twinkle task START</echo>
+
+    <loadproperties srcfile="appinfo.properties" />
+
+    <propertyfile file="twinkle.properties"
+                  comment="Automatically generated at build.  Needed for twinkle updates.">
+      <entry key="software.name" value="${program.DESCRIPTION}" />
+      <entry key="software.author" value="${program.AUTHOR}" />
+      <entry key="software.copyright" value="${program.COPYRIGHT}" />
+      <entry key="software.website" value="${program.WEBSITE}" />
+      <entry key="software.version" value="${program.BUILDNUM}" />
+      <entry key="software.about.image" value="wheelhoe-for-twinkle.png" />
+      <entry key="software.revision" value="1" />
+      <entry key="software.build.date" value="${program.BUILDDATE}" />
+      <entry key="software.build.number" value="${program.BUILDNUM}" />
+    </propertyfile>
+
+    <copy file="twinkle.properties" todir="${build.classes.dir}"/>
+
+    <property name="dmg.file" value="${application.title}-${version.prop}-Mac.dmg" />
+    <property name="zip.file" value="${application.title}-${version.prop}-Win.zip" />
+
+    <checksum property="dmg.checksum" file="${dist.dir}/${dmg.file}" />
+    <checksum property="zip.checksum" file="${dist.dir}/${zip.file}" />
+
+    <length property="dmg.length" file="${dist.dir}/${dmg.file}" />
+    <length property="zip.length" file="${dist.dir}/${zip.file}" />
+
+    <tstamp>
+      <format property="current.date" pattern="MM/dd/yyyy" />
+    </tstamp>
+
+    <echo file="appcast-item-${version.prop}.xml" append="false">
+      <![CDATA[<item>
+        <title>]]>${program.description} Version ${program.version}<![CDATA[</title>
+          <description>
+                  RELASE NOTES HERE!
+          </description>
+        <pubDate>]]>${current.date}<![CDATA[</pubDate>
+        <sparkle:releaseNotesLink>http://andymatuschak.org/files/notes.html</sparkle:releaseNotesLink>
+        <enclosure]]> url="http://cropplanning.googlecode.com/files/${dmg.file}"                    sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${dmg.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${dmg.checksum}" <![CDATA[/>
+        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}" sparkle:os="win"   sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}" <![CDATA[/>
+        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}" sparkle:os="linux" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}" <![CDATA[/>
+      </item>]]>
+    </echo>
+
+    <echo>Twinkle task DONE</echo>
+
+  </target>
+
+
 
   <target name="dist-jarbundler" depends="init,-dist-init,-dist-init-version-prop"
           description="Package main project into a Mac application bundle.">
@@ -134,17 +192,7 @@
 
     <mkdir dir="${stage.dir}" />
 
-<!--
-    <exec ececutable="java"
-          outputproperty="versionProp">
-       <arg value="-jar dist/CropPlanning.jar" />
-       <arg value="-version" />
-    </exec>
-
-    <echo message="${versionProp}" />
- -->
-
-    <echo>Creating application bundles.</echo>
+    <echo>Creating application bundle for Mac.</echo>
 
     <jarbundler dir="${stage.dir}"
                 name="${application.title}"
@@ -178,6 +226,7 @@
     <echo>JarBundler task DONE</echo>
 
   </target>
+
 
 
   <target name="dist-launch4j" depends="init,-dist-init,-dist-init-version-prop"

@@ -23,6 +23,8 @@
 package CPS;
 
 import CPS.Module.*;
+import CPS.UI.Swing.CPSConfirmDialog;
+import barrysoft.twinkle.Twinkle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -31,7 +33,8 @@ import java.util.*;
 public class CropPlanning implements Runnable {
 
    private ModuleManager mm;
-   
+   private CPSUI ui;
+
     public static void main(String[] args) {
 
        InputStream in = null;
@@ -57,7 +60,7 @@ public class CropPlanning implements Runnable {
            in.close();
 
        } catch ( IOException ex ) {
-           ex.printStackTrace();
+           ex.printStackTrace(); 
        }
 
        // parse arguments
@@ -81,7 +84,15 @@ public class CropPlanning implements Runnable {
 
        System.out.println( "Build number: " + buildnum );
 
-       new CropPlanning();
+       CropPlanning cps = new CropPlanning();
+
+       Twinkle.getInstance().runUpdate(CropPlanning.class,
+				"http://www.failbetterfarm.com/appcast.xml",
+//				"http://cropplanning.googlecode.com/files/appcast.xml",
+				"/twinkle.properties");
+
+//       new CPSConfirmDialog("Hi").setVisible(true);
+       cps.show();
 
     }
 
@@ -95,7 +106,7 @@ public class CropPlanning implements Runnable {
        // save that for a later version
        //
        CPSGlobalSettings globSet = mm.getGlobalSettings();
-       CPSUI ui = mm.getUI();
+       ui = mm.getUI();
        ui.addModuleConfiguration( globSet );
 
        CPSDataModel dm = mm.getDM();
@@ -143,10 +154,14 @@ public class CropPlanning implements Runnable {
                    
        globSet.setLastVersionUsed( CPSModule.versionAsLongInt( globSet.getVersion() ) );
        
-       ui.showUI();
        
     }
 
+    public void show() {
+
+       ui.showUI();
+
+    }
     
    public void run() {
       mm.shutdownModules();

@@ -468,7 +468,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
    // if the window is closed w/ the filter being "set", we should go ahead and "reset" in case
    // some of the buttons and what not have been altered
    public void windowClosed( WindowEvent e ) {
-      fromFilter( savedFilter );
+     if ( contentsPanelBuilt )
+       fromFilter( savedFilter );
    }
    public void windowActivated( WindowEvent e ) { /* do nothing */ }
    public void windowClosing( WindowEvent e ) { /* do nothing */ }
