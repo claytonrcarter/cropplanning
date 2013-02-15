@@ -94,7 +94,7 @@
 
   </target>
 
-  <target name="dist" depends="init,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j" />
+  <target name="dist" depends="init,-dist-init,-dist-clean,dist-jarbundler,dist-launch4j,dist-twinkle" />
 
   <target name="-dist-init" depends="init">
      <property name="stage.dir" value="${dist.dir}/stage" />
@@ -130,7 +130,8 @@
   </target>
 
 
-  <target name="dist-twinkle" depends="dist-jarbundler,dist-launch4j">
+  <target name="dist-twinkle" depends="dist-jarbundler,dist-launch4j"
+          description="Update properties file and appcast item for twinkle automated updates.">
 
     <echo>Twinkle task START</echo>
 
@@ -142,7 +143,7 @@
       <entry key="software.author" value="${program.AUTHOR}" />
       <entry key="software.copyright" value="${program.COPYRIGHT}" />
       <entry key="software.website" value="${program.WEBSITE}" />
-      <entry key="software.version" value="${program.BUILDNUM}" />
+      <entry key="software.version" value="${program.VERSION}" />
       <entry key="software.about.image" value="wheelhoe-for-twinkle.png" />
       <entry key="software.revision" value="1" />
       <entry key="software.build.date" value="${program.BUILDDATE}" />
@@ -166,15 +167,12 @@
 
     <echo file="appcast-item-${version.prop}.xml" append="false">
       <![CDATA[<item>
-        <title>]]>${program.description} Version ${program.version}<![CDATA[</title>
-          <description>
-                  RELASE NOTES HERE!
-          </description>
+        <title>]]>${program.DESCRIPTION} Version ${program.VERSION}<![CDATA[</title>
         <pubDate>]]>${current.date}<![CDATA[</pubDate>
-        <sparkle:releaseNotesLink>http://andymatuschak.org/files/notes.html</sparkle:releaseNotesLink>
-        <enclosure]]> url="http://cropplanning.googlecode.com/files/${dmg.file}"                    sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${dmg.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${dmg.checksum}" <![CDATA[/>
-        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}" sparkle:os="win"   sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}" <![CDATA[/>
-        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}" sparkle:os="linux" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}" <![CDATA[/>
+        <sparkle:releaseNotesLink>]]>http://www.failbetterfarm.com/cps/ReleaseNotes${program.VERSION}.html<![CDATA[</sparkle:releaseNotesLink>
+        <enclosure]]> url="http://cropplanning.googlecode.com/files/${dmg.file}" sparkle:os="mac" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${dmg.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${dmg.checksum}" <![CDATA[/>
+        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}" sparkle:os="win" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}" <![CDATA[/>
+        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}" sparkle:os="all" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}" <![CDATA[/>
       </item>]]>
     </echo>
 

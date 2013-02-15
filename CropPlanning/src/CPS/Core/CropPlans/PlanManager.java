@@ -384,7 +384,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
                                      ItemListener {
 
      JRadioButton rdoBlank = null, rdoBasedOn;
-     JComboBox<String> cmbPlans = null;
+     JComboBox cmbPlans = null;
      JCheckBox chkLockOld = null;
      JButton btnCreate, btnCancel;
 
@@ -424,7 +424,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
       if ( cmbPlans == null )
         return "";
       else
-        return cmbPlans.getItemAt( cmbPlans.getSelectedIndex() );
+        return (String) cmbPlans.getItemAt( cmbPlans.getSelectedIndex() );
     }
 
     public boolean selectedCreate() {
@@ -443,7 +443,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
       bg.add( rdoBlank );
       bg.add( rdoBasedOn );
 
-      cmbPlans = new JComboBox<String>( 
+      cmbPlans = new JComboBox( 
               oldPlans.toArray( new String[ oldPlans.size() ]) );
       cmbPlans.setEditable(false);
       cmbPlans.setEnabled(false);

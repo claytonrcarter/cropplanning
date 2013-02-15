@@ -5,14 +5,13 @@
       <link>http://cropplanning.googlecode.com/files/appcast.xml</link>
       <description>Most recent changes with links to updates.</description>
       <language>en</language>
-      	<item>
-        	<title>Crop Planning Software Version 0.5.5</title>
-			<description>
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse sed felis ac ante ultrices rhoncus. Etiam quis elit vel nibh placerat facilisis in id leo. Vestibulum nec tortor odio, nec malesuada libero. Cras vel convallis nunc. Suspendisse tristique massa eget velit consequat tincidunt. Praesent sodales hendrerit pretium. Integer auctor sodales leo vel aliquam. Nullam nisi justo, molestie ut volutpat faucibus, convallis vitae dolor. Nam elementum, augue eu auctor imperdiet, ante arcu luctus turpis, quis vulputate est tortor non mauris. Fusce ut viverra ante. Mauris nec ullamcorper ante.
-			</description>
-	        <pubDate>02/13/2013</pubDate>
-    	    <sparkle:releaseNotesLink>http://andymatuschak.org/files/notes.html</sparkle:releaseNotesLink>
-	        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning.dmg"                    sparkle:version="110" sparkle:shortVersionString="0.6.1" length="0" type="application/octet-stream" sparkle:dsaSignature=""/>
+      <item>
+        <title>Crop Planning Software Version 0.5.5</title>
+        <pubDate>02/14/2013</pubDate>
+        <sparkle:releaseNotesLink>http://www.failbetterfarm.com/cps/ReleaseNotes0.5.5.html</sparkle:releaseNotesLink>
+        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Win.zip" sparkle:os="win"   sparkle:version="110" sparkle:shortVersionString="0.5.5" length="5471815" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="4e576fe69179c6acc44197aea1d11ec8" />
+        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Mac.dmg" sparkle:os="mac"                   sparkle:version="106" sparkle:shortVersionString="0.5.5" length="16965392" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="216e617e9a7a1e730e6616c2ce1090d0" />
+        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Win.zip" sparkle:os="all" sparkle:version="106" sparkle:shortVersionString="0.5.5" length="5471815" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="4e576fe69179c6acc44197aea1d11ec8" />
       </item>
    </channel>
 </rss>

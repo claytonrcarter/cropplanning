@@ -37,7 +37,7 @@ import javax.swing.JPanel;
  */
 public class CPSCardPanel extends JPanel implements ItemListener {
 
-  private JComboBox<String> cb;
+  private JComboBox cb;
   private JPanel cards;
 
   public CPSCardPanel( String[] elems,
@@ -47,7 +47,7 @@ public class CPSCardPanel extends JPanel implements ItemListener {
     this.setBorder( BorderFactory.createEtchedBorder() );
 
 
-    cb = new JComboBox<String>(elems);
+    cb = new JComboBox(elems);
     cb.setEditable(false);
     cb.addItemListener(this);
     cb.setMaximumSize( cb.getPreferredSize() );

@@ -14,7 +14,7 @@ import javax.swing.JComboBox;
  *
  * @author crcarter
  */
-public class CPSComboBox extends JComboBox<String>
+public class CPSComboBox extends JComboBox
                           implements CPSComponent,
                                      ItemListener {
 

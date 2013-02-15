@@ -86,10 +86,14 @@ public class CropPlanning implements Runnable {
 
        CropPlanning cps = new CropPlanning();
 
-       Twinkle.getInstance().runUpdate(CropPlanning.class,
-				"http://www.failbetterfarm.com/appcast.xml",
-//				"http://cropplanning.googlecode.com/files/appcast.xml",
-				"/twinkle.properties");
+       // only check for updates if it's not the first time they've run
+       // the app and they haven't turned off update checking
+       if ( ! CPSGlobalSettings.getFirstTimeRun() &&
+              CPSGlobalSettings.getCheckForUpdates() )
+         Twinkle.getInstance()
+                .runUpdate( CropPlanning.class,
+                            "http://www.failbetterfarm.com/cps/appcast.xml",
+                            "/twinkle.properties", true );
 
 //       new CPSConfirmDialog("Hi").setVisible(true);
        cps.show();

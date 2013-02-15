@@ -28,6 +28,7 @@ import CPS.UI.Swing.LayoutAssist;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -108,7 +109,10 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private static float prefFudgeDefault = .20f;
     private static float prefFudgeHighDefault = prefFudgeDefault;
     private static float prefFudgeLowDefault = prefFudgeDefault;
-    
+
+    private static final String KEY_CHECK_UPDATES = "CHECK_UPDATES";
+    private JCheckBox chkCheckUpdates;
+
     private static final String KEY_DEBUG = "DEBUG";
     private JCheckBox chkDebug;
     private static boolean prefDebugDefault = false;
@@ -244,12 +248,6 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
        return getGlobalPreferences().getBoolean( KEY_DEBUG, prefDebugDefault );
     }
 
-    public static String getModifierKey() {
-      if ( System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0 )
-        return "meta";
-      else
-        return "alt";
-    }
 
     public static void setDebug( boolean debug ) {
        getGlobalPreferences().putBoolean( KEY_DEBUG, debug );
@@ -261,6 +259,23 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     public static void setVersion( String s ) {
        getGlobalPreferences().put( KEY_VERSION, s );
+    }
+
+
+    public static String getModifierKey() {
+      if ( System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0 )
+        return "meta";
+      else
+        return "alt";
+    }
+
+    public static boolean getCheckForUpdates() {
+      return getGlobalPreferences().getBoolean( KEY_CHECK_UPDATES, true );
+    }
+
+
+    public static void setCheckForUpdates( boolean check ) {
+      getGlobalPreferences().putBoolean( KEY_CHECK_UPDATES, check );
     }
 
     /*
@@ -301,6 +316,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         jdtcFirstFrost.setDate( getFirstFrostDate() );
         tfldFudge.setText( "" + 100 * getFudgeFactor() );
         chkDebug.setSelected( getDebug() );
+        chkCheckUpdates.setSelected( getCheckForUpdates() );
     }
 
     public void resetConfigurationToDefaults() {
@@ -316,6 +332,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         jdtcFirstFrost.setDate( null );
         tfldFudge.setText( "" + 100 * prefFudgeDefault );
         chkDebug.setSelected( prefDebugDefault );
+        chkCheckUpdates.setSelected(true);
     }
 
     public void saveConfiguration() {
@@ -332,6 +349,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         setFirstFrostDate( jdtcFirstFrost.getDate() );
         getGlobalPreferences().put( KEY_FUDGE, "" + Float.parseFloat( tfldFudge.getText() ) / 100 );
         setDebug( chkDebug.isSelected() );
+        setCheckForUpdates( chkCheckUpdates.isSelected() );
     }
 
 
@@ -366,6 +384,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     chkDebug = new JCheckBox();
 
+    chkCheckUpdates = new JCheckBox("Check for updates?");
    
   }
 
@@ -373,41 +392,24 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
         initConfigPanel();
 
-        LayoutAssist.addLabel(     configPanel, 0, 0, new JLabel( "Farm Name" ) );
-        LayoutAssist.addTextField( configPanel, 1, 0, tfldFarmName );
+        int r = 0;
+
+        LayoutAssist.addLabel(     configPanel, 0, r,   new JLabel( "Farm Name" ) );
+        LayoutAssist.addTextField( configPanel, 1, r++, tfldFarmName );
         
-//       cmbxPrefRowOrBed.setToolTipText( "Is your farm primarily based on rows or beds?" );
-//       LayoutAssist.addLabel(    configPanel, 0, 0, new JLabel( "Rows or Beds?" ) );
-//       LayoutAssist.addComboBox( configPanel, 1, 0, cmbxPrefRowOrBed );
-//       
        tfldRowOrBedLength.setToolTipText( "Default row or bed length which will be used when none is specifed." );
-       LayoutAssist.addLabel(     configPanel, 0, 1, new JLabel( "Default Row or Bed Length:" ) );
-       LayoutAssist.addTextField( configPanel, 1, 1, tfldRowOrBedLength );
+       LayoutAssist.addLabel(     configPanel, 0, r,   new JLabel( "Default Row or Bed Length:" ) );
+       LayoutAssist.addTextField( configPanel, 1, r++, tfldRowOrBedLength );
        
        tfldFudge.setToolTipText( "Percetage value (0-100) to add to some calculations to provide a \"margin of error\"." );
-       LayoutAssist.addLabel(     configPanel, 0, 2, new JLabel( "Fudge factor (%)" ));
-       LayoutAssist.addTextField( configPanel, 1, 2, tfldFudge );
-       
-       jdtcLastFrost.setToolTipText( "Average or working date of last spring frost." );
-       LayoutAssist.addLabel(     configPanel, 0, 3, new JLabel( "Date of last spring frost" ));
-       LayoutAssist.addComponent( configPanel, 1, 3, jdtcLastFrost );
-       
-       jdtcLastFrost.setToolTipText( "Average or working date of first fall frost." );
-       LayoutAssist.addLabel(     configPanel, 0, 4, new JLabel( "Date of first fall frost" ));
-       LayoutAssist.addComponent( configPanel, 1, 4, jdtcFirstFrost );
-       
-       
-//       cmbxPrefUnitLength.setToolTipText( "Do you measure your plantings in feet or meters?" );
-//       LayoutAssist.addLabel(    configPanel, 0, 2, new JLabel( "Unit of Measure:" ) );
-//       LayoutAssist.addComboBox( configPanel, 1, 2, cmbxPrefUnitLength );
-//       
-//       ckbxPrefHighlight.setText( "Highlight special data fields?" );
-//       ckbxPrefHighlight.setHorizontalTextPosition( JCheckBox.LEADING );
-//       ckbxPrefHighlight.setToolTipText( "Highlight fields which are \"inherited\" or \"auto-calculated\"?" );
-//       LayoutAssist.addButton( configPanel, 0, 3, 2, 1, ckbxPrefHighlight );  
+       LayoutAssist.addLabel(     configPanel, 0, r,   new JLabel( "Fudge factor (%)" ));
+       LayoutAssist.addTextField( configPanel, 1, r++, tfldFudge );
 
-       LayoutAssist.addLabelLeftAlign( configPanel, 0, 5, new JLabel( "Output Directory:" ) );
-       LayoutAssist.addLabelLeftAlign( configPanel, 0, 6, 2, 1, lblPrefOutputDir );
+        LayoutAssist.addComponent( configPanel, 0, r++, 2, 1, chkCheckUpdates,
+                                   GridBagConstraints.CENTER );
+
+       LayoutAssist.addLabelLeftAlign( configPanel, 0, r++, new JLabel( "Output Directory:" ) );
+       LayoutAssist.addLabelLeftAlign( configPanel, 0, r++, 2, 1, lblPrefOutputDir );
        LayoutAssist.addButton( configPanel,    1, 7, btnPrefOutputDir );
 
     }
