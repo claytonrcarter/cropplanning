@@ -593,6 +593,11 @@ public final class CPSPlanting extends CPSRecord {
 
       CPSDatum t = getDatum( prop_tp );
 
+      if ( this.isDirectSeeded() ) {
+        t.setValue( t.getNullValue() );
+        return t;
+      }
+
       if ( t.isConcrete() ||
            source_path.contains( t.propertyNum ) ||
            this.doesRepresentMultipleRecords() )
@@ -1022,6 +1027,11 @@ public final class CPSPlanting extends CPSRecord {
 
       CPSDatum p = getDatum( PROP_PLANTS_NEEDED );
 
+      if ( this.isDirectSeeded() ) {
+        p.setValue( p.getNullValue() );
+        return p;
+      }
+
       if ( p.isConcrete() || source_path.contains( p.propertyNum ))
         return p;
 
@@ -1127,6 +1137,11 @@ public final class CPSPlanting extends CPSRecord {
 
       CPSDatum ps = getDatum( PROP_PLANTS_START );
 
+      if ( this.isDirectSeeded() ) {
+        ps.setValue( ps.getNullValue() );
+        return ps;
+      }
+
       if ( ps.isConcrete() || source_path.contains( ps.propertyNum ))
         return ps;
 
@@ -1168,6 +1183,11 @@ public final class CPSPlanting extends CPSRecord {
    protected CPSDatum<Float> getFlatsNeededDatum( List source_path ) {
 
       CPSDatum n = getDatum( PROP_FLATS_NEEDED );
+
+      if ( this.isDirectSeeded() ) {
+        n.setValue( n.getNullValue() );
+        return n;
+      }
 
       if ( n.isConcrete() || source_path.contains( n.propertyNum ))
         return n;

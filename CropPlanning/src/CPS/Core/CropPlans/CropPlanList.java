@@ -34,6 +34,7 @@ import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.calculation.Calculation;
 import ca.odell.glazedlists.calculation.Calculations;
+import ca.odell.glazedlists.event.ListEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -111,12 +112,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
       // setup for the summary string
 
-      FunctionList<CPSRecord, Integer> rftList =
-              new FunctionList<CPSRecord, Integer>( masterListFiltered,
-                                                 new FunctionList.Function<CPSRecord, Integer>() {
-                                                    public Integer evaluate( CPSRecord p ) {
-                                                       return ( (CPSPlanting) p ).getRowFtToPlant();
-                                                    }} );
 
       FunctionList<CPSRecord, Float> bedsList =
               new FunctionList<CPSRecord, Float>( masterListFiltered,
@@ -132,17 +127,23 @@ class CropPlanList extends CPSMasterView implements ActionListener,
                                                         return ( (CPSPlanting) p ).getFlatsNeeded();
                                                      }} );
 
+      FunctionList<CPSRecord, Integer> rftList =
+              new FunctionList<CPSRecord, Integer>( masterListFiltered,
+                                                 new FunctionList.Function<CPSRecord, Integer>() {
+                                                    public Integer evaluate( CPSRecord p ) {
+                                                       return ( (CPSPlanting) p ).getRowFtToPlant();
+                                                    }} );
 
       summaryPlantings = Calculations.count( masterListFiltered );
-      summaryRowFt = Calculations.sumIntegers( rftList );
       summaryBeds = Calculations.sumFloats( bedsList );
       summaryFlats = Calculations.sumFloats( flatsList );
+      summaryRowFt = Calculations.sumIntegers( rftList );
 
       // this propertyChangeListener will notice when this calculation is updated
       // and will fire the property change to update the stat string
-      summaryFlats.addPropertyChangeListener( this );
+      summaryRowFt.addPropertyChangeListener( this );
       updateStatisticsLabel();
-     
+
    }
 
    @Override
@@ -397,7 +398,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
        
        if ( summaryPlantings != null && summaryPlantings.getValue() > 0 ) {
            s += "Plantings:" + summaryPlantings.getValue();
-       
+
            String t = "" + CPSCalculations.precision3( summaryBeds.getValue() + .001f );
            if ( ! t.equals("") ) 
                s += "/Beds:" + t;
@@ -519,7 +520,5 @@ class CropPlanList extends CPSMasterView implements ActionListener,
    public void propertyChange( PropertyChangeEvent evt ) {
       updateStatisticsLabel();
    }
-
-
    
 }

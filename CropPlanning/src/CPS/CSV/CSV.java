@@ -46,7 +46,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
   CSVTableModel ctm;
   boolean exportOnly;
-  private CSVColumnMap columnMap;
+//  private CSVColumnMap columnMap;
 
   public CSV() {
       setModuleName("CSV");
@@ -56,7 +56,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
       exportOnly = true;
       
-      columnMap = new CSVColumnMap();
+//      columnMap = new CSVColumnMap();
   }
 
   public CSV( String file ) {
@@ -195,11 +195,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
            int columnCount = 0;
            while ( it.hasNext() ) {
                d = (CPSDatum) it.next();
-               if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
-                 colMap.put( columnMap.getCropColumnNameForProperty( d.getPropertyNum() ), new Integer( columnCount++ ) );
-               else 
-                 colMap.put( columnMap.getPlantingColumnNameForProperty( d.getPropertyNum() ), new Integer( columnCount++ ) );
-                 
+               colMap.put( sanitizeColumnName( d.getName() ), new Integer( columnCount++ ) );
            }
 
 
@@ -209,11 +205,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
            it = c.iterator();
            while ( it.hasNext() ) {
                d = (CPSDatum) it.next();
-               String colName = "";
-               if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
-                 colName = columnMap.getCropColumnNameForProperty( d.getPropertyNum() );
-               else 
-                 colName = columnMap.getPlantingColumnNameForProperty( d.getPropertyNum() );
+               String colName = sanitizeColumnName( d.getName() );
                int colForDatum = colMap.get( colName ).intValue();
                row[colForDatum] = colName;
            }
@@ -221,16 +213,27 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
            // write rows
            for ( CPSRecord record : records ) {
+
+             // HACK HACK HACK
+             if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING ) {
+
+               ((CPSPlanting) record).getSeedNeeded();
+               ((CPSPlanting) record).getPlantsNeeded();
+               ((CPSPlanting) record).getFlatsNeeded();
+               ((CPSPlanting) record).getTotalYield();
+
+               ((CPSPlanting) record).getDateToPlant();
+               ((CPSPlanting) record).getDateToTP();
+               ((CPSPlanting) record).getDateToHarvest();
+
+             }
+
                row = new String[columnCount];
                it = record.iterator();
                while ( it.hasNext() ) {
                    d = (CPSDatum) it.next();
-                   String colName = "";
-                   if ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
-                     colName = columnMap.getCropColumnNameForProperty( d.getPropertyNum() );
-                   else
-                     colName = columnMap.getPlantingColumnNameForProperty( d.getPropertyNum() );
-               
+                   String colName = sanitizeColumnName( d.getName() );
+                   
                    int colForDatum = colMap.get( colName ).intValue();
 
                    if ( EXPORT_SPARSE_DATA && ! d.isConcrete() ) {
@@ -256,6 +259,20 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
        }
        catch ( Exception ignore ) { ignore.printStackTrace(); }
 
+   }
+
+
+   private String sanitizeColumnName( String name ) {
+
+     String col;
+
+     // spaces to underscores
+     col = name.replaceAll( " ", "_" );
+
+     // parens and questions marks removed
+     col = col.replaceAll( "[\\(\\)\\?]", "" );
+
+     return col.toLowerCase();
    }
 
 
@@ -355,22 +372,22 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
 
   public String propNameFromPropNum( int recordType, int propertyNum ) {
      if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
-        return columnMap.getCropColumnNameForProperty( propertyNum );
+        return sanitizeColumnName( new CPSCrop().getDatum(propertyNum).getName() );
      else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
-        return columnMap.getPlantingColumnNameForProperty( propertyNum );
+        return sanitizeColumnName( new CPSPlanting().getDatum(propertyNum).getName() );
      else
         return "UnknownProperty";
   }
 
   public int propNumFromPropName( int recordType, String propertyName ) {
 
-     if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
-        return columnMap.getCropPropertyNumFromName( propertyName );
-     else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
-     {
-        return columnMap.getPlantingPropertyNumFromName( propertyName );
-     }
-     else
+//     if      ( recordType == CPSDataModelConstants.RECORD_TYPE_CROP )
+//        return columnMap.getCropPropertyNumFromName( propertyName );
+//     else if ( recordType == CPSDataModelConstants.RECORD_TYPE_PLANTING )
+//     {
+//        return columnMap.getPlantingPropertyNumFromName( propertyName );
+//     }
+//     else
         return 0;
   }
 

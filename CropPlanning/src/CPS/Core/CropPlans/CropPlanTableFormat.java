@@ -160,7 +160,7 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
          // Status Booleans
          case 13: return p.getDonePlanting();
-         case 14: return p.getDoneTP();
+         case 14: return p.isDirectSeeded() ? false : p.getDoneTP();
          case 15: return p.getDoneHarvest();
          case 16: return p.getIgnore();
 

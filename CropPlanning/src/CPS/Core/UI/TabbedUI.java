@@ -350,7 +350,11 @@ public class TabbedUI extends CPSUI implements ActionListener {
     private void rebuildImportMenu() {
        
        initImportMenu();
-       
+
+       // disable imports
+       if ( true )
+         return;
+
        for ( CPSImporter imER : importers ) {
           
           JMenu importerMenu = new JMenu( "From " + imER.getImportFileDefaultExtension().toUpperCase() );
