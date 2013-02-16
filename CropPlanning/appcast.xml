@@ -7,11 +7,11 @@
       <language>en</language>
       <item>
         <title>Crop Planning Software Version 0.5.5</title>
-        <pubDate>02/14/2013</pubDate>
+        <pubDate>02/15/2013</pubDate>
         <sparkle:releaseNotesLink>http://www.failbetterfarm.com/cps/ReleaseNotes0.5.5.html</sparkle:releaseNotesLink>
-        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Win.zip" sparkle:os="win"   sparkle:version="110" sparkle:shortVersionString="0.5.5" length="5471815" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="4e576fe69179c6acc44197aea1d11ec8" />
-        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Mac.dmg" sparkle:os="mac"                   sparkle:version="106" sparkle:shortVersionString="0.5.5" length="16965392" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="216e617e9a7a1e730e6616c2ce1090d0" />
-        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Win.zip" sparkle:os="all" sparkle:version="106" sparkle:shortVersionString="0.5.5" length="5471815" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="4e576fe69179c6acc44197aea1d11ec8" />
+        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Mac.dmg" sparkle:os="mac" sparkle:version="108" sparkle:shortVersionString="0.5.5" length="5727557" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="c3df3a37f5cd91ee0044b88f017036f1" />
+        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Win.zip" sparkle:os="win" sparkle:version="108" sparkle:shortVersionString="0.5.5" length="5473468" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="4e02b0b013252d19abb98492dec0c7b7" />
+        <enclosure url="http://cropplanning.googlecode.com/files/CropPlanning-0.5.5-Win.zip" sparkle:os="all" sparkle:version="108" sparkle:shortVersionString="0.5.5" length="5473468" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="4e02b0b013252d19abb98492dec0c7b7" />
       </item>
    </channel>
 </rss>
