@@ -84,18 +84,11 @@ public class ModuleManager implements CPSModuleMediator {
      coreMods.add( new CPS.Core.CropPlans.CropPlans() );
      coreMods.add( new CPS.Core.CropDB.CropDB() );
      coreMods.add( new CPS.Core.TODOLists.TODOLists() );
+     coreMods.add( new CPS.Core.VisualCalendar.VisualCalendar() );
 
      direct = new java.util.Date();
 
-//      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropPlans.CropPlans" ) );
-//      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "CropDB.CropDB" ) );
-//      coreMods.add( (CPSDisplayableDataUserModule) loadPlugin( "CPS.Core." + "TODOLists.TODOLists" ) );
-//
-//      reflect = new java.util.Date();
-
       System.out.println( "Time to instantiate modules: " + ( direct.getTime() - start.getTime() ) );
-//      System.out.println( "Time to reflect  instantiate: " + ( reflect.getTime() - direct.getTime() ) );
-//      System.exit(0);
       
       for ( CPSModule mod : coreMods ) {
           CPSModule.debug( "ModuleManager", "Examining module: " + mod.getModuleName() );

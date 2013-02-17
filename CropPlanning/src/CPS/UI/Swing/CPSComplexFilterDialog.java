@@ -149,8 +149,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
                f.setTpRangeEnd( dlgTPRange.getEndDate() ) ;
             }
             if ( f.setFilterOnHarvestDate( dlgHarvestRange.isDateRangeSet() ) ) {
-               f.setHarvestDateStart( dlgHarvestRange.getStartDate() );
-               f.setHarvestDateEnd( dlgHarvestRange.getEndDate() ) ;
+               f.setHarvestRangeStart( dlgHarvestRange.getStartDate() );
+               f.setHarvestRangeEnd( dlgHarvestRange.getEndDate() ) ;
             }
             
         }

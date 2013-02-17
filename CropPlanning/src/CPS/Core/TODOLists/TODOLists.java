@@ -288,9 +288,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
       if ( l != null )
         data.addAll( l );
 
-      System.out.println("Entries in full crop plan: " + data.size() );
-      System.out.println("Entries in filtered crop plan: " + dataFiltered.size() );
-
     }
 
 
@@ -654,11 +651,11 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
 
         // setup the list of filters and add an "all" matcher
-        BasicEventList<MatcherEditor<CPSPlanting>> filterList = new BasicEventList<MatcherEditor<CPSPlanting>>();
-        filterList.add( filter );
+        BasicEventList<MatcherEditor<CPSPlanting>> filters = new BasicEventList<MatcherEditor<CPSPlanting>>();
+        filters.add( filter );
 
         // now setup the thing that will match all of the elements of the filter list
-        CompositeMatcherEditor<CPSPlanting> compositeFilter = new CompositeMatcherEditor<CPSPlanting>( filterList );
+        CompositeMatcherEditor<CPSPlanting> compositeFilter = new CompositeMatcherEditor<CPSPlanting>( filters );
         compositeFilter.setMode( CompositeMatcherEditor.AND );
 
 
@@ -762,7 +759,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           seedStats.add(s);
 
           // now add this to the list of shit to exclude from our list
-          filterList.add( cvm.invert() );
+          filters.add( cvm.invert() );
 
         }
 

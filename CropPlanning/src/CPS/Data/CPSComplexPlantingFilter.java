@@ -224,8 +224,8 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
     public void setPlantingRangeEnd( Date plantingRangeEnd ) { this.plantingRageEnd = plantingRangeEnd; }
     public void setTpRangeStart( Date tpRangeStart ) { this.tpRangeStart = tpRangeStart; }
     public void setTpRangeEnd( Date tpRangeEnd ) { this.tpRangeEnd = tpRangeEnd; }
-    public void setHarvestDateStart( Date harvestDateStart ) { this.harvestRangeStart = harvestDateStart; }
-    public void setHarvestDateEnd( Date harvestDateEnd ) { this.harvestRangeEnd = harvestDateEnd; }
+    public void setHarvestRangeStart( Date harvestDateStart ) { this.harvestRangeStart = harvestDateStart; }
+    public void setHarvestRangeEnd( Date harvestDateEnd ) { this.harvestRangeEnd = harvestDateEnd; }
     public void setAnyDateRangeStart( Date anyDateRangeStart ) { this.anyDateRangeStart = anyDateRangeStart; }
     public void setAnyDateRangeEnd( Date anyDateRangeEnd ) { this.anyDateRangeEnd = anyDateRangeEnd; }
 
