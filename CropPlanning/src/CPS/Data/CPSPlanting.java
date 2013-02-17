@@ -1386,7 +1386,11 @@ public final class CPSPlanting extends CPSRecord {
     * @return Whether or not this planting is direct seeded.  If call when useRawouput() == true, this
     * could return null.
     */
-   public Boolean isDirectSeeded() { return getBoolean( PROP_DIRECT_SEED ); }
+   public Boolean isDirectSeeded() { 
+     Boolean b = getBoolean( PROP_DIRECT_SEED );
+     if ( b == null ) b = Boolean.FALSE;
+     return b;
+   }
    @NoColumn
    public Boolean isTransplanted() {
       if ( isDirectSeeded() == null ) 
