@@ -264,7 +264,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tareNotes = new CPSTextArea( 12, 15 );
       
             
-      /* the format for these calls is: panel, column, row, component */
       /* ***********************************/
       /* COLUMN ONE (really zero and one)  */
       /* ***********************************/
@@ -289,7 +288,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
       tempLabel = new JLabel( "Description:" );
       jplName.add( tempLabel,    "right align" );
-//      jplName.add( tareDesc, "wrap" );
       jplName.add( new JScrollPane( tareDesc ), "wrap" );
 
 
