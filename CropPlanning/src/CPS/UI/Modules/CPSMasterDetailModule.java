@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *
@@ -90,7 +91,7 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
         return mainPanel;
     }
     protected void initUI() {
-        mainPanel = new JPanel();
+        mainPanel = new JPanel( new MigLayout( "insets 2px") );
     }
     protected void buildUI() {
         splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 

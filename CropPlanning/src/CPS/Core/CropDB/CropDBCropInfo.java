@@ -217,6 +217,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    protected void buildDetailsPanel() {
 
      JLabel tempLabel;
+     String migPanelDefaults = "gapy 0px!, insets 2px";
 
       tfldCropName = new CPSTextField(10);
       tfldVarName = new CPSTextField( 10 );
@@ -256,18 +257,18 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldSeedsPerDS   = new CPSTextField( FIELD_LEN_MED );
       tfldSeedsPerTP   = new CPSTextField( FIELD_LEN_MED );
 
-      tareDesc = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareDesc = new CPSTextArea( 8, FIELD_LEN_WAY_LONG );
       tareGroups = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
       tareKeywords = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
       tareOtherReq = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
-      tareNotes = new CPSTextArea( 3, 40 );
+      tareNotes = new CPSTextArea( 12, 15 );
       
             
       /* the format for these calls is: panel, column, row, component */
       /* ***********************************/
       /* COLUMN ONE (really zero and one)  */
       /* ***********************************/
-      JPanel jplName = new JPanel( new MigLayout( "gapy 0px!" ));
+      JPanel jplName = new JPanel( new MigLayout( migPanelDefaults ));
 
       if ( anonLabels == null )
         anonLabels = new ArrayList<JLabel>();
@@ -295,7 +296,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       /* ***********************************/
       /* COLUMN TWO
       /* ***********************************/
-      JPanel jplPlanting = new JPanel( new MigLayout( "gapy 0px!" ) );
+      JPanel jplPlanting = new JPanel( new MigLayout( migPanelDefaults ) );
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
       
       tempLabel = new JLabel( "Maturity Days:" );
@@ -307,10 +308,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplPlanting.add( chkTP, "align center, span 2, wrap" );
 
 
-      lblDSMat = new JLabel( "Adjust Mat. Days" );
+      lblDSMat = new JLabel( "Adjust Mat." );
       jplPlanting.add( lblDSMat, "align right " );
       jplPlanting.add( tfldDSMatAdjust, "" );
-      lblTPMat = new JLabel( "Adjust Mat. Days" );
+      lblTPMat = new JLabel( "Adjust Mat." );
       jplPlanting.add( lblTPMat, "align right" );
       jplPlanting.add( tfldTPMatAdjust, "wrap" );
       
@@ -364,7 +365,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       /**************************************/
       /* Page 1
       /**************************************/
-      JPanel jplYield = new JPanel( new MigLayout( "gapy 0px!" ) );
+      JPanel jplYield = new JPanel( new MigLayout( migPanelDefaults ) );
       
       /* unit, per foot, weeks, per week, value */
       tempLabel = new JLabel( "Yield Units" );
@@ -383,7 +384,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       /**************************************/
       /* Page 2
       /**************************************/
-      JPanel jplSeeds = new JPanel( new MigLayout( "gapy 0px!" ) );
+      JPanel jplSeeds = new JPanel( new MigLayout( migPanelDefaults ) );
 
       tempLabel = new JLabel( "Units" );
       jplSeeds.add( tempLabel, "align right" );
@@ -407,7 +408,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       /**************************************/
       /* Page 3
       /**************************************/
-      JPanel jplMisc = new JPanel( new MigLayout( "gapy 0px!" ) );
+      JPanel jplMisc = new JPanel( new MigLayout( migPanelDefaults ) );
 
       tempLabel = new JLabel( "<html>Other <br>Req.:</html>" );
       jplMisc.add( tempLabel, "align right top" );
@@ -422,26 +423,38 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplMisc.add( new JScrollPane( tareKeywords ), "wrap" );
 
 
+      /**************************************/
+      /* Page 3
+      /**************************************/
+      JPanel jplNotes = new JPanel( new MigLayout( migPanelDefaults ) );
+
+      tempLabel = new JLabel( "Notes:" );
+      jplNotes.add( tempLabel, "align right top" );
+      jplNotes.add( new JScrollPane( tareNotes ), "wrap" );
+      jplNotes.add( new JButton("Add Date"), "span 2, align right" );
+
       
-      CPSCardPanel columnFour = new CPSCardPanel( new String[] { "Yield Info",
-                                                       "Seed Info",
-                                                       "Misc Info" },
-                                        new JPanel[] { jplYield,
-                                                       jplSeeds,
-                                                       jplMisc } );
+      CPSCardPanel columnFour =
+              new CPSCardPanel( new String[] {
+                                               "Notes",
+                                               "Yield Info",
+                                               "Seed Info",
+                                               "Misc Info" },
+                                new JPanel[] {
+                                               jplNotes,
+                                               jplYield,
+                                               jplSeeds,
+                                               jplMisc } );
       
       /* *************************************/
       /* BOTTOW ROW                          */
       /* *************************************/
-      jplDetails = new JPanel( new MigLayout() );
+      jplDetails = new JPanel( new MigLayout( "gap 0px!, insets 2px" ) );
 
       jplDetails.add( jplName, "aligny top" );
       jplDetails.add( jplPlanting, "aligny top" );
       jplDetails.add( columnFour, "aligny top, wrap" );
       
-      tempLabel = new JLabel( "Notes:" );
-      jplDetails.add( tempLabel, "align center top, span 3, split 2" );
-      jplDetails.add( new JScrollPane( tareNotes ), "wrap" );
 
 
 
