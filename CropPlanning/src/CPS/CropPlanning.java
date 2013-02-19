@@ -100,6 +100,7 @@ public class CropPlanning implements Runnable {
                             appcastURL,
                             "/twinkle.properties", true );
 
+       // this line just for testing the app cast; show a dummy dialog
 //       new CPSConfirmDialog("Hi").setVisible(true);
        cps.show();
 
