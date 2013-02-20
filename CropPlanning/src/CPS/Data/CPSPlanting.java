@@ -1438,6 +1438,10 @@ public final class CPSPlanting extends CPSRecord {
    public CPSDatumState getOtherRequirementsState() { return getStateOf( PROP_OTHER_REQ ); }
    public void setOtherRequirements( String e ) { set( other_req, e ); }
 
+   @Deprecated
+   /** Don't use this for the time being.  There is confusion about this
+    * vs the getPlantingNotes() field.  This field has never been exposed
+    * to the user while the other one has. */
    public String getNotes() { return get( PROP_NOTES ); }
    public CPSDatumState getNotesState() { return getStateOf( PROP_NOTES ); }
    public void setNotes( String e ) { set( notes, e ); }

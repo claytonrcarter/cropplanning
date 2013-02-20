@@ -15,6 +15,7 @@ public interface CPSUIChangeListener {
     * This is called whenever a CPSDisplayableModule (to which this object has been added via
     * the CPSDisplayableModule.addUIChangeListener() method) has affect the UI in such a way
     * that it might need to be laidout again.
+    * @deprecated 
     */
    public void uiChanged();
    

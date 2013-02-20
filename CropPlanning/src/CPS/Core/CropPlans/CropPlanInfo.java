@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.*;
+import net.miginfocom.swing.MigLayout;
 
 public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemListener {
 
@@ -50,12 +51,14 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    private CPSRadioButton rdoDS, rdoTP;
    private JLabel lblDateTP, lblTimeToTP, lblFlatSize, lblFlatsNeeded, lblPlantsToStart;
    private CPSTextField tfldMatAdjust, tfldTimeToTP, tfldRowsPerBed, tfldInRowSpace, tfldBetRowSpace,
-                        tfldFlatSize, tfldPlantingNotesCrop, tfldPlantingNotes;
+                        tfldFlatSize;
    private CPSTextField tfldBedsToPlant, tfldRowFtToPlant, tfldPlantsNeeded,
                         tfldPlantsToStart, tfldFlatsNeeded;
    private CPSTextField tfldYieldPerFt, tfldTotalYield, tfldYieldNumWeeks, tfldYieldPerWeek,
                         tfldCropYieldUnit, tfldCropYieldUnitValue;
-   private CPSTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
+   private CPSTextArea tareGroups, tareKeywords, tareOtherReq;
+//   private CPSTextArea tareNotes;
+   private CPSTextArea tarePlantingNotesCrop, tarePlantingNotes;
    private CPSTextField tfldCustom1, tfldCustom2, tfldCustom3, tfldCustom4, tfldCustom5;
 
    private CPSTextField tfldSeedsPerUnit, tfldSeedsPer, tfldSeedNeeded;
@@ -140,7 +143,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                    displayedPlanting.getFlatSizeState() );
        tfldTimeToTP.setInitialText( displayedPlanting.getTimeToTPString(),
                                    displayedPlanting.getTimeToTPState() );
-       tfldPlantingNotes.setInitialText( displayedPlanting.getPlantingNotes(),
+       tarePlantingNotes.setInitialText( displayedPlanting.getPlantingNotes(),
                                          displayedPlanting.getPlantingNotesState() );
 
        tfldBedsToPlant.setInitialText( displayedPlanting.getBedsToPlantString(),
@@ -180,8 +183,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                     displayedPlanting.getOtherRequirementsState() );
        tareKeywords.setInitialText( displayedPlanting.getKeywords(),
                                     displayedPlanting.getKeywordsState());
-       tareNotes.setInitialText( displayedPlanting.getNotes(),
-                                 displayedPlanting.getNotesState());
+//       tareNotes.setInitialText( displayedPlanting.getNotes(),
+//                                 displayedPlanting.getNotesState());
 
        tfldCustom1.setInitialText( displayedPlanting.getCustomField1(), displayedPlanting.getCustomField1State() );
        tfldCustom2.setInitialText( displayedPlanting.getCustomField2(), displayedPlanting.getCustomField2State() );
@@ -345,8 +348,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( tfldInRowSpace.hasChanged() ) changes.setInRowSpacing( tfldInRowSpace.getText() );
        if ( tfldBetRowSpace.hasChanged() ) changes.setRowSpacing( tfldBetRowSpace.getText() );
        if ( tfldFlatSize.hasChanged() ) changes.setFlatSize( tfldFlatSize.getText() );
-       if ( tfldPlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tfldPlantingNotesCrop.getText() );
-       if ( tfldPlantingNotes.hasChanged() ) changes.setPlantingNotes( tfldPlantingNotes.getText() );
+       if ( tarePlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tarePlantingNotesCrop.getText() );
+       if ( tarePlantingNotes.hasChanged() ) changes.setPlantingNotes( tarePlantingNotes.getText() );
 
        if ( tfldBedsToPlant.hasChanged() ) changes.setBedsToPlant( tfldBedsToPlant.getText() );
        if ( tfldRowFtToPlant.hasChanged() ) changes.setRowFtToPlant( tfldRowFtToPlant.getText() );
@@ -369,7 +372,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( tareGroups.hasChanged() ) changes.setGroups( tareGroups.getText() );
        if ( tareOtherReq.hasChanged() ) changes.setOtherRequirements( tareOtherReq.getText() );
        if ( tareKeywords.hasChanged() ) changes.setKeywords( tareKeywords.getText() );
-       if ( tareNotes.hasChanged() ) changes.setNotes( tareNotes.getText( ) );
+//       if ( tareNotes.hasChanged() ) changes.setNotes( tareNotes.getText( ) );
 
        if ( tfldCustom1.hasChanged() ) changes.setCustomField1( tfldCustom1.getText() );
        if ( tfldCustom2.hasChanged() ) changes.setCustomField2( tfldCustom2.getText() );
@@ -384,10 +387,13 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    }
    
    protected void buildDetailsPanel() {
+     
+      String migPanelDefaults = "gapy 0px!, insets 2px";
        
       List<String> names = new ArrayList<String>();
       if ( isDataAvailable() )
          names = getDataSource().getCropNameList();
+
 
       tfldCropName = new CPSTextField( FIELD_LEN_LONG, names, CPSTextField.MATCH_STRICT );
       tfldVarName = new CPSTextField( FIELD_LEN_LONG );
@@ -429,8 +435,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldBetRowSpace = new CPSTextField( FIELD_LEN_SHORT );
       tfldTimeToTP = new CPSTextField( FIELD_LEN_SHORT );
       tfldFlatSize = new CPSTextField( FIELD_LEN_MED );
-      tfldPlantingNotesCrop = new CPSTextField( FIELD_LEN_LONG );
-      tfldPlantingNotes = new CPSTextField( FIELD_LEN_LONG );
 
       tfldBedsToPlant = new CPSTextField( FIELD_LEN_SHORT );
       tfldRowFtToPlant = new CPSTextField( FIELD_LEN_MED );
@@ -453,7 +457,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
       tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
       tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareNotes = new CPSTextArea( 5, 40 );
+      tarePlantingNotesCrop = new CPSTextArea( 12, 15 );
+      tarePlantingNotes = new CPSTextArea( 12, 15 );
+//      tareNotes = new CPSTextArea( 5, 40 );
 
       tfldCustom1 = new CPSTextField( FIELD_LEN_LONG );
       tfldCustom2 = new CPSTextField( FIELD_LEN_LONG );
@@ -462,219 +468,304 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldCustom5 = new CPSTextField( FIELD_LEN_LONG );
 
 
-      JPanel columnOne = initPanelWithVerticalBoxLayout();
-      JPanel columnTwo = initPanelWithVerticalBoxLayout();
-      JPanel columnThree = initPanelWithVerticalBoxLayout();
-      JPanel columnFour = initPanelWithVerticalBoxLayout();
+      JPanel columnOne = new JPanel( new MigLayout( migPanelDefaults ));
+      JPanel columnTwo = new JPanel( new MigLayout( migPanelDefaults ));
+      JPanel columnThree = new JPanel( new MigLayout( migPanelDefaults ));
+      JPanel columnFour = new JPanel( new MigLayout( migPanelDefaults ));
 
       JLabel tempLabel;
 
-      /* the format for these calls is: panel, column, row, component */
       /* ***********************************/
       /* COLUMN ONE                        */
       /* ***********************************/
-      JPanel jplName = initPanelWithGridBagLayout();
-      jplName.setBorder( BorderFactory.createEmptyBorder() );
-
-      int r = 0;
+      JPanel jplName =  new JPanel( new MigLayout( migPanelDefaults ));
+      
       if ( anonLabels == null )
         anonLabels = new ArrayList<JLabel>();
 
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Crop Name:" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldCropName );
+      tempLabel = new JLabel( "Crop Name:" );
+      jplName.add( tempLabel, "align right" );
+      jplName.add( tfldCropName, "wrap" );
+      anonLabels.add( tempLabel );
 
-      anonLabels.add(LayoutAssist.createLabel(  jplName, 0, r, "Variety:" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldVarName );
+      tempLabel = new JLabel( "Variety:" );
+      jplName.add( tempLabel, "align right" );
+      jplName.add( tfldVarName, "wrap" );
+      anonLabels.add( tempLabel );
       
-      anonLabels.add(LayoutAssist.createLabel(  jplName, 0, r, "Maturity Days:" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldMatDays );
+      tempLabel = new JLabel( "Maturity Days:" );
+      jplName.add( tempLabel, "align right" );
+      jplName.add( tfldMatDays, "wrap" );
+      anonLabels.add( tempLabel );
 
-      anonLabels.add(LayoutAssist.createLabel(  jplName, 0, r, "Location" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldLocation);
+      tempLabel = new JLabel( "Location" );
+      jplName.add( tempLabel, "align right" );
+      jplName.add( tfldLocation, "wrap" );
+      anonLabels.add( tempLabel );
       
       
-      JPanel jplDates = initPanelWithGridBagLayout();
+      JPanel jplDates = new JPanel( new MigLayout( migPanelDefaults ));
       jplDates.setBorder( BorderFactory.createTitledBorder( "Dates & Completed" ) );
-      r=0;
 
-      tempLabel = LayoutAssist.createLabel( jplDates, 0, r, "Display" );
+      tempLabel = new JLabel( "Show" );
       tempLabel.setToolTipText( "Select which dates to display" );
+      jplDates.add( tempLabel, "align right" );
+      jplDates.add( cmbDates, "span 2, wrap" );
       anonLabels.add( tempLabel );
-      LayoutAssist.addComponent( jplDates, 1, r++, 2, 1, cmbDates );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplDates, 0, r, "Planting" ));
-      LayoutAssist.addTextField( jplDates, 1, r, tfldDatePlant );
-      LayoutAssist.addButton(    jplDates, 2, r++, chkDonePlant );
+      tempLabel = new JLabel( "Planting" );
+      jplDates.add( tempLabel, "align right" );
+      jplDates.add( tfldDatePlant );
+      jplDates.add( chkDonePlant, "wrap" );
+      anonLabels.add( tempLabel );
 
-      lblDateTP = LayoutAssist.createLabel(  jplDates, 0, r, "Transplant" );
-      lblDateTP.setToolTipText( "Transplanting" );
-      LayoutAssist.addTextField( jplDates, 1, r, tfldDateTP);
-      LayoutAssist.addButton(    jplDates, 2, r++, chkDoneTP );
+      lblDateTP = new JLabel( "Transplant" );
+      // lblDateTP.setToolTipText( "Transplanting" );
+      jplDates.add( lblDateTP, "align right" );
+      jplDates.add( tfldDateTP );
+      jplDates.add( chkDoneTP, "wrap" );
+      anonLabels.add( lblDateTP );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplDates, 0, r, "Harvest" ));
-      LayoutAssist.addTextField( jplDates, 1, r, tfldDateHarvest );
-      LayoutAssist.addButton(    jplDates, 2, r++, chkDoneHarvest );
+      tempLabel = new JLabel( "Harvest" );
+      jplDates.add( tempLabel, "align right" );
+      jplDates.add( tfldDateHarvest );
+      jplDates.add( chkDoneHarvest, "wrap" );
+      anonLabels.add( tempLabel );
 
-      LayoutAssist.addButton( jplDates, 1, r, 2, 1, chkIgnore );
+      jplDates.add( chkIgnore, "align center, span 3" );
 
-      LayoutAssist.addPanelToColumn( columnOne, jplName );
-      LayoutAssist.addPanelToColumn( columnOne, jplDates );
-      LayoutAssist.finishColumn( columnOne );
-      
+      columnOne.add( jplName, "wrap" );
+      columnOne.add( jplDates, "wrap" );
+
+
       /* ***********************************/
-      /* COLUMN TWO (really two and three) */
+      /* COLUMN TWO
       /* ***********************************/
-
-      JPanel jplPlanting = initPanelWithGridBagLayout();
+      JPanel jplPlanting = new JPanel( new MigLayout( migPanelDefaults ));
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
-      r=0;
 
-      LayoutAssist.addButtonRightAlign( jplPlanting, 0, r, rdoDS );
-      LayoutAssist.addButton(           jplPlanting, 1, r++, rdoTP );
+      jplPlanting.add( rdoDS, "align center, span 2, split 2" );
+      jplPlanting.add( rdoTP, "wrap" );
 
-      tempLabel = LayoutAssist.createLabel(  jplPlanting, 0, r, "Mat. adj" );
+      tempLabel = new JLabel( "Mat. adj" );
       tempLabel.setToolTipText( "Adjust maturity by so many days" );
+      jplPlanting.add( tempLabel, "align right" );
+      jplPlanting.add( tfldMatAdjust, "wrap" );
       anonLabels.add( tempLabel );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldMatAdjust );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Rows/Bed" ));
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldRowsPerBed );
+      tempLabel = new JLabel( "Rows/Bed" );
+      jplPlanting.add( tempLabel, "align right" );
+      jplPlanting.add( tfldRowsPerBed, "wrap" );
+      anonLabels.add( tempLabel );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Row Spacing" ));
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldBetRowSpace );
+      tempLabel = new JLabel( "Row Spacing" );
+      jplPlanting.add( tempLabel, "align right" );
+      jplPlanting.add( tfldBetRowSpace, "wrap" );
+      anonLabels.add( tempLabel );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Plant Spacing (in row)" ));
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldInRowSpace );
+      tempLabel = new JLabel( "Plant Spacing" );
+      tempLabel.setToolTipText("Spacing between plants within the row.");
+      jplPlanting.add( tempLabel, "align right" );
+      jplPlanting.add( tfldInRowSpace, "wrap" );
+      anonLabels.add( tempLabel );
       
-      LayoutAssist.addSeparator( jplPlanting, 0, r++, 2);
+      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
       
-      lblFlatSize = LayoutAssist.createLabel(  jplPlanting, 0, r, "Flat Size" );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldFlatSize );
+      lblFlatSize = new JLabel( "Flat Size" );
+      jplPlanting.add( lblFlatSize, "align right" );
+      jplPlanting.add( tfldFlatSize, "wrap" );
+      anonLabels.add( lblFlatSize );
       
-      lblTimeToTP = LayoutAssist.createLabel(  jplPlanting, 0, r, "Weeks to TP" );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldTimeToTP );
+      lblTimeToTP = new JLabel( "Weeks to TP" );
+      jplPlanting.add( lblTimeToTP, "align right" );
+      jplPlanting.add( tfldTimeToTP, "wrap" );
+      anonLabels.add( lblTimeToTP );
       
-      LayoutAssist.addSeparator( jplPlanting, 0, r++, 2);
+//      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Crop Notes" ));
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldPlantingNotesCrop );
+//      tempLabel = new JLabel( "Crop Notes" );
+//      jplPlanting.add( tempLabel, "align right" );
+//      jplPlanting.add( tarePlantingNotesCrop, "wrap" );
+//      anonLabels.add( tempLabel );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 0, r, "Planting Notes" ));
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldPlantingNotes );
-      
-      LayoutAssist.addPanelToColumn( columnTwo, jplPlanting );
-      
-      
-      JPanel jplAdjust = initPanelWithGridBagLayout();
-      jplAdjust.setBorder( BorderFactory.createTitledBorder( "Mat. Adjust" ) );
+//      tempLabel = new JLabel( "Planting Notes" );
+//      jplPlanting.add( tempLabel, "align right" );
+//      jplPlanting.add( tfldPlantingNotes, "wrap" );
+//      anonLabels.add( tempLabel );
 
-      LayoutAssist.finishColumn( columnTwo );
-      
+      columnTwo.add( jplPlanting );
+           
       
       /* *************************************/
-      /* COLUMN THREE (really four and five) */
+      /* COLUMN THREE
       /* *************************************/
-      JPanel jplAmount = initPanelWithGridBagLayout();
+      JPanel jplAmount = new JPanel( new MigLayout( migPanelDefaults ));
       jplAmount.setBorder( BorderFactory.createTitledBorder( "How Much" ) );
 
-      r=0;
-      anonLabels.add( LayoutAssist.createLabel(  jplAmount, 0, r, "Beds to Plant" ));
-      LayoutAssist.addTextField( jplAmount, 1, r++, tfldBedsToPlant );
+      tempLabel = new JLabel( "Beds to Plant" );
+      jplAmount.add( tempLabel, "align right" );
+      jplAmount.add( tfldBedsToPlant, "wrap" );
+      anonLabels.add( tempLabel );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplAmount, 0, r, "Row Ft to Plant" ));
-      LayoutAssist.addTextField( jplAmount, 1, r++, tfldRowFtToPlant );
+      tempLabel = new JLabel( "Row Ft to Plant" );
+      jplAmount.add( tempLabel, "align right" );
+      jplAmount.add( tfldRowFtToPlant, "wrap" );
+      anonLabels.add( tempLabel );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplAmount, 0, r, "Plants Needed" ));
-      LayoutAssist.addTextField( jplAmount, 1, r++, tfldPlantsNeeded );
+      tempLabel = new JLabel( "Plants Needed" );
+      jplAmount.add( tempLabel, "align right" );
+      jplAmount.add( tfldPlantsNeeded, "wrap" );
+      anonLabels.add( tempLabel );
       
-      lblPlantsToStart = LayoutAssist.createLabel(  jplAmount, 0, r, "Plants to Start" );
-      LayoutAssist.addTextField( jplAmount, 1, r++, tfldPlantsToStart );
+      lblPlantsToStart = new JLabel( "Plants to Start" );
+      jplAmount.add( lblPlantsToStart, "align right" );
+      jplAmount.add( tfldPlantsToStart, "wrap" );
+      anonLabels.add( lblPlantsToStart );
       
-      lblFlatsNeeded = LayoutAssist.createLabel(  jplAmount, 0, r, "Flats to Start" );
-      LayoutAssist.addTextField( jplAmount, 1, r++, tfldFlatsNeeded );
+      lblFlatsNeeded = new JLabel( "Flats to Start" );
+      jplAmount.add( lblFlatsNeeded, "align right" );
+      jplAmount.add( tfldFlatsNeeded, "wrap" );
+      anonLabels.add( lblFlatsNeeded );
       
-      LayoutAssist.addPanelToColumn( columnThree, jplAmount );
       
-      JPanel jplYield = initPanelWithGridBagLayout();
-      jplYield.setBorder( BorderFactory.createTitledBorder( "Yield Info" ) );
+      columnThree.add( jplAmount, "wrap" );
 
-      r=0;
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Total Yield" ));
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldTotalYield );
+
+      /* *************************************/
+      /* COLUMN FOUR
+      /* *************************************/
+      JPanel jplSeeds = new JPanel( new MigLayout( migPanelDefaults ));
+
+      tempLabel = new JLabel( "Units" );
+      tempLabel.setToolTipText("Usually this would be from the catalog. i.e. Do they sell by the oz or the gram or by count?");
+      jplSeeds.add( tempLabel, "align right" );
+      jplSeeds.add( cmbSeedUnit, "wrap" );
+      anonLabels.add( tempLabel );
+
+      tempLabel = new JLabel( "Seeds/Unit" );
+      tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
+      jplSeeds.add( tempLabel, "align right" );
+      jplSeeds.add( tfldSeedsPerUnit, "wrap" );
+      anonLabels.add( tempLabel );
+
+      lblSeedsPer = new JLabel( "Seeds/Ft or Plant" );
+      jplSeeds.add( lblSeedsPer, "align right" );
+      jplSeeds.add( tfldSeedsPer, "wrap" );
+      anonLabels.add( tempLabel );
+
+      tempLabel = new JLabel( "Units Needed" );
+      jplSeeds.add( tempLabel, "align right" );
+      jplSeeds.add( tfldSeedNeeded, "wrap" );
+      anonLabels.add( tempLabel );
+
+
+      /* *************************************/
+      /* *************************************/
+      JPanel jplMisc = new JPanel( new MigLayout( migPanelDefaults ));
+
+      tempLabel = new JLabel( "Groups:" );
+      tempLabel.setToolTipText( "Groups to which this planting belongs" );
+      jplMisc.add( tempLabel, "align right" );
+      jplMisc.add( new JScrollPane( tareGroups ), "wrap" );
+      anonLabels.add( tempLabel );
+
+      tempLabel = new JLabel( "Other Req" );
+      tempLabel.setToolTipText( "Other Requirements" );
+      jplMisc.add( tempLabel, "align right" );
+      jplMisc.add( new JScrollPane( tareOtherReq ), "wrap" );
+      anonLabels.add( tempLabel );
+
+      tempLabel = new JLabel( "Keywords:" );
+      jplMisc.add( tempLabel, "align right" );
+      jplMisc.add( new JScrollPane( tareKeywords ), "wrap" );
+      anonLabels.add( tempLabel );
+
+      
+      /* *************************************/
+      /* *************************************/
+      JPanel jplYield = new JPanel( new MigLayout( migPanelDefaults ));
+
+      tempLabel = new JLabel( "Total Yield" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldTotalYield, "wrap" );
+      anonLabels.add( tempLabel );
 
       /* unit, per foot, weeks, per week, value */
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Yield Units" ));
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldCropYieldUnit );
-      
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Total Yield/Ft" ));
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldPerFt );
-      
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Value/Unit" ));
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldCropYieldUnitValue );
-      
-      LayoutAssist.addPanelToColumn( columnThree, jplYield );
-      LayoutAssist.finishColumn( columnThree );
-      
-      /* *************************************/
-      /* COLUMN FOUR (actually six and seven */
-      /* *************************************/
-      r=0;
-      JPanel jplSeeds = initPanelWithGridBagLayout();
-
-      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Units" ));
-      tempLabel.setToolTipText("Usually this would be from the catalog. i.e. Do they sell by the oz or the gram or by count?");
-      LayoutAssist.addComponent( jplSeeds, 1, r++, cmbSeedUnit );
-
-      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Unit" ));
-      tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerUnit );
-
-      anonLabels.add(lblSeedsPer = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Ft or Plant" ));
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPer );
-
-      anonLabels.add(LayoutAssist.createLabel( jplSeeds, 0, r, "Units Needed" ));
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedNeeded );
-
-
-      r=0;
-      JPanel jplMisc = initPanelWithGridBagLayout();
-
-      tempLabel = LayoutAssist.createLabel( jplMisc, 0, r, "Groups:" );
-      tempLabel.setToolTipText( "Groups to which this planting belongs" );
+      tempLabel = new JLabel( "Yield Units" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldCropYieldUnit, "wrap" );
       anonLabels.add( tempLabel );
-      LayoutAssist.addTextArea( jplMisc, 1, r, 1, 1, tareGroups );
 
-      tempLabel = LayoutAssist.createLabel(  jplMisc, 0, r+=3, "Other Req" );
-      tempLabel.setToolTipText( "Other Requirements" );
+      tempLabel = new JLabel( "Total Yield/Ft" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldYieldPerFt, "wrap" );
       anonLabels.add( tempLabel );
-      LayoutAssist.addTextArea(  jplMisc, 1, r, 1, 1, tareOtherReq );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r+=3, "Keywords:" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, r, 1, 1, tareKeywords );
+      tempLabel = new JLabel( "Value/Unit" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldCropYieldUnitValue, "wrap" );
+      anonLabels.add( tempLabel );
 
-      
-      LayoutAssist.addPanelToColumn( columnFour, 
-              new CPSCardPanel( new String[] { "Seed Info",
-                                               "Misc Info" },
-                                new JPanel[] { jplSeeds, jplMisc } ));
 
-      LayoutAssist.finishColumn( columnFour );
+      JPanel jplNotesCrop = new JPanel( new MigLayout( migPanelDefaults ));
+      tempLabel = new JLabel( "<html><font size=\"-2\">" +
+                              "displayed on the planting list printout"+
+                              "</font></html>" );
+      jplNotesCrop.add( tempLabel, "align center, wrap" );
+      jplNotesCrop.add( new JScrollPane( tarePlantingNotesCrop ), "wrap" );
+      anonLabels.add( tempLabel );
+
+
+      JPanel jplNotes = new JPanel( new MigLayout( migPanelDefaults ));
+      tempLabel = new JLabel( "<html><font size=\"-2\">" +
+                              "about this specifc planting"+
+                              "</font></html>" );
+      jplNotes.add( tempLabel, "align center, wrap" );
+      jplNotes.add( new JScrollPane( tarePlantingNotes ), "wrap" );
+      JButton btn = new JButton("Add Date");
+      btn.addActionListener( new ActionListener() {
+
+        public void actionPerformed(ActionEvent e) {
+          int p = tarePlantingNotes.getCaretPosition();
+          String s = ( p == 0 ? "" : "\n" ) +
+                     "=== " +
+                     CPSDateValidator.format( new Date(),
+                                              CPSDateValidator.DATE_FORMAT_MON_DAY_YEAR ) +
+                     " ===\n";
+          tarePlantingNotes.insert( s, p );
+          tarePlantingNotes.setCaretPosition( p + s.length() );
+          tarePlantingNotes.requestFocusInWindow();
+        }
+
+      });
+      jplNotes.add( btn, "span 2, align right" );
+      anonLabels.add( tempLabel );
+
+
+      columnFour =
+              new CPSCardPanel( new String[] {
+                                               "Notes",
+                                               "Planter Notes",
+                                               "Yield Info",
+                                               "Seed Info",
+                                               "Keywords etc" },
+                                new JPanel[] {
+                                               jplNotes,
+                                               jplNotesCrop,
+                                               jplYield,
+                                               jplSeeds,
+                                               jplMisc } );
       
       /* *************************************/
       /* BOTTOW ROW                          */
       /* *************************************/
-      // Notes TextArea is set to span all remaining columns
-      // TODO
-//      LayoutAssist.createLabel(  jplDetails, 0, 13, "Notes:" );
-//      LayoutAssist.addTextArea(  jplDetails, 1, 13, 7, tareNotes );
-        
-      initDetailsPanel();
-      
-      LayoutAssist.addSubPanel( jplDetails, 0, 0, 1, 1, columnOne );
-      LayoutAssist.addSubPanel( jplDetails, 1, 0, 1, 1, columnTwo );
-      LayoutAssist.addSubPanel( jplDetails, 2, 0, 1, 1, columnThree );
-      LayoutAssist.addSubPanel( jplDetails, 3, 0, 1, 1, columnFour );
+      jplDetails = new JPanel( new MigLayout( migPanelDefaults ) );
 
+      jplDetails.add( columnOne, "aligny top" );
+      jplDetails.add( columnTwo, "aligny top" );
+      jplDetails.add( columnThree, "aligny top" );
+      jplDetails.add( columnFour, "aligny top, wrap" );
+      
       if ( uiManager != null )
          uiManager.signalUIChanged();
    }
@@ -813,8 +904,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldRowsPerBed.setEnabled( b );
       tfldInRowSpace.setEnabled( b );
       tfldBetRowSpace.setEnabled( b );
-      tfldPlantingNotesCrop.setEnabled( b );
-      tfldPlantingNotes.setEnabled( b );
+      tarePlantingNotesCrop.setEnabled( b );
+      tarePlantingNotes.setEnabled( b );
       tfldBedsToPlant.setEnabled( b );
       tfldRowFtToPlant.setEnabled( b );
       tfldPlantsNeeded.setEnabled( b );
@@ -831,7 +922,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tareGroups.setEnabled( b );
       tareKeywords.setEnabled( b );
       tareOtherReq.setEnabled( b );
-      tareNotes.setEnabled( b );
+//      tareNotes.setEnabled( b );
       tfldCustom1.setEnabled( b );
       tfldCustom2.setEnabled( b );
       tfldCustom3.setEnabled( b );
@@ -942,7 +1033,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                      tempPlanting.getRowsPerBedState() );
       tfldBetRowSpace.setInitialText( tempPlanting.getRowSpacingString(),
                                       tempPlanting.getRowSpacingState() );
-      tfldPlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
+      tarePlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
                                             tempPlanting.getPlantingNotesInheritedState() );
       tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
                                    displayedPlanting.getSeedsPerState() );
