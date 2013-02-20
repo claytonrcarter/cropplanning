@@ -28,6 +28,7 @@ import barrysoft.twinkle.Twinkle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.prefs.Preferences;
 
 
 public class CropPlanning implements Runnable {
@@ -94,11 +95,14 @@ public class CropPlanning implements Runnable {
        // only check for updates if it's not the first time they've run
        // the app and they haven't turned off update checking
        if ( ! CPSGlobalSettings.getFirstTimeRun() &&
-              CPSGlobalSettings.getCheckForUpdates() )
+              CPSGlobalSettings.getCheckForUpdates() ) {
+         Preferences.userNodeForPackage( CropPlanning.class )
+                    .putBoolean( "updater.downloadonly", true );
          Twinkle.getInstance()
                 .runUpdate( CropPlanning.class,
                             appcastURL,
-                            "/twinkle.properties", true );
+                            "/twinkle.properties" );
+       }
 
        // this line just for testing the app cast; show a dummy dialog
 //       new CPSConfirmDialog("Hi").setVisible(true);
