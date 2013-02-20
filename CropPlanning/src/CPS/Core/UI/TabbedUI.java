@@ -122,9 +122,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
        
        // initialize tabs
        tabbedpane = new JTabbedPane();
-       fm.getFrame().getContentPane().add( tabbedpane, BorderLayout.CENTER );
-
        addModules();
+
+       fm.getFrame().getContentPane().add( tabbedpane );
+
        uiChanged();
        
        fm.getFrame().setVisible( true );
@@ -243,7 +244,6 @@ public class TabbedUI extends CPSUI implements ActionListener {
           mle = i.next();
           if ( mle instanceof  CPSDisplayableDataUserModule ) {
              JPanel jp = ((CPSDisplayableDataUserModule) mle).display();
-             jp.setMaximumSize( new Dimension( PREFERRED_WIDTH - 40, PREFERRED_HEIGHT - 80 ));
              tabbedpane.addTab( ((CPSDisplayableDataUserModule) mle ).getModuleName(), jp );
           }
        }
@@ -262,6 +262,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
 		      (SingleSelectionModel) e.getSource();
 		  if( model.getSelectedIndex() ==
 		      tabbedpane.getTabCount() - 1 ) {
+                    // Hello, why is this here?
 		  }
 	      }
 	  }
@@ -513,10 +514,10 @@ public class TabbedUI extends CPSUI implements ActionListener {
       // TODO automatically calculate size of the TabbedPane decorations (tabs and borders)
       // the numbers added to the dimension are to account for the decorations of the tabbed pane
       maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() + 50 );
-      tabbedpane.setPreferredSize( maxDim );
+//      tabbedpane.setPreferredSize( maxDim );
       
       // TODO clean this up, add menubar and titlebar height
-      fm.getFrame().setMinimumSize(maxDim);
+//      fm.getFrame().setMinimumSize(maxDim);
       fm.uiChanged();
       
       

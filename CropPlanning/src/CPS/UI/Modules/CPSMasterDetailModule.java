@@ -91,7 +91,9 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
         return mainPanel;
     }
     protected void initUI() {
-        mainPanel = new JPanel( new MigLayout( "insets 2px") );
+        mainPanel = new JPanel( new MigLayout( "insets 2px",
+                                               "[grow, fill]",
+                                               "[grow, fill]" ));
     }
     protected void buildUI() {
         splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 
@@ -99,8 +101,9 @@ public abstract class CPSMasterDetailModule extends CPSDisplayableDataUserModule
                                     detail.getJPanel() );
         splitPane.setDividerSize(5);
         splitPane.setDividerLocation(0.5);
+        splitPane.setResizeWeight(1.0); // top get's more space
         splitPane.setOneTouchExpandable(false);
-        splitPane.setContinuousLayout(false);
+        splitPane.setContinuousLayout(true);
         initUI();
         mainPanel.add(splitPane);
     }

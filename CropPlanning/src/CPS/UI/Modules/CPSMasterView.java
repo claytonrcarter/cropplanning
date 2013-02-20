@@ -55,6 +55,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
 import javax.swing.text.JTextComponent;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *
@@ -348,7 +349,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }   
     protected void initMainPanel( String title ) {
         
-        masterListPanel = new JPanel( new BorderLayout() );
+        masterListPanel = new JPanel( new MigLayout( "insets 2px",
+                                                     "[grow, fill]",
+                                                     "[][grow, fill][]") );
         
         if ( title != null )
             masterListPanel.setBorder( BorderFactory.createTitledBorder( title ) );
@@ -360,9 +363,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
         
         initMainPanel( title );
         
-        masterListPanel.add( getAboveListPanel(), BorderLayout.PAGE_START );
-        masterListPanel.add( getListPanel(),      BorderLayout.CENTER );
-        masterListPanel.add( getBelowListPanel(), BorderLayout.PAGE_END );
+        masterListPanel.add( getAboveListPanel(), "dock north, wrap" );
+        masterListPanel.add( getListPanel(),      "wrap" );
+        masterListPanel.add( getBelowListPanel(), "dock south, wrap" );
        
     }
     
@@ -500,8 +503,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
        masterTable = new CPSTable( new EventTableModel<CPSRecord>( masterListSorted, getTableFormat() ) );
        
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
-       masterTable.setPreferredScrollableViewportSize( d );
-       masterTable.setMaximumSize( d );
        masterTable.getTableHeader().addMouseListener( this );
        
        // Ask to be notified of selection changes (see method: valueChanged)
