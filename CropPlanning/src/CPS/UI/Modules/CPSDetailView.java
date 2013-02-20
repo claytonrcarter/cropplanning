@@ -42,6 +42,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *
@@ -101,7 +102,9 @@ public abstract class CPSDetailView extends CPSDataModelUser
     }   
     protected void initMainPanel( String title ) {
         
-        mainPanel = new JPanel( new BorderLayout() );
+        mainPanel = new JPanel( new MigLayout( "insets 2px",
+                                               "[grow, fill]",
+                                               "[][grow, fill][]" ));
         
         if ( title != null )
             mainPanel.setBorder( BorderFactory.createTitledBorder( title ) );
@@ -121,9 +124,9 @@ public abstract class CPSDetailView extends CPSDataModelUser
     }
     protected void rebuildMainPanel() {
         mainPanel.removeAll();
-        mainPanel.add( getAboveDetailsPanel(), BorderLayout.PAGE_START );
-        mainPanel.add( getDetailsPanel(), BorderLayout.CENTER );
-        mainPanel.add( getBelowDetailsPanel(), BorderLayout.PAGE_END );
+        mainPanel.add( getAboveDetailsPanel(), "dock north, wrap" );
+        mainPanel.add( getDetailsPanel(),      "wrap" );
+        mainPanel.add( getBelowDetailsPanel(), "dock south, wrap" );
         
         uiManager.signalUIChanged();
 

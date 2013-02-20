@@ -27,6 +27,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import net.miginfocom.swing.MigLayout;
 
 public class FrameManager implements CPSUIChangeListener {
    
@@ -37,12 +38,7 @@ public class FrameManager implements CPSUIChangeListener {
       
       frame = createFrame( GraphicsEnvironment.getLocalGraphicsEnvironment().
                            getDefaultScreenDevice().getDefaultConfiguration() );
-      frame.addComponentListener( new java.awt.event.ComponentAdapter() {
-         public void componentResized(ComponentEvent event) {
-            Dimension minDim = frame.getMinimumSize();
-            frame.setSize( (int) (( frame.getWidth()  < minDim.getWidth()  ) ? minDim.getWidth()  : frame.getWidth() ),
-                           (int) (( frame.getHeight() < minDim.getHeight() ) ? minDim.getHeight() : frame.getHeight()) );
-         }});
+
    }
  
    
@@ -53,11 +49,6 @@ public class FrameManager implements CPSUIChangeListener {
     public static JFrame createFrame(GraphicsConfiguration gc) {
 	JFrame f = new JFrame(gc);
 	f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	WindowListener l = new WindowAdapter() {
-	        public void windowClosing(WindowEvent e) {
-	        }
-	    };
-	f.addWindowListener(l);
 	return f;
     }
     
@@ -69,7 +60,9 @@ public class FrameManager implements CPSUIChangeListener {
 
 	    // Must use a top level container for contentPane,
 	    // not wise to use something like tabbedPane
-	    contentPane = new JPanel( new BorderLayout() );
+	    contentPane = new JPanel( new MigLayout( "",
+                                                     "[grow, fill]",
+                                                     "[grow, fill]" ));
 	    f.setContentPane( contentPane );
 
 	    
@@ -102,14 +95,13 @@ public class FrameManager implements CPSUIChangeListener {
     public JFrame getFrame() {
 	return frame;
     }
-   
-   /* p-p */ void setSize( Dimension contentSize ) {
-      
-   }
-    
-   public void uiChanged() {
+
+    public void show() {
       frame.validate();
       frame.pack();
-   }
+      frame.setVisible(true);
+    }
+
+   public void uiChanged() {}
 
 }

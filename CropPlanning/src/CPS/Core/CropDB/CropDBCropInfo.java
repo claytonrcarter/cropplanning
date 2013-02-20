@@ -23,17 +23,18 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.*;
-import CPS.Module.*;
 import CPS.UI.Modules.*;
 import CPS.UI.Swing.*;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import javax.swing.*;
+import net.miginfocom.swing.MigLayout;
 
 public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
@@ -216,8 +217,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    
    protected void buildDetailsPanel() {
 
-     int r=0; // r as in row
      JLabel tempLabel;
+     String migPanelDefaults = "gapy 0px!, insets 2px";
 
       tfldCropName = new CPSTextField(10);
       tfldVarName = new CPSTextField( 10 );
@@ -257,198 +258,221 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldSeedsPerDS   = new CPSTextField( FIELD_LEN_MED );
       tfldSeedsPerTP   = new CPSTextField( FIELD_LEN_MED );
 
-      tareDesc = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareDesc = new CPSTextArea( 8, FIELD_LEN_WAY_LONG );
       tareGroups = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
       tareKeywords = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
       tareOtherReq = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
-      tareNotes = new CPSTextArea( 3, 40 );
+      tareNotes = new CPSTextArea( 12, 15 );
       
-      
-      JPanel columnOne = initPanelWithVerticalBoxLayout();
-      JPanel columnTwo = initPanelWithVerticalBoxLayout();
-//      JPanel columnThree = initPanelWithVerticalBoxLayout();
-      JPanel columnFour = initPanelWithVerticalBoxLayout();
-      
-      /* the format for these calls is: panel, column, row, component */
+            
       /* ***********************************/
       /* COLUMN ONE (really zero and one)  */
       /* ***********************************/
-      JPanel jplName = initPanelWithGridBagLayout();
-      jplName.setBorder( BorderFactory.createEmptyBorder() );
+      JPanel jplName = new JPanel( new MigLayout( migPanelDefaults ));
 
       if ( anonLabels == null )
         anonLabels = new ArrayList<JLabel>();
 
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Crop Name:" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldCropName );
+      tempLabel = new JLabel("Crop Name:");
+      jplName.add( tempLabel,    "right align" );
+      jplName.add( tfldCropName, "wrap" );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Variety:" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldVarName );
-      
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Family:" ));
-      LayoutAssist.addTextField( jplName, 1, r++, tfldFamName );
-      
-      // starts in column 0, row 3 and spans 2 columns
-      LayoutAssist.addSeparator( jplName, 0, r++, 2 );
-      
-      anonLabels.add( LayoutAssist.createLabel(  jplName, 0, r, "Description:" ));
-      LayoutAssist.addTextArea(  jplName, 1, r++, tareDesc  );
-      
-      LayoutAssist.addPanelToColumn( columnOne, jplName );
-      LayoutAssist.finishColumn( columnOne );
-      
+      tempLabel = new JLabel( "Variety:" );
+      jplName.add( tempLabel,    "right align" );
+      jplName.add( tfldVarName, "wrap" );
+
+      tempLabel = new JLabel( "Family:" );
+      jplName.add( tempLabel,    "right align" );
+      jplName.add( tfldFamName, "wrap" );
+
+      jplName.add( new JSeparator(), "growx, span 2, wrap" );
+
+      tempLabel = new JLabel( "Description:" );
+      jplName.add( tempLabel,    "right align" );
+      jplName.add( new JScrollPane( tareDesc ), "wrap" );
+
+
       /* ***********************************/
-      /* COLUMN TWO (really two, three, 4 and 5) */
+      /* COLUMN TWO
       /* ***********************************/
-      JPanel jplPlanting = initPanelWithGridBagLayout();
+      JPanel jplPlanting = new JPanel( new MigLayout( migPanelDefaults ) );
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
-      r=0;
+      
+      tempLabel = new JLabel( "Maturity Days:" );
+      jplPlanting.add( tempLabel, "align center, split 2, span 5 " );
+      jplPlanting.add( tfldMatDays, "wrap" );
+      
+      jplPlanting.add( chkDS, "align center, span 2" );
+      jplPlanting.add( new JSeparator( JSeparator.VERTICAL ), "growy, spany" );
+      jplPlanting.add( chkTP, "align center, span 2, wrap" );
 
-      /* Applies to both DS & TP */
-      anonLabels.add( LayoutAssist.createLabel(  jplPlanting, 1, r, "Maturity Days:" ));
-      LayoutAssist.addTextField( jplPlanting, 2, r++, 2, 1, tfldMatDays );
-      
-      /* DS Column */
-      LayoutAssist.addButton(    jplPlanting, 0, r++, 2, 1, chkDS, GridBagConstraints.CENTER );
-      
-      lblDSMat = LayoutAssist.createLabel(  jplPlanting, 0, r, "Adjust Mat. Days" );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSMatAdjust );
-      
-      lblDSRowsPB = LayoutAssist.createLabel(  jplPlanting, 0, r, "Rows/Bed" );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSRowsPerBed );
-      
-      lblDSSpace = LayoutAssist.createLabel(  jplPlanting, 0, r, "Row Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSSpaceBetRows );
 
-      r++; // skip row 5
+      lblDSMat = new JLabel( "Adjust Mat." );
+      jplPlanting.add( lblDSMat, "align right " );
+      jplPlanting.add( tfldDSMatAdjust, "" );
+      lblTPMat = new JLabel( "Adjust Mat." );
+      jplPlanting.add( lblTPMat, "align right" );
+      jplPlanting.add( tfldTPMatAdjust, "wrap" );
+      
+      lblDSRowsPB = new JLabel( "Rows/Bed" );
+      jplPlanting.add( lblDSRowsPB, "align right" );
+      jplPlanting.add( tfldDSRowsPerBed, "" );
+      lblTPRows = new JLabel( "Rows/Bed" );
+      jplPlanting.add( lblTPRows, "align right, skip 1" );
+      jplPlanting.add( tfldTPRowsPerBed, "wrap" );
 
-      LayoutAssist.addSeparator( jplPlanting, 0, r++, 2 );
+      lblDSSpace = new JLabel( "Row Spacing" );
+      jplPlanting.add( lblDSSpace, "align right" );
+      jplPlanting.add( tfldDSSpaceBetRows, "" );
+      lblTPSpaceRow = new JLabel( "Row Spacing" );
+      jplPlanting.add( lblTPSpaceRow, "align right, skip 1" );
+      jplPlanting.add( tfldTPSpaceBetRows, "wrap" );
 
-      lblDSNotes = LayoutAssist.createLabel(  jplPlanting, 0, r, "DS Notes" );
-      LayoutAssist.addTextField( jplPlanting, 1, r++, tfldDSPlantNotes );
+      lblTPSpace = new JLabel( "Plant Spacing" );
+      jplPlanting.add( lblTPSpace, "skip 2, align right" );
+      jplPlanting.add( tfldTPSpaceInRow, "wrap" );
 
-      /* TP Column */
-      r=1;
-      LayoutAssist.addVerticalSeparator( jplPlanting, 2, r, 11 );
-      LayoutAssist.addButton(    jplPlanting, 3, r++, 2, 1, chkTP, GridBagConstraints.CENTER );
+      jplPlanting.add( new JSeparator(), "growx, span 2" );
+      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
 
-      lblTPMat = LayoutAssist.createLabel(  jplPlanting, 3, r, "Adjust Mat. Days" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPMatAdjust );
-     
-      lblTPRows = LayoutAssist.createLabel(  jplPlanting, 3, r, "Rows/Bed" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPRowsPerBed );
+      lblDSNotes = new JLabel( "DS Notes" );
+      jplPlanting.add( lblDSNotes, "align right" );
+      jplPlanting.add( tfldDSPlantNotes, "" );
+      lblTPFlat = new JLabel( "Flat Size" );
+      jplPlanting.add( lblTPFlat, "align right" );
+      jplPlanting.add( tfldTPFlatSize, "wrap" );
+
+
+      lblTPWeeks = new JLabel( "Weeks to TP" );
+      jplPlanting.add( lblTPWeeks, "skip 2, align right" );
+      jplPlanting.add( tfldTPWeeksToTP, "wrap" );
+
+      jplPlanting.add( new JSeparator(), "growx, skip 2, span 2, wrap" );
+
+      lblTPNotes = new JLabel( "TP Notes" );
+      jplPlanting.add( lblTPNotes, "align right, skip 2" );
+      jplPlanting.add( tfldTPPlantNotes, "wrap" );
       
-      lblTPSpaceRow = LayoutAssist.createLabel(  jplPlanting, 3, r, "Row Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPSpaceBetRows );
-      
-      lblTPSpace = LayoutAssist.createLabel(  jplPlanting, 3, r, "Plant Spacing" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPSpaceInRow );
-      
-      LayoutAssist.addSeparator( jplPlanting, 3, r++, 2);
-      
-      lblTPFlat = LayoutAssist.createLabel(  jplPlanting, 3, r, "Flat Size" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPFlatSize );
-      
-      lblTPWeeks = LayoutAssist.createLabel(  jplPlanting, 3, r, "Weeks to TP" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPWeeksToTP );
-      
-      LayoutAssist.addSeparator( jplPlanting, 3, r++, 2);
-      
-      lblTPNotes = LayoutAssist.createLabel(  jplPlanting, 3, r, "TP Notes" );
-      LayoutAssist.addTextField( jplPlanting, 4, r++, tfldTPPlantNotes );
-      
-      LayoutAssist.addPanelToColumn( columnTwo, jplPlanting );
-      LayoutAssist.finishColumn( columnTwo );
-      
+
       // add all of the above labels to the label list
       anonLabels.addAll( Arrays.asList( new JLabel[] { lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes,
                                                        lblTPMat, lblTPRows, lblTPSpaceRow, lblTPSpace,
                                                        lblTPFlat, lblTPWeeks, lblTPNotes } ) );
 
       /**************************************/
-      /* COLUMN FOUR (really seven and eight) */
+      /* COLUMN THREE
       /**************************************/
-
-
-      r=0;
-      JPanel jplYield = initPanelWithGridBagLayout();
+      /* Page 1
+      /**************************************/
+      JPanel jplYield = new JPanel( new MigLayout( migPanelDefaults ) );
       
       /* unit, per foot, weeks, per week, value */
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Yield Units" ));
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldUnits);
+      tempLabel = new JLabel( "Yield Units" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldYieldUnits, "wrap" );
       
-      anonLabels.add( LayoutAssist.createLabel(  jplYield, 0, r, "Total Yield/Ft" ));
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldPerFoot );
+      tempLabel = new JLabel( "Total Yield/Ft" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldYieldPerFoot, "wrap" );
       
-      LayoutAssist.createLabel(  jplYield, 0, r, "Value/Unit" );
-      LayoutAssist.addTextField( jplYield, 1, r++, tfldYieldUnitValue );
-
-      // TODO these panels should all line up better than they do
-      // would like all fields to start at top of space (not centered)
-      // and ideally have
+      tempLabel = new JLabel( "Value/Unit" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldYieldUnitValue, "wrap" );
 
 
-      r=0;
-      JPanel jplSeeds = initPanelWithGridBagLayout();
+      /**************************************/
+      /* Page 2
+      /**************************************/
+      JPanel jplSeeds = new JPanel( new MigLayout( migPanelDefaults ) );
 
-      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Units" ));
+      tempLabel = new JLabel( "Units" );
+      jplSeeds.add( tempLabel, "align right" );
       tempLabel.setToolTipText("oz or g, for example");
-      LayoutAssist.addComponent( jplSeeds, 1, r++, cmbSeedUnit );
+      jplSeeds.add( cmbSeedUnit, "wrap" );
 
-      anonLabels.add(tempLabel = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Unit" ));
+      tempLabel = new JLabel( "Seeds/Unit" );
+      jplSeeds.add( tempLabel, "align right" );
       tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerUnit);
+      jplSeeds.add( tfldSeedsPerUnit, "wrap" );
 
-      lblSeedDS = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Ft (DS)" );
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerDS );
+      lblSeedDS = new JLabel( "Seeds/Ft (DS)" );
+      jplSeeds.add( lblSeedDS, "align right" );
+      jplSeeds.add( tfldSeedsPerDS, "wrap" );
 
-      lblSeedTP = LayoutAssist.createLabel( jplSeeds, 0, r, "Seeds/Plant (TP)" );
-      LayoutAssist.addTextField( jplSeeds, 1, r++, tfldSeedsPerTP );
+      lblSeedTP = new JLabel( "Seeds/Plant (TP)" );
+      jplSeeds.add( lblSeedTP, "align right" );
+      jplSeeds.add( tfldSeedsPerTP, "wrap" );
 
 
-      r=0;
-      JPanel jplMisc = initPanelWithGridBagLayout();
+      /**************************************/
+      /* Page 3
+      /**************************************/
+      JPanel jplMisc = new JPanel( new MigLayout( migPanelDefaults ) );
 
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r, 
-                                                 "<html>Other <br>Req.:</html>" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, r++, 1, 1, tareOtherReq );
+      tempLabel = new JLabel( "<html>Other <br>Req.:</html>" );
+      jplMisc.add( tempLabel, "align right top" );
+      jplMisc.add( new JScrollPane( tareOtherReq ), "wrap" );
 
-      r++; // skip row 1
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r, "<html>Belongs to <br>Groups:</html>" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, r++, 1, 1, tareGroups );
+      tempLabel = new JLabel( "<html>Belongs to <br>Groups:</html>" );
+      jplMisc.add( tempLabel, "align right top" );
+      jplMisc.add( new JScrollPane( tareGroups ), "wrap" );
 
-      r++; // skip row 3
-      anonLabels.add( LayoutAssist.createLabel(  jplMisc, 0, r, "Keywords:" ));
-      LayoutAssist.addTextArea(  jplMisc, 1, r++, 1, 1, tareKeywords );
+      tempLabel = new JLabel( "Keywords:" );
+      jplMisc.add( tempLabel, "align right top" );
+      jplMisc.add( new JScrollPane( tareKeywords ), "wrap" );
+
+
+      /**************************************/
+      /* Page 3
+      /**************************************/
+      JPanel jplNotes = new JPanel( new MigLayout( migPanelDefaults ) );
+
+      tempLabel = new JLabel( "Notes:" );
+      jplNotes.add( tempLabel, "align right top" );
+      jplNotes.add( new JScrollPane( tareNotes ), "wrap" );
+      JButton btn = new JButton("Add Date");
+      btn.addActionListener( new ActionListener() {
+
+        public void actionPerformed(ActionEvent e) {
+          int p = tareNotes.getCaretPosition();
+          String s = ( p == 0 ? "" : "\n" ) +
+                     "=== " +
+                     CPSDateValidator.format( new Date(),
+                                              CPSDateValidator.DATE_FORMAT_MON_DAY_YEAR ) +
+                     " ===\n";
+          tareNotes.insert( s, p );
+          tareNotes.setCaretPosition( p + s.length() );
+          tareNotes.requestFocusInWindow();
+        }
+
+      });
+      jplNotes.add( btn, "span 2, align right" );
+
       
-      LayoutAssist.addPanelToColumn(
-              columnFour,
-              new CPSCardPanel( new String[] { "Yield Info", 
+      CPSCardPanel columnFour =
+              new CPSCardPanel( new String[] {
+                                               "Notes",
+                                               "Yield Info",
                                                "Seed Info",
                                                "Misc Info" },
-                                new JPanel[] { jplYield, jplSeeds, jplMisc } ));
-
-      LayoutAssist.finishColumn( columnFour );
-      
+                                new JPanel[] {
+                                               jplNotes,
+                                               jplYield,
+                                               jplSeeds,
+                                               jplMisc } );
       
       /* *************************************/
       /* BOTTOW ROW                          */
       /* *************************************/
+      jplDetails = new JPanel( new MigLayout( "gap 0px!, insets 2px" ) );
 
-      initDetailsPanel();
-
-      LayoutAssist.addSubPanel( jplDetails, 0, 0, 1, 1, columnOne );
-      LayoutAssist.addSubPanel( jplDetails, 1, 0, 1, 1, columnTwo );
-      LayoutAssist.addSubPanel( jplDetails, 3, 0, 1, 1, columnFour );
-
-      // Notes TextArea is set to span all remaining columns
-      JPanel jplNotes = initPanelWithGridBagLayout();
-      jplNotes.setBorder( BorderFactory.createEmptyBorder() );
-      anonLabels.add( LayoutAssist.createLabel(  jplNotes, 0, 0, "Notes:" ));
-      LayoutAssist.addTextArea(  jplNotes, 1, 0, tareNotes );
-      LayoutAssist.addSubPanel( jplDetails, 0, 14, 7, 1, jplNotes );
-
+      jplDetails.add( jplName, "aligny top" );
+      jplDetails.add( jplPlanting, "aligny top" );
+      jplDetails.add( columnFour, "aligny top, wrap" );
       
+
+
+
       if ( uiManager != null )
          uiManager.signalUIChanged();  
    }
