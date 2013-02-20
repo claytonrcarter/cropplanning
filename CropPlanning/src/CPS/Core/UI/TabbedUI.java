@@ -36,20 +36,8 @@ import CPS.Module.CPSUI;
 import CPS.Module.CPSWizardPage;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
-import javax.swing.colorchooser.*;
-import javax.swing.filechooser.*;
-import javax.accessibility.*;
-
-
-import java.awt.*;
 import java.awt.event.*;
-import java.beans.*;
 import java.util.*;
-import java.io.*;
-import java.applet.*;
-import java.net.*;
 
 
 public class TabbedUI extends CPSUI implements ActionListener {
@@ -126,9 +114,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
 
        fm.getFrame().getContentPane().add( tabbedpane );
 
-       uiChanged();
-       
-       fm.getFrame().setVisible( true );
+       fm.show();
  
     }
 
@@ -493,35 +479,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
    /**
     * Called whenever the UI has changed, ie new components are added or display and such.
     */
-   public void uiChanged() {
-
-      Dimension maxDim = new Dimension( 0, 0 );
-
-      // iterate over the list of modules
-      for ( Object mle : moduleList ) {
-         // if a module is a displayed module
-          if ( mle instanceof CPSDisplayableDataUserModule ) {
-              // record it's preferred size
-              Dimension d = ((CPSDisplayableDataUserModule) mle).display().getPreferredSize();
-
-              // determine if the either of the dimensions of the preferred size is
-              // larger than the cooresponding "max dimension"
-              maxDim.setSize( Math.max( maxDim.getWidth(), d.getWidth() ),
-                              Math.max( maxDim.getHeight(), d.getHeight() ) );
-          }
-      }
-         
-      // TODO automatically calculate size of the TabbedPane decorations (tabs and borders)
-      // the numbers added to the dimension are to account for the decorations of the tabbed pane
-      maxDim.setSize( maxDim.getWidth() + 25, maxDim.getHeight() + 50 );
-//      tabbedpane.setPreferredSize( maxDim );
-      
-      // TODO clean this up, add menubar and titlebar height
-//      fm.getFrame().setMinimumSize(maxDim);
-      fm.uiChanged();
-      
-      
-   }
+   public void uiChanged() {}
    
    
    @Override

@@ -23,14 +23,15 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.*;
-import CPS.Module.*;
 import CPS.UI.Modules.*;
 import CPS.UI.Swing.*;
-import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
@@ -429,7 +430,23 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tempLabel = new JLabel( "Notes:" );
       jplNotes.add( tempLabel, "align right top" );
       jplNotes.add( new JScrollPane( tareNotes ), "wrap" );
-      jplNotes.add( new JButton("Add Date"), "span 2, align right" );
+      JButton btn = new JButton("Add Date");
+      btn.addActionListener( new ActionListener() {
+
+        public void actionPerformed(ActionEvent e) {
+          int p = tareNotes.getCaretPosition();
+          String s = ( p == 0 ? "" : "\n" ) +
+                     "=== " +
+                     CPSDateValidator.format( new Date(),
+                                              CPSDateValidator.DATE_FORMAT_MON_DAY_YEAR ) +
+                     " ===\n";
+          tareNotes.insert( s, p );
+          tareNotes.setCaretPosition( p + s.length() );
+          tareNotes.requestFocusInWindow();
+        }
+
+      });
+      jplNotes.add( btn, "span 2, align right" );
 
       
       CPSCardPanel columnFour =

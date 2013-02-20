@@ -27,7 +27,6 @@ import CPS.Data.CPSRecord;
 import CPS.Data.CPSTextFilter;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
-import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSConfirmDialog;
 import CPS.UI.Swing.CPSSearchField;
@@ -35,12 +34,10 @@ import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
-import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.matchers.*;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.*;
@@ -450,12 +447,13 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
        // setup the list of filters and add an "all" matcher
        filterList = new BasicEventList<MatcherEditor<CPSRecord>>();
-       filterList.add( new AbstractMatcherEditor<CPSRecord>() {
-                                                                @Override
-                                                                public Matcher<CPSRecord> getMatcher() {
-                                                                   return Matchers.trueMatcher();
-                                                                }
-                                                              } );
+       filterList.add( new AbstractMatcherEditor<CPSRecord>()
+                          {
+                            @Override
+                            public Matcher<CPSRecord> getMatcher() {
+                               return Matchers.trueMatcher();
+                            }
+                          } );
 
        // now setup the thing that will match all of the elements of the filter list
        compositeFilter = new CompositeMatcherEditor<CPSRecord>( filterList );
@@ -465,18 +463,19 @@ public abstract class CPSMasterView extends CPSDataModelUser
        masterListFiltered.setMatcherEditor( compositeFilter );
 
        // add the focus listener so that the the compositeFilter box behaves correctly
-       tfldFilter.addFocusListener( new FocusListener() {
-                                                           public void focusGained( FocusEvent arg0 ) {
-                                                              if ( ! filterList.contains( textFilter ))
-                                                                 filterList.add( textFilter );
-                                                           }
+       tfldFilter.addFocusListener( new FocusListener()
+                               {
+                                 public void focusGained( FocusEvent arg0 ) {
+                                    if ( ! filterList.contains( textFilter ))
+                                       filterList.add( textFilter );
+                                 }
 
-                                                           public void focusLost( FocusEvent arg0 ) {
-                                                              if ( tfldFilter.getText().equals( "" ) ) {
-                                                                 filterList.remove( textFilter );
-                                                              }
-                                                           }
-                                                         } );
+                                 public void focusLost( FocusEvent arg0 ) {
+                                    if ( tfldFilter.getText().equals( "" ) ) {
+                                       filterList.remove( textFilter );
+                                    }
+                                 }
+                               } );
 
        masterListFiltered.addListEventListener( this );
 

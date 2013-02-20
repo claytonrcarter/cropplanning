@@ -96,9 +96,12 @@ public class FrameManager implements CPSUIChangeListener {
 	return frame;
     }
 
-   public void uiChanged() {
+    public void show() {
       frame.validate();
       frame.pack();
-   }
+      frame.setVisible(true);
+    }
+
+   public void uiChanged() {}
 
 }

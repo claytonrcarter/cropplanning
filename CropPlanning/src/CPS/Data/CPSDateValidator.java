@@ -29,14 +29,21 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class CPSDateValidator {
-    
+
+    /** Example: 11/23 */
     public static String DATE_FORMAT_SHORT = "MM/dd";
+    /** Example: Mon 11/23 */
     public static String DATE_FORMAT_SHORT_DAY_OF_WEEK = "EEE MM/dd";
+    /** Example: 11/23/13 */
     public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
-    public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";
+    /** Example: 11/23/2013 */
+    public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";         
+    /** Example: Nov 23, 2013 */
+    public static String DATE_FORMAT_MON_DAY_YEAR = "MMM dd, yyyy";
+    /** Example: November */
     public static String DATE_FORMAT_JUSTMONTH = "MMMM";
-    
-    public static String DATE_FORMAT_SQL = "yyyy-MM-dd";
+    /** Example: 2013-11-23 */
+    public static String DATE_FORMAT_SQL = "yyyy-MM-dd";              
     
     private ArrayList<String> formatList;
     private static String defaultFormat = DATE_FORMAT_FULLYEAR;

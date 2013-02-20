@@ -51,12 +51,14 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    private CPSRadioButton rdoDS, rdoTP;
    private JLabel lblDateTP, lblTimeToTP, lblFlatSize, lblFlatsNeeded, lblPlantsToStart;
    private CPSTextField tfldMatAdjust, tfldTimeToTP, tfldRowsPerBed, tfldInRowSpace, tfldBetRowSpace,
-                        tfldFlatSize, tfldPlantingNotesCrop, tfldPlantingNotes;
+                        tfldFlatSize;
    private CPSTextField tfldBedsToPlant, tfldRowFtToPlant, tfldPlantsNeeded,
                         tfldPlantsToStart, tfldFlatsNeeded;
    private CPSTextField tfldYieldPerFt, tfldTotalYield, tfldYieldNumWeeks, tfldYieldPerWeek,
                         tfldCropYieldUnit, tfldCropYieldUnitValue;
-   private CPSTextArea tareGroups, tareKeywords, tareOtherReq, tareNotes;
+   private CPSTextArea tareGroups, tareKeywords, tareOtherReq;
+//   private CPSTextArea tareNotes;
+   private CPSTextArea tarePlantingNotesCrop, tarePlantingNotes;
    private CPSTextField tfldCustom1, tfldCustom2, tfldCustom3, tfldCustom4, tfldCustom5;
 
    private CPSTextField tfldSeedsPerUnit, tfldSeedsPer, tfldSeedNeeded;
@@ -141,7 +143,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                    displayedPlanting.getFlatSizeState() );
        tfldTimeToTP.setInitialText( displayedPlanting.getTimeToTPString(),
                                    displayedPlanting.getTimeToTPState() );
-       tfldPlantingNotes.setInitialText( displayedPlanting.getPlantingNotes(),
+       tarePlantingNotes.setInitialText( displayedPlanting.getPlantingNotes(),
                                          displayedPlanting.getPlantingNotesState() );
 
        tfldBedsToPlant.setInitialText( displayedPlanting.getBedsToPlantString(),
@@ -181,8 +183,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                     displayedPlanting.getOtherRequirementsState() );
        tareKeywords.setInitialText( displayedPlanting.getKeywords(),
                                     displayedPlanting.getKeywordsState());
-       tareNotes.setInitialText( displayedPlanting.getNotes(),
-                                 displayedPlanting.getNotesState());
+//       tareNotes.setInitialText( displayedPlanting.getNotes(),
+//                                 displayedPlanting.getNotesState());
 
        tfldCustom1.setInitialText( displayedPlanting.getCustomField1(), displayedPlanting.getCustomField1State() );
        tfldCustom2.setInitialText( displayedPlanting.getCustomField2(), displayedPlanting.getCustomField2State() );
@@ -346,8 +348,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( tfldInRowSpace.hasChanged() ) changes.setInRowSpacing( tfldInRowSpace.getText() );
        if ( tfldBetRowSpace.hasChanged() ) changes.setRowSpacing( tfldBetRowSpace.getText() );
        if ( tfldFlatSize.hasChanged() ) changes.setFlatSize( tfldFlatSize.getText() );
-       if ( tfldPlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tfldPlantingNotesCrop.getText() );
-       if ( tfldPlantingNotes.hasChanged() ) changes.setPlantingNotes( tfldPlantingNotes.getText() );
+       if ( tarePlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tarePlantingNotesCrop.getText() );
+       if ( tarePlantingNotes.hasChanged() ) changes.setPlantingNotes( tarePlantingNotes.getText() );
 
        if ( tfldBedsToPlant.hasChanged() ) changes.setBedsToPlant( tfldBedsToPlant.getText() );
        if ( tfldRowFtToPlant.hasChanged() ) changes.setRowFtToPlant( tfldRowFtToPlant.getText() );
@@ -370,7 +372,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( tareGroups.hasChanged() ) changes.setGroups( tareGroups.getText() );
        if ( tareOtherReq.hasChanged() ) changes.setOtherRequirements( tareOtherReq.getText() );
        if ( tareKeywords.hasChanged() ) changes.setKeywords( tareKeywords.getText() );
-       if ( tareNotes.hasChanged() ) changes.setNotes( tareNotes.getText( ) );
+//       if ( tareNotes.hasChanged() ) changes.setNotes( tareNotes.getText( ) );
 
        if ( tfldCustom1.hasChanged() ) changes.setCustomField1( tfldCustom1.getText() );
        if ( tfldCustom2.hasChanged() ) changes.setCustomField2( tfldCustom2.getText() );
@@ -433,8 +435,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldBetRowSpace = new CPSTextField( FIELD_LEN_SHORT );
       tfldTimeToTP = new CPSTextField( FIELD_LEN_SHORT );
       tfldFlatSize = new CPSTextField( FIELD_LEN_MED );
-      tfldPlantingNotesCrop = new CPSTextField( FIELD_LEN_LONG );
-      tfldPlantingNotes = new CPSTextField( FIELD_LEN_LONG );
 
       tfldBedsToPlant = new CPSTextField( FIELD_LEN_SHORT );
       tfldRowFtToPlant = new CPSTextField( FIELD_LEN_MED );
@@ -457,7 +457,9 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
       tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
       tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareNotes = new CPSTextArea( 5, 40 );
+      tarePlantingNotesCrop = new CPSTextArea( 12, 15 );
+      tarePlantingNotes = new CPSTextArea( 12, 15 );
+//      tareNotes = new CPSTextArea( 5, 40 );
 
       tfldCustom1 = new CPSTextField( FIELD_LEN_LONG );
       tfldCustom2 = new CPSTextField( FIELD_LEN_LONG );
@@ -579,17 +581,17 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplPlanting.add( tfldTimeToTP, "wrap" );
       anonLabels.add( lblTimeToTP );
       
-      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
+//      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
       
-      tempLabel = new JLabel( "Crop Notes" );
-      jplPlanting.add( tempLabel, "align right" );
-      jplPlanting.add( tfldPlantingNotesCrop, "wrap" );
-      anonLabels.add( tempLabel );
+//      tempLabel = new JLabel( "Crop Notes" );
+//      jplPlanting.add( tempLabel, "align right" );
+//      jplPlanting.add( tarePlantingNotesCrop, "wrap" );
+//      anonLabels.add( tempLabel );
       
-      tempLabel = new JLabel( "Planting Notes" );
-      jplPlanting.add( tempLabel, "align right" );
-      jplPlanting.add( tfldPlantingNotes, "wrap" );
-      anonLabels.add( tempLabel );
+//      tempLabel = new JLabel( "Planting Notes" );
+//      jplPlanting.add( tempLabel, "align right" );
+//      jplPlanting.add( tfldPlantingNotes, "wrap" );
+//      anonLabels.add( tempLabel );
 
       columnTwo.add( jplPlanting );
            
@@ -632,8 +634,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       /* *************************************/
       /* COLUMN FOUR
       /* *************************************/
-      /* Page 1
-      /* *************************************/
       JPanel jplSeeds = new JPanel( new MigLayout( migPanelDefaults ));
 
       tempLabel = new JLabel( "Units" );
@@ -659,6 +659,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       anonLabels.add( tempLabel );
 
 
+      /* *************************************/
+      /* *************************************/
       JPanel jplMisc = new JPanel( new MigLayout( migPanelDefaults ));
 
       tempLabel = new JLabel( "Groups:" );
@@ -679,6 +681,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       anonLabels.add( tempLabel );
 
       
+      /* *************************************/
+      /* *************************************/
       JPanel jplYield = new JPanel( new MigLayout( migPanelDefaults ));
 
       tempLabel = new JLabel( "Total Yield" );
@@ -703,12 +707,51 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       anonLabels.add( tempLabel );
 
 
+      JPanel jplNotesCrop = new JPanel( new MigLayout( migPanelDefaults ));
+      tempLabel = new JLabel( "<html><font size=\"-2\">" +
+                              "displayed on the planting list printout"+
+                              "</font></html>" );
+      jplNotesCrop.add( tempLabel, "align center, wrap" );
+      jplNotesCrop.add( new JScrollPane( tarePlantingNotesCrop ), "wrap" );
+      anonLabels.add( tempLabel );
+
+
+      JPanel jplNotes = new JPanel( new MigLayout( migPanelDefaults ));
+      tempLabel = new JLabel( "<html><font size=\"-2\">" +
+                              "about this specifc planting"+
+                              "</font></html>" );
+      jplNotes.add( tempLabel, "align center, wrap" );
+      jplNotes.add( new JScrollPane( tarePlantingNotes ), "wrap" );
+      JButton btn = new JButton("Add Date");
+      btn.addActionListener( new ActionListener() {
+
+        public void actionPerformed(ActionEvent e) {
+          int p = tarePlantingNotes.getCaretPosition();
+          String s = ( p == 0 ? "" : "\n" ) +
+                     "=== " +
+                     CPSDateValidator.format( new Date(),
+                                              CPSDateValidator.DATE_FORMAT_MON_DAY_YEAR ) +
+                     " ===\n";
+          tarePlantingNotes.insert( s, p );
+          tarePlantingNotes.setCaretPosition( p + s.length() );
+          tarePlantingNotes.requestFocusInWindow();
+        }
+
+      });
+      jplNotes.add( btn, "span 2, align right" );
+      anonLabels.add( tempLabel );
+
+
       columnFour =
               new CPSCardPanel( new String[] {
+                                               "Notes",
+                                               "Planter Notes",
                                                "Yield Info",
                                                "Seed Info",
-                                               "Misc Info" },
+                                               "Keywords etc" },
                                 new JPanel[] {
+                                               jplNotes,
+                                               jplNotesCrop,
                                                jplYield,
                                                jplSeeds,
                                                jplMisc } );
@@ -861,8 +904,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldRowsPerBed.setEnabled( b );
       tfldInRowSpace.setEnabled( b );
       tfldBetRowSpace.setEnabled( b );
-      tfldPlantingNotesCrop.setEnabled( b );
-      tfldPlantingNotes.setEnabled( b );
+      tarePlantingNotesCrop.setEnabled( b );
+      tarePlantingNotes.setEnabled( b );
       tfldBedsToPlant.setEnabled( b );
       tfldRowFtToPlant.setEnabled( b );
       tfldPlantsNeeded.setEnabled( b );
@@ -879,7 +922,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tareGroups.setEnabled( b );
       tareKeywords.setEnabled( b );
       tareOtherReq.setEnabled( b );
-      tareNotes.setEnabled( b );
+//      tareNotes.setEnabled( b );
       tfldCustom1.setEnabled( b );
       tfldCustom2.setEnabled( b );
       tfldCustom3.setEnabled( b );
@@ -990,7 +1033,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                      tempPlanting.getRowsPerBedState() );
       tfldBetRowSpace.setInitialText( tempPlanting.getRowSpacingString(),
                                       tempPlanting.getRowSpacingState() );
-      tfldPlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
+      tarePlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
                                             tempPlanting.getPlantingNotesInheritedState() );
       tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
                                    displayedPlanting.getSeedsPerState() );
