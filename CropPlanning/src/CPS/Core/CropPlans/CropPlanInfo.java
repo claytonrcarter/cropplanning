@@ -706,6 +706,13 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplYield.add( tfldCropYieldUnitValue, "wrap" );
       anonLabels.add( tempLabel );
 
+      tempLabel = new JLabel( "Yields for (wks)" );
+      tempLabel.setToolTipText( "Approx. how many weeks do you expect to " +
+                                "harvest a planting of this?" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldYieldNumWeeks, "wrap" );
+      anonLabels.add( tempLabel );
+
 
       JPanel jplNotesCrop = new JPanel( new MigLayout( migPanelDefaults ));
       tempLabel = new JLabel( "<html><font size=\"-2\">" +

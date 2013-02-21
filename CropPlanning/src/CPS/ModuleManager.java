@@ -84,7 +84,7 @@ public class ModuleManager implements CPSModuleMediator {
      coreMods.add( new CPS.Core.CropPlans.CropPlans() );
      coreMods.add( new CPS.Core.CropDB.CropDB() );
      coreMods.add( new CPS.Core.TODOLists.TODOLists() );
-     coreMods.add( new CPS.Core.VisualCalendar.VisualCalendar() );
+     coreMods.add( new CPS.Core.CropPlanStats.CropPlanStats() );
 
      direct = new java.util.Date();
 

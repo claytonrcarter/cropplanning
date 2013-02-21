@@ -27,6 +27,7 @@ import CPS.Data.CPSRecord;
 import CPS.Data.CPSTextFilter;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
+import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSConfirmDialog;
 import CPS.UI.Swing.CPSSearchField;
@@ -517,26 +518,26 @@ public abstract class CPSMasterView extends CPSDataModelUser
        initListPanel(); // init listPanel
        jplList.add( new JScrollPane( masterTable ) );
 
-//       jplList.getInputMap( jplList.WHEN_IN_FOCUSED_WINDOW )
-//                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " UP" ), "prev" );
-//       jplList.getInputMap( jplList.WHEN_IN_FOCUSED_WINDOW )
-//                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " DOWN" ), "next" );
-//       jplList.getActionMap().put( "prev",
-//                                   new AbstractAction() {
-//                                     public void actionPerformed(ActionEvent e) {
-//                                       int i = selectModel.getMinSelectionIndex();
-//                                       if ( i > 0 )
-//                                         selectModel.setSelectionInterval(i-1, i-1);
-//                                     }
-//                                   });
-//       jplList.getActionMap().put( "next",
-//                                   new AbstractAction() {
-//                                     public void actionPerformed(ActionEvent e) {
-//                                       int i = selectModel.getMaxSelectionIndex();
-//                                       if ( i < masterListSorted.size()-1 )
-//                                         selectModel.setSelectionInterval(i+1, i+1);
-//                                     }
-//                                   });
+       jplList.getInputMap( jplList.WHEN_IN_FOCUSED_WINDOW )
+                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " UP" ), "prev" );
+       jplList.getInputMap( jplList.WHEN_IN_FOCUSED_WINDOW )
+                      .put( KeyStroke.getKeyStroke( CPSGlobalSettings.getModifierKey() + " DOWN" ), "next" );
+       jplList.getActionMap().put( "prev",
+                                   new AbstractAction() {
+                                     public void actionPerformed(ActionEvent e) {
+                                       int i = selectModel.getMinSelectionIndex();
+                                       if ( i > 0 )
+                                         selectModel.setSelectionInterval(i-1, i-1);
+                                     }
+                                   });
+       jplList.getActionMap().put( "next",
+                                   new AbstractAction() {
+                                     public void actionPerformed(ActionEvent e) {
+                                       int i = selectModel.getMaxSelectionIndex();
+                                       if ( i < masterListSorted.size()-1 )
+                                         selectModel.setSelectionInterval(i+1, i+1);
+                                     }
+                                   });
 
        buildColumnListPopUpMenu();
 

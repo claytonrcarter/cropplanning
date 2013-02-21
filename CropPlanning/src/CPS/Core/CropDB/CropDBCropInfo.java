@@ -379,6 +379,13 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldUnitValue, "wrap" );
 
+      tempLabel = new JLabel( "Yields for (wks)" );
+      tempLabel.setToolTipText( "Approx. how many weeks do you expect to " +
+                                "harvest a planting of this?" );
+      jplYield.add( tempLabel, "align right" );
+      jplYield.add( tfldYieldWeeks, "wrap" );
+      anonLabels.add( tempLabel );
+
 
       /**************************************/
       /* Page 2

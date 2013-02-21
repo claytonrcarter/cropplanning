@@ -243,7 +243,7 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
     public Date getAnyDateRangeStart() { return anyDateRangeStart; }
     public Date getAnyDateRangeEnd() { return anyDateRangeEnd; }
 
-    private Date bumpDateByDay( Date d, int i ) {
+    protected Date bumpDateByDay( Date d, int i ) {
       GregorianCalendar cal = new GregorianCalendar();
       cal.setTime( d );
       cal.add( GregorianCalendar.DAY_OF_YEAR, i );
