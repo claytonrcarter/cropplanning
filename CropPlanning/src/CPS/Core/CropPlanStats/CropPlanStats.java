@@ -149,7 +149,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     fieldNames.clear();
     fieldNames.add("");
     List<String> weeks = new ArrayList<String>();
-    List<Float> bedCount = new ArrayList<Float>();
+    List<Double> bedCount = new ArrayList<Double>();
     for ( String field : fieldNames ) {
 
 //      System.out.println("Field name: " + field );
@@ -171,19 +171,22 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
         dataFiltered.setMatcherEditor(dstpFilter);
 
 
-        float beds = CPSCalculations.roundQuarter( summaryBeds.getValue() );
+        double beds = CPSCalculations.roundQuarter( summaryBeds.getValue() );
 
-//        weeks.add( )
-        System.out.print( CPSDateValidator.format( cal.getTime(),
-                                                    CPSDateValidator.DATE_FORMAT_SHORT ) +
-                            ", " + dataFiltered.size() + ", " + beds + ", " );
-        for ( int i = 1; i <= beds; i++ )
-          System.out.print("|");
-        System.out.println("");
+        weeks.add( CPSDateValidator.format( cal.getTime(),
+                                            CPSDateValidator.DATE_FORMAT_SHORT));
+        // dataFiltered.size() // number of plantings
+        bedCount.add( beds );
 
         weekNum++;
       }
+
+
     }
+
+    labelInfo = new JLabel( "<html>" + labelString + "</html>" );
+    jplChart = new ChartPanel( bedCount, weeks, "Beds Used in Field" );
+    rebuildContentPanel();
 
   }
 
@@ -204,13 +207,15 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
   protected void rebuildContentPanel() {
 
     if ( jplContents == null )
-      jplContents = new JPanel( new MigLayout( "insets 2px, gap 0px!" ));
+      jplContents = new JPanel( new MigLayout( "insets 2px, gap 0px!",
+                                               "[grow, fill]",
+                                               "[][grow, fill]" ));
 
     jplContents.removeAll();
 
     if ( labelInfo == null )
       labelInfo = new JLabel( "Nothing to display; try pressing \"Update\"" );
-    jplContents.add( labelInfo, "align left, fill, grow" );
+    jplContents.add( labelInfo, "align left, grow" );
 
     if ( updateButton == null ) {
       updateButton = new JButton("Update");
@@ -219,7 +224,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     jplContents.add( updateButton, "wrap" );
 
     if ( jplChart != null )
-      jplContents.add( jplChart, "span 2, grow, fill" );
+      jplContents.add( jplChart, "span 2, grow" );
     
   }
 
