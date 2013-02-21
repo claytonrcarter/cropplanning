@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.ToolTipManager;
 
 public class ChartPanel extends JPanel {
 
@@ -25,12 +27,32 @@ public class ChartPanel extends JPanel {
 
   private String title;
 
+  private int barWidth = 0;
+
   public ChartPanel(List<Double> v, List<String> n, String t) {
     names = n;
     values = v;
     title = t;
+
+    ToolTipManager.sharedInstance().registerComponent(this);
   }
 
+  @Override
+  public String getToolTipText(MouseEvent event) {
+
+    if ( barWidth < 1 )
+      return "";
+
+    int i = event.getX() / barWidth;
+
+    String s = "Week of " + names.get(i) + ": " + values.get(i) + " beds";
+
+    return s;
+  }
+
+
+
+  @Override
   public void paintComponent(Graphics g) {
     super.paintComponent(g);
     if (values == null || values.isEmpty() )
@@ -47,7 +69,7 @@ public class ChartPanel extends JPanel {
     Dimension d = getSize();
     int clientWidth = d.width;
     int clientHeight = d.height;
-    int barWidth = clientWidth / values.size();
+    barWidth = clientWidth / values.size();
 
     Font titleFont = new Font("SansSerif", Font.BOLD, 20);
     FontMetrics titleFontMetrics = g.getFontMetrics(titleFont);
