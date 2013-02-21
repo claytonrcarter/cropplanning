@@ -50,7 +50,7 @@ public class ChartPanel extends JPanel {
     if ( i >= names.size() )
       return "";
 
-    String s = "Week of " + names.get(i) + ": " + values.get(i) + " beds";
+    String s = "" + names.get(i) + ": " + values.get(i) + "";
 
     return s;
   }

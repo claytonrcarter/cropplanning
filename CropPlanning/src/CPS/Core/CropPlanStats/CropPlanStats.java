@@ -41,7 +41,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class CropPlanStats extends CPSDisplayableDataUserModule implements ActionListener {
 
-  JPanel jplContents, jplChart;
+  JPanel jplContents, jplBedsCharts, jplFlatsChart;
   JButton updateButton;
   JLabel labelInfo;
   private BasicEventList<CPSPlanting> dataList;
@@ -64,14 +64,14 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     dataList = new BasicEventList<CPSPlanting>();
     dataFiltered = new FilterList<CPSPlanting>( dataList );
     dataSorted = new SortedList<CPSPlanting>( dataFiltered, null );
-    FunctionList<CPSPlanting, Float> bedsList =
+    FunctionList<CPSPlanting, Float> functionList =
           new FunctionList<CPSPlanting, Float>( dataFiltered,
                                               new FunctionList.Function<CPSPlanting, Float>() {
                                                  public Float evaluate( CPSPlanting p ) {
                                                     return p.getBedsToPlant();
                                                  }} );
-    Calculation<Float> summaryBeds = Calculations.sumFloats( bedsList );
-
+    Calculation<Float> sumOfFloats = Calculations.sumFloats( functionList );
+    
 //****************************************************************************//
 //    Fill up the lists
 //****************************************************************************//
@@ -123,6 +123,11 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                         " on " + CPSDateValidator.format( last );
 
 
+//    cal.setTime( first );
+    int weekNum;
+    cal.setTime( last );
+    int endWeek = cal.get( Calendar.WEEK_OF_YEAR );
+
 //****************************************************************************//
 //    Create the filters depending on how it was planted
 //****************************************************************************//
@@ -145,6 +150,8 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
             new CompositeMatcherEditor<CPSPlanting>( dstpFilters );
     dstpFilter.setMode( CompositeMatcherEditor.OR );
 
+    List<String> weeks;
+    List<Double> values;
 //****************************************************************************//
 //    Loop over the field names
 //****************************************************************************//
@@ -152,18 +159,15 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     List<JPanel> charts = new ArrayList<JPanel>();
     for ( String field : fieldNames ) {
 
-      List<String> weeks = new ArrayList<String>();
-      List<Double> bedCount = new ArrayList<Double>();
+      weeks = new ArrayList<String>();
+      values = new ArrayList<Double>();
 
-//      System.out.println("Field name: " + field );
       dsFilter.setFieldName( field );
       tpFilter.setFieldName( field );
 
       cal.setTime( first );
-      int weekNum = cal.get( Calendar.WEEK_OF_YEAR );
-      cal.setTime( last );
-      int endWeek = cal.get( Calendar.WEEK_OF_YEAR );
-      
+      weekNum = cal.get( Calendar.WEEK_OF_YEAR );
+
       while ( weekNum <= endWeek ) {
 
         cal.set( Calendar.WEEK_OF_YEAR, weekNum );
@@ -173,12 +177,12 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
         // update the filter? is this needed?
         dataFiltered.setMatcherEditor(dstpFilter);
 
-        double beds = CPSCalculations.roundQuarter( summaryBeds.getValue() );
+        double beds = CPSCalculations.roundQuarter( sumOfFloats.getValue() );
 
         weeks.add( CPSDateValidator.format( cal.getTime(),
                                             CPSDateValidator.DATE_FORMAT_SHORT));
         // dataFiltered.size() // number of plantings
-        bedCount.add( beds );
+        values.add( beds );
 
         weekNum++;
       }
@@ -188,13 +192,50 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
       else
         titles.add( "Beds in use: " + field );
 
-      charts.add( new ChartPanel( bedCount, weeks, "" ) );
+      charts.add( new ChartPanel( values, weeks, "" ) );
 
+    }
+
+//****************************************************************************//
+//    Now work on a chart of flats needed
+//****************************************************************************//
+    functionList =
+          new FunctionList<CPSPlanting, Float>( dataFiltered,
+                                              new FunctionList.Function<CPSPlanting, Float>() {
+                                                 public Float evaluate( CPSPlanting p ) {
+                                                    return p.getFlatsNeeded();
+                                                 }} );
+    sumOfFloats = Calculations.sumFloats( functionList ); // not needed but makes Netbeans stop bugging me
+    CPSInTheGreenhouseFilter flatsFilter = new CPSInTheGreenhouseFilter();
+
+    cal.setTime( first );
+    weekNum = cal.get( Calendar.WEEK_OF_YEAR );
+
+    weeks = new ArrayList<String>();
+    values = new ArrayList<Double>();
+
+    while ( weekNum <= endWeek ) {
+
+      cal.set( Calendar.WEEK_OF_YEAR, weekNum );
+      flatsFilter.setSeededInTheGreenhouseOn( cal.getTime() );
+
+      // update the filter? is this needed?
+      dataFiltered.setMatcherEditor(flatsFilter);
+
+      double flats = CPSCalculations.roundQuarter( sumOfFloats.getValue() );
+
+      weeks.add( CPSDateValidator.format( cal.getTime(),
+                                          CPSDateValidator.DATE_FORMAT_SHORT));
+      // dataFiltered.size() // number of plantings
+      values.add( flats );
+
+      weekNum++;
     }
 
 
     labelInfo = new JLabel( "<html>" + labelString + "</html>" );
-    jplChart = new CPSCardPanel( titles, charts );
+    jplBedsCharts = new CPSCardPanel( titles, charts );
+    jplFlatsChart = new ChartPanel( values, weeks, "Trays in the Greenhouse" );
     rebuildContentPanel();
 
   }
@@ -217,23 +258,25 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 
     if ( jplContents == null )
       jplContents = new JPanel( new MigLayout( "insets 2px, gap 0px!",
-                                               "[grow, fill]",
+                                               "[50%][50%]",
                                                "[][grow, fill]" ));
 
     jplContents.removeAll();
 
     if ( labelInfo == null )
       labelInfo = new JLabel( "Nothing to display; try pressing \"Update\"" );
-    jplContents.add( labelInfo, "align left, grow" );
+    jplContents.add( labelInfo, "align left" );
 
     if ( updateButton == null ) {
       updateButton = new JButton("Update");
       updateButton.addActionListener(this);
     }
-    jplContents.add( updateButton, "wrap" );
+    jplContents.add( updateButton, "align right, wrap" );
 
-    if ( jplChart != null )
-      jplContents.add( jplChart, "span 2, grow" );
+    if ( jplBedsCharts != null ) {
+      jplContents.add( jplBedsCharts, "grow" );
+      jplContents.add( jplFlatsChart, "grow, wrap" );
+    }
     
   }
 
@@ -298,6 +341,35 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     public void setPlantingInTheFieldOn(Date d) { this.plantingInTheField = d; }
     public void setFieldName(String s) { this.fieldName = s; }
 
+
+  }
+
+
+    /**
+   * Given a date (through the {@link setPlantingInTheFieldOn( Date d )} method)
+   * this will match any planting that has been planted before the date and whose
+   * "harvest window" (defined as Harvest Date + Num Weeks of Harvest) has not
+   * passed.
+   */
+  class CPSInTheGreenhouseFilter extends CPSComplexPlantingFilter {
+
+    private Date seededInTheGreenhouse;
+
+    public CPSInTheGreenhouseFilter() {
+      setAsTransplatedFilter();
+    }
+
+    @Override
+    public boolean matches(CPSPlanting p) {
+      boolean m = super.matches(p);
+
+      m &= seededInTheGreenhouse.after( bumpDateByDay( p.getDateToPlant(), -1 )) &&
+           seededInTheGreenhouse.before( p.getDateToTP() );
+
+      return m;
+    }
+
+    public void setSeededInTheGreenhouseOn(Date d) { this.seededInTheGreenhouse = d; }
 
   }
 
