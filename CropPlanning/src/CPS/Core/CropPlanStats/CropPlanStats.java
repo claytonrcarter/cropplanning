@@ -12,6 +12,7 @@ import CPS.Data.CPSPlantingComparator;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
+import CPS.UI.Swing.CPSCardPanel;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.FunctionList;
@@ -23,6 +24,7 @@ import ca.odell.glazedlists.matchers.MatcherEditor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -146,11 +148,12 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 //****************************************************************************//
 //    Loop over the field names
 //****************************************************************************//
-    fieldNames.clear();
-    fieldNames.add("");
-    List<String> weeks = new ArrayList<String>();
-    List<Double> bedCount = new ArrayList<Double>();
+    List<String> titles = new ArrayList<String>();
+    List<JPanel> charts = new ArrayList<JPanel>();
     for ( String field : fieldNames ) {
+
+      List<String> weeks = new ArrayList<String>();
+      List<Double> bedCount = new ArrayList<Double>();
 
 //      System.out.println("Field name: " + field );
       dsFilter.setFieldName( field );
@@ -170,7 +173,6 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
         // update the filter? is this needed?
         dataFiltered.setMatcherEditor(dstpFilter);
 
-
         double beds = CPSCalculations.roundQuarter( summaryBeds.getValue() );
 
         weeks.add( CPSDateValidator.format( cal.getTime(),
@@ -181,11 +183,18 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
         weekNum++;
       }
 
+      if ( field.equals("") )
+        titles.add( "Beds in use in field" );
+      else
+        titles.add( "Beds in use: " + field );
+
+      charts.add( new ChartPanel( bedCount, weeks, "" ) );
 
     }
 
+
     labelInfo = new JLabel( "<html>" + labelString + "</html>" );
-    jplChart = new ChartPanel( bedCount, weeks, "Beds Used in Field" );
+    jplChart = new CPSCardPanel( titles, charts );
     rebuildContentPanel();
 
   }

@@ -25,6 +25,7 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -40,14 +41,22 @@ public class CPSCardPanel extends JPanel implements ItemListener {
   private JComboBox cb;
   private JPanel cards;
 
-  public CPSCardPanel( String[] elems,
+
+
+  public CPSCardPanel( List<String> titles,
+                       List<JPanel> panels ) {
+    this( titles.toArray( new String[] {} ),
+          panels.toArray( new JPanel[] {} ));
+  }
+
+  public CPSCardPanel( String[] titles,
                        JPanel[] panels ) {
 
     this.setLayout( new BoxLayout(this, BoxLayout.PAGE_AXIS ));
     this.setBorder( BorderFactory.createEtchedBorder() );
 
 
-    cb = new JComboBox(elems);
+    cb = new JComboBox(titles);
     cb.setEditable(false);
     cb.addItemListener(this);
     cb.setMaximumSize( cb.getPreferredSize() );
@@ -68,7 +77,7 @@ public class CPSCardPanel extends JPanel implements ItemListener {
       if ( jpDim.getHeight() > dim.getHeight() )
         dim.setSize( dim.getWidth(), jpDim.getHeight() );
 
-      cards.add( panels[i], elems[i] );
+      cards.add( panels[i], titles[i] );
     }
     
     cards.setPreferredSize(dim);
