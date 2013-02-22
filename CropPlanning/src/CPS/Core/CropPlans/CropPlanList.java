@@ -196,27 +196,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
           cmbxFieldList.addItem(s);
         
     }
-    
-   @Override
-    protected void updateMasterList() {
-       super.updateMasterList();
-
-       // 2/11/13 removed since the table isn't edittable anymore (for now?)
-//       if ( masterTable.getRowCount() > 0 )
-//           // install custom table renderes and editors
-//           for ( int i = 0; i < masterTable.getColumnModel().getColumnCount(); i++ ) {
-//               // install autocomplete combobox in column "crop_name"
-//               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "crop_name" ) ) {
-//                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new CPSComboBoxCellEditor( cmbxCropList ) );
-//                   continue;
-//               }
-//               if ( masterTable.getColumnName( i ).equalsIgnoreCase( "location" ) ) {
-//                   masterTable.getColumnModel().getColumn( i ).setCellEditor( new CPSComboBoxCellEditor( cmbxFieldList ) );
-//                   continue;
-//               }
-//           }
-    }
-
 
 
     protected List getMasterListData() {
@@ -358,6 +337,13 @@ class CropPlanList extends CPSMasterView implements ActionListener,
       return new CPSPlanting();
     }
 
+    @Override
+    protected void updateRecordInDB( CPSRecord r ) {
+      if ( r instanceof CPSPlanting ) {
+        getDataSource().updatePlanting( getDisplayedTableName(), (CPSPlanting) r );
+        updateDetailView();
+      }
+    }
 
     @Override
     protected CPSPlanting createNewRecord( CPSRecord r ) {

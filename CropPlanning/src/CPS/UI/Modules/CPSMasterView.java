@@ -113,6 +113,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        buildMainPanel( null );
 
        selectModel.setSelectionMode( ListSelection.MULTIPLE_INTERVAL_SELECTION );
+
+       masterListSorted.setMode(SortedList.AVOID_MOVING_ELEMENTS);
     }
     
     public int init() { return 0; }
@@ -220,7 +222,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
     }
 
-
+    protected abstract void updateRecordInDB( CPSRecord r );
 
     protected void updateRecord( CPSRecord r ) {
 
@@ -477,7 +479,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
                                  }
                                } );
 
-       masterListFiltered.addListEventListener( this );
+       if ( init )
+         masterListFiltered.addListEventListener( this );
 
        // finally, setup the compositeFilter panel
        if ( init )
@@ -500,6 +503,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void buildListPanel() {
 
        masterTable = new CPSTable( new EventTableModel<CPSRecord>( masterListSorted, getTableFormat() ) );
+       masterListSorted.addListEventListener(this);
        
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
        masterTable.getTableHeader().addMouseListener( this );
@@ -627,10 +631,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
         // obtaining locks on the list before we edit it seems to have
         // fixed sporadic NullPointerExceptions related to concurrency
+        masterListSorted.removeListEventListener(this);
         masterList.getReadWriteLock().writeLock().lock();
         masterList.clear();
         masterList.addAll( getMasterListData() );
         masterList.getReadWriteLock().writeLock().unlock();
+        masterListSorted.addListEventListener(this);
 
         CPSModule.debug( "CPSMasterView", "Items in masterList:         " + masterList.size() );
         CPSModule.debug( "CPSMasterView", "Items in masterListFiltered: " + masterListFiltered.size() );
@@ -787,6 +793,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
       Object source = listChanges.getSource();
 
+      // filtered list is monitored to know if we have data to display
+      // in the table and thus how to display buttons, etc
       if ( source == masterListFiltered ) {
 
          // no data in table
@@ -799,7 +807,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
             // if the compositeFilter string is empty, then there really are no records
             // else we're just created an incorrect or too restrictive compositeFilter
             if ( tfldFilter.getText().equals( "" ) ) {
-//              tfldFilter.setEnabled(false);
                if ( getDisplayedTableName() == null || getDisplayedTableName().equals( "" ) ) {
                   btnNewRecord.setEnabled( false );
                } else {
@@ -814,19 +821,31 @@ public abstract class CPSMasterView extends CPSDataModelUser
             
          } // table contains data; undo anything we might have just done (in the "if" clause)
          else {
+
             btnNewRecord.setEnabled( true );
             btnDeleteRecord.setEnabled( true );
             btnDupeRecord.setEnabled( true );
             tfldFilter.setEnabled( true );
 
+
+             // check that selected items are in table
+             // if not, clear selection and display nothing
             if ( selectModel.getSelected().size() > 0 ) {
-               // check that selected items are in table
-               // if not, clear selection and display nothing
-               setStatus( null );
+              setStatus( null );
             } else {
                setStatus( CPSMasterDetailModule.STATUS_NO_SELECTION );
             }
+
          }
+      }
+      // when items are updated in the table view, it's done to the
+      // sorted table
+      else if ( source == masterListSorted ) {
+        if ( masterListSorted.size() > 0 ) {
+          listChanges.next();
+          if ( listChanges.getType() == ListEvent.UPDATE )
+            updateRecordInDB( masterListSorted.get( listChanges.getIndex() ));
+        }
       }
    }
     

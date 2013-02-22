@@ -274,8 +274,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          //if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() )
            p = getDataSource().getPlanting( selectedPlan, diff.getID() );
 
-         System.out.println(p);
-         // now make sure
          updateRecordInMasterView(p);
          selectRecordsInMasterView( Arrays.asList( p.getID() ) );
 

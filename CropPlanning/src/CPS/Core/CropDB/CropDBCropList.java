@@ -137,6 +137,12 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
       return new CPSCrop();
     }
 
+  @Override
+  protected void updateRecordInDB(CPSRecord r) {
+    if ( r instanceof CPSCrop )
+      getDataSource().updateCrop( (CPSCrop) r );
+  }
+
     @Override
     public CPSRecord createNewRecord( CPSRecord r ) {
       CPSCrop c = getDataSource().createCrop( (CPSCrop) r );
