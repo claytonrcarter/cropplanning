@@ -167,9 +167,7 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop>
     // do this because this method is called every time a row is unselected
     // as when traversing the table by pressing UP or DOWN, so this just
     // discards the times when there's no actual edit
-    if ( ( getColumnClass(colNum) == Boolean.class &&
-           ((Boolean) editedValue) == getColumnValue(c, colNum) ) ||
-         s.equals( getColumnValue( c, colNum )) )
+    if ( editedValue.equals( getColumnValue( c, colNum ) ) )
       return null;
 
     switch ( colNum ) {

@@ -355,9 +355,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       
 
       // add all of the above labels to the label list
-      anonLabels.addAll( Arrays.asList( new JLabel[] { lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes,
-                                                       lblTPMat, lblTPRows, lblTPSpaceRow, lblTPSpace,
-                                                       lblTPFlat, lblTPWeeks, lblTPNotes } ) );
+      anonLabels.addAll( Arrays.asList(  lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes,
+                                         lblTPMat, lblTPRows, lblTPSpaceRow, lblTPSpace,
+                                         lblTPFlat, lblTPWeeks, lblTPNotes ) );
 
       /**************************************/
       /* COLUMN THREE
