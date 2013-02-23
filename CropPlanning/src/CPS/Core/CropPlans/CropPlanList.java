@@ -339,10 +339,8 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
     @Override
     protected void updateRecordInDB( CPSRecord r ) {
-      if ( r instanceof CPSPlanting ) {
+      if ( r instanceof CPSPlanting )
         getDataSource().updatePlanting( getDisplayedTableName(), (CPSPlanting) r );
-        updateDetailView();
-      }
     }
 
     @Override
