@@ -86,6 +86,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private final String TL_ALL_PLANTING_LISTS = "All Weekly Planting Lists (full season, PDF only)";
     private final String TL_ALL_PLANTINGS = "Complete Crop Plan";
     private final String TL_SEED_ORDER_WORKSHEET = "Seed Order Worksheet";
+    private final String TL_HARVEST_AVAILABILITY = "Harvest Availabilities";
 
     protected static final int TL_FORMAT_PDF = 1;
     protected static final int TL_FORMAT_CSV = 2;
@@ -197,6 +198,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         cmbWhatToExport.addItem( TL_ALL_PLANTING_LISTS );
         cmbWhatToExport.addItem( TL_ALL_PLANTINGS );
         cmbWhatToExport.addItem( TL_SEED_ORDER_WORKSHEET );
+        cmbWhatToExport.addItem( TL_HARVEST_AVAILABILITY );
 
         btnFormatPDF = new JButton( "Export as PDF" );
         btnFormatCSV = new JButton( "Export as CSV" );
@@ -626,11 +628,153 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "All Plantings for plan \"" + planName + "\"", jt );
         } else {
-          pdf.export( jt, filename,
-                          CPSGlobalSettings.getFarmName(),
-                          "All Plantings for plan \"" + planName + "\"",
-                          "All Plantings" );
+          pdf.exportLandscape( jt, filename,
+                               CPSGlobalSettings.getFarmName(),
+                               "All Plantings for plan \"" + planName + "\"",
+                               "All Plantings" );
         }
+
+    }
+
+    private void exportAvailabilityList( String planName, int format ) {
+
+      String filename = createOutputFileName( filFile.getSelectedFile(),
+                                              "Harvest Availability List",
+                                              dtcDateOtherStart.getDate(),
+                                              format );
+
+        // clear the master list and fill it up with our crop plan
+        data.clear();
+        data.addAll( getDataSource().getCropPlan( planName ) );
+
+        // create a basic filter and set it to exclude "ignored" plantings
+        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
+        filter.setViewLimited(true);
+
+        // create the list that will hold all of our accumulated filters
+        // and start it out with the basic filter from above
+        BasicEventList<MatcherEditor<CPSPlanting>> listOfFilters =
+                new BasicEventList<MatcherEditor<CPSPlanting>>();
+        listOfFilters.add( filter );
+
+        // create a Composite filter that will match all (see the AND)
+        // of the fitlers in the 'listOfFilters'
+        CompositeMatcherEditor<CPSPlanting> compositeFilter =
+                new CompositeMatcherEditor<CPSPlanting>( listOfFilters );
+        compositeFilter.setMode( CompositeMatcherEditor.AND );
+
+        // finally set the filtered list to match against this new compositeFilter
+        dataFiltered.setMatcherEditor(compositeFilter);
+
+        // create a new list from our crop plan and sort it by crop and var name
+        dataSorted = new SortedList<CPSPlanting>( dataFiltered,
+                                                  new CropVarComparator() );
+
+        // create a second filtered list based on the filtered master list
+        // this is the list we will use to do all of our crop/var calculations
+        FilterList<CPSPlanting> singleCropVarList =
+                new FilterList<CPSPlanting>( dataFiltered );
+
+        // create the list that will hold the "plantings" we will manufacture
+        // from the stats being calculated
+        BasicEventList<CPSPlanting> availabilityList = new BasicEventList<CPSPlanting>();
+
+        // now create the comparators to use to sort the lists by when harvest
+        // starts and when it ends (reversed, so last harvested comes first)
+        Comparator compHarvestStart = new CPSPlantingComparator(CPSDataModelConstants.PROP_DATE_HARVEST );
+        Comparator compHarvestEnd   = new Comparator<CPSPlanting>() {
+
+                Calendar compareCal = Calendar.getInstance();
+
+                public int compare( CPSPlanting o1, CPSPlanting o2) {
+                  Date d1 = o1.getDateToHarvest();
+                  Date d2 = o2.getDateToHarvest();
+
+                  compareCal.setTime( d1 );
+                  compareCal.add( Calendar.WEEK_OF_YEAR,
+                                  o1.getYieldNumWeeks() );
+                  d1 = compareCal.getTime();
+
+                  compareCal.setTime( d2 );
+                  compareCal.add( Calendar.WEEK_OF_YEAR,
+                                  o2.getYieldNumWeeks() );
+                  d2 = compareCal.getTime();
+
+                  // NOTE the -1 * to reverse the sort
+                  return -1 * d1.compareTo(d2);
+                }
+              };
+        // now create a sorted list based on our filtered single crop/var list
+        // and set it to initially sort on harvest start date
+        SortedList<CPSPlanting> singleListSorted =
+                new SortedList<CPSPlanting>( singleCropVarList, compHarvestStart );
+        Calendar cal = Calendar.getInstance();
+
+        // now loop while we have data in our master filtered list
+        while ( dataFiltered.size() > 0 ) {
+
+          // get the first entry on the sorted list
+          CPSPlanting p = dataSorted.get(0);
+
+          // create a crop/var filter to match the crop/var of this first entry
+          // and set our working list to match on that (ie contain only
+          // plantings of this crop/var)
+          CropVarMatcher cvm = new CropVarMatcher(p);
+          singleCropVarList.setMatcher( cvm );
+
+          // now sort the filtered single crop/var list on harvest date
+          singleListSorted.setComparator( compHarvestStart );
+
+          // TODO should also match on when a Crop+Var has a different seed count or weight unit
+
+          // create new empty planting to represent our summary
+          // and populate it with data from this crop/var AND
+          // the summary calculations
+          CPSPlanting s = new CPSPlanting();
+          s.setCropName( p.getCropName() );
+          s.setVarietyName( p.getVarietyName() );
+          // these are dirty hacks
+          // use MatDays to hold the # of plantings of this crop/var
+          s.setMaturityDays( singleCropVarList.size() );
+          // use Planting Date to hold date when harvest starts
+          s.setDateToPlantActual( singleListSorted.get(0).getDateToHarvest() );
+
+
+          // now sort the list based on harvest date + num of weeks to yield
+          singleListSorted.setComparator( compHarvestEnd );
+          cal.setTime( singleListSorted.get(0).getDateToHarvest() );
+          cal.add( Calendar.WEEK_OF_YEAR,
+                   singleListSorted.get(0).getYieldNumWeeks() );
+          // use Harvest Date to hold date when harvest ends
+          s.setDateToHarvestActual( cal.getTime() );
+          
+          // now save this newly manufactured "planting"
+          availabilityList.add(s);
+
+          // finally, invert the filter for this crop/var (ie make it match
+          // "everything BUT this crop/var") and add it to the list of filters
+          // being applied to the master list
+          // this effectively removes plantings of this crop/var from
+          // our master list so that on the next iteration of this loop,
+          // the first entry of the sorted list will be the next crop/var
+          listOfFilters.add( cvm.invert() );
+
+        }
+
+        AvailabilityTableFormat tf = new AvailabilityTableFormat();
+
+        CPSTable jt = new CPSTable();
+        jt.setModel( new EventTableModel<CPSPlanting>( availabilityList, tf ) );
+
+      if ( format == TL_FORMAT_CSV ) {
+        new CSV().exportJTable( filename, "Harvest Availability for plan \"" + planName + "\"", jt );
+      } else {
+        pdf.export( jt, filename,
+                     CPSGlobalSettings.getFarmName(),
+                     "Harvest Availability for plan \"" + planName + "\"",
+                     "Harvest Availability" );
+      }
+
 
     }
 
@@ -641,65 +785,68 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                                                 dtcDateOtherStart.getDate(),
                                                 format );
 
-
-        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
-        filter.setViewLimited(true);
-
-        // fill up the list w/ the crop plan, then hide anything being ignored
+        // clear the master list and fill it up with our crop plan
         data.clear();
         data.addAll( getDataSource().getCropPlan( planName ) );
 
+        // create a basic filter and set it to exclude "ignored" plantings
+        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
+        filter.setViewLimited(true);
 
-        // setup the list of filters and add an "all" matcher
-        BasicEventList<MatcherEditor<CPSPlanting>> filters = new BasicEventList<MatcherEditor<CPSPlanting>>();
-        filters.add( filter );
+        // create the list that will hold all of our accumulated filters
+        // and start it out with the basic filter from above
+        BasicEventList<MatcherEditor<CPSPlanting>> listOfFilters =
+                new BasicEventList<MatcherEditor<CPSPlanting>>();
+        listOfFilters.add( filter );
 
-        // now setup the thing that will match all of the elements of the filter list
-        CompositeMatcherEditor<CPSPlanting> compositeFilter = new CompositeMatcherEditor<CPSPlanting>( filters );
+        // create a Composite filter that will match all (see the AND)
+        // of the fitlers in the 'listOfFilters'
+        CompositeMatcherEditor<CPSPlanting> compositeFilter = 
+                new CompositeMatcherEditor<CPSPlanting>( listOfFilters );
         compositeFilter.setMode( CompositeMatcherEditor.AND );
 
-
+        // finally set the filtered list to match against this new compositeFilter
         dataFiltered.setMatcherEditor(compositeFilter);
 
+        // create a new list from our crop plan and sort it by crop and var name
+        dataSorted = new SortedList<CPSPlanting>( dataFiltered,
+                                                  new CropVarComparator() );
 
-        // sort that plan by crop and var name, excluding anything ignored
-        SortedList<CPSPlanting> sortedPlan = new SortedList<CPSPlanting>( dataFiltered, new CropVarComparator() );
+        // create a second filtered list based on the filtered master list
+        // this is the list we will use to do all of our crop/var calculations
+        FilterList<CPSPlanting> singleCropVarList =
+                new FilterList<CPSPlanting>( dataFiltered );
 
-
-        // create another filtered list which we'll use to do our processing
-        // base it on the "not ignored" list so we know we can start w/ that.
-        FilterList<CPSPlanting> filteredPlan = new FilterList<CPSPlanting>( dataFiltered );
-
-        // set our calculations
+        // set up our calculations based on the new filtered list
         FunctionList<CPSPlanting, Integer> rftList =
-              new FunctionList<CPSPlanting, Integer>( filteredPlan,
+              new FunctionList<CPSPlanting, Integer>( singleCropVarList,
                                                  new FunctionList.Function<CPSPlanting, Integer>() {
                                                     public Integer evaluate( CPSPlanting p ) {
                                                        return p.getRowFtToPlant();
                                                     }} );
 
         FunctionList<CPSPlanting, Integer> plantsList =
-              new FunctionList<CPSPlanting, Integer>( filteredPlan,
+              new FunctionList<CPSPlanting, Integer>( singleCropVarList,
                                                  new FunctionList.Function<CPSPlanting, Integer>() {
                                                     public Integer evaluate( CPSPlanting p ) {
                                                        return p.getPlantsToStart();
                                                     }} );
 
         FunctionList<CPSPlanting, Float> bedsList =
-              new FunctionList<CPSPlanting, Float>( filteredPlan,
+              new FunctionList<CPSPlanting, Float>( singleCropVarList,
                                                   new FunctionList.Function<CPSPlanting, Float>() {
                                                      public Float evaluate( CPSPlanting p ) {
                                                         return p.getBedsToPlant();
                                                      }} );
 
         FunctionList<CPSPlanting, Float> flatsList =
-              new FunctionList<CPSPlanting, Float>( filteredPlan,
+              new FunctionList<CPSPlanting, Float>( singleCropVarList,
                                                   new FunctionList.Function<CPSPlanting, Float>() {
                                                      public Float evaluate( CPSPlanting p ) {
                                                         return p.getFlatsNeeded();
                                                      }} );
         FunctionList<CPSPlanting, Float> seedsList =
-              new FunctionList<CPSPlanting, Float>( filteredPlan,
+              new FunctionList<CPSPlanting, Float>( singleCropVarList,
                                                   new FunctionList.Function<CPSPlanting, Float>() {
                                                      public Float evaluate( CPSPlanting p ) {
                                                        if ( p.getSeedNeeded() > 0 )
@@ -709,7 +856,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
                                                      }} );
 
 
-        Calculation<Integer> summaryPlantings = Calculations.count( filteredPlan );
+        Calculation<Integer> summaryPlantings = Calculations.count( singleCropVarList );
         Calculation<Integer> summaryRowFt = Calculations.sumIntegers( rftList );
         Calculation<Integer> summaryPlants = Calculations.sumIntegers( plantsList );
         Calculation<Float> summaryBeds = Calculations.sumFloats( bedsList );
@@ -717,27 +864,33 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         Calculation<Float> summarySeeds = Calculations.sumFloats( seedsList );
 
 
+        // create the list that will hold the "plantings" we will manufacture
+        // from the stats being calculated
+        BasicEventList<CPSPlanting> seedStatsList = new BasicEventList<CPSPlanting>();
 
-        BasicEventList<CPSPlanting> seedStats = new BasicEventList<CPSPlanting>();
+        // now loop while we have data in our master filtered list
+        while ( dataFiltered.size() > 0 ) {
 
-        while ( sortedPlan.size() > 0 ) {
           // get the first entry on the sorted list
-          CPSPlanting p = sortedPlan.get(0);
+          CPSPlanting p = dataSorted.get(0);
 
-          // filter plan on the crop/var name for that first entry
+          // create a crop/var filter to match the crop/var of this first entry
+          // and set our working list to match on that (ie contain only
+          // plantings of this crop/var)
           CropVarMatcher cvm = new CropVarMatcher(p);
-          filteredPlan.setMatcher( cvm );
+          singleCropVarList.setMatcher( cvm );
 
           // TODO should also match on when a Crop+Var has a different seed count or weight unit
 
           // create new empty planting to represent our summary
-          // and populate it with the summary calculations for the filtered list
+          // and populate it with data from this crop/var AND
+          // the summary calculations
           CPSPlanting s = new CPSPlanting();
-          // in displayed column order
           s.setCropName( p.getCropName() );
           s.setVarietyName( p.getVarietyName() );
           // this is a dirty dirty hack that is only used because we're
           // controlling the table format for the output
+          // use MatDays to hold the # of plantings of this crop/var
           s.setMaturityDays( summaryPlantings.getValue() );
           s.setDirectSeeded( p.isDirectSeeded() );
 
@@ -755,11 +908,16 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           s.setSeedsPer( p.getSeedsPer() );
           s.setSeedNeeded( summarySeeds.getValue() );
 
-          // add that new planting to a separate list
-          seedStats.add(s);
+          // now save this newly manufactured "planting"
+          seedStatsList.add(s);
 
-          // now add this to the list of shit to exclude from our list
-          filters.add( cvm.invert() );
+          // finally, invert the filter for this crop/var (ie make it match
+          // "everything BUT this crop/var") and add it to the list of filters
+          // being applied to the master list
+          // this effectively removes plantings of this crop/var from
+          // our master list so that on the next iteration of this loop,
+          // the first entry of the sorted list will be the next crop/var
+          listOfFilters.add( cvm.invert() );
 
         }
 
@@ -768,7 +926,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         tf.setOutputFormat( format ); // TL_FORMAT_CSV or TL_FORMAT_PDF
 
         CPSTable jt = new CPSTable();
-        jt.setModel( new EventTableModel<CPSPlanting>( seedStats, tf ) );
+        jt.setModel( new EventTableModel<CPSPlanting>( seedStatsList, tf ) );
 
         if ( format == TL_FORMAT_CSV ) {
           new CSV().exportJTable( filename, "Seed Order Worksheet for plan \"" + planName + "\"", jt );
@@ -834,6 +992,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
             exportAllPlantings( planName, format );
           } else if ( whatToExport.equals( TL_SEED_ORDER_WORKSHEET ) ) {
             exportSeedOrderLists( planName, format );
+          } else if ( whatToExport.equals( TL_HARVEST_AVAILABILITY ) ) {
+            exportAvailabilityList( planName, format );
           }
 
         } else if (action.equalsIgnoreCase(btnSelectFile.getText())) {
@@ -922,6 +1082,9 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
 
 
+    /**
+     * Compares a planting and sorts them based on crop AND var name.
+     */
     private class CropVarComparator implements Comparator<CPSPlanting> {
 
       public int compare( CPSPlanting t, CPSPlanting t1 ) {
