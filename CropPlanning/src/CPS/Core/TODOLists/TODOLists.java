@@ -60,8 +60,12 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.*;
+import net.miginfocom.swing.MigLayout;
 
-public class TODOLists extends CPSDisplayableDataUserModule implements ActionListener, ItemListener, PropertyChangeListener {
+public class TODOLists extends CPSDisplayableDataUserModule
+                       implements ActionListener,
+                                  ItemListener,
+                                  PropertyChangeListener {
 
     private JPanel jplTodo;
     private JComboBox cmbPlanName, cmbWhatToExport;
@@ -74,6 +78,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     private JFileChooser filFile;
     private JButton btnSelectFile;
     private JButton btnFormatPDF, btnFormatCSV;
+    private JLabel lblExportDesc;
     private GregorianCalendar tempCal;
 
     private BasicEventList<CPSPlanting> data;
@@ -84,13 +89,23 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     private final String TL_GH_SEEDING = "GH Seeding List (PDF only)";
     private final String TL_FIELD_PLANTING = "Field Planting List (PDF only)";
-    private final String TL_ALL_PLANTING_LISTS = "All Weekly Planting Lists (full season, PDF only)";
+    private final String TL_ALL_PLANTING_LISTS = "All Weekly Planting Lists (PDF only)";
     private final String TL_ALL_PLANTINGS = "Complete Crop Plan";
     private final String TL_SEED_ORDER_WORKSHEET = "Seed Order Worksheet";
     private final String TL_HARVEST_AVAILABILITY = "Harvest Availabilities";
 
     protected static final int TL_FORMAT_PDF = 1;
     protected static final int TL_FORMAT_CSV = 2;
+
+    private final String DSC_START = "<html><center>";
+    private final String DSC_END = "</center></html>";
+    private final String DSC_GH_SEEDING = "Plantings to be seeded into<br>trays in the greenhouse.";
+    private final String DSC_FIELD_PLANTING = "Plantings to be seeded or<br>transplanted to the field.";
+    private final String DSC_ALL_PLANTING_LISTS = "Batch generate all weekly greenhouse<br>and field planting lists for the<br>whole season.";
+    private final String DSC_ALL_PLANTINGS = "Summary of each planting<br>from this list.";
+    private final String DSC_SEED_ORDER_WORKSHEET = "Summary of each crop and/or variety<br>in this plan, including amount of seed<br>needed for each variety.";
+    private final String DSC_HARVEST_AVAILABILITY = "List of harvest periods for<br>each crop and/or variety.";
+
 
 
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
@@ -123,15 +138,8 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
     // <editor-fold defaultstate="collapsed" desc="buildTODOListPanel">
     private void buildTODOListPanel() {
 
-        jplTodo = new JPanel();
-        jplTodo.setLayout(new GridBagLayout());
-//        jplTodo.setBorder( BorderFactory.createTitledBorder( "Export planting/seeding lists" ));
-        jplTodo.setBorder(BorderFactory.createEmptyBorder());
-
         cmbPlanName = new JComboBox();
         cmbPlanName.setEditable(false);
-//        cmbPlanName.addActionListener(this);
-//        cmbPlanName.addPropertyChangeListener(this);
 
 
         rdoDateThisWeek = new JRadioButton("This week", false);
@@ -200,42 +208,47 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         cmbWhatToExport.addItem( TL_ALL_PLANTINGS );
         cmbWhatToExport.addItem( TL_SEED_ORDER_WORKSHEET );
         cmbWhatToExport.addItem( TL_HARVEST_AVAILABILITY );
+        cmbWhatToExport.addItemListener(this);
+
+        lblExportDesc = new JLabel( DSC_START + DSC_GH_SEEDING + DSC_END );
 
         btnFormatPDF = new JButton( "Export as PDF" );
         btnFormatCSV = new JButton( "Export as CSV" );
         btnFormatPDF.addActionListener(this);
         btnFormatCSV.addActionListener(this);
 
+        jplTodo = new JPanel( new MigLayout( "align center, gapy 0px!, insets 2px" ));
+        jplTodo.setBorder(BorderFactory.createEmptyBorder());
 
-        LayoutAssist.addLabelLeftAlign(jplTodo, 0, 0, 4, 1, new JLabel("Create list from crop plan:"));
-        LayoutAssist.addComboBox(jplTodo, 1, 1, cmbPlanName);
+        jplTodo.add( new JLabel("Create list from crop plan:"), "span 2, split 2" );
+        jplTodo.add( cmbPlanName, "wrap" );
 
-        LayoutAssist.addLabelLeftAlign(jplTodo, 0, 2, 4, 1, new JLabel("For time period:"));
-        LayoutAssist.addButton(jplTodo, 1, 3, rdoDateThisWeek);
-        LayoutAssist.addButton(jplTodo, 1, 4, rdoDateNextWeek);
-        LayoutAssist.addButton(jplTodo, 1, 5, rdoDateThisNextWeek);
-        LayoutAssist.addButton(jplTodo, 1, 6, rdoDateOther);
-        LayoutAssist.addSubPanel(jplTodo, 2, 6, 1, 1, dtcDateOtherStart);
-        LayoutAssist.addSubPanel(jplTodo, 3, 6, 1, 1, dtcDateOtherEnd);
+        jplTodo.add( new JLabel("For time period:") );
+        jplTodo.add( rdoDateThisWeek, "wrap" );
+        jplTodo.add( rdoDateNextWeek, "skip 1, wrap" );
+        jplTodo.add( rdoDateThisNextWeek, "skip 1, span 2, wrap" );
+        jplTodo.add( rdoDateOther, "skip 1, span 4, split 4" );
+        jplTodo.add( dtcDateOtherStart );
+        jplTodo.add( dtcDateOtherEnd, "wrap" );
 
-        LayoutAssist.addLabelLeftAlign(jplTodo, 0, 7, new JLabel("Include:"));
-        LayoutAssist.addLabelLeftAlign(jplTodo, 1, 8, 2, 1, new JLabel("Uncompleted plantings from:"));
-        LayoutAssist.addButton(jplTodo, 2, 9, rdoUncompThisWeek);
-        LayoutAssist.addButton(jplTodo, 2, 10, rdoUncompLastWeek);
-        LayoutAssist.addButton(jplTodo, 2, 11, rdoUncompAll);
+        jplTodo.add( new JLabel("Include uncompleted plantings from:"), "span 2, wrap" );
+        jplTodo.add( rdoUncompThisWeek, "skip 1, span 2, wrap" );
+        jplTodo.add( rdoUncompLastWeek, "skip 1, span 2, wrap" );
+        jplTodo.add( rdoUncompAll, "skip 1, span 2, wrap" );
 
-        LayoutAssist.addLabelLeftAlign(jplTodo, 0, 12, 4, 1, new JLabel("Export files to directory/folder:"));
-        LayoutAssist.addLabelLeftAlign(jplTodo, 1, 13, 3, 1, lblDirectory);
-        LayoutAssist.addButton(jplTodo, 1, 14, btnSelectFile);
+        jplTodo.add( new JSeparator(), "growx, span 3, wrap" );
 
-        LayoutAssist.addLabelLeftAlign(jplTodo, 0, 15, new JLabel("Export:"));
-        LayoutAssist.addComboBox(jplTodo, 1, 16, cmbWhatToExport );
-        LayoutAssist.addComboBox(jplTodo, 1, 16, 2, cmbWhatToExport );
+        jplTodo.add( new JLabel("Export files to directory/folder:"), "span 2, wrap" );
+        jplTodo.add( lblDirectory, "span 3, align right, wrap" );
+        jplTodo.add( btnSelectFile, "span 3, align right, wrap" );
 
-        LayoutAssist.addButton(jplTodo, 1, 17, btnFormatPDF);
-//        LayoutAssist.addLabelLeftAlign( jplTodo, 2, 17, new JLabel("(for printing)"));
-        LayoutAssist.addButton(jplTodo, 1, 18, btnFormatCSV);
-//        LayoutAssist.addLabelLeftAlign( jplTodo, 2, 18, new JLabel("(for loading into a spreadsheet)"));
+        jplTodo.add( new JSeparator(), "growx, span 3, wrap" );
+
+        jplTodo.add( new JLabel("Export:") );
+        jplTodo.add( cmbWhatToExport, "span 2, wrap" );
+        jplTodo.add( btnFormatPDF, "skip 1");
+        jplTodo.add( lblExportDesc, "span 2 2, align center center, wrap" );
+        jplTodo.add( btnFormatCSV, "skip 1, wrap");
 
     }
     // </editor-fold>
@@ -686,28 +699,6 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           new SortedList<CPSPlanting>( singleCropVarList,
                                        new CPSPlantingComparator(
                                          CPSDataModelConstants.PROP_DATE_HARVEST ));
-//        Comparator compHarvestEnd   = new Comparator<CPSPlanting>() {
-//
-//                Calendar compareCal = Calendar.getInstance();
-//
-//                public int compare( CPSPlanting o1, CPSPlanting o2) {
-//                  Date d1 = o1.getDateToHarvest();
-//                  Date d2 = o2.getDateToHarvest();
-//
-//                  compareCal.setTime( d1 );
-//                  compareCal.add( Calendar.WEEK_OF_YEAR,
-//                                  o1.getYieldNumWeeks() );
-//                  d1 = compareCal.getTime();
-//
-//                  compareCal.setTime( d2 );
-//                  compareCal.add( Calendar.WEEK_OF_YEAR,
-//                                  o2.getYieldNumWeeks() );
-//                  d2 = compareCal.getTime();
-//
-//                  // NOTE the -1 * to reverse the sort
-//                  return -1 * d1.compareTo(d2);
-//                }
-//              };
 
         // now loop while we have data in our master filtered list
         while ( dataFiltered.size() > 0 ) {
@@ -1018,6 +1009,7 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
 
     }
 
+    // for ItemListener
     public void itemStateChanged(ItemEvent arg0) {
 
         Object source = arg0.getSource();
@@ -1049,6 +1041,25 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         } else if (source == rdoDateOther) {
             dtcDateOtherEnd.setEnabled(true);
             dtcDateOtherStart.setEnabled(true);
+        } else if ( source == cmbWhatToExport ) {
+
+          String s = (String) cmbWhatToExport.getSelectedItem();
+          String t = "";
+          if ( s.equals( TL_GH_SEEDING ) )
+            t = DSC_GH_SEEDING;
+          else if ( s.equals( TL_FIELD_PLANTING ) )
+            t = DSC_FIELD_PLANTING;
+          else if ( s.equals( TL_ALL_PLANTING_LISTS ) )
+            t = DSC_ALL_PLANTING_LISTS;
+          else if ( s.equals( TL_ALL_PLANTINGS ) )
+            t = DSC_ALL_PLANTINGS;
+          else if ( s.equals( TL_SEED_ORDER_WORKSHEET ) )
+            t = DSC_SEED_ORDER_WORKSHEET;
+          else if ( s.equals( TL_HARVEST_AVAILABILITY ) )
+            t = DSC_HARVEST_AVAILABILITY;
+          
+          lblExportDesc.setText( DSC_START + t + DSC_END );
+
         }
 
     }
