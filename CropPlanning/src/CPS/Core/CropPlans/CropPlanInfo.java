@@ -198,7 +198,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        chkIgnore.setInitialState( displayedPlanting.getIgnore(),
                                   displayedPlanting.getIgnoreState() );
 
-       if ( displayedPlanting.isDirectSeeded().booleanValue() ) {
+       if ( displayedPlanting.isDirectSeeded() ) {
           boolean d = rdoDS.isEnabled();
           rdoDS.setEnabled( true );
           bgSeedMethod.setInitialSelection( rdoDS, true, displayedPlanting.getDirectSeededState() );
@@ -268,13 +268,13 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          // single selection
          getDataSource().updatePlanting( selectedPlan, currentlyDisplayed );
 
-         CPSPlanting p = currentlyDisplayed;
+         CPSPlanting p; // = currentlyDisplayed;
          // do we need to get updated planting info to
          // make sure we have the best inheritance data
          //if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() )
            p = getDataSource().getPlanting( selectedPlan, diff.getID() );
 
-         System.out.println(p);
+//         System.out.println(p);
          // now make sure
          updateRecordInMasterView(p);
          selectRecordsInMasterView( Arrays.asList( p.getID() ) );
@@ -290,9 +290,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
     * currently displayed
     */
     public CPSPlanting asPlanting() {
-      
+
+      // make a copy of the displayed planting
        CPSPlanting changes = new CPSPlanting();
        changes.merge( displayedPlanting );
+       System.out.println(changes);
 
        changes.setID( displayedPlanting.getID() );
       
@@ -339,8 +341,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        if ( chkDoneHarvest.hasChanged() ) changes.setDoneHarvest(  chkDoneHarvest.isSelected() );
        if ( chkIgnore.hasChanged() )      changes.setIgnore(       chkIgnore.isSelected() );
 
-//       if ( rdoDS.hasChanged() || rdoTP.hasChanged() ) p.setDirectSeeded( rdoDS.isSelected() );
-       changes.setDirectSeeded( rdoDS.isSelected() );
+       if ( rdoDS.hasChanged() || rdoTP.hasChanged() ) changes.setDirectSeeded( rdoDS.isSelected() );
+//       changes.setDirectSeeded( rdoDS.isSelected() );
        
        if ( tfldMatAdjust.hasChanged() ) changes.setMatAdjust( tfldMatAdjust.getText() );
        if ( tfldTimeToTP.hasChanged() ) changes.setTimeToTP( tfldTimeToTP.getText() );
@@ -471,7 +473,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       JPanel columnOne = new JPanel( new MigLayout( migPanelDefaults ));
       JPanel columnTwo = new JPanel( new MigLayout( migPanelDefaults ));
       JPanel columnThree = new JPanel( new MigLayout( migPanelDefaults ));
-      JPanel columnFour = new JPanel( new MigLayout( migPanelDefaults ));
+      JPanel columnFour;
 
       JLabel tempLabel;
 
@@ -978,7 +980,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = false;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantString(),
                                        displayedPlanting.getDateToPlantState() );
-         if ( displayedPlanting.isTransplanted().booleanValue() )
+         if ( displayedPlanting.isTransplanted() )
             tfldDateTP.setInitialText( displayedPlanting.getDateToTPString(),
                                        displayedPlanting.getDateToTPState() );
          else
@@ -991,7 +993,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = true;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantActualString(),
                                        displayedPlanting.getDateToPlantActualState() );
-         if ( displayedPlanting.isTransplanted().booleanValue() )
+         if ( displayedPlanting.isTransplanted() )
             tfldDateTP.setInitialText( displayedPlanting.getDateToTPActualString(),
                                        displayedPlanting.getDateToTPActualState() );
          else
@@ -1004,7 +1006,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          enableCBox = false;
          tfldDatePlant.setInitialText( displayedPlanting.getDateToPlantPlannedString(),
                                        displayedPlanting.getDateToPlantPlannedState() );
-         if ( displayedPlanting.isTransplanted().booleanValue() )
+         if ( displayedPlanting.isTransplanted() )
             tfldDateTP.setInitialText( displayedPlanting.getDateToTPPlannedString(),
                                        displayedPlanting.getDateToTPPlannedState() );
          else
@@ -1029,21 +1031,21 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          CropPlans.debug( "CPInfo", "data unavailable, not displaying DS/TP values" );
          return;
       }
-      
-      CPSPlanting tempPlanting = displayedPlanting;
-      
-      tempPlanting.setDirectSeeded( rdoDS.isSelected() );
 
-      tfldMatAdjust.setInitialText( tempPlanting.getMatAdjustString(),
-                                    tempPlanting.getMatAdjustState() );
-      tfldRowsPerBed.setInitialText( tempPlanting.getRowsPerBedString(),
-                                     tempPlanting.getRowsPerBedState() );
-      tfldBetRowSpace.setInitialText( tempPlanting.getRowSpacingString(),
-                                      tempPlanting.getRowSpacingState() );
-      tarePlantingNotesCrop.setInitialText( tempPlanting.getPlantingNotesInherited(),
-                                            tempPlanting.getPlantingNotesInheritedState() );
+      boolean initState = displayedPlanting.isDirectSeeded();
+      
+      displayedPlanting.setDirectSeeded( rdoDS.isSelected() );
+      tfldMatAdjust.setInitialText( displayedPlanting.getMatAdjustString(),
+                                    displayedPlanting.getMatAdjustState() );
+      tfldRowsPerBed.setInitialText( displayedPlanting.getRowsPerBedString(),
+                                     displayedPlanting.getRowsPerBedState() );
+      tfldBetRowSpace.setInitialText( displayedPlanting.getRowSpacingString(),
+                                      displayedPlanting.getRowSpacingState() );
+      tarePlantingNotesCrop.setInitialText( displayedPlanting.getPlantingNotesInherited(),
+                                            displayedPlanting.getPlantingNotesInheritedState() );
       tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
                                    displayedPlanting.getSeedsPerState() );
+      displayedPlanting.setDirectSeeded( initState );
       
    }
 

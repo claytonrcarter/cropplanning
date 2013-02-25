@@ -31,6 +31,7 @@ package CPS.Data;
 import CPS.Data.CPSDatum.CPSDatumState;
 import CPS.Module.CPSDataModelConstants;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import net.sf.persist.annotations.NoColumn;
@@ -755,6 +756,24 @@ public final class CPSPlanting extends CPSRecord {
    public CPSDatumState getDateToHarvestActualState() { return getStateOf( PROP_DATE_HARVEST_ACTUAL ); }
    public void setDateToHarvestActual( Date d ) { set( date_harvest_actual, d ); }
    public void setDateToHarvestActual( String d ) { setDateToHarvestActual( parseDate( d ) ); }
+
+   /** Convenience method: this is the same things as (@link getDateToHarvest} */
+   public Date getDateHarvestStart() { return getDateToHarvest(); }
+   /** @return getDateToHarvest + getYieldNumWeeks */
+   public Date getDateHarvestEnd() {
+
+     Date d = getDateHarvestStart();
+     int w = getYieldNumWeeks();
+
+     if ( w > 0 ) {
+       Calendar c = Calendar.getInstance();
+       c.setTime(d);
+       c.add( Calendar.WEEK_OF_YEAR, w );
+       d = c.getTime();
+     }
+
+     return d;
+   }
 
    /* *********************************************************************************************/
    /* Status Booleans */

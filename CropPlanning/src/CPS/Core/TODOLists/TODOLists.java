@@ -24,6 +24,7 @@ package CPS.Core.TODOLists;
 
 import CPS.CSV.CSV;
 import CPS.Data.CPSComplexPlantingFilter;
+import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSPlanting;
 import CPS.Data.CPSPlantingComparator;
 import CPS.Module.CPSDataModel;
@@ -679,36 +680,34 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
         // from the stats being calculated
         BasicEventList<CPSPlanting> availabilityList = new BasicEventList<CPSPlanting>();
 
-        // now create the comparators to use to sort the lists by when harvest
-        // starts and when it ends (reversed, so last harvested comes first)
-        Comparator compHarvestStart = new CPSPlantingComparator(CPSDataModelConstants.PROP_DATE_HARVEST );
-        Comparator compHarvestEnd   = new Comparator<CPSPlanting>() {
-
-                Calendar compareCal = Calendar.getInstance();
-
-                public int compare( CPSPlanting o1, CPSPlanting o2) {
-                  Date d1 = o1.getDateToHarvest();
-                  Date d2 = o2.getDateToHarvest();
-
-                  compareCal.setTime( d1 );
-                  compareCal.add( Calendar.WEEK_OF_YEAR,
-                                  o1.getYieldNumWeeks() );
-                  d1 = compareCal.getTime();
-
-                  compareCal.setTime( d2 );
-                  compareCal.add( Calendar.WEEK_OF_YEAR,
-                                  o2.getYieldNumWeeks() );
-                  d2 = compareCal.getTime();
-
-                  // NOTE the -1 * to reverse the sort
-                  return -1 * d1.compareTo(d2);
-                }
-              };
         // now create a sorted list based on our filtered single crop/var list
         // and set it to initially sort on harvest start date
         SortedList<CPSPlanting> singleListSorted =
-                new SortedList<CPSPlanting>( singleCropVarList, compHarvestStart );
-        Calendar cal = Calendar.getInstance();
+          new SortedList<CPSPlanting>( singleCropVarList,
+                                       new CPSPlantingComparator(
+                                         CPSDataModelConstants.PROP_DATE_HARVEST ));
+//        Comparator compHarvestEnd   = new Comparator<CPSPlanting>() {
+//
+//                Calendar compareCal = Calendar.getInstance();
+//
+//                public int compare( CPSPlanting o1, CPSPlanting o2) {
+//                  Date d1 = o1.getDateToHarvest();
+//                  Date d2 = o2.getDateToHarvest();
+//
+//                  compareCal.setTime( d1 );
+//                  compareCal.add( Calendar.WEEK_OF_YEAR,
+//                                  o1.getYieldNumWeeks() );
+//                  d1 = compareCal.getTime();
+//
+//                  compareCal.setTime( d2 );
+//                  compareCal.add( Calendar.WEEK_OF_YEAR,
+//                                  o2.getYieldNumWeeks() );
+//                  d2 = compareCal.getTime();
+//
+//                  // NOTE the -1 * to reverse the sort
+//                  return -1 * d1.compareTo(d2);
+//                }
+//              };
 
         // now loop while we have data in our master filtered list
         while ( dataFiltered.size() > 0 ) {
@@ -722,31 +721,45 @@ public class TODOLists extends CPSDisplayableDataUserModule implements ActionLis
           CropVarMatcher cvm = new CropVarMatcher(p);
           singleCropVarList.setMatcher( cvm );
 
-          // now sort the filtered single crop/var list on harvest date
-          singleListSorted.setComparator( compHarvestStart );
-
           // TODO should also match on when a Crop+Var has a different seed count or weight unit
 
-          // create new empty planting to represent our summary
+          // create new empty planting to represent our computations
           // and populate it with data from this crop/var AND
           // the summary calculations
           CPSPlanting s = new CPSPlanting();
           s.setCropName( p.getCropName() );
           s.setVarietyName( p.getVarietyName() );
-          // these are dirty hacks
           // use MatDays to hold the # of plantings of this crop/var
           s.setMaturityDays( singleCropVarList.size() );
-          // use Planting Date to hold date when harvest starts
-          s.setDateToPlantActual( singleListSorted.get(0).getDateToHarvest() );
 
+          String str = "";
+          boolean inAHarvestWindow = false;
 
-          // now sort the list based on harvest date + num of weeks to yield
-          singleListSorted.setComparator( compHarvestEnd );
-          cal.setTime( singleListSorted.get(0).getDateToHarvest() );
-          cal.add( Calendar.WEEK_OF_YEAR,
-                   singleListSorted.get(0).getYieldNumWeeks() );
-          // use Harvest Date to hold date when harvest ends
-          s.setDateToHarvestActual( cal.getTime() );
+          for ( int i = 0; i < singleListSorted.size(); i++ ) {
+
+            if ( ! inAHarvestWindow ) {
+              if ( ! str.equals("") )
+                str += ", ";
+              str += CPSDateValidator.format( singleListSorted.get(i).getDateHarvestStart(),
+                                              CPSDateValidator.DATE_FORMAT_MON_DAY )
+                     + " - ";
+              inAHarvestWindow = true;
+            }
+
+            if ( i == singleListSorted.size() - 1 ||
+                 singleListSorted.get(i)
+                                 .getDateHarvestEnd()
+                                 .before( singleListSorted.get(i+1)
+                                                          .getDateHarvestStart() )) {
+              str += CPSDateValidator.format( singleListSorted.get(i).getDateHarvestEnd(),
+                                              CPSDateValidator.DATE_FORMAT_MON_DAY );
+              inAHarvestWindow = false;
+            }
+
+          }
+
+          // use custom 1 to hold our availabilty string
+          s.setCustomField1(str);
           
           // now save this newly manufactured "planting"
           availabilityList.add(s);

@@ -4,15 +4,14 @@
  */
 package CPS.Core.TODOLists;
 
-import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSPlanting;
-import ca.odell.glazedlists.gui.TableFormat;
+import CPS.UI.Modules.CPSAdvancedTableFormat;
 
 /**
  *
  * @author crcarter
  */
-public class AvailabilityTableFormat implements TableFormat<CPSPlanting> {
+public class AvailabilityTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
   public int getColumnCount() { return 4; }
 
@@ -36,15 +35,31 @@ public class AvailabilityTableFormat implements TableFormat<CPSPlanting> {
       case 0: return p.getCropName();
       case 1: return p.getVarietyName();
       case 2: return p.getMaturityDays();
-      case 3: return CPSDateValidator.format( p.getDateToPlantActual() ,
-                                              CPSDateValidator.DATE_FORMAT_MON_DAY )
-                     + " - " +
-                    CPSDateValidator.format( p.getDateToHarvestActual(),
-                                             CPSDateValidator.DATE_FORMAT_MON_DAY );
+      case 3: return p.getCustomField1();
       default: return "";
     }
 
   }
+
+  @Override
+  public boolean isDefaultColumn(int colNum) { return true; }
+
+  @Override
+  public int getDefaultSortColumn() { return 0; }
+
+  @Override
+  public int getPropNumForColumn(int colNum) {
+    switch ( colNum ) {
+      case 0: return CPSPlanting.PROP_CROP_NAME;
+      case 1: return CPSPlanting.PROP_VAR_NAME;
+      case 2: return CPSPlanting.PROP_MAT_ADJUST;
+      case 3: return CPSPlanting.PROP_CUSTOM1;
+      default: return CPSPlanting.PROP_ID;
+    }
+  }
+
+  @Override
+  public CPSPlanting getBlankRecord() { return new CPSPlanting(); }
 
 
 
