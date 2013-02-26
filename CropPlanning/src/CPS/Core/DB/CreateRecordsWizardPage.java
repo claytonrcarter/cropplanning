@@ -1,7 +1,5 @@
 package CPS.Core.DB;
 
-import CPS.Data.CPSCrop;
-import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSWizardPage;
@@ -93,31 +91,6 @@ class NewPlanWizardPage extends CPSWizardPage {
          dm.createCropPlan( tfldPlanName.getText(),
                             tempCal.get( Calendar.YEAR ),
                             "" );
-
-         CPSCrop c = new CPSCrop();
-         c.setCropName("Cucumbers");
-         c.setMaturityDays(50);
-         c.setTransplanted(Boolean.TRUE);
-         c.setTPRowsPerBed(1);
-         c.setTPSpaceInRow(24);
-
-         dm.createCrop(c);
-
-         c = new CPSCrop();
-         c.setCropName("Cucumbers");
-         c.setVarietyName("Marketmore");
-         c.setMaturityDays(55);
-
-         dm.createCrop(c);
-
-         CPSPlanting p = new CPSPlanting();
-         p.setCropName(c.getCropName());
-         p.setVarietyName(c.getVarietyName());
-         p.setDateToTPPlanned("6/1/2013");
-         p.setBedsToPlant(1);
-
-         dm.createPlanting( tfldPlanName.getText(), p );
-
       }
    }
 
