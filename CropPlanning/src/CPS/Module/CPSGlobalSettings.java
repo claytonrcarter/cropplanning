@@ -24,11 +24,9 @@
 package CPS.Module;
 
 import CPS.Data.CPSDateValidator;
-import CPS.UI.Swing.LayoutAssist;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -41,10 +39,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.netbeans.spi.wizard.WizardPage;
 
 
 
@@ -394,23 +392,22 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
         int r = 0;
 
-        LayoutAssist.addLabel(     configPanel, 0, r,   new JLabel( "Farm Name" ) );
-        LayoutAssist.addTextField( configPanel, 1, r++, tfldFarmName );
+        configPanel.add( new JLabel( "Farm Name" ) );
+        configPanel.add( tfldFarmName, "wrap" );
         
        tfldRowOrBedLength.setToolTipText( "Default row or bed length which will be used when none is specifed." );
-       LayoutAssist.addLabel(     configPanel, 0, r,   new JLabel( "Default Row or Bed Length:" ) );
-       LayoutAssist.addTextField( configPanel, 1, r++, tfldRowOrBedLength );
+       configPanel.add( new JLabel( "Default Row or Bed Length:" ) );
+       configPanel.add( tfldRowOrBedLength, "wrap" );
        
        tfldFudge.setToolTipText( "Percetage value (0-100) to add to some calculations to provide a \"margin of error\"." );
-       LayoutAssist.addLabel(     configPanel, 0, r,   new JLabel( "Fudge factor (%)" ));
-       LayoutAssist.addTextField( configPanel, 1, r++, tfldFudge );
+       configPanel.add( new JLabel( "Fudge factor (%)" ));
+       configPanel.add( tfldFudge, "wrap" );
 
-        LayoutAssist.addComponent( configPanel, 0, r++, 2, 1, chkCheckUpdates,
-                                   GridBagConstraints.CENTER );
+       configPanel.add( chkCheckUpdates, "span 2, align center, wrap" );
 
-       LayoutAssist.addLabelLeftAlign( configPanel, 0, r++, new JLabel( "Output Directory:" ) );
-       LayoutAssist.addLabelLeftAlign( configPanel, 0, r++, 2, 1, lblPrefOutputDir );
-       LayoutAssist.addButton( configPanel,    1, 7, btnPrefOutputDir );
+       configPanel.add( new JLabel( "Output Directory:" ), "align left, wrap" );
+       configPanel.add( lblPrefOutputDir, "span 2, align left, wrap" );
+       configPanel.add( btnPrefOutputDir, "skip 1, align right, wrap" );
 
     }
 
@@ -606,5 +603,17 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
    }
 
    public static String getDescription () { return "General Settings"; }
+
+
+
+   /* for testing only */
+   public static void main( String[] args ) {
+     JFrame frame = new JFrame();
+     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+     frame.setContentPane( new CPSGlobalSettings().getConfigurationDisplay() );
+     frame.setTitle( "Test Layout" );
+     frame.pack();
+     frame.setVisible(true);
+   }
 }
 
