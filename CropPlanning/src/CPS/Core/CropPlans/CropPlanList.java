@@ -388,9 +388,12 @@ class CropPlanList extends CPSMasterView implements ActionListener,
                s += "/Beds:" + t;
            
            t = summaryRowFt.getValue().toString();
-           if ( ! t.equals("") ) 
+           if ( ! t.equals("") ) {
+             if ( CPSGlobalSettings.useMetric() )
+               s += "/RowMeters:" + t;
+             else
                s += "/RowFeet:" + t;
-           
+           }
 //       s += "/Plants:" + p.getPlantsNeededString();
            
            t = summaryFlats.getValue().toString();

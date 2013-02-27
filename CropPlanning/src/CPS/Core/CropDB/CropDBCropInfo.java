@@ -23,6 +23,7 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.*;
+import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.*;
 import CPS.UI.Swing.*;
 import java.awt.event.ActionEvent;
@@ -322,13 +323,16 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplPlanting.add( tfldTPRowsPerBed, "wrap" );
 
       lblDSSpace = new JLabel( "Row Spacing" );
+      lblDSSpace.setToolTipText("Spacing between rows");
       jplPlanting.add( lblDSSpace, "align right" );
       jplPlanting.add( tfldDSSpaceBetRows, "" );
       lblTPSpaceRow = new JLabel( "Row Spacing" );
+      lblTPSpaceRow.setToolTipText("Spacing between rows");
       jplPlanting.add( lblTPSpaceRow, "align right, skip 1" );
       jplPlanting.add( tfldTPSpaceBetRows, "wrap" );
 
       lblTPSpace = new JLabel( "Plant Spacing" );
+      lblTPSpace.setToolTipText( "Spacing between plants in the row (in. or cm.)" );
       jplPlanting.add( lblTPSpace, "skip 2, align right" );
       jplPlanting.add( tfldTPSpaceInRow, "wrap" );
 
@@ -368,14 +372,19 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       
       /* unit, per foot, weeks, per week, value */
       tempLabel = new JLabel( "Yield Units" );
+      tempLabel.setToolTipText( "e.g. bunches, heads, lbs, kgs, etc" );
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldUnits, "wrap" );
-      
-      tempLabel = new JLabel( "Total Yield/Ft" );
+
+      if ( CPSGlobalSettings.useMetric() )
+        tempLabel = new JLabel( "Total Yield/Meter" );
+      else
+        tempLabel = new JLabel( "Total Yield/Ft" );
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldPerFoot, "wrap" );
       
       tempLabel = new JLabel( "Value/Unit" );
+      tempLabel.setToolTipText("How much is each unit worth?");
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldUnitValue, "wrap" );
 
@@ -395,7 +404,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tempLabel.setToolTipText("Seeds/Oz or Seeds/g, for example");
       jplSeeds.add( tfldSeedsPerUnit, "wrap" );
 
-      lblSeedDS = new JLabel( "Seeds/Ft (DS)" );
+      if ( CPSGlobalSettings.useMetric() )
+        lblSeedDS = new JLabel( "Seeds/Meter (DS)" );
+      else
+        lblSeedDS = new JLabel( "Seeds/Ft (DS)" );
       jplSeeds.add( lblSeedDS, "align right" );
       jplSeeds.add( tfldSeedsPerDS, "wrap" );
 

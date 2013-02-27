@@ -55,8 +55,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     public static final String PREF_BEDS = "Beds";
     public static final String PREF_ROWS = "Rows";
-    public static final String PREF_FEET = "Feet";
-    public static final String PREF_METERS = "Meters";
+    public static final String PREF_IMPERIAL = "Imperial (ft/in)";
+    public static final String PREF_SI = "Metric (m/cm)";
        
     private static Class thisClass = CPSGlobalSettings.class;
    
@@ -71,10 +71,10 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private JTextField tfldRowOrBedLength;
     private static int prefRowOrBedLengthDefault = 100;
 
-    private static final String KEY_UNITOFLENGTH = "LENGTH_UNIT";
-    private JComboBox cmbxPrefUnitLength;
-    private String[] prefUnitLengthOptions = new String[]{ PREF_FEET, PREF_METERS };
-    private static String prefUnitLengthDefault = PREF_FEET;
+    private static final String KEY_MEASUREMENT_SYSTEM = "MEASUREMENT_SYSTEM";
+    private JComboBox cmbxPrefMeasurementSystem;
+    private String[] prefMeasurementSystemOptions = new String[]{ PREF_IMPERIAL, PREF_SI };
+    private static String prefMeasurementSystemDefault = PREF_IMPERIAL;
  
     private static final String KEY_HIGHLIGHTFIELDS = "HIGHLIGHT_FIELDS";
     private JCheckBox ckbxPrefHighlight;
@@ -148,8 +148,17 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         return getGlobalPreferences().getBoolean( KEY_HIGHLIGHTFIELDS, prefHightlightDefault );
     }
 
+    /** @returns one of either CPSGlobalSettings.PREF_IMPERIAL or CPSGlobalSettings.PREF_SI
+     */
     public static String getMeasurementUnit() {
-        return getGlobalPreferences().get( KEY_UNITOFLENGTH, prefUnitLengthDefault );
+        return getGlobalPreferences().get( KEY_MEASUREMENT_SYSTEM, prefMeasurementSystemDefault );
+    }
+    
+    /**
+     * I'm lazy and this is a convenience method for getMeasurementUnit().equals( PREF_SI );
+     */
+    public static boolean useMetric() {
+      return getMeasurementUnit().equals( PREF_SI );
     }
 
     public static String getDocumentOutputDir() {
@@ -305,7 +314,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
           buildConfigPanel();
         cmbxPrefRowOrBed.setSelectedItem( getRowsOrBeds() );
         tfldRowOrBedLength.setText( "" + getBedLength() );
-        cmbxPrefUnitLength.setSelectedItem( getMeasurementUnit() );
+        cmbxPrefMeasurementSystem.setSelectedItem( getMeasurementUnit() );
         ckbxPrefHighlight.setSelected( getHighlightFields() );
         lblPrefOutputDir.setText( getOutputDir() );
         tfldFarmName.setText( getFarmName() );
@@ -322,7 +331,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
           buildConfigPanel();
         cmbxPrefRowOrBed.setSelectedItem( prefRowOrBedDefault );
         tfldRowOrBedLength.setText( "" + prefRowOrBedLengthDefault );
-        cmbxPrefUnitLength.setSelectedItem( prefUnitLengthDefault );
+        cmbxPrefMeasurementSystem.setSelectedItem( prefMeasurementSystemDefault );
         ckbxPrefHighlight.setSelected( prefHightlightDefault );
         lblPrefOutputDir = new JLabel( flchPrefOutputDir.getFileSystemView().getDefaultDirectory().getAbsolutePath() );
         tfldFarmName.setText( "" );
@@ -339,7 +348,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         getGlobalPreferences().put( KEY_ROWSORBEDS, cmbxPrefRowOrBed.getSelectedItem().toString() );
         // TODO check this for improper input
         setBedLength( Integer.parseInt( tfldRowOrBedLength.getText() ) );
-        getGlobalPreferences().put( KEY_UNITOFLENGTH, cmbxPrefUnitLength.getSelectedItem().toString() );
+        getGlobalPreferences().put( KEY_MEASUREMENT_SYSTEM, cmbxPrefMeasurementSystem.getSelectedItem().toString() );
         getGlobalPreferences().putBoolean( KEY_HIGHLIGHTFIELDS, ckbxPrefHighlight.isSelected() );
         setOutputDir( lblPrefOutputDir.getText() );
         setFarmName( tfldFarmName.getText() );
@@ -348,6 +357,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         getGlobalPreferences().put( KEY_FUDGE, "" + Float.parseFloat( tfldFudge.getText() ) / 100 );
         setDebug( chkDebug.isSelected() );
         setCheckForUpdates( chkCheckUpdates.isSelected() );
+
     }
 
 
@@ -360,7 +370,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     tfldRowOrBedLength = new JTextField( 5 );
 
-    cmbxPrefUnitLength = new JComboBox( prefUnitLengthOptions );
+    cmbxPrefMeasurementSystem = new JComboBox( prefMeasurementSystemOptions );
 
     ckbxPrefHighlight = new JCheckBox();
 
@@ -394,10 +404,14 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
         configPanel.add( new JLabel( "Farm Name" ) );
         configPanel.add( tfldFarmName, "wrap" );
-        
-       tfldRowOrBedLength.setToolTipText( "Default row or bed length which will be used when none is specifed." );
-       configPanel.add( new JLabel( "Default Row or Bed Length:" ) );
+
+       JLabel tempLabel = new JLabel( "Default Row or Bed Length:" );
+       tempLabel.setToolTipText( "Default row or bed length in feet or meters." );
+       configPanel.add( tempLabel );
        configPanel.add( tfldRowOrBedLength, "wrap" );
+
+       configPanel.add( new JLabel( "Measurement Units:" ) );
+       configPanel.add( cmbxPrefMeasurementSystem, "wrap" );
        
        tfldFudge.setToolTipText( "Percetage value (0-100) to add to some calculations to provide a \"margin of error\"." );
        configPanel.add( new JLabel( "Fudge factor (%)" ));
@@ -608,6 +622,9 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
 
    /* for testing only */
    public static void main( String[] args ) {
+     new CPSGlobalSettings().getGlobalPreferences().put( "MEASUREMENT_SYSTEM",
+                                                         CPSGlobalSettings.PREF_SI );
+
      JFrame frame = new JFrame();
      frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
      frame.setContentPane( new CPSGlobalSettings().getConfigurationDisplay() );
