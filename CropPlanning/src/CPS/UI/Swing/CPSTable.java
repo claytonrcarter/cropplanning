@@ -76,8 +76,6 @@ public class CPSTable extends JTable {
        this.setColumnSelectionAllowed( false );
        this.setRowSelectionAllowed( true );
        // allow multiple rows to be selected
-//       this.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-//       this.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
        this.getTableHeader().setReorderingAllowed(false);
 
         dateValidator = new CPSDateValidator();
@@ -107,8 +105,6 @@ public class CPSTable extends JTable {
         
          // install custom table renderes and editors
        for ( int i = 0 ; i < getColumnModel().getColumnCount() ; i++ ) {
-
-//          System.out.println("CPSTab: Column " + getColumnName(i) + " is a " + getColumnClass(i).getName() );
 
           // install date renderers and editors on all Date columns
           if ( getColumnClass( i ).equals( new Date().getClass() ) ) {
@@ -157,7 +153,6 @@ public class CPSTable extends JTable {
     
     public void setColumnNamesAndToolTips( List<String[]> prettyNames ) {
         ColumnHeaderToolTips tips = new ColumnHeaderToolTips();
-//        ArrayList<String[]> prettyNames = getColumnPrettyNameMap();
         int COLNAME = 0;
         int PRETTYNAME = 1;
         int EDITABLE = 2;
@@ -166,7 +161,7 @@ public class CPSTable extends JTable {
         for ( int c = 0; c < getColumnCount(); c++ ) {
             String colName = getColumnModel().getColumn( c ).getHeaderValue().toString().toLowerCase();
             String s = null;
-            Boolean editable = new Boolean( true ); // default to true
+            Boolean editable = Boolean.TRUE; // default to true
             
             for ( int l = 0; l < prettyNames.size(); l++ )
                 if ( colName.equals( prettyNames.get(l)[COLNAME]) ) {
@@ -234,7 +229,6 @@ public class CPSTable extends JTable {
     }
     
     private class FloatCellRenderer extends JLabel implements TableCellRenderer {
-//    private class FloatCellRenderer extends InsetRenderer implements TableCellRenderer {
         
         public FloatCellRenderer() {
             super();
@@ -259,16 +253,11 @@ public class CPSTable extends JTable {
            else
               setText( value.toString() );
            
-//            setToolTipText((String)value);
-            
-//            shadeComponentInRow( this, rowIndex );
-            
             return this;
         }
     }
     
     private class DateCellRenderer extends InsetRenderer implements TableCellRenderer {
-//    private class DateCellRenderer extends JLabel implements TableCellRenderer {
         
         public DateCellRenderer() {
             super();
@@ -285,10 +274,7 @@ public class CPSTable extends JTable {
             // Configure the component with the specified value
             // in case, we display a formated string
             setText( CPSDateValidator.format( (Date) value ));
-//            setToolTipText((String)value);
-            
-//            shadeComponentInRow( this, rowIndex );
-            
+
             return this;
         }
         

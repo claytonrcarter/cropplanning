@@ -114,6 +114,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        buildMainPanel( null );
 
        selectModel.setSelectionMode( ListSelection.MULTIPLE_INTERVAL_SELECTION );
+
+       masterListSorted.setMode(SortedList.AVOID_MOVING_ELEMENTS);
     }
     
     public int init() { return 0; }
@@ -221,7 +223,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
     }
 
-
+    protected abstract void updateRecordInDB( CPSRecord r );
 
     protected void updateRecord( CPSRecord r ) {
 
@@ -291,35 +293,38 @@ public abstract class CPSMasterView extends CPSDataModelUser
     }
 
     /**
-     * Selects a single row in the table.
+     * Selects a single row in the table.  If recordID doesn't exist in the
+     * displayed record, unselects everything and clears detail display.
      * @param recordID the record id (not row number) of the item to select
      */
     private void setSelection( int recordID ) {
-       
-       setSelection( Arrays.asList( recordID ));
-          
+       setSelection( Arrays.asList( recordID ));          
     }
     private void setSelection( List<Integer> ids ) {
 
-      masterTable.clearSelection();
+      ListSelectionModel lsm = masterTable.getSelectionModel();
+      lsm.clearSelection();
 
       int s = 0;
       int i = 0;
       for ( CPSRecord r : masterListSorted ) {
         if ( ids.contains( r.getID() )) {
-          selectModel.addSelectionInterval( i, i );
+          lsm.addSelectionInterval( i, i );
           s++;
-          if ( ids.size() == s )
+          if ( ids.size() == s ) // break if we've selected them all
             break;
         }
         i++; // count rows
       }
-      
+
+      masterTable.setSelectionModel( lsm );
+
       // if the record to select did not exist in the list, then
       // clear the detail display
-      if ( selectModel.getSelected().isEmpty() )
+      if ( masterTable.getSelectedRowCount() == 0 )
         uiManager.clearDetailDisplay();
 
+      
     }
 
 
@@ -478,7 +483,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
                                  }
                                } );
 
-       masterListFiltered.addListEventListener( this );
+       if ( init )
+         masterListFiltered.addListEventListener( this );
 
        // finally, setup the compositeFilter panel
        if ( init )
@@ -501,6 +507,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void buildListPanel() {
 
        masterTable = new CPSTable( new EventTableModel<CPSRecord>( masterListSorted, getTableFormat() ) );
+       masterList.addListEventListener(this);
        
        Dimension d = new Dimension( 500, masterTable.getRowHeight() * 10 );
        masterTable.getTableHeader().addMouseListener( this );
@@ -628,10 +635,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
         // obtaining locks on the list before we edit it seems to have
         // fixed sporadic NullPointerExceptions related to concurrency
+        masterList.removeListEventListener(this);
         masterList.getReadWriteLock().writeLock().lock();
         masterList.clear();
         masterList.addAll( getMasterListData() );
         masterList.getReadWriteLock().writeLock().unlock();
+        masterList.addListEventListener(this);
 
         CPSModule.debug( "CPSMasterView", "Items in masterList:         " + masterList.size() );
         CPSModule.debug( "CPSMasterView", "Items in masterListFiltered: " + masterListFiltered.size() );
@@ -786,8 +795,10 @@ public abstract class CPSMasterView extends CPSDataModelUser
    // for addListEventListener
    public void listChanged( ListEvent listChanges ) {
 
-      Object source = listChanges.getSource();
+      Object source = listChanges.getSourceList();
 
+      // filtered list is monitored to know if we have data to display
+      // in the table and thus how to display buttons, etc
       if ( source == masterListFiltered ) {
 
          // no data in table
@@ -800,7 +811,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
             // if the compositeFilter string is empty, then there really are no records
             // else we're just created an incorrect or too restrictive compositeFilter
             if ( tfldFilter.getText().equals( "" ) ) {
-//              tfldFilter.setEnabled(false);
                if ( getDisplayedTableName() == null || getDisplayedTableName().equals( "" ) ) {
                   btnNewRecord.setEnabled( false );
                } else {
@@ -815,19 +825,35 @@ public abstract class CPSMasterView extends CPSDataModelUser
             
          } // table contains data; undo anything we might have just done (in the "if" clause)
          else {
+
             btnNewRecord.setEnabled( true );
             btnDeleteRecord.setEnabled( true );
             btnDupeRecord.setEnabled( true );
             tfldFilter.setEnabled( true );
 
+
+             // check that selected items are in table
+             // if not, clear selection and display nothing
             if ( selectModel.getSelected().size() > 0 ) {
-               // check that selected items are in table
-               // if not, clear selection and display nothing
-               setStatus( null );
+              setStatus( null );
             } else {
                setStatus( CPSMasterDetailModule.STATUS_NO_SELECTION );
             }
+
          }
+      }
+      // when items are updated in the table view, it's done to the
+      // sorted table
+      else if ( source == masterList ) {
+        if ( masterList.size() > 0 ) {
+          listChanges.next();
+          if ( listChanges.getType() == ListEvent.UPDATE ) {
+            // make sure the change goes back to the database
+            updateRecordInDB( masterList.get( listChanges.getIndex() ));
+            // make sure the record is selected (in case sort changes)
+            setSelection( masterList.get( listChanges.getIndex() ).getID() );
+          }
+        }
       }
    }
     

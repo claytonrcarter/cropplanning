@@ -24,8 +24,12 @@ package CPS.Core.CropPlans;
 
 import CPS.Data.CPSPlanting;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
+import java.util.Arrays;
+import java.util.Date;
 
-public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
+public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting>
+                                 implements WritableTableFormat<CPSPlanting> {
 
    public int getColumnCount() { return 51; }
 
@@ -218,6 +222,109 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
          default: return "";
       }
     }
+
+  public boolean isEditable(CPSPlanting baseObject, int column) {
+    if ( Arrays.asList( 4, 5, 6 ).contains( column ) ||
+         ( baseObject.isDirectSeeded() &&
+           Arrays.asList( 5, 8, 11, 14, 21, 22, 23, 26, 28, 28 ).contains( column )) )
+      return false;
+    return true;
+  }
+
+  public CPSPlanting setColumnValue( CPSPlanting p,
+                                     Object editedValue,
+                                     int column ) {
+
+    String s = "";
+    if ( ! ( editedValue instanceof Boolean ||
+             editedValue instanceof Date ) )
+      s = (String) editedValue;
+
+    // do this because this method is called every time a row is unselected
+    // as when traversing the table by pressing UP or DOWN, so this just
+    // discards the times when there's no actual edit
+    if ( editedValue.equals( getColumnValue( p, column ) ) )
+      return null;
+
+    switch ( column ) {
+      case 0: p.setCropName( s ); break;
+      case 1: p.setVarietyName( s ); break;
+      case 2: p.setMaturityDays( s ); break;
+      case 3: p.setLocation( s ); break;
+
+      // Dates
+      // planned dates
+      case 7: p.setDateToPlantPlanned( (Date) editedValue ); break;
+      case 8: p.setDateToTPPlanned( (Date) editedValue ); break;
+      case 9: p.setDateToHarvestPlanned( (Date) editedValue ); break;
+      // actual dates
+      case 10: p.setDateToPlantActual( (Date) editedValue ); break;
+      case 11: p.setDateToTPActual( (Date) editedValue ); break;
+      case 12: p.setDateToHarvestActual( (Date) editedValue ); break;
+
+      // Status Booleans
+      case 13: p.setDonePlanting( (Boolean) editedValue ); break;
+      case 14: p.setDoneTP( (Boolean) editedValue ); break;
+      case 15: p.setDoneHarvest( (Boolean) editedValue ); break;
+      case 16: p.setIgnore( (Boolean) editedValue ); break;
+
+      // Static Data
+      // inheritable
+      case 17: p.setMatAdjust( s ); break;
+      case 18: p.setRowsPerBed( s ); break;
+      case 19: p.setRowSpacing( s ); break;
+      case 20: p.setNotes( s ); break;
+
+      case 21: p.setTimeToTP( s ); break;
+      case 22: p.setInRowSpacing( s ); break;
+      case 23: p.setFlatSize( s ); break;
+      case 24: p.setPlantingNotes( s ); break;
+
+      // Calculated Data
+      case 25: p.setBedsToPlant( s ); break;
+      case 26: p.setPlantsNeeded( s ); break;
+      case 27: p.setRowFtToPlant( s ); break;
+      case 28: p.setPlantsToStart( s ); break;
+      case 29: p.setFlatsNeeded( s ); break;
+
+      // Yield
+      // static
+      case 30: p.setYieldPerFoot( s ); break;
+      case 31: p.setYieldNumWeeks( s ); break;
+      case 32: p.setYieldPerWeek( s ); break;
+      case 33: p.setCropYieldUnit( s ); break;
+      case 34: p.setCropYieldUnitValue( s ); break;
+      // calculated
+      case 35: p.setTotalYield( s ); break;
+
+      // Seeds
+      case 36: p.setSeedsPerUnit( s ); break;
+      case 37: p.setSeedUnit( s ); break;
+      case 38: p.setSeedsPer( s ); break;
+      case 39: p.setSeedNeeded( s ); break;
+
+      // Misc Metadata
+      // bools
+      case 40: p.setDirectSeeded( (Boolean) editedValue ); break;
+      case 41: p.setFrostHardy( (Boolean) editedValue ); break;
+      // Strings
+      case 42: p.setGroups( s ); break;
+      case 43: p.setKeywords( s ); break;
+      case 44: p.setOtherRequirements( s ); break;
+      case 45: p.setNotes( s ); break;
+
+      case 46: p.setCustomField1( s ); break;
+      case 47: p.setCustomField2( s ); break;
+      case 48: p.setCustomField3( s ); break;
+      case 49: p.setCustomField4( s ); break;
+      case 50: p.setCustomField5( s ); break;
+
+      default: return null;
+    }
+          
+    return p;
+
+  }
 
 
 

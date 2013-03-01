@@ -28,6 +28,7 @@ import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSDetailView;
 import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModelConstants;
+import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.*;
 import java.awt.event.ActionEvent;
@@ -274,8 +275,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          //if ( tfldCropName.hasChanged() || tfldVarName.hasChanged() )
            p = getDataSource().getPlanting( selectedPlan, diff.getID() );
 
-//         System.out.println(p);
-         // now make sure
          updateRecordInMasterView(p);
          selectRecordsInMasterView( Arrays.asList( p.getID() ) );
 
@@ -566,7 +565,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       anonLabels.add( tempLabel );
       
       tempLabel = new JLabel( "Plant Spacing" );
-      tempLabel.setToolTipText("Spacing between plants within the row.");
+      tempLabel.setToolTipText("Spacing between plants within the row (in or cm)");
       jplPlanting.add( tempLabel, "align right" );
       jplPlanting.add( tfldInRowSpace, "wrap" );
       anonLabels.add( tempLabel );
@@ -608,8 +607,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplAmount.add( tempLabel, "align right" );
       jplAmount.add( tfldBedsToPlant, "wrap" );
       anonLabels.add( tempLabel );
-      
-      tempLabel = new JLabel( "Row Ft to Plant" );
+
+      if ( CPSGlobalSettings.useMetric() )
+        tempLabel = new JLabel( "Row Meters to Plant" );
+      else
+        tempLabel = new JLabel( "Row Ft to Plant" );
       jplAmount.add( tempLabel, "align right" );
       jplAmount.add( tfldRowFtToPlant, "wrap" );
       anonLabels.add( tempLabel );
@@ -650,7 +652,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplSeeds.add( tfldSeedsPerUnit, "wrap" );
       anonLabels.add( tempLabel );
 
-      lblSeedsPer = new JLabel( "Seeds/Ft or Plant" );
+      if ( CPSGlobalSettings.useMetric() )
+        lblSeedsPer = new JLabel( "Seeds/Meter or Plant" );
+      else
+        lblSeedsPer = new JLabel( "Seeds/Ft or Plant" );
       jplSeeds.add( lblSeedsPer, "align right" );
       jplSeeds.add( tfldSeedsPer, "wrap" );
       anonLabels.add( tempLabel );
@@ -698,7 +703,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplYield.add( tfldCropYieldUnit, "wrap" );
       anonLabels.add( tempLabel );
 
-      tempLabel = new JLabel( "Total Yield/Ft" );
+      if ( CPSGlobalSettings.useMetric() )
+        tempLabel = new JLabel( "Total Yield/Meter" );
+      else
+        tempLabel = new JLabel( "Total Yield/Ft" );
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldPerFt, "wrap" );
       anonLabels.add( tempLabel );
@@ -889,7 +897,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
         lblSeedsPer.setToolTipText("How many seeds get sown in each cell or plug?");
       }
       else {
-        lblSeedsPer.setText("Seeds/RowFt");
+        if ( CPSGlobalSettings.useMetric() )
+          lblSeedsPer.setText("Seeds/RowMeter");
+        else
+          lblSeedsPer.setText("Seeds/RowFt");
+
         lblSeedsPer.setToolTipText("Appox. how many seeds are sown per row-foot?");
       }
    }
@@ -1031,6 +1043,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          CropPlans.debug( "CPInfo", "data unavailable, not displaying DS/TP values" );
          return;
       }
+      
+      CPSPlanting tempPlanting = displayedPlanting;
+      
+      tempPlanting.setDirectSeeded( rdoDS.isSelected() );
 
       boolean initState = displayedPlanting.isDirectSeeded();
       

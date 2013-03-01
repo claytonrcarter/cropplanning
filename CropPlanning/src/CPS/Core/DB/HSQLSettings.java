@@ -92,31 +92,14 @@ public class HSQLSettings extends CPSModuleSettings implements ActionListener,
         
         initConfigPanel();
         
-        GridBagConstraints c = new GridBagConstraints();  
-        c.insets = new Insets( 0, 0, 0, 0 );
-	
-        c.anchor = GridBagConstraints.FIRST_LINE_START;
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        configPanel.add( new JLabel("Database output directory:"), c );
+        configPanel.add( new JLabel("Database output directory:"), "align left, wrap" );
         
-//        c.anchor = GridBagConstraints.FIRST_LINE_END;
-        c.gridy = 1;
-        configPanel.add( rdoUseGlobalDir, c );
-        c.gridy = 2;
-        configPanel.add( rdoUseCustomDir, c );
+        configPanel.add( rdoUseGlobalDir, "wrap" );
+        configPanel.add( rdoUseCustomDir, "wrap" );
         
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridy = 3;
-        c.gridwidth = 2;
-        configPanel.add( lblCustomOutDir, c );
+        configPanel.add( lblCustomOutDir, "span 2, align center, wrap" );
         
-        c.anchor = GridBagConstraints.FIRST_LINE_END;
-        c.gridy = 4;
-        c.gridwidth = 1;
-        configPanel.add( btnCustomDir, c );
+        configPanel.add( btnCustomDir, "align right, wrap" );
         
     }
 

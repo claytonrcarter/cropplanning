@@ -24,8 +24,10 @@ package CPS.Core.CropDB;
 
 import CPS.Data.CPSCrop;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
 
-public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
+public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop>
+                               implements WritableTableFormat<CPSCrop> {
 
    public int getColumnCount() { return 35; }
 
@@ -85,7 +87,7 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
             case 34: return CPSCrop.PROP_SEEDS_PER_TP;
 
             default: return -1;
-   }
+     }
    }
 
    public boolean isDefaultColumn( int colNum ) {
@@ -149,6 +151,77 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop> {
             default: return "";
         }
     }
+
+  public boolean isEditable(CPSCrop baseObject, int column) {
+    return true;
+  }
+
+  public CPSCrop setColumnValue( CPSCrop c,
+                                 Object editedValue,
+                                 int colNum ) {
+
+    String s = "";
+    if ( getColumnClass(colNum) != Boolean.class )
+      s = (String) editedValue;
+
+    // do this because this method is called every time a row is unselected
+    // as when traversing the table by pressing UP or DOWN, so this just
+    // discards the times when there's no actual edit
+    if ( editedValue.equals( getColumnValue( c, colNum ) ) )
+      return null;
+
+    switch ( colNum ) {
+      case 0: c.setCropName( s ); break;
+      case 1: c.setVarietyName( s ); break;
+      case 2: c.setMaturityDays( s ); break;
+
+      case 3: c.setCropDescription( s ); break;
+      case 4: c.setFamilyName( s ); break;
+      case 5: c.setBotanicalName( s ); break;
+
+      case 6: c.setGroups( s ); break;
+      case 7: c.setKeywords( s ); break;
+      case 8: c.setOtherRequirements( s ); break;
+      case 9: c.setNotes( s ); break;
+
+      case 10: c.setFrostHardy( (Boolean) editedValue ); break;
+
+      case 11: c.setDirectSeeded( (Boolean) editedValue ); break;
+      case 12: c.setDSMaturityAdjust( s ); break;
+      case 13: c.setDSRowsPerBed( s ); break;
+      case 14: c.setDSSpaceBetweenRow( s ); break;
+      case 15: c.setDSPlantNotes( s ); break;
+
+      case 16: c.setTransplanted( (Boolean) editedValue ); break;
+      case 17: c.setTPMaturityAdjust( s ); break;
+      case 18: c.setTPRowsPerBed( s ); break;
+      case 19: c.setTPSpaceBetweenRow( s ); break;
+      case 20: c.setTPSpaceInRow( s ); break;
+      case 21: c.setTPTimeInGH( s ); break;
+      case 22: c.setTPFlatSize( s ); break;
+      case 23: c.setTPPlantNotes( s ); break;
+      case 24: c.setTPPottedUp( (Boolean) editedValue ); break;
+      case 25: c.setTPPotUpNotes( s ); break;
+
+      case 26: c.setYieldPerFoot( s ); break;
+      case 27: c.setYieldNumWeeks( s ); break;
+      case 28: c.setYieldPerWeek( s ); break;
+      case 29: c.setCropYieldUnit( s ); break;
+      case 30: c.setCropUnitValue( s ); break;
+
+      case 31: c.setSeedsPerUnit( s ); break;
+      case 32: c.setSeedUnit( s ); break;
+      case 33: c.setSeedsPerDS( s ); break;
+      case 34: c.setSeedsPerTP( s ); break;
+
+      default: return null;
+    }
+
+    return c;
+
+  }
+
+
 
 
 }

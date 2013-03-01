@@ -25,7 +25,6 @@ package CPS.UI.Modules;
 import CPS.Data.CPSRecord;
 import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSDataModel;
-import CPS.Module.CPSModuleSettings;
 import CPS.Module.CPSUI;
 import java.awt.Dimension;
 import java.util.List;

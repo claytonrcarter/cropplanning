@@ -1,5 +1,7 @@
 package CPS.Core.DB;
 
+import CPS.Data.CPSCrop;
+import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSWizardPage;
@@ -39,14 +41,19 @@ class NewPlanWizardPage extends CPSWizardPage {
       setLongDescription( getDescription() );
       JPanel jpl;
       JLabel intro =
-             new JLabel( "<html><center><table width=300><tr><td>" + "<b><font size=large>" + getDescription() +
-              "</font></b> " + "<p>" + "<p>This step will create your first crop plan so that you can start " +
-              "entering information right away. " +
-              "<p>Two ideas: 1) create a \"real\" plan now and get right to work, or " +
-              "2) create a \"dummy\" plan to play around with while you familiaze yourself " + "with the program. " +
-              "<p>" + "<p>You can create, rename and delete crop plans at any time by clicking the " +
-              "\"Change Plans\" button in the \"CropPlans\" window. " + "<p>" +
-              "<p>If you do not want to create a crop plan right now, simply press \"Cancel\"." +
+             new JLabel( "<html><center><table width=300><tr><td>" + 
+              "<b><font size=large>" + getDescription() + "</font></b> " +
+              "<p><p>" +
+              "This step will create your first crop plan so that you can start " +
+              "entering information right away. " + "<p>" +
+              "Two ideas: 1) create a \"real\" plan now and get right to work, or <br>" +
+              "2) create a \"dummy\" plan to play around with while you familiaze " +
+              "yourself with the program. " +
+              "<p><p>" +
+              "You can create, rename and delete crop plans at any time by " +
+              "clicking the \"Change Plans\" button in the \"CropPlans\" window. " +
+              "<p><p>" +
+              "If you do not want to create a crop plan right now, simply press \"Cancel\"." +
               "</td></tr></table></center></html>" );
       add( intro );
       tfldPlanName = new JTextField( 15 );
@@ -91,6 +98,31 @@ class NewPlanWizardPage extends CPSWizardPage {
          dm.createCropPlan( tfldPlanName.getText(),
                             tempCal.get( Calendar.YEAR ),
                             "" );
+
+         CPSCrop c = new CPSCrop();
+         c.setCropName("Cucumbers");
+         c.setMaturityDays(50);
+         c.setTransplanted(Boolean.TRUE);
+         c.setTPRowsPerBed(1);
+         c.setTPSpaceInRow(24);
+
+         dm.createCrop(c);
+
+         c = new CPSCrop();
+         c.setCropName("Cucumbers");
+         c.setVarietyName("Marketmore");
+         c.setMaturityDays(55);
+
+         dm.createCrop(c);
+
+         CPSPlanting p = new CPSPlanting();
+         p.setCropName(c.getCropName());
+         p.setVarietyName(c.getVarietyName());
+         p.setDateToTPPlanned("6/1/2013");
+         p.setBedsToPlant(1);
+
+         dm.createPlanting( tfldPlanName.getText(), p );
+
       }
    }
 

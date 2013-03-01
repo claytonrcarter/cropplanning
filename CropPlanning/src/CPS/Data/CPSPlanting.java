@@ -30,6 +30,7 @@ package CPS.Data;
 
 import CPS.Data.CPSDatum.CPSDatumState;
 import CPS.Module.CPSDataModelConstants;
+import CPS.Module.CPSGlobalSettings;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1063,8 +1064,12 @@ public final class CPSPlanting extends CPSRecord {
         CPSDatum r = getRowFtToPlantDatum( source_path );
 
         if ( r.isNotNull() && irs.isNotNull() ) {
-           set( p, CPSCalculations.calcPlantsNeededFromRowFtToPlant( r.getValueAsInt(),
-                                                                         irs.getValueAsInt() ) );
+          int n;
+          if ( CPSGlobalSettings.useMetric() )
+            n = (int) ( r.getValueAsInt() * 100.0 / irs.getValueAsInt() );
+          else
+            n = (int) ( r.getValueAsInt() * 12.0 / irs.getValueAsInt() );
+           set( p, n );
            p.setCalculated( true );
         }
       }
@@ -1110,20 +1115,24 @@ public final class CPSPlanting extends CPSRecord {
              * bed length if location is inValid */
            int bedLength = CPSCalculations.extractBedLength( getLocation() );
            set( r, CPSCalculations.calcRowFtToPlantFromBedsToPlant( b.getValueAsFloat(),
-                                                                        rpb.getValueAsInt(),
-                                                                        bedLength ));
+                                                                    rpb.getValueAsInt(),
+                                                                    bedLength ));
            r.setCalculated( true );
         }
       }
       else if ( ! source_path.contains( PROP_PLANTS_NEEDED )) {
 
-          CPSDatum ps = getDatum( PROP_INROW_SPACE );
           CPSDatum p = getPlantsNeededDatum( source_path );
+          CPSDatum ps = getDatum( PROP_INROW_SPACE );
 
           if ( ! r.isConcrete() &&
                     p.isNotNull() && ps.isNotNull() ) {
-             set( r, CPSCalculations.calcRowFtToPlantFromPlantsNeeded( p.getValueAsInt(),
-                                                                           ps.getValueAsInt() ));
+            int l;
+            if ( CPSGlobalSettings.useMetric() )
+              l = (int) ( p.getValueAsInt() * ps.getValueAsInt() / 100.0 );
+            else
+              l = (int) ( p.getValueAsInt() * ps.getValueAsInt() / 12.0 );
+             set( r, l );
              r.setCalculated( true );
           }
       }

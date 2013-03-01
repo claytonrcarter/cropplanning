@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import net.miginfocom.swing.MigLayout;
 
 
 public abstract class CPSModuleSettings {
@@ -29,9 +30,8 @@ public abstract class CPSModuleSettings {
     }
    
     protected void initConfigPanel() {
-        configPanel = new JPanel();
+        configPanel = new JPanel( new MigLayout( "", "[align right][]" ) );
         configPanel.setBorder( BorderFactory.createEtchedBorder() );
-        configPanel.setLayout( new GridBagLayout() );
     }
        
     
