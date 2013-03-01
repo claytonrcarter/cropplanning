@@ -78,6 +78,7 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract List<String[]> getPlantingShortNames();
    public abstract CPSPlanting getPlanting( String planName, int PlantingID );
    public abstract CPSPlanting getCommonInfoForPlantings( String planName, List<Integer> plantingIDs );
+   public abstract List<String> getRequirementsForPlan( String planName );
    /* create and update */
    public abstract CPSPlanting createPlanting( String planName, CPSPlanting planting );
    public abstract void updatePlanting( String planName, CPSPlanting planting );

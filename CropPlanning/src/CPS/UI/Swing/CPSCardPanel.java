@@ -44,6 +44,13 @@ public class CPSCardPanel extends JPanel implements ItemListener {
 
 
   public CPSCardPanel( List<String> titles,
+                       List<JPanel> panels,
+                       int select ) {
+    this( titles, panels );
+    cb.setSelectedIndex(select);
+  }
+  
+  public CPSCardPanel( List<String> titles,
                        List<JPanel> panels ) {
     this( titles.toArray( new String[] {} ),
           panels.toArray( new JPanel[] {} ));

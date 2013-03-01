@@ -28,15 +28,17 @@ import CPS.Module.CPSDataModelSQL;
 import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSWizardPage;
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.UniqueList;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
-import javax.swing.table.TableModel;
 import net.sf.persist.*;
 
 /**
@@ -77,8 +79,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
        setModuleVersion( CPSGlobalSettings.getVersion() );
                
        localSettings = new HSQLSettings();
-       
-//       init();
+
    }
 
    @Override
@@ -113,9 +114,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
           e.printStackTrace();
       }
 
-      // make sure Persist knows about our custom data types
-//      p.getClassToTypeNumMap().put( CPSBoolean.class, new Integer( java.sql.Types.BOOLEAN ));
-
       HSQLUpdate.updateDB( p, getModuleVersionAsLongInt() );
 
       // TODO Persist port HERE
@@ -125,6 +123,10 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       return 0;
    }
 
+
+//****************************************************************************//
+// Unique value methods
+//****************************************************************************//
    public synchronized List<String> getFlatSizeList( String planName ) {
 
        // if the plan doesn't exist, then don't get the mapping, just return an empty list
@@ -220,27 +222,25 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
      return plansList;
 
    }
-   
-   /* COLUMN NAMES */
-   private List<String> getCropVarFilterColumnNames() {
-      return columnMap.getCropFilterColumnNames();
-//       return getAbbreviatedCropVarColumnNames( true ) + ", keywords, groups";
-   }
-   
-   private String getCropsColumnNames() {
-      return  listToCSVString( columnMap.getCropColumnList() );
-//       return "*";
-   }
-   
-   private String getVarietiesColumnNames() {
-      return getCropsColumnNames();
-   }
-   
-   
-   private List<String> getCropColumnList() {
-       return columnMap.getCropColumns();
-   }
 
+  @Override
+  public List<String> getRequirementsForPlan( String planName ) {
+
+    List<CPSPlanting> cropPlan = getCropPlan( planName );
+    BasicEventList<String> reqs = new BasicEventList<String>();
+
+    for ( CPSPlanting pl : cropPlan ) {
+      reqs.addAll( Arrays.asList( pl.getOtherRequirements().split(" ") ));
+    }
+
+    return new UniqueList<String>(reqs);
+
+  }
+
+
+//****************************************************************************//
+   /* COLUMN NAMES */
+//****************************************************************************//
    public List<Integer> getCropDefaultProperties() {
       return columnMap.getDefaultCropPropertyList();
    }
@@ -260,15 +260,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       return columnMap.getCropPrettyNameMapping(); 
    }
    
-   private List<String[]> getCropInheritanceColumnMapping() {
-       return columnMap.getCropInheritanceColumnMapping();
-   }
-   
-   private List<String[]> getPlantingCropColumnMapping() {
-      return columnMap.getPlantingToCropColumnMapping();
-//       return plantingCropColumnMapping;
-   }
-
    public List<Integer> getPlantingDefaultProperties() {
       return columnMap.getDefaultPlantingPropertyList();
    }
@@ -292,43 +283,14 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public List<String[]> getPlantingShortNames() {
       return columnMap.getPlantingShortNameMapping(); 
    }
-   
-   private String getAbbreviatedCropPlanColumnNames() {
-       return listToCSVString( columnMap.getDefaultPlantingColumnList() );
-   }
-   private List<String> getCropPlanFilterColumnNames() {
-       return columnMap.getPlantingFilterColumnNames();
-   }
-   
-   private String includeMandatoryColumns( String columns ) {
-       if ( columns.indexOf( "crop_name" ) == -1 )
-           columns = "crop_name, " + columns;
-       if ( columns.indexOf( "id" ) == -1 )
-           columns = "id, " + columns;
-       return columns;
-   }
-   
+      
    /* END COLUMN NAMES */
 
-   /** Method to cache results of a query and then return those results as a table
-    *  @param t Table name
-    *  @param col list of columns to select
-    *  @param cond conditional statement
-    *  @param sort sort statement
-    *  @param filter filter statement
-    */
-   private TableModel cachedListTableQuery( String t, String col, 
-                                            String cond, String sort, String filter ) {
-      rsListCache = query.storeQuery( t, col, cond, sort, filter );
-//      rsListCache.get
-      // return query.getCachedResultsAsTable();
-      return HSQLQuerier.tableResults( this, rsListCache );
-   }
+
    
    /*
     * CROP LIST METHODS
     */
-
    public List<CPSCrop> getCropList() {
 
        TableMapping tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE);

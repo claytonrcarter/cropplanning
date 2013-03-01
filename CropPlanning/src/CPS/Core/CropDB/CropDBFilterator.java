@@ -23,8 +23,6 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.CPSCrop;
-import CPS.Data.CPSDateValidator;
-import CPS.Data.CPSPlanting;
 import ca.odell.glazedlists.TextFilterator;
 import java.util.List;
 

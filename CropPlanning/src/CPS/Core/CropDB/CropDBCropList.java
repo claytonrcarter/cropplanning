@@ -155,17 +155,17 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
       clearSelection();
       getDataSource().deleteCrop( id );
     }
-    
+          
      @Override
    protected List<String> getDisplayableColumnList() {
       return getDataSource().getCropDisplayablePropertyNames();
    }
-   
+
    @Override
    protected List<Integer> getDefaultDisplayableColumnList() {
       return getDataSource().getCropDefaultProperties();
    }
-   
+
    protected List<String[]> getColumnPrettyNameMap() {
        return getDataSource().getCropPrettyNames();
    }
