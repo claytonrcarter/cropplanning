@@ -32,9 +32,12 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -43,11 +46,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-
-
-
-
+import net.miginfocom.swing.MigLayout;
+import org.netbeans.api.wizard.WizardDisplayer;
+import org.netbeans.spi.wizard.Wizard;
+import org.netbeans.spi.wizard.WizardException;
+import org.netbeans.spi.wizard.WizardPage;
 
 
 public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigurable,
@@ -73,7 +76,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     private static final String KEY_MEASUREMENT_SYSTEM = "MEASUREMENT_SYSTEM";
     private JComboBox cmbxPrefMeasurementSystem;
-    private String[] prefMeasurementSystemOptions = new String[]{ PREF_IMPERIAL, PREF_SI };
+    private List<String> prefMeasurementSystemOptions =
+        new ArrayList<String>( Arrays.asList( PREF_IMPERIAL, PREF_SI ) );
     private static String prefMeasurementSystemDefault = PREF_IMPERIAL;
  
     private static final String KEY_HIGHLIGHTFIELDS = "HIGHLIGHT_FIELDS";
@@ -148,10 +152,15 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         return getGlobalPreferences().getBoolean( KEY_HIGHLIGHTFIELDS, prefHightlightDefault );
     }
 
+
     /** @returns one of either CPSGlobalSettings.PREF_IMPERIAL or CPSGlobalSettings.PREF_SI
      */
     public static String getMeasurementUnit() {
         return getGlobalPreferences().get( KEY_MEASUREMENT_SYSTEM, prefMeasurementSystemDefault );
+    }
+    protected void setMeasurementUnit( String unit ) {
+      if ( prefMeasurementSystemOptions.contains(unit) )
+        getGlobalPreferences().put( KEY_MEASUREMENT_SYSTEM, unit );
     }
     
     /**
@@ -370,7 +379,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     tfldRowOrBedLength = new JTextField( 5 );
 
-    cmbxPrefMeasurementSystem = new JComboBox( prefMeasurementSystemOptions );
+    cmbxPrefMeasurementSystem =
+        new JComboBox( prefMeasurementSystemOptions.toArray( new String[] {} ));
 
     ckbxPrefHighlight = new JCheckBox();
 
@@ -436,8 +446,46 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
             }
         }
     }
-   
+
+       /* for testing only */
+   public static void main( String[] args ) {
+
+     boolean b = false;
+
+     if ( b ) {
+
+       JFrame frame = new JFrame();
+       frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+       frame.setContentPane( new CPSGlobalSettings().getConfigurationDisplay() );
+       frame.setTitle( "Test Layout" );
+       frame.pack();
+       frame.setVisible(true);
+
+     } else {
+
+//       Wizard wiz = WizardPage.createWizard( new CPSGlobalSettings().getConfigurationWizardPages(),
+       Wizard wiz = WizardPage.createWizard( new WizardPage[]{ new GeneralSettingsWizardPage() },
+                                             new WizardPage.WizardResultProducer() {
+
+                                               public Object finish ( Map settings ) throws WizardException {
+                                                  System.out.println( settings );
+                                                  return settings;
+                                               }
+
+                                               public boolean cancel ( Map settings ) {
+                                                  return true;
+                                               }
+                                            } );
+      WizardDisplayer.showWizard( wiz );
+
+     }
+   }
+
 }
+
+
+//****************************************************************************//
+//****************************************************************************//
 class OutDirWizardPage extends CPSWizardPage {
 
    static final String PAGE_OUT_DIR = "outDir";
@@ -508,44 +556,50 @@ class OutDirWizardPage extends CPSWizardPage {
 }
 
 
+
+//****************************************************************************//
+//****************************************************************************//
 class GeneralSettingsWizardPage extends CPSWizardPage {
 
    protected final static String PAGE_GEN_SET = "genSettings";
 
    protected final static String SETTING_FARM_NAME = "farmName";
    protected final static String SETTING_BED_LENGTH = "bedLength";
+   protected final static String SETTING_MEASUREMENT_UNITS = "measurementUnits";
    protected final static String SETTING_LAST_FROST = "lastFrost";
    protected final static String SETTING_FIRST_FROST = "firstFrost";
 
    private JTextField tfldFarmName,  tfldBedLength;
+   private JComboBox cmbxMeasurementSystem;
    private JDateChooser calLastFrost,  calFirstFrost;
+
 
    public GeneralSettingsWizardPage () {
       super( PAGE_GEN_SET, getDescription(), CPSWizardPage.WIZ_TYPE_PRE_INIT );
 
       setLongDescription( getDescription() );
-
-      JPanel jpl;
+      setLayout( new MigLayout( "", "[align right][]" ) );
 
       tfldFarmName = new JTextField( 15 );
       tfldFarmName.setName( SETTING_FARM_NAME );
 
-      jpl = new JPanel();
-      jpl.add( new JLabel( "The name of your farm:" ) );
-      jpl.add( tfldFarmName );
-
-      add( Box.createVerticalGlue() );
-      add( jpl );
+      add( new JLabel( "The name of your farm:" ) );
+      add( tfldFarmName, "wrap" );
 
       tfldBedLength = new JTextField( 5 );
       tfldBedLength.setName( SETTING_BED_LENGTH );
       tfldBedLength.setText( Integer.toString( CPSGlobalSettings.getBedLength() ) );
 
-      jpl = new JPanel();
-      jpl.add( new JLabel( "Default row or bed length:" ) );
-      jpl.add( tfldBedLength );
+      add( new JLabel( "Default row or bed length (ft or meters):" ) );
+      add( tfldBedLength, "wrap" );
 
-      add( jpl );
+      cmbxMeasurementSystem = new JComboBox( new String[] { CPSGlobalSettings.PREF_IMPERIAL,
+                                                            CPSGlobalSettings.PREF_SI });
+      cmbxMeasurementSystem.setSelectedItem( CPSGlobalSettings.getMeasurementUnit() );
+      cmbxMeasurementSystem.setName( SETTING_MEASUREMENT_UNITS );
+      add( new JLabel( "Measurement Units:" ) );
+      add( cmbxMeasurementSystem, "wrap" );
+
 
       calLastFrost = new JDateChooser( CPSGlobalSettings.getLastFrostDate() );
       calLastFrost.setDateFormatString( "MMMMM d" );
@@ -557,11 +611,8 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
                                                         }
                                                   } );
 
-      jpl = new JPanel();
-      jpl.add( new JLabel( "Date of last spring frost (optional):" ) );
-      jpl.add( calLastFrost );
-
-      add( jpl );
+      add( new JLabel( "Date of last spring frost (optional):" ) );
+      add( calLastFrost, "wrap" );
 
       calFirstFrost = new JDateChooser( CPSGlobalSettings.getFirstFrostDate() );
       calFirstFrost.setDateFormatString( "MMMMM d" );
@@ -573,12 +624,8 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
                                                         }
                                                   } );
 
-      jpl = new JPanel();
-      jpl.add( new JLabel( "Date of first fall frost (optional):" ) );
-      jpl.add( calFirstFrost );
-
-      add( jpl );
-      add( Box.createVerticalGlue() );
+      add( new JLabel( "Date of first fall frost (optional):" ) );
+      add( calFirstFrost, "wrap" );
 
    }
 
@@ -612,25 +659,12 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
    public void finishWizard ( CPSGlobalSettings globSet ) {
       globSet.setFarmName( (String) getWizardDataMap().get( SETTING_FARM_NAME ) );
       globSet.setBedLength( Integer.parseInt( (String) getWizardDataMap().get( SETTING_BED_LENGTH ) ) );
+      globSet.setMeasurementUnit( (String) getWizardDataMap().get( SETTING_MEASUREMENT_UNITS ) );
       globSet.setLastFrostDate( CPSDateValidator.simpleParse( (String) getWizardDataMap().get( SETTING_LAST_FROST ) ) );
       globSet.setFirstFrostDate( CPSDateValidator.simpleParse( (String) getWizardDataMap().get( SETTING_FIRST_FROST ) ) );
    }
 
    public static String getDescription () { return "General Settings"; }
 
-
-
-   /* for testing only */
-   public static void main( String[] args ) {
-     new CPSGlobalSettings().getGlobalPreferences().put( "MEASUREMENT_SYSTEM",
-                                                         CPSGlobalSettings.PREF_SI );
-
-     JFrame frame = new JFrame();
-     frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-     frame.setContentPane( new CPSGlobalSettings().getConfigurationDisplay() );
-     frame.setTitle( "Test Layout" );
-     frame.pack();
-     frame.setVisible(true);
-   }
 }
 
