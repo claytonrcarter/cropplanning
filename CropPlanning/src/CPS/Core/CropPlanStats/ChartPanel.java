@@ -28,7 +28,8 @@ public class ChartPanel extends JPanel {
 
   private String title;
 
-  private int topOfChart = 0;
+  private int titleHeight = 0;
+  private int headerHeight = 0;
   private int barWidth = 0;
 
   public ChartPanel( List<Double> v, List<String> n, String t ) {
@@ -42,10 +43,10 @@ public class ChartPanel extends JPanel {
   @Override
   public String getToolTipText(MouseEvent event) {
 
-    if ( barWidth < 1 || event.getY() < topOfChart )
+    if ( barWidth < 1 || event.getY() < headerHeight )
       return "";
 
-    int i = ( event.getY() - topOfChart ) / barWidth;
+    int i = ( event.getY() - headerHeight ) / ( barWidth );
 
     if ( i >= names.size() )
       return "";
@@ -65,6 +66,9 @@ public class ChartPanel extends JPanel {
     if (values == null || values.isEmpty() )
       return;
 
+    //************************************************************************//
+    // find smallest & largest values, also longest label
+    //************************************************************************//
     double minValue = 0;
     double maxValue = 0;
     int longestLabelIndex = 0;
@@ -78,6 +82,10 @@ public class ChartPanel extends JPanel {
         maxValue = values.get(i);
     }
 
+
+    //************************************************************************//
+    // Find some sizes
+    //************************************************************************//
     Dimension d = getSize();
     int clientWidth = d.width;
     int clientHeight = d.height;
@@ -87,21 +95,25 @@ public class ChartPanel extends JPanel {
     FontMetrics titleFontMetrics = g.getFontMetrics(titleFont);
     Font labelFont = new Font("SansSerif", Font.PLAIN, 10);
     FontMetrics labelFontMetrics = g.getFontMetrics(labelFont);
+    int labelWidth = labelFontMetrics.stringWidth( names.get(longestLabelIndex) );
+    int labelHeight = labelFontMetrics.getHeight();
 
+    //************************************************************************//
     // Draw the title
+    //************************************************************************//
     if ( ! title.equals("") ) {
       int titleWidth = titleFontMetrics.stringWidth(title);
-      topOfChart = titleFontMetrics.getHeight();
+      titleHeight = titleFontMetrics.getHeight();
       g.setFont(titleFont);
       g.drawString( title,
                     (clientWidth - titleWidth) / 2,
                     titleFontMetrics.getAscent() );
     }
-    int labelWidth = labelFontMetrics.stringWidth( names.get(longestLabelIndex) );
-    int labelHeight = labelFontMetrics.getHeight();
-    
+
+    headerHeight = titleHeight + labelHeight;
+
     // determine bar thickness
-    barWidth = ( clientHeight - topOfChart - 2 ) / values.size();
+    barWidth = ( clientHeight - headerHeight ) / values.size();
 
     // and a scale factor to make the bars fill the window
     double scale = ( clientWidth - labelWidth - 3 ) / ( maxValue - minValue );
@@ -109,18 +121,48 @@ public class ChartPanel extends JPanel {
     // set the font (we're only drawing labels from here on
     g.setFont(labelFont);
 
+    //************************************************************************//
+    // draw the vertical guides and top labels
+    //************************************************************************//
+    g.setColor(Color.black);
+    String s = "" + Math.ceil( maxValue * 4 ) / 4;
+    g.drawString( s, clientWidth - labelFontMetrics.stringWidth( s ), headerHeight - 1);
+    g.drawLine( clientWidth - 2, headerHeight + 1,
+                clientWidth - 2, clientHeight - 2 );
+
+    s = "" + Math.ceil( maxValue * .66 * 4 ) / 4;
+    g.drawString( s,
+                  (int) ((( clientWidth - labelWidth ) * .66 ) + labelWidth -
+                         ( labelFontMetrics.stringWidth( s ) / 2 )),
+                  headerHeight - 1);
+    g.drawLine( (int) (( clientWidth - labelWidth ) * .66 ) + labelWidth, headerHeight + 1,
+                (int) (( clientWidth - labelWidth ) * .66 ) + labelWidth, clientHeight - 2 );
+
+
+    s = "" + Math.ceil( maxValue * .33 * 4 ) / 4;
+    g.drawString( s,
+                  (int) ((( clientWidth - labelWidth ) * .33 ) + labelWidth -
+                         ( labelFontMetrics.stringWidth( s ) / 2 )),
+                  headerHeight - 1);
+    g.drawLine( (int) (( clientWidth - labelWidth ) * .33 ) + labelWidth, headerHeight + 1,
+                (int) (( clientWidth - labelWidth ) * .33 ) + labelWidth, clientHeight - 2 );
+
+    //************************************************************************//
+    // draw the actual bars
+    //************************************************************************//
     for (int i = 0; i < values.size(); i++) {
 
-      int y = i * barWidth + 1 + topOfChart;
+      int y = i * ( barWidth ) + headerHeight;
       int x = labelWidth + 1;
-      int length = (int) (values.get(i) * scale);
+      int length = (int) ( values.get(i) * scale );
 
       g.setColor(Color.red);
-      g.fillRect(x, y, length, barWidth - 2);
+      g.fillRect( x, y+1, length, barWidth - 2 );
       g.setColor(Color.black);
-      g.drawRect(x, y, length, barWidth - 2);
+      g.drawRect( x, y+1, length, barWidth - 2 );
       g.drawString( names.get(i), 1, y - 1 + labelHeight / 2 + barWidth / 2 );
     }
+    
   }
 
 
@@ -129,7 +171,7 @@ public class ChartPanel extends JPanel {
     JFrame f = new JFrame();
     f.setSize(400, 300);
 
-    int size = 10;
+    int size = 30;
 
     List<Double> values = new ArrayList<Double>( size );
     List<String> names = new ArrayList<String>( size );

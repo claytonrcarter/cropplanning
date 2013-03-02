@@ -26,6 +26,7 @@ import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
 import ca.odell.glazedlists.matchers.Matchers;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,6 +40,8 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -48,7 +51,7 @@ import net.miginfocom.swing.MigLayout;
 public class CropPlanStats extends CPSDisplayableDataUserModule implements ActionListener {
 
   JPanel jplContents, jplBedsCharts, jplFlatsChart, jplReq, jplFlats;
-
+  
   Map<String, Float[]> reqMap = new HashMap<String, Float[]>();
   Map<String, Float[]> flatMap = new HashMap<String, Float[]>();
 
@@ -69,6 +72,9 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 //  Called when the user pressed "Update"
 //****************************************************************************//
   private void doIt() {
+
+    updateButton.setEnabled(false);
+    jplContents.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
     Calendar cal = Calendar.getInstance();
 
@@ -270,7 +276,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 //    Now loop over the weeks to add it all up.
 //****************************************************************************//
     while ( weekNum <= endWeek ) {
-
+      
       //**********************************************************************//
       // flats in gh this week
       //**********************************************************************//
@@ -340,9 +346,9 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     jplFlatsChart = new ChartPanel( chartValues, chartWeeks, "Trays in the Greenhouse" );
 
     jplReq = new JPanel( new MigLayout( "",
-                                        "align right, 15%:" ));
-    jplReq.add( new JLabel( "Requiment" ), "align center" );
-    jplReq.add( new JLabel( "<html><center>" + "Total<br>Beds" + "</center></html>" ) );
+                                        "[align right, 15%:][align center, 2%:][align right, 15%:]" ));
+    jplReq.add( new JLabel( "Requirement" ), "align center" );
+    jplReq.add( new JLabel( "<html><center>" + "Total<br>Beds" + "</center></html>" ), "skip 1" );
     jplReq.add( new JLabel( "<html><center>" + "Max<br>Beds" + "</center></html>" ) );
     if ( CPSGlobalSettings.useMetric() ) {
       jplReq.add( new JLabel( "<html><center>" + "Total<br>Row Meters" + "</center></html>" ) );
@@ -351,10 +357,16 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
       jplReq.add( new JLabel( "<html><center>" + "Total<br>RowFt" + "</center></html>" ) );
       jplReq.add( new JLabel( "<html><center>" + "Max<br>RowFt" + "</center></html>" ), "wrap" );
     }
+    jplReq.add( new JSeparator(), "growx, span, wrap" );
+    boolean firstRow = true;
     for ( String req : requirements ) {
       if ( req.equals("") )
         continue;
       jplReq.add( new JLabel( req ) );
+      if ( firstRow ) {
+        jplReq.add( new JSeparator( SwingConstants.VERTICAL ), "growy, spany" );
+        firstRow = false;
+      }
       jplReq.add( new JLabel( "" + CPSCalculations.roundQuarter( reqMap.get(req)[0] ) ));
       jplReq.add( new JLabel( "" + CPSCalculations.roundQuarter( reqMap.get(req)[1] ) ));
       jplReq.add( new JLabel( reqMap.get(req)[2].toString() ));
@@ -363,18 +375,29 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 
 
     jplFlats = new JPanel( new MigLayout( "",
-                                          "align right, 15%:" ));
+                                          "[align right, 15%:][align center, 2%:][align right, 15%:]" ));
     jplFlats.add( new JLabel( "Flat Size" ), "align center" );
-    jplFlats.add( new JLabel( "<html><center>" + "Total<br>Flats" + "</center></html>" ) );
+    jplFlats.add( new JLabel( "<html><center>" + "Total<br>Flats" + "</center></html>" ), "skip 1" );
     jplFlats.add( new JLabel( "<html><center>" + "Max<br>Flats" + "</center></html>" ), "wrap" );
+    jplFlats.add( new JSeparator(), "growx, span, wrap" );
+
+    firstRow = true;
     for ( String flat : flatSizes ) {
       jplFlats.add( new JLabel( flat ) );
+      if ( firstRow ) {
+        jplFlats.add( new JSeparator( SwingConstants.VERTICAL ), "growy, spany" );
+        firstRow = false;
+      }
       jplFlats.add( new JLabel( flatMap.get(flat)[0].toString() ));
       jplFlats.add( new JLabel( "" + CPSCalculations.roundQuarter( flatMap.get(flat)[1] )), "wrap" );
     }
 
 
     rebuildContentPanel();
+
+//    progBar.setVisible(false);
+    updateButton.setEnabled(true);
+    jplContents.setCursor(Cursor.getDefaultCursor());
 
   }
 
