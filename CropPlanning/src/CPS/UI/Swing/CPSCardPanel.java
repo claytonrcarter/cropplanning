@@ -93,6 +93,18 @@ public class CPSCardPanel extends JPanel implements ItemListener {
 
   }
 
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+    cb.setEnabled(enabled);
+    JPanel jp = (JPanel) cards.getComponent( cb.getSelectedIndex() );
+    for (int i = 0; i < jp.getComponentCount(); i++) {
+      jp.getComponent(i).setEnabled(enabled);
+    }
+  }
+
+
   public void itemStateChanged(ItemEvent evt) {
     CardLayout cl = (CardLayout)(cards.getLayout());
     cl.show(cards, (String)evt.getItem());

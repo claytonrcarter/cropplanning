@@ -68,6 +68,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
    private CPSButtonGroup /* bgDates, */ bgSeedMethod;
    private ArrayList<JLabel> anonLabels;
+   private CPSCardPanel columnFour;
 
    private Date lastDatePlant, lastDateTP, lastDateHarvest;
 
@@ -473,7 +474,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       JPanel columnOne = new JPanel( new MigLayout( migPanelDefaults ));
       JPanel columnTwo = new JPanel( new MigLayout( migPanelDefaults ));
       JPanel columnThree = new JPanel( new MigLayout( migPanelDefaults ));
-      JPanel columnFour;
 
       JLabel tempLabel;
 
@@ -878,7 +878,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
       tfldDateTP.setEnabled( b );
       if ( ( (String) cmbDates.getSelectedItem() )
-                              .equalsIgnoreCase( DATE_ACTUAL ) )
+                              .equalsIgnoreCase( DATE_ACTUAL ) ||
+              ( ! ( isRecordDisplayed() && b )))
         chkDoneTP.setEnabled( b );
       tfldInRowSpace.setEnabled(b);
       tfldTimeToTP.setEnabled( b );
@@ -886,6 +887,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldFlatsNeeded.setEnabled( b );
       tfldPlantsNeeded.setEnabled(b);
       tfldPlantsToStart.setEnabled( b );
+
+      columnFour.setEnabled(b);
 
       if ( b ) {
         lblSeedsPer.setText("Seeds/Cell");

@@ -53,6 +53,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private JLabel lblSeedDS, lblSeedTP;
 
    private ArrayList<JLabel> anonLabels;
+   private CPSCardPanel columnFour;
    
    private CPSCrop displayedCrop;
       
@@ -279,20 +280,24 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tempLabel = new JLabel("Crop Name:");
       jplName.add( tempLabel,    "right align" );
       jplName.add( tfldCropName, "wrap" );
+      anonLabels.add( tempLabel );
 
       tempLabel = new JLabel( "Variety:" );
       jplName.add( tempLabel,    "right align" );
       jplName.add( tfldVarName, "wrap" );
+      anonLabels.add( tempLabel );
 
       tempLabel = new JLabel( "Family:" );
       jplName.add( tempLabel,    "right align" );
       jplName.add( tfldFamName, "wrap" );
+      anonLabels.add( tempLabel );
 
       jplName.add( new JSeparator(), "growx, span 2, wrap" );
 
       tempLabel = new JLabel( "Description:" );
       jplName.add( tempLabel,    "right align" );
       jplName.add( new JScrollPane( tareDesc ), "wrap" );
+      anonLabels.add( tempLabel );
 
 
       /* ***********************************/
@@ -304,6 +309,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tempLabel = new JLabel( "Maturity Days:" );
       jplPlanting.add( tempLabel, "align center, split 2, span 5 " );
       jplPlanting.add( tfldMatDays, "wrap" );
+      anonLabels.add( tempLabel );
       
       jplPlanting.add( chkDS, "align center, span 2" );
       jplPlanting.add( new JSeparator( JSeparator.VERTICAL ), "growy, spany" );
@@ -377,6 +383,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tempLabel.setToolTipText( "e.g. bunches, heads, lbs, kgs, etc" );
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldUnits, "wrap" );
+      anonLabels.add( tempLabel );
 
       if ( CPSGlobalSettings.useMetric() )
         tempLabel = new JLabel( "Total Yield/Meter" );
@@ -384,11 +391,13 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
         tempLabel = new JLabel( "Total Yield/Ft" );
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldPerFoot, "wrap" );
+      anonLabels.add( tempLabel );
       
       tempLabel = new JLabel( "Value/Unit" );
       tempLabel.setToolTipText("How much is each unit worth?");
       jplYield.add( tempLabel, "align right" );
       jplYield.add( tfldYieldUnitValue, "wrap" );
+      anonLabels.add( tempLabel );
 
       tempLabel = new JLabel( "Yields for (wks)" );
       tempLabel.setToolTipText( "Approx. how many weeks do you expect to " +
@@ -470,17 +479,16 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplNotes.add( btn, "span 2, align right" );
 
       
-      CPSCardPanel columnFour =
-              new CPSCardPanel( new String[] {
-                                               "Notes",
-                                               "Yield Info",
-                                               "Seed Info",
-                                               "Misc Info" },
-                                new JPanel[] {
-                                               jplNotes,
-                                               jplYield,
-                                               jplSeeds,
-                                               jplMisc } );
+      columnFour =  new CPSCardPanel( new String[] {
+                                                     "Notes",
+                                                     "Yield Info",
+                                                     "Seed Info",
+                                                     "Misc Info" },
+                                      new JPanel[] {
+                                                     jplNotes,
+                                                     jplYield,
+                                                     jplSeeds,
+                                                     jplMisc } );
       
       /* *************************************/
       /* BOTTOW ROW                          */
@@ -584,6 +592,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tareOtherReq.setEnabled( b );
       tareKeywords.setEnabled( b );
       tareNotes.setEnabled( b );
+
+      columnFour.setEnabled(b);
 
       chkDS.setEnabled( b );
       chkTP.setEnabled( b );
