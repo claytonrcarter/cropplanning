@@ -5,7 +5,6 @@
 
 package CPS.Module;
 
-import java.awt.GridBagLayout;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;

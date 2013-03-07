@@ -24,19 +24,19 @@
 package CPS.UI.Swing;
 
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.jdesktop.swingx.JXHeader;
+import javax.swing.JSeparator;
+import net.miginfocom.swing.MigLayout;
+import org.jdesktop.swingx.JXTitledPanel;
 
 public abstract class CPSDialog extends JDialog {
 
-    protected JXHeader header;
+    protected JXTitledPanel header;
     private JPanel jplMain;
     protected JPanel jplContents;
     private JPanel jplButtons;
@@ -46,13 +46,11 @@ public abstract class CPSDialog extends JDialog {
     public CPSDialog ( String title ) {
         
         super( (JFrame) null, true );
-        header = new JXHeader();
+        header = new JXTitledPanel();
+        header.setBorder(BorderFactory.createEmptyBorder());
         setTitle( title );
-//        header.setOpaque(false);
-//        header.setIcon(null);
         
         initContentsPanel();
-//        buildContentsPanel();
         
         initButtonPanel();
         fillButtonPanel();
@@ -66,12 +64,9 @@ public abstract class CPSDialog extends JDialog {
     
     @Override public Component add( Component arg0 ) {
         if ( ! ( arg0 instanceof JPanel )) {
-            JPanel jp = new JPanel();
-            jp.setLayout( new BoxLayout( jp, BoxLayout.LINE_AXIS ));
+            JPanel jp = new JPanel( new MigLayout("wrap 1, align left, gapy 0px!, insets 2px") );
             jp.setBorder( BorderFactory.createEmptyBorder(0, 10, 0, 10));
             jp.add( arg0 );
-            jp.add( Box.createHorizontalGlue());
-            jp.setAlignmentX( Component.LEFT_ALIGNMENT );
             return jplContents.add( jp );
         }
         else
@@ -83,38 +78,8 @@ public abstract class CPSDialog extends JDialog {
         buildContentsPanel();
 
         if ( show ) {
-            
-            // I really don't get all of this, it would seem easier to just
-            // have a setWidth method, but we don't have that option.  Having tried
-            // a number of different approaches, this seems to work, more or less.
-            
-            // limit the width of the header, forcing the description to wrap itself
-            header.setMaximumSize( new Dimension( jplContents.getPreferredSize().width, 
-                                                  Integer.MAX_VALUE ) );
-            
-            // now reset everything for the limited width
-            pack();
-            
-            // now set the preferred height for the dialog, using the new
-            // height for the header (which was just reset by the pack)
-            setPreferredSize( new Dimension( jplContents.getPreferredSize().width, 
-                                             header.getPreferredSize().height +
-                                             jplContents.getPreferredSize().height +
-                                             jplButtons.getPreferredSize().height ) );
-            
-            // and redraw again, recalculating everything again
-            pack();
-
-            // and again we reset the preferred size
-            setPreferredSize( new Dimension( jplContents.getPreferredSize().width, 
-                                             header.getPreferredSize().height +
-                                             jplContents.getPreferredSize().height +
-//                                             jplButtons.getPreferredSize().height ) );
-                                             jplButtons.getPreferredSize().height + 25 ) );
-            
-            // one last pack will ready everything for viewing.
-            pack();
-                        
+          pack();
+          setResizable(false);
         }
         super.setVisible( show );
     }
@@ -124,22 +89,25 @@ public abstract class CPSDialog extends JDialog {
         super.setTitle(s);
         header.setTitle(s); 
     }
-    public void setDescription( String s ) { header.setDescription(s); }
+    public void setDescription( String s ) {
+      JPanel jpl = new JPanel( new MigLayout( "insets n n 0px n, fillx") );
+      jpl.add( new JLabel( "<html>" + s + "</html>" ), "wrap" );
+      jpl.add( new JSeparator( JSeparator.HORIZONTAL ), "growx, wrap" );
+      header.setContentContainer(jpl);
+    }
     
     protected void buildMainPanel() {
         
-        jplMain = new JPanel();
-        jplMain.setLayout( new BoxLayout( jplMain, BoxLayout.PAGE_AXIS ) );
-        jplMain.add( header );
-        jplContents.setAlignmentX( Component.CENTER_ALIGNMENT );
-        jplMain.add( jplContents );
-        jplMain.add( jplButtons );
+        jplMain = new JPanel( new MigLayout("wrap 1, gapy 0px!, insets 2px") );
+        jplMain.add( header, "growx" );
+        jplMain.add( jplContents, "align center" );
+        jplMain.add( jplButtons, "align right" );
         
     }
     
     protected void initContentsPanel() {
         
-        jplContents = new JPanel();
+        jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px"));
         jplContents.setLayout( new BoxLayout( jplContents, BoxLayout.PAGE_AXIS ));
         
     }
@@ -147,11 +115,8 @@ public abstract class CPSDialog extends JDialog {
     
     protected void initButtonPanel() {
         
-        jplButtons = new JPanel();
-        jplButtons.setLayout( new FlowLayout( FlowLayout.TRAILING ));
-//        jplButtons.setLayout( new BoxLayout( jplButtons, BoxLayout.LINE_AXIS ));
+        jplButtons = new JPanel(new MigLayout("gapy 0px!, insets 2px", "align right"));
         jplButtons.setBorder( BorderFactory.createEmptyBorder(0, 10, 5, 10));
-//        jplButtons.add( Box.createHorizontalGlue() );
         
     }
     
@@ -159,5 +124,5 @@ public abstract class CPSDialog extends JDialog {
     protected void addButton( Component comp ) {
        jplButtons.add( comp ); 
     }
-    
+
 }

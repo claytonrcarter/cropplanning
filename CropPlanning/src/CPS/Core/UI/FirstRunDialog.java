@@ -49,19 +49,19 @@ public class FirstRunDialog extends CPSDialog implements ActionListener {
         super( title );
         setTitle( "Welcome to Crop Planning Software" );
         
-        setDescription( "It appears that this is your first time running " + 
-                        "this program.  Please select the folder or directory " +
-                        "where you would like this program to store it's " +
-                        "data.  (You can change this later.)  If this is " +
-                        "not the first time you've run this program, then " +
-                        "it seems that your settings (but not necessarily " +
-                        "your data) have been lost.  Just choose the folder " +
-                        "or directory you where your data files are stored.  " +
+        setDescription( "It appears that this is your first time running<br>" +
+                        "this program.  Please select the folder or directory<br>" +
+                        "where you would like this program to store it's<br>" +
+                        "data.  (You can change this later.)  If this is<br>" +
+                        "not the first time you've run this program, then<br>" +
+                        "it seems that your settings (but not necessarily<br>" +
+                        "your data) have been lost.  Just choose the folder<br>" +
+                        "or directory you where your data files are stored.<br>" +
                         "(The data files have names that start with \"CPSdb\".)" );
         
         defaultDirectory = defaultDir;
-        flchOutDir.setSelectedFile( new File( defaultDirectory ));
-        lblOutDir.setText( flchOutDir.getSelectedFile().getAbsolutePath() );
+//        flchOutDir.setSelectedFile( new File( defaultDirectory ));
+//        lblOutDir.setText( flchOutDir.getSelectedFile().getAbsolutePath() );
         
         
     }
@@ -78,13 +78,15 @@ public class FirstRunDialog extends CPSDialog implements ActionListener {
         
         flchOutDir = new JFileChooser();
         flchOutDir.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-//        flchOutDir.setSelectedFile( new File( defaultDirectory ));
+        flchOutDir.setSelectedFile( new File( defaultDirectory ));
         
-//        lblOutDir = new JLabel( flchOutDir.getSelectedFile().getAbsolutePath() );
-        lblOutDir = new JLabel();
+        lblOutDir = new JLabel( flchOutDir.getSelectedFile().getAbsolutePath() );
         lblOutDir.setAlignmentX( Component.CENTER_ALIGNMENT );
         jplContents.add( lblOutDir );
-        
+
+        if ( ! lblOutDir.getText().equals("") )
+          btnDone.setEnabled(true);
+
         add( jplContents );
         
     }
@@ -93,12 +95,13 @@ public class FirstRunDialog extends CPSDialog implements ActionListener {
 
         btnChoose = new JButton( "Choose Output Directory" );
         btnDone = new JButton( "Done" );
+        btnDone.setEnabled(false);
         
         btnChoose.addActionListener( this );
         btnDone.addActionListener( this );
         
-        jplContents.add( btnChoose );
-        jplContents.add( btnDone );
+        addButton( btnChoose );
+        addButton( btnDone );
         
     }
     
@@ -113,7 +116,8 @@ public class FirstRunDialog extends CPSDialog implements ActionListener {
            flchOutDir.setVisible(true);
            int status = flchOutDir.showDialog( jplContents, "Accept" ); 
             if ( status == JFileChooser.APPROVE_OPTION ) {
-                lblOutDir.setText( flchOutDir.getSelectedFile().getPath() );   
+                lblOutDir.setText( flchOutDir.getSelectedFile().getPath() );
+                btnDone.setEnabled(true);
             }
         }    
         else if ( action.equalsIgnoreCase( btnDone.getText() )) {
@@ -124,6 +128,7 @@ public class FirstRunDialog extends CPSDialog implements ActionListener {
     // For testing
     public static void main(String[] args) {        
         new FirstRunDialog( "Title", "." ).setVisible(true);
+        System.exit(0);
     }
     
 }

@@ -27,11 +27,8 @@ import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSDialog;
-import CPS.UI.Swing.LayoutAssist;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -53,6 +50,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
+import net.miginfocom.swing.MigLayout;
 
 public class PlanManager extends CPSDialog implements ActionListener {
 
@@ -69,7 +67,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    public PlanManager() {
       super( "Manage and Select Crop Plans" );
-      setDescription( "Manage crop plans: create, delete, alter properties and select for editting." );
+      setDescription( "Manage crop plans: create, delete, alter properties<br>and select for editting." );
       
       tempCal = new GregorianCalendar();
       listOfValidCropPlans = new ArrayList<String>();
@@ -260,16 +258,14 @@ public class PlanManager extends CPSDialog implements ActionListener {
                                                spnYear.getPreferredSize().height ));
       tfldDesc = new JTextField( 20 );
       
-      JPanel jplCont = new JPanel();
-      jplCont.setBorder( BorderFactory.createEmptyBorder() );
-      jplCont.setLayout( new GridBagLayout() );
+      JPanel jplCont = new JPanel( new MigLayout( "gapy 0px!, insets 2px", "[align right][]") );
         
-      LayoutAssist.addLabel(     jplCont, 0, 0, new JLabel( "Plan:" ) );
-      LayoutAssist.addComboBox(  jplCont, 1, 0, cmboPlanList );
-      LayoutAssist.addLabel(     jplCont, 0, 1, new JLabel( "Year:" ) );
-      LayoutAssist.addComponent( jplCont, 1, 1, spnYear );
-      LayoutAssist.addLabel(     jplCont, 0, 2, new JLabel( "Description:" ) );
-      LayoutAssist.addTextField( jplCont, 1, 2, tfldDesc );      
+      jplCont.add( new JLabel( "Plan:" ) );
+      jplCont.add( cmboPlanList, "wrap" );
+      jplCont.add( new JLabel( "Year:" ) );
+      jplCont.add( spnYear, "wrap" );
+      jplCont.add( new JLabel( "Description:" ) );
+      jplCont.add( tfldDesc, "wrap" );
       
       jplCont.setBorder( BorderFactory.createEmptyBorder( 10, 10, 0, 10));
 
@@ -399,7 +395,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
                              List<String> oldPlans,
                              CPSDataModel dm ) {
       super("Create New Plan");
-      setDescription("What kind of plan do you want to create?");
+      setDescription("What kind of plan do you want<br>to create?");
 
       this.newPlan = newPlan;
       this.oldPlans = oldPlans;
@@ -458,8 +454,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
 
 
 
-      JPanel jplCont = new JPanel();
-      jplCont.setLayout( new GridBagLayout() );
+      JPanel jplCont = new JPanel( new MigLayout( "gapy 0px!, insets 2px", "[align right][]") );
 
       JLabel lblBasedOn = new JLabel( "<html><font size=\"-2\">" +
       "If you select the 'based on' option, all of your<br>" +
@@ -482,13 +477,12 @@ public class PlanManager extends CPSDialog implements ActionListener {
               "</font></html>" );
 
       int r = 1;
-      LayoutAssist.addButton(         jplCont, 0, r++, 2, 1, rdoBlank );
-      LayoutAssist.addButton(         jplCont, 0, r,   rdoBasedOn );
-      LayoutAssist.addComboBox(       jplCont, 1, r++, cmbPlans );
-      LayoutAssist.addLabelLeftAlign( jplCont, 0, r++, 2, 1, lblBasedOn );
-      LayoutAssist.addComponent(      jplCont, 0, r++, 2, 1, chkLockOld,
-                                      GridBagConstraints.CENTER );
-      LayoutAssist.addLabelLeftAlign( jplCont, 0, r++, 2, 1, lblLock );
+       jplCont.add( rdoBlank, "span 2, align left, wrap" );
+       jplCont.add( rdoBasedOn, "align left" );
+       jplCont.add( cmbPlans, "wrap" );
+       jplCont.add( lblBasedOn, "span 2, wrap" );
+       jplCont.add( chkLockOld, "span 2, align center, wrap" );
+       jplCont.add( lblLock, "span 2, wrap" );
 
       
       jplCont.setBorder( BorderFactory.createEmptyBorder( 10, 10, 0, 10));

@@ -45,7 +45,6 @@ public class CPSTextArea extends JTextArea implements CPSTextComponent {
         this.getDocument().addDocumentListener( new CPSDocumentChangeListener(this) );
         
         // these are taken from http://forum.java.sun.com/thread.jspa?forumID=57&threadID=609727
-        // also make a change in LayoutAssist, set ScrollPane to not focusable
         this.setFocusTraversalKeys( KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
         this.setFocusTraversalKeys( KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null );
 

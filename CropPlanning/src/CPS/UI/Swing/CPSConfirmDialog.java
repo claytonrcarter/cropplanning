@@ -61,11 +61,7 @@ public class CPSConfirmDialog extends CPSDialog
   }
 
   @Override
-  protected void fillButtonPanel() {
-
-
-
-  }
+  protected void fillButtonPanel() {}
 
   public void actionPerformed(ActionEvent e) {
     Object source = e.getSource();
@@ -76,6 +72,9 @@ public class CPSConfirmDialog extends CPSDialog
     setVisible(false);
   }
 
-
+  public static void main(String[] args) {
+    new CPSConfirmDialog("fart").setVisible(true);
+    System.exit(0);
+  }
 
 }

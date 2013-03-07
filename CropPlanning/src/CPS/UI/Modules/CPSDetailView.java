@@ -26,12 +26,9 @@ import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSGlobalSettings;
-import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -198,27 +195,8 @@ public abstract class CPSDetailView extends CPSDataModelUser
         return jplDetails;       
     }
     protected abstract void buildDetailsPanel();
-    protected void initDetailsPanel() {
-       jplDetails = initPanelWithGridBagLayout();
-    }
-    protected JPanel initPanelWithGridBagLayout() {
-       JPanel p  = new JPanel();
-       p.setLayout( new GridBagLayout() );
-       p.setAlignmentX( JPanel.LEFT_ALIGNMENT );
-       p.setAlignmentY( JPanel.TOP_ALIGNMENT );
-       return p;
-    }
-    protected JPanel initPanelWithVerticalBoxLayout() {
-       JPanel p  = new JPanel();
-       p.setLayout( new BoxLayout( p, BoxLayout.PAGE_AXIS ) );
-       p.setAlignmentX( JPanel.LEFT_ALIGNMENT );
-       p.setAlignmentY( JPanel.TOP_ALIGNMENT );
-       return p;
-    }
+
     
-//    public void refreshView() {
-//        displayRecord( getDisplayedRecord() );
-//    }
     protected void selectRecordsInMasterView( List<Integer> ids ) {
         uiManager.selectRecordsInMasterView( ids );
     }
