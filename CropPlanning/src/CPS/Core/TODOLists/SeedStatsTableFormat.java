@@ -21,9 +21,9 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
 
     public int getColumnCount() {
       if ( outputFormat == TODOLists.TL_FORMAT_PDF )
-        return 14;
-      else
         return 15;
+      else
+        return 16;
     }
 
     public String getColumnName( int col ) {
@@ -54,6 +54,8 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
                 return p.getDatum( CPSPlanting.PROP_SEED_NEEDED ).getName() + " (US)";
               else if ( col == 13 + csvOffset )
                 return p.getDatum( CPSPlanting.PROP_SEED_NEEDED ).getName() + " (Metric)";
+              else if ( col == 14 + csvOffset )
+                return "Seeds Needed (count)";
               else
                 return "";
         }
@@ -121,6 +123,10 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
                   s = p.formatFloat( p.getSeedNeeded() / 2.204f, 2 );
                   t = "kg";
                 }
+              }
+              else if ( col == 14 + csvOffset ) {
+                // seeds needed (by count)
+                s = "" + Math.ceil( p.getSeedNeeded() * p.getSeedsPerUnit() );
               }
               else
                 s = "";
