@@ -107,7 +107,7 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop>
         switch ( colNum ) {
             case 0: return c.getCropName();
             case 1: return c.getVarietyName();
-            case 2: return c.getMaturityDaysString();
+            case 2: return c.getMaturityDays();
 
             case 3: return c.getCropDescription();
             case 4: return c.getFamilyName();
@@ -121,32 +121,32 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop>
             case 10: return c.isFrostHardy();
 
             case 11: return c.isDirectSeeded();
-            case 12: return c.getDSMaturityAdjustString();
-            case 13: return c.getDSRowsPerBedString();
-            case 14: return c.getDSSpaceBetweenRowString();
+            case 12: return c.getDSMaturityAdjust();
+            case 13: return c.getDSRowsPerBed();
+            case 14: return c.getDSSpaceBetweenRow();
             case 15: return c.getDSPlantNotes();
 
             case 16: return c.isTransplanted();
-            case 17: return c.getTPMaturityAdjustString();
-            case 18: return c.getTPRowsPerBedString();
-            case 19: return c.getTPSpaceBetweenRowString();
-            case 20: return c.getTPSpaceInRowString();
-            case 21: return c.getTPTimeInGHString();
+            case 17: return c.getTPMaturityAdjust();
+            case 18: return c.getTPRowsPerBed();
+            case 19: return c.getTPSpaceBetweenRow();
+            case 20: return c.getTPSpaceInRow();
+            case 21: return c.getTPTimeInGH();
             case 22: return c.getTPFlatSize();
             case 23: return c.getTPPlantNotes();
             case 24: return c.isPottedUp();
             case 25: return c.getTPPotUpNotes();
 
-            case 26: return c.getYieldPerFootString();
-            case 27: return c.getYieldNumWeeksString();
-            case 28: return c.getYieldPerWeekString();
+            case 26: return c.getYieldPerFoot();
+            case 27: return c.getYieldNumWeeks();
+            case 28: return c.getYieldPerWeek();
             case 29: return c.getCropYieldUnit();
-            case 30: return c.getCropUnitValueString();
+            case 30: return c.getCropUnitValue();
 
-            case 31: return c.getSeedsPerUnitString();
+            case 31: return c.getSeedsPerUnit();
             case 32: return c.getSeedUnit();
-            case 33: return c.getSeedsPerDSString();
-            case 34: return c.getSeedsPerTPString();
+            case 33: return c.getSeedsPerDS();
+            case 34: return c.getSeedsPerTP();
 
             default: return "";
         }

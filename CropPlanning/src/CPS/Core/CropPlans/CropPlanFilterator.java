@@ -32,6 +32,7 @@ public class CropPlanFilterator implements TextFilterator<CPSPlanting>{
     public void getFilterStrings( List<String> baseList, CPSPlanting planting ) {
         baseList.add( planting.getCropName() );
         baseList.add( planting.getVarietyName() );
+        baseList.add( planting.getFamilyName() );
         baseList.add( planting.getGroups() );
         baseList.add( planting.getLocation() );
         baseList.add( planting.getKeywords() );

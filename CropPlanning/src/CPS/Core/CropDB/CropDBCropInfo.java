@@ -152,6 +152,8 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       setTPComponentsEnabled( displayedCrop.isTransplanted() );
 
       setAllComponentsEnabled( isRecordDisplayed() );
+      setDSComponentsEnabled( displayedCrop.isDirectSeeded() );
+      setTPComponentsEnabled( displayedCrop.isTransplanted() );
    }
    
    @Override
@@ -509,21 +511,33 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    }
 
    private void setDSComponentsEnabled( boolean b ) {
-      lblDSMat.setEnabled( b );
-      lblDSRowsPB.setEnabled( b );
-      lblDSSpace.setEnabled( b );
-      lblDSNotes.setEnabled( b );
+     setDSComponentsEnabled(b, true);
+   }
+   private void setDSComponentsEnabled( boolean b, boolean labelsToo ) {
+
+     if ( labelsToo ) {
+       lblDSMat.setEnabled( b );
+       lblDSRowsPB.setEnabled( b );
+       lblDSSpace.setEnabled( b );
+       lblDSNotes.setEnabled( b );
+
+       lblSeedDS.setEnabled(b);
+     }
 
       tfldDSMatAdjust.setEnabled( b );
       tfldDSRowsPerBed.setEnabled( b );
       tfldDSSpaceBetRows.setEnabled( b );
       tfldDSPlantNotes.setEnabled( b );
 
-      lblSeedDS.setEnabled(b);
       tfldSeedsPerDS.setEnabled(b);
    }
 
    private void setTPComponentsEnabled( boolean b ) {
+     setTPComponentsEnabled( b, true );
+   }
+   private void setTPComponentsEnabled( boolean b, boolean labelsToo ) {
+
+     if ( labelsToo ) {
       lblTPMat.setEnabled( b );
       lblTPRows.setEnabled( b );
       lblTPSpace.setEnabled( b );
@@ -531,6 +545,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       lblTPFlat.setEnabled( b );
       lblTPWeeks.setEnabled( b );
       lblTPNotes.setEnabled( b );
+
+      lblSeedTP.setEnabled(b);
+     }
 
       tfldTPMatAdjust.setEnabled( b );
       tfldTPRowsPerBed.setEnabled( b );
@@ -540,7 +557,6 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldTPWeeksToTP.setEnabled( b );
       tfldTPPlantNotes.setEnabled( b );
 
-      lblSeedTP.setEnabled(b);
       tfldSeedsPerTP.setEnabled(b);
    }
 
@@ -551,17 +567,11 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldVarName.setEnabled( b );
       tfldFamName.setEnabled( b );
       tfldMatDays.setEnabled( b );
-      tfldDSMatAdjust.setEnabled( b );
-      tfldDSRowsPerBed.setEnabled( b );
-      tfldDSSpaceBetRows.setEnabled( b );
-      tfldDSPlantNotes.setEnabled( b );
-      tfldTPMatAdjust.setEnabled( b );
-      tfldTPRowsPerBed.setEnabled( b );
-      tfldTPSpaceInRow.setEnabled( b );
-      tfldTPSpaceBetRows.setEnabled( b );
-      tfldTPFlatSize.setEnabled( b );
-      tfldTPWeeksToTP.setEnabled( b );
-      tfldTPPlantNotes.setEnabled( b );
+
+      // false because we'll do the labels later
+      setDSComponentsEnabled(b, false);
+      setTPComponentsEnabled(b, false);
+
       tfldYieldPerWeek.setEnabled( b );
       tfldYieldWeeks.setEnabled( b );
       tfldYieldPerFoot.setEnabled( b );

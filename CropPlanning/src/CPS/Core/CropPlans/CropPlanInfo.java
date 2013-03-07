@@ -46,11 +46,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
    private CPSTextField tfldCropName, tfldVarName, tfldMatDays, tfldLocation;
    private JComboBox cmbDates;
-//   private CPSRadioButton rdoDateEff, rdoDatePlan, rdoDateAct;
    private CPSTextField tfldDatePlant, tfldDateTP, tfldDateHarvest;
    private CPSCheckBox chkDonePlant, chkDoneTP, chkDoneHarvest, chkIgnore, chkFrostHardy;
    private CPSRadioButton rdoDS, rdoTP;
-   private JLabel lblDateTP, lblTimeToTP, lblFlatSize, lblFlatsNeeded, lblPlantsToStart;
+   private JLabel lblDateTP, lblTimeToTP, lblFlatSize, lblFlatsNeeded, lblPlantsToStart,
+                  lblInRowSpace, lblPlantsNeeded;
    private CPSTextField tfldMatAdjust, tfldTimeToTP, tfldRowsPerBed, tfldInRowSpace, tfldBetRowSpace,
                         tfldFlatSize;
    private CPSTextField tfldBedsToPlant, tfldRowFtToPlant, tfldPlantsNeeded,
@@ -215,10 +215,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        
        setAllComponentsEnabled( isRecordDisplayed() && ! displayedPlanting.getIgnore() );
 
-
        displayDates();
 
        displayDSTPProperties();
+       if ( isRecordDisplayed() )
+         setTPComponentsEnabled( displayedPlanting.isTransplanted() );
 
        if ( chkIgnore.isSelected() )
           setStatus( CPSMasterDetailModule.STATUS_IGNORED );
@@ -564,11 +565,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplPlanting.add( tfldBetRowSpace, "wrap" );
       anonLabels.add( tempLabel );
       
-      tempLabel = new JLabel( "Plant Spacing" );
-      tempLabel.setToolTipText("Spacing between plants within the row (in or cm)");
-      jplPlanting.add( tempLabel, "align right" );
+      lblInRowSpace = new JLabel( "Plant Spacing" );
+      lblInRowSpace.setToolTipText("Spacing between plants within the row (in or cm)");
+      jplPlanting.add( lblInRowSpace, "align right" );
       jplPlanting.add( tfldInRowSpace, "wrap" );
-      anonLabels.add( tempLabel );
+      anonLabels.add( lblInRowSpace );
       
       jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
       
@@ -581,18 +582,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplPlanting.add( lblTimeToTP, "align right" );
       jplPlanting.add( tfldTimeToTP, "wrap" );
       anonLabels.add( lblTimeToTP );
-      
-//      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
-      
-//      tempLabel = new JLabel( "Crop Notes" );
-//      jplPlanting.add( tempLabel, "align right" );
-//      jplPlanting.add( tarePlantingNotesCrop, "wrap" );
-//      anonLabels.add( tempLabel );
-      
-//      tempLabel = new JLabel( "Planting Notes" );
-//      jplPlanting.add( tempLabel, "align right" );
-//      jplPlanting.add( tfldPlantingNotes, "wrap" );
-//      anonLabels.add( tempLabel );
 
       columnTwo.add( jplPlanting );
            
@@ -616,10 +605,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       jplAmount.add( tfldRowFtToPlant, "wrap" );
       anonLabels.add( tempLabel );
       
-      tempLabel = new JLabel( "Plants Needed" );
-      jplAmount.add( tempLabel, "align right" );
+      lblPlantsNeeded = new JLabel( "Plants Needed" );
+      jplAmount.add( lblPlantsNeeded, "align right" );
       jplAmount.add( tfldPlantsNeeded, "wrap" );
-      anonLabels.add( tempLabel );
+      anonLabels.add( lblPlantsNeeded );
       
       lblPlantsToStart = new JLabel( "Plants to Start" );
       jplAmount.add( lblPlantsToStart, "align right" );
@@ -880,16 +869,22 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
    private void setTPComponentsEnabled( boolean b ) {
       lblDateTP.setEnabled( b );
+      lblInRowSpace.setEnabled(b);
       lblTimeToTP.setEnabled( b );
       lblFlatSize.setEnabled( b );
       lblFlatsNeeded.setEnabled( b );
+      lblPlantsNeeded.setEnabled(b);
       lblPlantsToStart.setEnabled( b );
 
       tfldDateTP.setEnabled( b );
-      chkDoneTP.setEnabled( b );
+      if ( ( (String) cmbDates.getSelectedItem() )
+                              .equalsIgnoreCase( DATE_ACTUAL ) )
+        chkDoneTP.setEnabled( b );
+      tfldInRowSpace.setEnabled(b);
       tfldTimeToTP.setEnabled( b );
       tfldFlatSize.setEnabled( b );
       tfldFlatsNeeded.setEnabled( b );
+      tfldPlantsNeeded.setEnabled(b);
       tfldPlantsToStart.setEnabled( b );
 
       if ( b ) {
@@ -1048,8 +1043,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       
       tempPlanting.setDirectSeeded( rdoDS.isSelected() );
 
+      // save our current or saved state
       boolean initState = displayedPlanting.isDirectSeeded();
-      
+
+      // set the displayed planting to act like what's been selected
+      // and update the display
       displayedPlanting.setDirectSeeded( rdoDS.isSelected() );
       tfldMatAdjust.setInitialText( displayedPlanting.getMatAdjustString(),
                                     displayedPlanting.getMatAdjustState() );
@@ -1061,6 +1059,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
                                             displayedPlanting.getPlantingNotesInheritedState() );
       tfldSeedsPer.setInitialText( displayedPlanting.getSeedsPerString(),
                                    displayedPlanting.getSeedsPerState() );
+
+      // then reset the "saved" planting
       displayedPlanting.setDirectSeeded( initState );
       
    }

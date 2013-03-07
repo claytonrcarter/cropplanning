@@ -246,6 +246,7 @@ public final class CPSCrop extends CPSRecord {
        a.add( PROP_BOT_NAME );
        a.add( PROP_MATURITY );
        a.add( PROP_GROUPS );
+       a.add( PROP_KEYWORDS );
        a.add( PROP_OTHER_REQ );
        a.add( PROP_FROST_HARDY );
        
@@ -300,11 +301,11 @@ public final class CPSCrop extends CPSRecord {
    
     public String getFamilyName() { return get( PROP_FAM_NAME ); }
     public CPSDatumState getFamilyNameState() { return getStateOf( PROP_FAM_NAME ); }
-    public void setFamilyName( String e ) { set( familyName, e ); }
+    public void setFamilyName( String e ) { set( familyName, parseInheritableString(e) ); }
 
     public String getBotanicalName() { return get( PROP_BOT_NAME ); }
     public CPSDatumState getBotanicalNameState() { return getStateOf( PROP_BOT_NAME ); }
-    public void setBotanicalName( String e ) { set( botanicalName, e ); }
+    public void setBotanicalName( String e ) { set( botanicalName, parseInheritableString(e) ); }
 
     public Integer getMaturityDays() { return getInt( PROP_MATURITY ); }
     public String getMaturityDaysString() { return getString( PROP_MATURITY ); }
@@ -315,11 +316,11 @@ public final class CPSCrop extends CPSRecord {
 
     public String getGroups() { return get( PROP_GROUPS ); }
     public CPSDatumState getGroupsState() { return getStateOf( PROP_GROUPS ); }
-    public void setGroups( String e ) { set( groups, e ); }
+    public void setGroups( String e ) { set( groups, parseInheritableString(e) ); }
     
     public String getKeywords() { return get( PROP_KEYWORDS ); }
     public CPSDatumState getKeywordsState() { return getStateOf( PROP_KEYWORDS ); }
-    public void setKeywords( String e ) { set( keywords, e ); }
+    public void setKeywords( String e ) { set( keywords, parseInheritableString(e) ); }
 
     public String getNotes() { return get( PROP_NOTES ); }
     public CPSDatumState getNotesState() { return getStateOf( PROP_NOTES ); }
@@ -327,19 +328,19 @@ public final class CPSCrop extends CPSRecord {
 
     public String getOtherRequirements() { return get( PROP_OTHER_REQ ); }
     public CPSDatumState getOtherRequirementsState() { return getStateOf( PROP_OTHER_REQ ); }
-    public void setOtherRequirements( String e ) { set( otherRequirements, e ); }
+    public void setOtherRequirements( String e ) { set( otherRequirements, parseInheritableString(e) ); }
     
     public Boolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }
     public Boolean isFrostTender() { return ! isFrostHardy().booleanValue(); }
     public CPSDatumState getFrostHardyState() { return getStateOf( PROP_FROST_HARDY ); }   
     public void setFrostHardy( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
-          setFrostHardy( new Boolean( true ));
+          setFrostHardy( Boolean.TRUE );
        else
-          setFrostHardy( new Boolean( false ));
+          setFrostHardy( Boolean.FALSE );
     }
     public void setFrostHardy( Boolean b ) { set( frostHardy, b ); }
-    public void setFrostHardy( boolean b ) { setFrostHardy( new Boolean( b )); }
+    public void setFrostHardy( boolean b ) { setFrostHardy( b ); }
     
     /*
      * DIRECT SEEDING STATS
@@ -348,9 +349,9 @@ public final class CPSCrop extends CPSRecord {
     public CPSDatumState getDirectSeededState() { return getStateOf( PROP_DIRECT_SEED ); }   
     public void setDirectSeeded( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
-          setDirectSeeded( new Boolean( true ));
+          setDirectSeeded( Boolean.TRUE );
        else
-          setDirectSeeded( new Boolean( false ));
+          setDirectSeeded( Boolean.FALSE );
     }
     public void setDirectSeeded( Boolean b ) { set( directSeed, b ); }
     public void setDirectSeeded( boolean b ) { setDirectSeeded( new Boolean( b )); }
@@ -378,7 +379,7 @@ public final class CPSCrop extends CPSRecord {
    
     public String getDSPlantNotes() { return get( PROP_DS_PLANT_NOTES  ); }
     public CPSDatumState getDSPlantNotesState() { return getStateOf( PROP_DS_PLANT_NOTES  ); }
-    public void setDSPlantNotes( String s ) { set( dsPlantNotes, s ); }
+    public void setDSPlantNotes( String s ) { set( dsPlantNotes, parseInheritableString(s) ); }
     
     /* 
      * TRANSPLANT STATS
@@ -387,9 +388,9 @@ public final class CPSCrop extends CPSRecord {
     public CPSDatumState getTransplantedState() { return getStateOf( PROP_TRANSPLANT ); }   
     public void setTransplanted( String s ) { 
        if ( s != null && s.equalsIgnoreCase("true") )
-          setTransplanted( new Boolean( true ));
+          setTransplanted( Boolean.TRUE );
        else
-          setTransplanted( new Boolean( false ));
+          setTransplanted( Boolean.FALSE );
     }
     public void setTransplanted( Boolean b ) { set( transplant, b ); }
     public void setTransplanted( boolean b ) { setTransplanted( new Boolean( b )); }
@@ -431,11 +432,11 @@ public final class CPSCrop extends CPSRecord {
    
     public String getTPFlatSize() { return get( PROP_FLAT_SIZE ); }
     public CPSDatumState getTPFlatSizeState() { return getStateOf( PROP_FLAT_SIZE ); }
-    public void setTPFlatSize( String s ) { set( tpFlatSize, s ); }
+    public void setTPFlatSize( String s ) { set( tpFlatSize, parseInheritableString(s) ); }
    
     public String getTPPlantNotes() { return get( PROP_TP_PLANT_NOTES  ); }
     public CPSDatumState getTPPlantNotesState() { return getStateOf( PROP_TP_PLANT_NOTES  ); }
-    public void setTPPlantNotes( String s ) { set( tpPlantNotes, s ); }
+    public void setTPPlantNotes( String s ) { set( tpPlantNotes, parseInheritableString(s) ); }
 
     
     public Boolean isPottedUp() { return getBoolean( PROP_POT_UP ); }
@@ -451,7 +452,7 @@ public final class CPSCrop extends CPSRecord {
     
     public String getTPPotUpNotes() { return get( PROP_POT_UP_NOTES  ); }
     public CPSDatumState getTPPotUpNotesState() { return getStateOf( PROP_POT_UP_NOTES ); }
-    public void setTPPotUpNotes( String s ) { set( tpPotUpNotes, s ); }
+    public void setTPPotUpNotes( String s ) { set( tpPotUpNotes, parseInheritableString(s) ); }
 
    
    
@@ -478,7 +479,7 @@ public final class CPSCrop extends CPSRecord {
    
    public String getCropYieldUnit() { return get( PROP_CROP_UNIT ); }
    public CPSDatumState getCropYieldUnitState() { return getStateOf( PROP_CROP_UNIT ); }
-    public void setCropYieldUnit( String s ) { set( cropYieldUnit, s ); }
+    public void setCropYieldUnit( String s ) { set( cropYieldUnit, parseInheritableString(s) ); }
    
    public Float getCropUnitValue() { return getFloat( PROP_CROP_UNIT_VALUE ); }
    public String getCropUnitValueString() { return formatFloat( (Float) get( PROP_CROP_UNIT_VALUE ) ); }

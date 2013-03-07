@@ -177,7 +177,7 @@ public abstract class CPSRecord {
      else
        return formatInt( d.getValue( useRawOutput() ) );
    }
-   public String formatInt( Integer i ) {
+   public static String formatInt( Integer i ) {
       if ( i == null || i.intValue() == -1 )
          return "";
       else 

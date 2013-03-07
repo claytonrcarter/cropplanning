@@ -562,6 +562,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
       if ( planting == null ) return;
 
+      // clumsy!! TODO fix this to be more elegant
       TableMapping tm = (TableMapping) p.getMapping( CPSCrop.class, CROP_VAR_TABLE );
       String selectSQL = tm.getSelectWhereSql();
       selectSQL += tm.getColumnNameForMethod( "getCropName" ) + " = " + escapeValue( planting.getCropName() );
@@ -604,8 +605,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
       }
 
       if ( parent != null && parent.getID() != -1 ) {
-//         debug( "Inheriting info for planting of [ " + planting.getCropName() + " : " + planting.getVarietyName() + " ] from crop [ " +
-//                 parent.getCropName() + " : " + parent.getVarietyName() + " ]" );
          planting.inheritFrom( parent );
       }
 

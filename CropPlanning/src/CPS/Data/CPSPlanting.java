@@ -42,6 +42,7 @@ public final class CPSPlanting extends CPSRecord {
    // Core Data
    public static final int PROP_CROP_NAME     = CPSDataModelConstants.PROP_CROP_NAME;
    public static final int PROP_VAR_NAME      = CPSDataModelConstants.PROP_VAR_NAME;
+   public static final int PROP_FAM_NAME      = CPSDataModelConstants.PROP_FAM_NAME;
    public static final int PROP_MATURITY      = CPSDataModelConstants.PROP_MATURITY;
    public static final int PROP_LOCATION      = CPSDataModelConstants.PROP_LOCATION;
 
@@ -132,6 +133,7 @@ public final class CPSPlanting extends CPSRecord {
    
    private CPSDatum<String> crop_name;
    private CPSDatum<String> var_name;
+   private CPSDatum<String> fam_name;
    private CPSDatum<Integer> maturity;
    private CPSDatum<String> location;
 
@@ -210,6 +212,7 @@ public final class CPSPlanting extends CPSRecord {
       
       crop_name = new CPSDatum<String>( "Crop", "Name of crop to be planted", "", PROP_CROP_NAME );
       var_name = new CPSDatum<String>( "Variety", "Name of variety to be planted", "", PROP_VAR_NAME );
+      fam_name = new CPSDatum<String>( "Family", "Family name of crop", "", PROP_FAM_NAME );
       maturity = new CPSDatum<Integer>( "Maturity Days", new Integer(0), PROP_MATURITY );
       location = new CPSDatum<String>( "Location", "Where will this be planted", "", PROP_LOCATION );
 
@@ -287,6 +290,7 @@ public final class CPSPlanting extends CPSRecord {
       switch ( prop ) {
           case PROP_CROP_NAME:     return crop_name;
           case PROP_VAR_NAME:      return var_name;
+          case PROP_FAM_NAME:      return fam_name;
           case PROP_MATURITY:      return maturity;
           case PROP_LOCATION:      return location;
 
@@ -386,6 +390,7 @@ public final class CPSPlanting extends CPSRecord {
    public List<Integer> getListOfInheritableProperties() {
       if ( listOfInheritableProperties == null ) {
         listOfInheritableProperties = new ArrayList<Integer>();
+        listOfInheritableProperties.add( PROP_FAM_NAME );
         listOfInheritableProperties.add( PROP_MATURITY );
         listOfInheritableProperties.add( PROP_DS_MAT_ADJUST );
         listOfInheritableProperties.add( PROP_TP_MAT_ADJUST );
@@ -404,7 +409,9 @@ public final class CPSPlanting extends CPSRecord {
         listOfInheritableProperties.add( PROP_CROP_UNIT );
         listOfInheritableProperties.add( PROP_CROP_UNIT_VALUE );
         listOfInheritableProperties.add( PROP_FROST_HARDY  );
+        listOfInheritableProperties.add( PROP_KEYWORDS );
         listOfInheritableProperties.add( PROP_OTHER_REQ );
+        listOfInheritableProperties.add( PROP_GROUPS );
 
         listOfInheritableProperties.add( PROP_SEEDS_PER_UNIT );
         listOfInheritableProperties.add( PROP_SEED_UNIT );
@@ -432,6 +439,10 @@ public final class CPSPlanting extends CPSRecord {
    public String getVarietyName() { return get( PROP_VAR_NAME ); }
    public CPSDatumState getVarietyNameState() { return getStateOf( PROP_VAR_NAME ); }
    public void setVarietyName( String s ) { set( var_name, s ); }
+
+   @NoColumn
+   public String getFamilyName() { return get( PROP_FAM_NAME ); }
+   public void setFamilyName( String s ) { set( fam_name, parseInheritableString(s) ); }
 
    public Integer getMaturityDays() { return getInt( PROP_MATURITY ); }
    public String getMaturityDaysString() { return getString( PROP_MATURITY ); }
@@ -971,6 +982,7 @@ public final class CPSPlanting extends CPSRecord {
    public void setFlatSize( String i ) { set( flat_size, parseInheritableString(i) ); }
 
    @NoColumn
+   // TODO a much better name would be getNotesFromCrop
    public String getPlantingNotesInherited() {
       if ( isDirectSeeded() == null || isDirectSeeded().booleanValue() )
          return get( PROP_DS_CROP_NOTES );
@@ -1460,7 +1472,7 @@ public final class CPSPlanting extends CPSRecord {
 
    public String getKeywords() { return get( PROP_KEYWORDS ); }
    public CPSDatumState getKeywordsState() { return getStateOf( PROP_KEYWORDS ); }
-   public void setKeywords( String e ) { set( keywords, e ); }
+   public void setKeywords( String e ) { set( keywords, parseInheritableString(e) ); }
 
    public String getOtherRequirements() { return get( PROP_OTHER_REQ ); }
    public CPSDatumState getOtherRequirementsState() { return getStateOf( PROP_OTHER_REQ ); }

@@ -112,9 +112,10 @@ public class CPSTable extends JTable {
              getColumnModel().getColumn( i ).setCellEditor( new DateCellEditor() );
           }
           // floating point columns
-          else if ( getColumnClass( i ).equals( new Float( 1f ).getClass() ) ||
-                    getColumnClass( i ).equals( new Double( 1f ).getClass() ) ) {
-             getColumnModel().getColumn( i ).setCellRenderer( new FloatCellRenderer() );
+          else if ( getColumnClass( i ).equals( Float.class )  ||
+                    getColumnClass( i ).equals( Double.class ) ||
+                    getColumnClass( i ).equals( Integer.class ) ) {
+             getColumnModel().getColumn( i ).setCellRenderer( new NumberCellRenderer() );
           }
        }
         
@@ -228,11 +229,11 @@ public class CPSTable extends JTable {
         }
     }
     
-    private class FloatCellRenderer extends JLabel implements TableCellRenderer {
+    private class NumberCellRenderer extends InsetRenderer implements TableCellRenderer {
         
-        public FloatCellRenderer() {
+        public NumberCellRenderer() {
             super();
-            setOpaque(true);
+            setHorizontalAlignment( JLabel.RIGHT );
         }
         
         // This method is called each time a cell in a column
@@ -244,15 +245,33 @@ public class CPSTable extends JTable {
     
             // Configure the component with the specified value
             // in case, we display a formated string
-           if ( value instanceof Float )
-              setText( CPSRecord.formatFloat( ((Float) value).floatValue(), 3 ) );
-           else if ( value instanceof Double )
-              setText( CPSRecord.formatFloat( ((Double) value).floatValue(), 3 ) );
+          String s;
+
+           if ( value instanceof Float ) {
+            if ( ((Float) value).floatValue() == 0f )
+               s = "";
+             else
+              s = CPSRecord.formatFloat( ((Float) value).floatValue(), 3 );
+           }
+           else if ( value instanceof Integer ) {
+             if ( ((Integer) value).intValue() == 0 )
+               s = "";
+             else
+               s = CPSRecord.formatInt( (Integer) value );
+           }
+           else if ( value instanceof Double ) {
+             if ( ((Double) value).floatValue() == 0f )
+               s = "";
+             else
+               s = CPSRecord.formatFloat( ((Double) value).floatValue(), 3 );
+           }
            else if ( value == null )
-              setText( "" );
+              s = "";
            else
-              setText( value.toString() );
-           
+              s = value.toString();
+
+           setText(s);
+
             return this;
         }
     }
@@ -273,7 +292,8 @@ public class CPSTable extends JTable {
     
             // Configure the component with the specified value
             // in case, we display a formated string
-            setText( CPSDateValidator.format( (Date) value ));
+            setText( CPSDateValidator.format( (Date) value, CPSDateValidator.DATE_FORMAT_SHORT ));
+            setToolTipText( CPSDateValidator.format( (Date) value ) );
 
             return this;
         }

@@ -38,11 +38,20 @@ public class CPSComparator implements Comparator {
     }
 
     public int compare( Object a, Object b ) {
-       if ( a instanceof Integer ) {
-          return (Integer) a - (Integer) b;
+      int c;
+      if ( a instanceof Integer ) {
+        c = ((Integer) a).compareTo( (Integer) b );
+        // this was done to test sorting blank values to the end
+//        if ( c != 0 )
+//          if ( ((Integer) a).intValue() == 0 ) {
+//            c = 1;
+//          } else if ( ((Integer) b).intValue() == 0 ) {
+//            c = -1;
+//          }
+        return c;
        }
        else if ( a instanceof Float ) {
-          return (int) Math.floor( (Float) a - (Float) b );
+          return ( (Float) a).compareTo( (Float) b );
        }
        else if ( a instanceof Boolean ) {
           return ( (Boolean) a ).compareTo( (Boolean) b );
@@ -53,9 +62,6 @@ public class CPSComparator implements Comparator {
        else if ( a instanceof Date ) {
           return ( (Date) a ).compareTo( (Date) b );
        }
-//       else if ( a instanceof CPSRecord ) {
-//         return compare( ((CPSRecord) a).get( propNum ), ((CPSRecord) b).get( propNum ) );
-//       }
        else
           // otherwise don't sort and leave as is
           return 0;
