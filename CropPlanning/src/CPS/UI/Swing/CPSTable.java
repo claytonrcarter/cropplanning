@@ -86,20 +86,19 @@ public class CPSTable extends JTable {
         /* reset column widths for certain column types */
         for ( int colIndex = 0; colIndex < getColumnCount(); colIndex++ ) {
            Class c = getColumnClass(colIndex);
-           
+
            // Boolean
-           if ( c.getName().equals( new Boolean(true).getClass().getName() ) ) {
+           if ( c.getName().equals( Boolean.class.getName() ) ) {
               getColumnModel().getColumn( colIndex ).setMaxWidth( 20 );
               getColumnModel().getColumn( colIndex ).setPreferredWidth( 20 );
            }
-           // Dates
-           else if ( c.getName().equals( new Date().getClass().getName() ))
-              getColumnModel().getColumn( colIndex ).setPreferredWidth( 100 );
-           // Integer
-           else if ( c.getName().equals( new Integer(0).getClass().getName() ))
+           else if ( c.getName().equals( Date.class.getName() ))
+              getColumnModel().getColumn( colIndex ).setPreferredWidth( 50 );
+           else if ( c.getName().equals( Integer.class.getName() ))
               getColumnModel().getColumn( colIndex ).setPreferredWidth( 40 );
-           // Double
-           else if ( c.getName().equals( new Double(0).getClass().getName() ) )
+           else if ( c.getName().equals( Double.class.getName() ) )
+              getColumnModel().getColumn( colIndex ).setPreferredWidth( 50 );
+           else if ( c.getName().equals( Float.class.getName() ) )
               getColumnModel().getColumn( colIndex ).setPreferredWidth( 50 );
         }
         
@@ -293,7 +292,7 @@ public class CPSTable extends JTable {
             // Configure the component with the specified value
             // in case, we display a formated string
             setText( CPSDateValidator.format( (Date) value, CPSDateValidator.DATE_FORMAT_SHORT ));
-            setToolTipText( CPSDateValidator.format( (Date) value ) );
+            setToolTipText( CPSDateValidator.format( (Date) value, CPSDateValidator.DATE_FORMAT_FULLYEAR_DAY_OF_WEEK ) );
 
             return this;
         }

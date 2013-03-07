@@ -38,6 +38,8 @@ public class CPSDateValidator {
     public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
     /** Example: 11/23/2013 */
     public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";         
+    /** Example: Mon 11/23/2013 */
+    public static String DATE_FORMAT_FULLYEAR_DAY_OF_WEEK = "EEE MM/dd/yyyy";
     /** Example: Nov 23 */
     public static String DATE_FORMAT_MON_DAY = "MMM dd";
     /** Example: Nov 23, 2013 */
