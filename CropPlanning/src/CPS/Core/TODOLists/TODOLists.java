@@ -170,11 +170,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
         bg2.add(rdoUncompAll);
 
         // display label, default filename and button to select new file
-//        outputFile = new File( System.getProperty( "user.dir") );
-//        fldFile = new JTextField( 20 );
-//        fldFile.setText( "ExportFile.pdf" );
         filFile = new JFileChooser();
-//        filFile.setCurrentDirectory(outputFile);
         filFile.setSelectedFile(new File(CPSGlobalSettings.getDocumentOutputDir()));
         filFile.setMultiSelectionEnabled(false);
         filFile.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -249,6 +245,25 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
     }
     // </editor-fold>
+
+
+    protected void setDateComponentsEnabled( boolean b ) {
+
+        rdoDateThisWeek.setEnabled(b);
+        rdoDateNextWeek.setEnabled(b);
+        rdoDateThisNextWeek.setEnabled(b);
+        rdoDateOther.setEnabled(b);
+
+        dtcDateOtherStart.setEnabled(b);
+        dtcDateOtherEnd.setEnabled(b);
+
+        rdoUncompThisWeek.setEnabled(b);
+        rdoUncompLastWeek.setEnabled(b);
+        rdoUncompAll.setEnabled(b);
+
+    }
+
+
 
     protected void updateListOfPlans() {
         if (!isDataAvailable()) {
@@ -1054,7 +1069,10 @@ public class TODOLists extends CPSDisplayableDataUserModule
             t = DSC_SEED_ORDER_WORKSHEET;
           else if ( s.equals( TL_HARVEST_AVAILABILITY ) )
             t = DSC_HARVEST_AVAILABILITY;
-          
+
+          setDateComponentsEnabled( t.equals( DSC_GH_SEEDING ) ||
+                                    t.equals( DSC_FIELD_PLANTING ) );
+
           lblExportDesc.setText( DSC_START + t + DSC_END );
 
         }
