@@ -26,6 +26,7 @@ import CPS.Data.*;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.*;
 import CPS.UI.Swing.*;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -42,10 +43,11 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
    private CPSTextField tfldCropName, tfldVarName, tfldFamName, tfldMatDays;
    private CPSCheckBox chkDS, chkTP;
    private JLabel lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes;
-   private CPSTextField tfldDSMatAdjust, tfldDSRowsPerBed, tfldDSSpaceBetRows, tfldDSPlantNotes;
+   private CPSTextField tfldDSMatAdjust, tfldDSRowsPerBed, tfldDSSpaceBetRows;
    private JLabel lblTPMat, lblTPRows, lblTPSpace, lblTPSpaceRow, lblTPFlat, lblTPWeeks, lblTPNotes;
    private CPSTextField tfldTPMatAdjust, tfldTPRowsPerBed, tfldTPSpaceInRow, tfldTPSpaceBetRows;
-   private CPSTextField tfldTPFlatSize, tfldTPWeeksToTP, tfldTPPlantNotes;
+   private CPSTextField tfldTPFlatSize, tfldTPWeeksToTP;
+   private CPSTextArea tfldDSPlantNotes, tfldTPPlantNotes;
    private CPSTextArea tareDesc, tareGroups, tareKeywords, tareOtherReq, tareNotes;
    private CPSTextField tfldYieldPerWeek, tfldYieldWeeks, tfldYieldPerFoot, tfldYieldUnits, tfldYieldUnitValue;
    private CPSTextField tfldSeedsPerUnit, tfldSeedsPerDS, tfldSeedsPerTP;
@@ -241,7 +243,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldDSMatAdjust = new CPSTextField( FIELD_LEN_SHORT );
       tfldDSRowsPerBed = new CPSTextField( FIELD_LEN_SHORT );
       tfldDSSpaceBetRows = new CPSTextField( FIELD_LEN_SHORT );
-      tfldDSPlantNotes = new CPSTextField( FIELD_LEN_LONG );
+      tfldDSPlantNotes = new CPSTextArea( 6, 15 );
 
       tfldTPMatAdjust = new CPSTextField( FIELD_LEN_SHORT );
       tfldTPRowsPerBed = new CPSTextField( FIELD_LEN_SHORT );
@@ -249,7 +251,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldTPSpaceBetRows = new CPSTextField( FIELD_LEN_SHORT );
       tfldTPFlatSize = new CPSTextField( FIELD_LEN_LONG );
       tfldTPWeeksToTP = new CPSTextField( FIELD_LEN_SHORT );
-      tfldTPPlantNotes = new CPSTextField( FIELD_LEN_LONG );
+      tfldTPPlantNotes = new CPSTextArea( 6, 15 );
       
       tfldYieldPerWeek = new CPSTextField( FIELD_LEN_MED );
       tfldYieldWeeks = new CPSTextField( FIELD_LEN_SHORT );
@@ -263,11 +265,16 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldSeedsPerTP   = new CPSTextField( FIELD_LEN_MED );
 
       tareDesc = new CPSTextArea( 8, FIELD_LEN_WAY_LONG );
-      tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareNotes = new CPSTextArea( 12, 15 );
-      
+      tareGroups = new CPSTextArea( 4, FIELD_LEN_WAY_LONG );
+      tareKeywords = new CPSTextArea( 4, FIELD_LEN_WAY_LONG );
+      tareOtherReq = new CPSTextArea( 4, FIELD_LEN_WAY_LONG );
+      tareNotes = new CPSTextArea( 12, 22 );
+
+      Font f = tareNotes.getFont();
+      f = new Font( f.getFamily(), f.getStyle(), f.getSize()-2 );
+      tareNotes.setFont(f);
+      tfldDSPlantNotes.setFont(f);
+      tfldTPPlantNotes.setFont(f);
             
       /* ***********************************/
       /* COLUMN ONE (really zero and one)  */
@@ -344,14 +351,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplPlanting.add( lblTPSpace, "skip 2, align right" );
       jplPlanting.add( tfldTPSpaceInRow, "wrap" );
 
-      jplPlanting.add( new JSeparator(), "growx, span 2" );
-      jplPlanting.add( new JSeparator(), "growx, span 2, wrap" );
+      jplPlanting.add( new JSeparator(), "skip 2, growx, span 2, wrap" );
 
-      lblDSNotes = new JLabel( "DS Notes" );
-      jplPlanting.add( lblDSNotes, "align right" );
-      jplPlanting.add( tfldDSPlantNotes, "" );
       lblTPFlat = new JLabel( "Flat Size" );
-      jplPlanting.add( lblTPFlat, "align right" );
+      jplPlanting.add( lblTPFlat, "skip 2, align right" );
       jplPlanting.add( tfldTPFlatSize, "wrap" );
 
 
@@ -359,17 +362,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplPlanting.add( lblTPWeeks, "skip 2, align right" );
       jplPlanting.add( tfldTPWeeksToTP, "wrap" );
 
-      jplPlanting.add( new JSeparator(), "growx, skip 2, span 2, wrap" );
-
-      lblTPNotes = new JLabel( "TP Notes" );
-      jplPlanting.add( lblTPNotes, "align right, skip 2" );
-      jplPlanting.add( tfldTPPlantNotes, "wrap" );
-      
-
       // add all of the above labels to the label list
-      anonLabels.addAll( Arrays.asList(  lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes,
+      anonLabels.addAll( Arrays.asList(  lblDSMat, lblDSRowsPB, lblDSSpace,
                                          lblTPMat, lblTPRows, lblTPSpaceRow, lblTPSpace,
-                                         lblTPFlat, lblTPWeeks, lblTPNotes ) );
+                                         lblTPFlat, lblTPWeeks ) );
 
       /**************************************/
       /* COLUMN THREE
@@ -454,12 +450,13 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
 
       /**************************************/
-      /* Page 3
+      /* Page 4
       /**************************************/
       JPanel jplNotes = new JPanel( new MigLayout( migPanelDefaults ) );
 
-      tempLabel = new JLabel( "Notes:" );
-      jplNotes.add( tempLabel, "align right top" );
+      tempLabel = new JLabel( "<html><font size=\"-2\">" +
+                              "about this specifc crop or variety" );
+      jplNotes.add( tempLabel, "align center, wrap" );
       jplNotes.add( new JScrollPane( tareNotes ), "wrap" );
       JButton btn = new JButton("Add Date");
       btn.addActionListener( new ActionListener() {
@@ -479,14 +476,36 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       });
       jplNotes.add( btn, "span 2, align right" );
 
+
+      /**************************************/
+      /* Page 5
+      /**************************************/
+      JPanel jplPlantingNotes = new JPanel( new MigLayout( migPanelDefaults ) );
+
+      tempLabel = new JLabel( "<html><font size=\"-2\">" +
+                              "displayed on the planting list printouts" );
+      jplPlantingNotes.add( tempLabel, "align center, span 2, wrap" );
+      anonLabels.add( tempLabel );
+      lblDSNotes = new JLabel( "DS Notes:" );
+      jplPlantingNotes.add( lblDSNotes, "align right" );
+      jplPlantingNotes.add( new JScrollPane( tfldDSPlantNotes ), "wrap" );
+      lblTPNotes = new JLabel( "TP Notes:" );
+      jplPlantingNotes.add( lblTPNotes, "align right" );
+      jplPlantingNotes.add( new JScrollPane( tfldTPPlantNotes ), "wrap" );
+
+
+
+
       
       columnFour =  new CPSCardPanel( new String[] {
                                                      "Notes",
+                                                     "Planting Notes",
                                                      "Yield Info",
                                                      "Seed Info",
                                                      "Keywords etc" },
                                       new JPanel[] {
                                                      jplNotes,
+                                                     jplPlantingNotes,
                                                      jplYield,
                                                      jplSeeds,
                                                      jplMisc } );

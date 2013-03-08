@@ -27,10 +27,10 @@ import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSRecord;
 import CPS.UI.Modules.CPSDetailView;
 import CPS.Data.CPSPlanting;
-import CPS.Module.CPSDataModelConstants;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.*;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -457,12 +457,15 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldSeedsPer     = new CPSTextField( FIELD_LEN_MED );
       tfldSeedNeeded   = new CPSTextField( FIELD_LEN_MED );
 
-      tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
-      tarePlantingNotesCrop = new CPSTextArea( 12, 15 );
-      tarePlantingNotes = new CPSTextArea( 12, 15 );
-//      tareNotes = new CPSTextArea( 5, 40 );
+      tareGroups = new CPSTextArea( 4, FIELD_LEN_WAY_LONG );
+      tareKeywords = new CPSTextArea( 4, FIELD_LEN_WAY_LONG );
+      tareOtherReq = new CPSTextArea( 4, FIELD_LEN_WAY_LONG );
+      tarePlantingNotesCrop = new CPSTextArea( 14, 22 );
+      tarePlantingNotes = new CPSTextArea( 12, 22 );
+      Font f = tarePlantingNotesCrop.getFont();
+      f = new Font( f.getFamily(), f.getStyle(), f.getSize()-2 );
+      tarePlantingNotes.setFont(f);
+      tarePlantingNotesCrop.setFont(f);
 
       tfldCustom1 = new CPSTextField( FIELD_LEN_LONG );
       tfldCustom2 = new CPSTextField( FIELD_LEN_LONG );
@@ -611,6 +614,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       anonLabels.add( lblPlantsNeeded );
       
       lblPlantsToStart = new JLabel( "Plants to Start" );
+      lblPlantsToStart.setToolTipText("Plants needed plus fudge factor");
       jplAmount.add( lblPlantsToStart, "align right" );
       jplAmount.add( tfldPlantsToStart, "wrap" );
       anonLabels.add( lblPlantsToStart );
