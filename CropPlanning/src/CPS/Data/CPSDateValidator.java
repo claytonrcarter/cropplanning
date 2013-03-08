@@ -31,23 +31,23 @@ import java.util.GregorianCalendar;
 public class CPSDateValidator {
 
     /** Example: 11/23 */
-    public static String DATE_FORMAT_SHORT = "MM/dd";
+    final public static String DATE_FORMAT_SHORT = "MM/dd";
     /** Example: Mon 11/23 */
-    public static String DATE_FORMAT_SHORT_DAY_OF_WEEK = "EEE MM/dd";
+    final public static String DATE_FORMAT_SHORT_DAY_OF_WEEK = "EEE MM/dd";
     /** Example: 11/23/13 */
-    public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
+    final public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
     /** Example: 11/23/2013 */
-    public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";         
+    final public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";
     /** Example: Mon 11/23/2013 */
-    public static String DATE_FORMAT_FULLYEAR_DAY_OF_WEEK = "EEE MM/dd/yyyy";
+    final public static String DATE_FORMAT_FULLYEAR_DAY_OF_WEEK = "EEE MM/dd/yyyy";
     /** Example: Nov 23 */
-    public static String DATE_FORMAT_MON_DAY = "MMM dd";
+    final public static String DATE_FORMAT_MON_DAY = "MMM dd";
     /** Example: Nov 23, 2013 */
-    public static String DATE_FORMAT_MON_DAY_YEAR = "MMM dd, yyyy";
+    final public static String DATE_FORMAT_MON_DAY_YEAR = "MMM dd, yyyy";
     /** Example: November */
-    public static String DATE_FORMAT_JUSTMONTH = "MMMM";
+    final public static String DATE_FORMAT_JUSTMONTH = "MMMM";
     /** Example: 2013-11-23 */
-    public static String DATE_FORMAT_SQL = "yyyy-MM-dd";              
+    final public static String DATE_FORMAT_SQL = "yyyy-MM-dd";
     
     private ArrayList<String> formatList;
     private static String defaultFormat = DATE_FORMAT_FULLYEAR;
@@ -56,7 +56,6 @@ public class CPSDateValidator {
         formatList = new ArrayList<String>();
         formatList.add( DATE_FORMAT_BRIEFYEAR );
         formatList.add( DATE_FORMAT_SHORT );
-//        formatList.add( DATE_FORMAT_FULLYEAR );
         
         defaultFormat = DATE_FORMAT_FULLYEAR;
         

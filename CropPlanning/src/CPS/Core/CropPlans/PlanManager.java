@@ -89,10 +89,17 @@ public class PlanManager extends CPSDialog implements ActionListener {
    public void selectPlan( String planName ) {
      if ( listOfValidCropPlans.contains(planName) )
        selectedPlan = planName;
+     else if ( listOfValidCropPlans.size() == 1 )
+       selectedPlan = listOfValidCropPlans.get(0);
      if ( contentsPanelBuilt )
        cmboPlanList.setSelectedItem( planName );
    }
    public String getSelectedPlanName() {
+     if ( selectedPlan == null &&
+          listOfValidCropPlans.size() == 1 ) {
+       cmboPlanList.setSelectedIndex(0);
+       CPSModule.debug( "PlanMan", "Selecting only crop plan: " + selectedPlan + ";" );
+     }
       return selectedPlan;
    }
    private String getCurrentSelection() {

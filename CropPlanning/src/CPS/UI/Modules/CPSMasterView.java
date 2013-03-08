@@ -228,14 +228,18 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected void updateRecord( CPSRecord r ) {
 
       int i = findRecord( r.getID(), masterListFiltered );
-      
+
+      masterList.removeListEventListener(this);
+
       if ( i != -1 )
         masterListFiltered.set( i, r );
       else {
         i = findRecord( r.getID(), masterList );
         if ( i != -1 )
-          masterList.set( i, r );
+        masterList.set( i, r );
       }
+
+      masterList.addListEventListener(this);
 
     }
 

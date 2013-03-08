@@ -23,7 +23,6 @@
 package CPS;
 
 import CPS.Module.*;
-import CPS.UI.Swing.CPSConfirmDialog;
 import barrysoft.twinkle.Twinkle;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +37,7 @@ public class CropPlanning implements Runnable {
 
     public static void main(String[] args) {
 
-       InputStream in = null;
+       InputStream in;
        Properties props = new Properties();
        String buildnum = "";
        try {
@@ -65,9 +64,10 @@ public class CropPlanning implements Runnable {
        }
 
        // parse arguments
+       boolean enableDebug = false;
        for ( String s : args ) {
           if ( s.equalsIgnoreCase( "-debug" ))
-             CPSGlobalSettings.setDebug(true);
+            enableDebug = true;
           if ( s.startsWith( "-temp-output-dir=") )
              CPSGlobalSettings.setTempOutputDir( s.substring( "-temp-output-dir=".length() ) );
           if ( s.equalsIgnoreCase( "-firstTime" ) )
@@ -82,6 +82,7 @@ public class CropPlanning implements Runnable {
           }
 
        }
+       CPSGlobalSettings.setDebug(enableDebug);
 
        System.out.println( "Build number: " + buildnum );
 

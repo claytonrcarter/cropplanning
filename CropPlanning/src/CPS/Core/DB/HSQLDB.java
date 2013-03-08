@@ -452,7 +452,7 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
          condExp += " AND " + tm.getColumnNameForMethod( "getVarietyName" ) + " = " + varName;
 
       String selectSQL = tm.getSelectWhereSql() + condExp;
-
+      
       CPSCrop c = p.read( CPSCrop.class, selectSQL );
       if ( c == null ) {
           c = new CPSCrop();
@@ -476,7 +476,6 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
    public CPSCrop createCrop(CPSCrop crop) {
       int newID = HSQLDBCreator.insertCrop( p, crop );
-//      updateDataListeners();
       if ( newID == -1 )
          return new CPSCrop();
       else
@@ -851,7 +850,8 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
    public JPanel getConfigurationDisplay () { return null; }
 
    public CPSWizardPage[] getConfigurationWizardPages () {
-      return new CPSWizardPage[] { new NewPlanWizardPage( this ) };
+      return new CPSWizardPage[] { new NewPlanWizardPage( this ),
+                                   new CreateRecordsWizardPage() };
    }
 
    public void resetConfiguration () {}

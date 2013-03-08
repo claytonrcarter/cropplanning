@@ -263,9 +263,9 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       tfldSeedsPerTP   = new CPSTextField( FIELD_LEN_MED );
 
       tareDesc = new CPSTextArea( 8, FIELD_LEN_WAY_LONG );
-      tareGroups = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
-      tareKeywords = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
-      tareOtherReq = new CPSTextArea( 2, FIELD_LEN_WAY_LONG );
+      tareGroups = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareKeywords = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
+      tareOtherReq = new CPSTextArea( 3, FIELD_LEN_WAY_LONG );
       tareNotes = new CPSTextArea( 12, 15 );
       
             
@@ -439,13 +439,14 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       /**************************************/
       JPanel jplMisc = new JPanel( new MigLayout( migPanelDefaults ) );
 
-      tempLabel = new JLabel( "<html>Other <br>Req.:</html>" );
-      jplMisc.add( tempLabel, "align right top" );
-      jplMisc.add( new JScrollPane( tareOtherReq ), "wrap" );
-
-      tempLabel = new JLabel( "<html>Belongs to <br>Groups:</html>" );
+      tempLabel = new JLabel( "<html><body style='text-align:right'>Belongs to&nbsp;<br>Groups:" );
       jplMisc.add( tempLabel, "align right top" );
       jplMisc.add( new JScrollPane( tareGroups ), "wrap" );
+
+      tempLabel = new JLabel( "<html><body style='text-align:right'>Other&nbsp;<br>Requirements:" );
+      tempLabel.setToolTipText( "Other requirements for this crop or variety" );
+      jplMisc.add( tempLabel, "align right top" );
+      jplMisc.add( new JScrollPane( tareOtherReq ), "wrap" );
 
       tempLabel = new JLabel( "Keywords:" );
       jplMisc.add( tempLabel, "align right top" );
@@ -483,7 +484,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
                                                      "Notes",
                                                      "Yield Info",
                                                      "Seed Info",
-                                                     "Misc Info" },
+                                                     "Keywords etc" },
                                       new JPanel[] {
                                                      jplNotes,
                                                      jplYield,

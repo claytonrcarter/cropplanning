@@ -659,20 +659,20 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       /* *************************************/
       JPanel jplMisc = new JPanel( new MigLayout( migPanelDefaults ));
 
-      tempLabel = new JLabel( "Groups:" );
+      tempLabel = new JLabel( "<html><body style='text-align:right'>Belongs to&nbsp;<br>Groups:" );
       tempLabel.setToolTipText( "Groups to which this planting belongs" );
-      jplMisc.add( tempLabel, "align right" );
+      jplMisc.add( tempLabel, "align right top" );
       jplMisc.add( new JScrollPane( tareGroups ), "wrap" );
       anonLabels.add( tempLabel );
 
-      tempLabel = new JLabel( "Other Req" );
-      tempLabel.setToolTipText( "Other Requirements" );
-      jplMisc.add( tempLabel, "align right" );
+      tempLabel = new JLabel( "<html><body style='text-align:right'>Other&nbsp;<br>Requirements:" );
+      tempLabel.setToolTipText( "Other requirements for this planting" );
+      jplMisc.add( tempLabel, "align right top" );
       jplMisc.add( new JScrollPane( tareOtherReq ), "wrap" );
       anonLabels.add( tempLabel );
 
       tempLabel = new JLabel( "Keywords:" );
-      jplMisc.add( tempLabel, "align right" );
+      jplMisc.add( tempLabel, "align right top" );
       jplMisc.add( new JScrollPane( tareKeywords ), "wrap" );
       anonLabels.add( tempLabel );
 
@@ -888,7 +888,6 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldPlantsNeeded.setEnabled(b);
       tfldPlantsToStart.setEnabled( b );
 
-      columnFour.setEnabled(b);
 
       if ( b ) {
         lblSeedsPer.setText("Seeds/Cell");
@@ -947,6 +946,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       tfldCustom3.setEnabled( b );
       tfldCustom4.setEnabled( b );
       tfldCustom5.setEnabled( b );
+
+      columnFour.setEnabled(b);
 
       if ( ! isRecordDisplayed() ) {
         chkIgnore.setEnabled( false );

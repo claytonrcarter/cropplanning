@@ -20,18 +20,17 @@ class CreateRecordsWizardPage extends CPSWizardPage {
 
       setLongDescription( getDescription() );
       JLabel intro =
-             new JLabel( "<html><center><table width=300><tr><td>" +
+             new JLabel( "<html><body style='width:300px; text-align:right'><center>" +
               "To get you started, we have created two simple entries in " +
               "the CropDB and one planting in your new crop plan.<p><p>" +
-              "And entry for cucmbers was created with some basic data " +
+              "An entry for cucmbers was created with some basic data " +
               "and another entry was created to represent a variety of cucumbers. " +
               "Some of the fields are different so that you can see " +
               "how data inheritance can work for varieties of a crop." + "<p><p>" +
-              "Your new crop plan will have entry for a planting of cucumbers which " +
+              "Your new crop plan will have an entry for a planting of cucumbers which " +
               "will inherit some data from the CropDB (the blue fields) and calculate " +
               "others (the green ones.)  Feel free to alter or delete these entries." +
-              "<p>" +
-              "</td></tr></table></center></html>" );
+              "<p>" );
       add( intro );
       add( Box.createVerticalGlue() );
    }
@@ -43,7 +42,7 @@ class CreateRecordsWizardPage extends CPSWizardPage {
    public void finishWizard ( CPSGlobalSettings globSet ) {}
 
    public static String getDescription () {
-      return "Intro to Crops and Plantings";
+      return "Crops and Plantings";
    }
 
    // for testing only

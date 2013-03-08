@@ -1,12 +1,14 @@
 package CPS.Core.DB;
 
 import CPS.Data.CPSCrop;
+import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSWizardPage;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -84,9 +86,6 @@ class NewPlanWizardPage extends CPSWizardPage {
       if ( tfldPlanName.getText().trim().length() == 0 ) {
          return "You must enter a plan name.";
       }
-//      else if ( component == spnYear ) {
-//         // nothing to do here; the Spinner model takes care of validation
-//      }
       // else no problems
       return null;
    }
@@ -99,29 +98,35 @@ class NewPlanWizardPage extends CPSWizardPage {
                             tempCal.get( Calendar.YEAR ),
                             "" );
 
-         CPSCrop c = new CPSCrop();
-         c.setCropName("Cucumbers");
-         c.setMaturityDays(50);
-         c.setTransplanted(Boolean.TRUE);
-         c.setTPRowsPerBed(1);
-         c.setTPSpaceInRow(24);
+         // only if Cukes DNE
+         CPSCrop c = dm.getCropInfo("Cucumbers");
 
-         dm.createCrop(c);
+         if ( c.getID() == -1 ) {
 
-         c = new CPSCrop();
-         c.setCropName("Cucumbers");
-         c.setVarietyName("Marketmore");
-         c.setMaturityDays(55);
+           c = new CPSCrop();
+           c.setCropName("Cucumbers");
+           c.setMaturityDays(50);
+           c.setTransplanted(Boolean.TRUE);
+           c.setTPRowsPerBed(1);
+           c.setTPSpaceInRow(24);
+           c.setTPFlatSize("72");
+           c.setTPTimeInGH(3);
+           dm.createCrop(c);
 
-         dm.createCrop(c);
+           c = new CPSCrop();
+           c.setCropName("Cucumbers");
+           c.setVarietyName("Marketmore");
+           c.setMaturityDays(55);
+           dm.createCrop(c);
 
-         CPSPlanting p = new CPSPlanting();
-         p.setCropName(c.getCropName());
-         p.setVarietyName(c.getVarietyName());
-         p.setDateToTPPlanned("6/1/2013");
-         p.setBedsToPlant(1);
-
-         dm.createPlanting( tfldPlanName.getText(), p );
+           CPSPlanting p = new CPSPlanting();
+           p.setCropName(c.getCropName());
+           p.setVarietyName(c.getVarietyName());
+           p.setDateToTPPlanned( "6/1/" +
+                                 new SimpleDateFormat( "yyyy" ).format( new Date() ));
+           p.setBedsToPlant(1);
+           dm.createPlanting( tfldPlanName.getText(), p );
+         }
 
       }
    }

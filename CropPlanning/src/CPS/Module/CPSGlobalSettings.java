@@ -464,7 +464,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
      } else {
 
 //       Wizard wiz = WizardPage.createWizard( new CPSGlobalSettings().getConfigurationWizardPages(),
-       Wizard wiz = WizardPage.createWizard( new WizardPage[]{ new GeneralSettingsWizardPage() },
+       Wizard wiz = WizardPage.createWizard( new WizardPage[]{ new OutDirWizardPage(), new GeneralSettingsWizardPage() },
                                              new WizardPage.WizardResultProducer() {
 
                                                public Object finish ( Map settings ) throws WizardException {
@@ -504,12 +504,12 @@ class OutDirWizardPage extends CPSWizardPage {
       setPreferredSize( panelDim );
       setMaximumSize( panelDim );
 
-      JLabel lblOutDir = new JLabel( "<html><table width=400><tr><td>" +
+      JLabel lblOutDir = new JLabel( "<html><body style='width: 300px'>" +
                                      "<b>Select a folder or directory to store all of your crop planning data.</b>" +
                                      "<p><p>If you have already used this program to create crop plans and would like to load that information, " +
                                      "please select the folder or directory which contains your existing data. " +
                                      "(The data files have names that start with \"CPSdb\".)" +
-                                     "</td></tr></table></html>" );
+                                     "" );
       lblOutDir.setAlignmentX( Component.CENTER_ALIGNMENT );
 
       String defaultDirectory = CPSGlobalSettings.getOutputDir();
@@ -582,6 +582,7 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
 
       tfldFarmName = new JTextField( 15 );
       tfldFarmName.setName( SETTING_FARM_NAME );
+      tfldFarmName.setText( CPSGlobalSettings.getFarmName() );
 
       add( new JLabel( "The name of your farm:" ) );
       add( tfldFarmName, "wrap" );
@@ -590,7 +591,7 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
       tfldBedLength.setName( SETTING_BED_LENGTH );
       tfldBedLength.setText( Integer.toString( CPSGlobalSettings.getBedLength() ) );
 
-      add( new JLabel( "Default row or bed length (ft or meters):" ) );
+      add( new JLabel( "<html><body style='text-align:right'>Default row or bed&nbsp;<br>length (ft or meters):" ) );
       add( tfldBedLength, "wrap" );
 
       cmbxMeasurementSystem = new JComboBox( new String[] { CPSGlobalSettings.PREF_IMPERIAL,
@@ -611,7 +612,7 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
                                                         }
                                                   } );
 
-      add( new JLabel( "Date of last spring frost (optional):" ) );
+      add( new JLabel( "Last spring frost (optional):" ) );
       add( calLastFrost, "wrap" );
 
       calFirstFrost = new JDateChooser( CPSGlobalSettings.getFirstFrostDate() );
@@ -624,7 +625,7 @@ class GeneralSettingsWizardPage extends CPSWizardPage {
                                                         }
                                                   } );
 
-      add( new JLabel( "Date of first fall frost (optional):" ) );
+      add( new JLabel( "First fall frost (optional):" ) );
       add( calFirstFrost, "wrap" );
 
    }
