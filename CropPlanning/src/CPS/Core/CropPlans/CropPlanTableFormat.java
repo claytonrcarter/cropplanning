@@ -236,14 +236,20 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting>
                                      int column ) {
 
     String s = "";
-    if ( ! ( editedValue instanceof Boolean ||
-             editedValue instanceof Date ) )
-      s = (String) editedValue;
+    if (( ! ( editedValue instanceof Boolean ||
+              editedValue instanceof Date )) &&
+            editedValue != null ) {
+      if ( editedValue instanceof Integer )
+        s = p.formatInt( (Integer) editedValue );
+      else if ( editedValue instanceof Float )
+        s = p.formatFloat( (Float) editedValue );
+    }
 
     // do this because this method is called every time a row is unselected
     // as when traversing the table by pressing UP or DOWN, so this just
     // discards the times when there's no actual edit
-    if ( editedValue.equals( getColumnValue( p, column ) ) )
+    if ( editedValue != null &&
+         editedValue.equals( getColumnValue( p, column ) ) )
       return null;
 
     switch ( column ) {

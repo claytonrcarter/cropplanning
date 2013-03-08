@@ -161,13 +161,19 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop>
                                  int colNum ) {
 
     String s = "";
-    if ( getColumnClass(colNum) != Boolean.class )
-      s = (String) editedValue;
+    if ( ( ! ( editedValue instanceof Boolean )) &&
+            editedValue != null ) {
+      if ( editedValue instanceof Integer )
+        s = c.formatInt( (Integer) editedValue );
+      else if ( editedValue instanceof Float )
+        s = c.formatFloat( (Float) editedValue );
+    }
 
     // do this because this method is called every time a row is unselected
     // as when traversing the table by pressing UP or DOWN, so this just
     // discards the times when there's no actual edit
-    if ( editedValue.equals( getColumnValue( c, colNum ) ) )
+    if ( editedValue != null &&
+         editedValue.equals( getColumnValue( c, colNum ) ) )
       return null;
 
     switch ( colNum ) {

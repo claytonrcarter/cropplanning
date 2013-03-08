@@ -78,6 +78,7 @@
  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <target name="-pre-jar">
 
+    <!-- this will always be one higher than the ${build.number} property -->
     <buildnumber file="buildnumber.properties"/>
 
     <propertyfile file="appinfo.properties"
@@ -168,7 +169,7 @@
  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
  <!-- Appcast                                                                -->
  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-  <target name="dist-appcast" depends="dist-jarbundler,dist-launch4j"
+  <target name="dist-appcast" depends="dist-jarbundler,dist-launch4j,dist-zip"
           description="Generate XML to paste into appcast for this build. ">
 
     <echo>Appcast task START</echo>
