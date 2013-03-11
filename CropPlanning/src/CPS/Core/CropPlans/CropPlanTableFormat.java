@@ -243,6 +243,8 @@ public class CropPlanTableFormat extends CPSAdvancedTableFormat<CPSPlanting>
         s = p.formatInt( (Integer) editedValue );
       else if ( editedValue instanceof Float )
         s = p.formatFloat( (Float) editedValue );
+      else
+        s = editedValue.toString();
     }
 
     // do this because this method is called every time a row is unselected

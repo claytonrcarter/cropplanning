@@ -52,10 +52,6 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 
   JPanel jplContents, jplBedsCharts, jplFlatsChart, jplReq, jplFlats;
   
-  Map<String, Float[]> reqMap = new HashMap<String, Float[]>();
-  Map<String, Float[]> flatMap = new HashMap<String, Float[]>();
-
-
   JButton updateButton;
   JLabel labelInfo;
   private BasicEventList<CPSPlanting> dataList;
@@ -84,28 +80,37 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     dataList = new BasicEventList<CPSPlanting>();
     dataFiltered = new FilterList<CPSPlanting>( dataList );
     dataSorted = new SortedList<CPSPlanting>( dataFiltered, null );
-    FunctionList<CPSPlanting, Float> functionList =
-          new FunctionList<CPSPlanting, Float>( dataFiltered,
-                                              new FunctionList.Function<CPSPlanting, Float>() {
-                                                 public Float evaluate( CPSPlanting p ) {
-                                                    return p.getBedsToPlant();
-                                                 }} );
-    Calculation<Float> sumOfFloats = Calculations.sumFloats( functionList );
-    
+
+    SumBedsRowftFlats statSums = new SumBedsRowftFlats( dataFiltered );
+
+
 //****************************************************************************//
 //    Fill up the lists
 //****************************************************************************//
     dataList.addAll( getDataSource().getCropPlan( getMediator().getCropPlan() ) );
 
-    List<String> fieldNames = 
-            getDataSource().getFieldNameList( getMediator().getCropPlan() );
+    List<String> fieldNames = getDataSource().getFieldNameList( getMediator().getCropPlan() );
+    List<String> flatSizes = getDataSource().getFlatSizeList( getMediator().getCropPlan() );
+    List<String> requirements = getDataSource().getRequirementsForPlan( getMediator().getCropPlan() );
+
     // make sure we include blank field names
     if ( ! fieldNames.contains("") )
       fieldNames.add("");
+    
+    // and include "blank" flat size as "total flats"
+    if ( ! flatSizes.contains("") )
+      flatSizes.add("");
 
+    // and include "blank" requirements as "total beds"
+    if ( ! requirements.contains("") )
+      requirements.add("");
+
+
+//****************************************************************************//
+//    Find the first and last weeks to worry about
+//****************************************************************************//
     // Find the first planting
     dataSorted.setComparator( new CPSPlantingComparator( CPSDataModelConstants.PROP_DATE_PLANT ));
-    
     String labelString = "First planting is " + dataSorted.get(0).getCropName() +
                          " on " + dataSorted.get(0).getDateToPlantString();
     Date dateFirstPlanting = dataSorted.get(0).getDateToPlant();
@@ -118,224 +123,226 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                 }
               }
             );
-    Date dateLastHarvest = dataSorted.get( dataSorted.size()-1 ).getDateToHarvest();
-    cal.setTime( dateLastHarvest );
-    cal.add( Calendar.WEEK_OF_YEAR, 
-             dataSorted.get( dataSorted.size()-1 ).getYieldNumWeeks() );
-    dateLastHarvest = cal.getTime();
+    Date dateLastHarvest = dataSorted.get( dataSorted.size()-1 ).getDateHarvestEnd();
     labelString += "<br>Last harvest is " + dataSorted.get( dataSorted.size()-1 ).getCropName() +
                         " on " + CPSDateValidator.format( dateLastHarvest );
 
 
     int weekNum;
     cal.setTime( dateLastHarvest );
-    int endWeek = cal.get( Calendar.WEEK_OF_YEAR );
+    int lastWeekNum = cal.get( Calendar.WEEK_OF_YEAR );
+
 
 //****************************************************************************//
 //    Create the filters depending on how it was planted
 //****************************************************************************//
-    CPSInTheFieldMatcherEditor dsInFieldMatcher = new CPSInTheFieldMatcherEditor();
-    dsInFieldMatcher.setViewLimited(true);
-    dsInFieldMatcher.setFilterOnPlantingMethod(true);
-    dsInFieldMatcher.setFilterMethodDirectSeed(true);
+    CPSInTheFieldMatcherEditor inFieldMatcher = new CPSInTheFieldMatcherEditor();
+    CPSInTheGreenhouseMatcher inGHMatcher = new CPSInTheGreenhouseMatcher();
 
-    CPSInTheFieldMatcherEditor tpInFieldMatcher = new CPSInTheFieldMatcherEditor();
-    tpInFieldMatcher.setViewLimited(true);
-    tpInFieldMatcher.setFilterOnPlantingMethod(true);
-    tpInFieldMatcher.setFilterMethodDirectSeed(false);
 
-    // put them together as an OR matcher
-    BasicEventList<MatcherEditor<CPSPlanting>> inFieldMatchers =
-            new BasicEventList<MatcherEditor<CPSPlanting>>();
-    inFieldMatchers.add( dsInFieldMatcher );
-    inFieldMatchers.add( tpInFieldMatcher );
-    CompositeMatcherEditor<CPSPlanting> inFieldFilter =
-            new CompositeMatcherEditor<CPSPlanting>( inFieldMatchers );
-    inFieldFilter.setMode( CompositeMatcherEditor.OR );
-
-    List<String> chartWeeks;
-    List<Double> chartValues;
 //****************************************************************************//
-//    Loop over the field names
+//    Create our data structures
 //****************************************************************************//
-    List<String> titles = new ArrayList<String>();
-    List<JPanel> charts = new ArrayList<JPanel>();
-    for ( String field : fieldNames ) {
+    // eg. 128 => 78.25, 72 => 105.5, 606 => ...
+    Map<String, Float> flatssTotalMap = new HashMap<String, Float>();
 
-      chartWeeks = new ArrayList<String>();
-      chartValues = new ArrayList<Double>();
+    // eg 128 => flats => 34.25
+    //           flatsdate  => 4/12
+    Map<String, WeeklyMaxStruct> flatsMaxMap = new HashMap<String, WeeklyMaxStruct>();
+    for (String f : flatSizes)
+      flatsMaxMap.put( f, new WeeklyMaxStruct () );
 
-      dsInFieldMatcher.setFieldName( field );
-      tpInFieldMatcher.setFieldName( field );
 
-      cal.setTime( dateFirstPlanting );
-      weekNum = cal.get( Calendar.WEEK_OF_YEAR );
+    // eg. black-plastic => beds => 68.5, ... rowlen => 1243.11
+    Map<String, WeeklyMaxStruct> reqsTotalMap = new HashMap<String, WeeklyMaxStruct>();
+    for (String r : requirements )
+      reqsTotalMap.put( r, new WeeklyMaxStruct () );
 
-      //**********************************************************************//
-      // Loop over the weeks
-      //**********************************************************************//
-      while ( weekNum <= endWeek ) {
+    // eg black-plastic => beds     => 34.25
+    //                     bedsDate => 6/12
+    //                     rowLen   => 102.5
+    //                     rowLenDate => 7/2
+    Map<String, WeeklyMaxStruct> reqsMaxMap = new HashMap<String, WeeklyMaxStruct>();
+    for (String r : requirements )
+      reqsMaxMap.put( r, new WeeklyMaxStruct () );
 
-        cal.set( Calendar.WEEK_OF_YEAR, weekNum );
-        dsInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
-        tpInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
+    // weekNum => field name (or "flats" or "all") => usage#
+    Map<Integer, Map<String, Double>> bedFlatUsageMap = new HashMap<Integer, Map<String, Double>>();
 
-        // update the filter? is this needed?
-        dataFiltered.setMatcherEditor(inFieldFilter);
 
-        double beds = CPSCalculations.roundQuarter( sumOfFloats.getValue() );
-
-        chartWeeks.add( CPSDateValidator.format( cal.getTime(),
-                                            CPSDateValidator.DATE_FORMAT_SHORT));
-        chartValues.add( beds );
-
-        weekNum++;
-      }
-
-      if ( field.equals("") )
-        titles.add( "Beds in use in field" );
-      else
-        titles.add( "Beds in use: " + field );
-
-      charts.add( new ChartPanel( chartValues, chartWeeks, "" ) );
-
+//****************************************************************************//
+//    get total bed/flat count for requirements and flats
+//****************************************************************************//
+    for ( String r : requirements ) {
+      inFieldMatcher.setRequirement( r );
+      dataFiltered.setMatcher(inFieldMatcher);
+      reqsTotalMap.get( r ).beds = statSums.beds;
+      reqsTotalMap.get( r ).rowLen = statSums.rowUnitLengthes;
     }
 
-//****************************************************************************//
-//    Now work on a chart of flats needed
-//****************************************************************************//
+    for ( String f : flatSizes) {
+      inGHMatcher.setFlatSize( f );
+      dataFiltered.setMatcher( inGHMatcher );
+      flatssTotalMap.put( f, statSums.flats );
+    }
 
-    CPSInTheGreenhouseMatcher inGHMatcher = new CPSInTheGreenhouseMatcher();
-    BasicEventList<MatcherEditor<CPSPlanting>> listOfFilters =
-            new BasicEventList<MatcherEditor<CPSPlanting>>();
-    listOfFilters.add( inGHMatcher );
-    listOfFilters.add( new AbstractMatcherEditor<CPSPlanting>()
-                          {
-                            @Override
-                            public Matcher<CPSPlanting> getMatcher() {
-                               return Matchers.trueMatcher();
-                            }
-                          } );
-    CompositeMatcherEditor<CPSPlanting> andFilter =
-            new CompositeMatcherEditor<CPSPlanting>( listOfFilters );
-    andFilter.setMode( CompositeMatcherEditor.AND );
+    // unfilter the list
+    dataFiltered.setMatcher( Matchers.trueMatcher() );
+    inFieldMatcher.setRequirement( null );
+    inGHMatcher.setFlatSize( null );
 
-    SumBedsRowftFlats customSummer = new SumBedsRowftFlats( dataFiltered );
 
+//**********************************************************************//
+// Loop over the weeks
+//**********************************************************************//
     cal.setTime( dateFirstPlanting );
     weekNum = cal.get( Calendar.WEEK_OF_YEAR );
 
-    chartWeeks = new ArrayList<String>();
-    chartValues = new ArrayList<Double>();
+    for (; weekNum <= lastWeekNum; weekNum++ ) {
 
-    List<String> flatSizes = getDataSource().getFlatSizeList( getMediator().getCropPlan() );
-    List<String> requirements = getDataSource().getRequirementsForPlan( getMediator().getCropPlan() );
+      // init this weeks' usage Map
+      bedFlatUsageMap.put( weekNum, new HashMap<String, Double> () );
 
-    reqMap.clear();
-    flatMap.clear();
-
-    FlatMatcher flatMatcher = new FlatMatcher();
-    RequirementMatcher reqMatcher = new RequirementMatcher();
-
-//****************************************************************************//
-//    First loop over the requirements and flats to build the totals
-//    and init the arrays
-//****************************************************************************//
-    for ( String req : requirements ) {
-      if ( req.equals("") )
-        continue;
-      reqMatcher.setRequirement(req);
-      dataFiltered.setMatcher( reqMatcher );
-      reqMap.put( req, new Float[] { customSummer.sumBeds,   0f,
-                                     customSummer.sumRowLen, 0f } );
-    }
-    for ( String flat : flatSizes ) {
-      flatMatcher.setFlatSize(flat);
-      dataFiltered.setMatcher( flatMatcher );
-      flatMap.put( flat, new Float[] { customSummer.sumFlats, 0f } );
-    }
-
-listOfFilters.remove(inGHMatcher);
-//****************************************************************************//
-//    Now loop over the weeks to add it all up.
-//****************************************************************************//
-    while ( weekNum <= endWeek ) {
-      
-      //**********************************************************************//
-      // flats in gh this week
-      //**********************************************************************//
+      // set the calendar to this week
       cal.set( Calendar.WEEK_OF_YEAR, weekNum );
-      inGHMatcher.setSeededInTheGreenhouseOn( cal.getTime() );
 
-      listOfFilters.add( inGHMatcher );
-      // update the filter? is this needed?
-      dataFiltered.setMatcherEditor( andFilter );
+      //*************************************//
+      // Check total trays in GH this week
+      //*************************************//
+      inGHMatcher.setInTheGreenhouseOn( cal.getTime() );
+      inGHMatcher.setFlatSize( null );
+      dataFiltered.setMatcher( inGHMatcher );
 
-      double flats = CPSCalculations.roundQuarter( customSummer.sumFlats );
+      bedFlatUsageMap.get( weekNum )
+                     .put( "flats",
+                           1.0 * CPSCalculations.roundQuarter( statSums.flats ));
 
-      chartWeeks.add( CPSDateValidator.format( cal.getTime(),
-                                          CPSDateValidator.DATE_FORMAT_SHORT));
-      chartValues.add( flats );
 
-      //**********************************************************************//
-      // Max requirements and flats
-      //**********************************************************crop************//
-      boolean update = false;
-      listOfFilters.add(flatMatcher);
-      for ( String flat: flatSizes ) {
-        flatMatcher.setFlatSize(flat);
-        Float[] f = flatMap.get(flat);
-        if ( customSummer.sumFlats > f[1] ) {
-          f[1] = customSummer.sumFlats;
-          update = true;
-        }
-        if ( update ) {
-          reqMap.put( flat, f );
-          update = false;
+      //*************************************//
+      // Check to see if this week is the maximum tray usage (by size)
+      //*************************************//
+      for ( String f : flatSizes ) {
+        inGHMatcher.setFlatSize( f );
+        dataFiltered.setMatcher( inGHMatcher );
+        if ( statSums.flats > flatsMaxMap.get( f ).flats ) {
+          flatsMaxMap.get( f ).flats = statSums.flats;
+          flatsMaxMap.get( f ).flatsDate = cal.getTime();
         }
       }
-      listOfFilters.remove(flatMatcher);
-      listOfFilters.remove(inGHMatcher);
 
-      dsInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
-      tpInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
-      listOfFilters.add( inFieldFilter );
-      listOfFilters.add( reqMatcher );
-      dataFiltered.setMatcherEditor( andFilter );
-      for ( String req : requirements ) {
-        if ( req.equals("") )
-          continue;
-        reqMatcher.setRequirement(req);
-        Float[] f = reqMap.get( req );
-        if ( customSummer.sumBeds > f[1] ) {
-          f[1] = customSummer.sumBeds;
-          update = true;
+
+      //*************************************//
+      // Check total beds in use this week
+      //*************************************//
+      inFieldMatcher.setInTheFieldOn( cal.getTime() );
+      inFieldMatcher.setFieldName( null );
+      inFieldMatcher.setRequirement( null );
+      dataFiltered.setMatcher( inFieldMatcher );
+
+      bedFlatUsageMap.get( weekNum )
+                     .put( "all",
+                           1.0 * CPSCalculations.roundQuarter( statSums.beds ));
+
+
+      //*************************************//
+      // Check to see about max usage of requirements
+      //*************************************//
+      for ( String r : requirements ) {
+        inFieldMatcher.setRequirement( r );
+        dataFiltered.setMatcher( inFieldMatcher );
+        if ( statSums.beds > reqsMaxMap.get(r).beds ) {
+          reqsMaxMap.get(r).beds = statSums.beds;
+          reqsMaxMap.get(r).bedsDate = cal.getTime();
         }
-        if ( customSummer.sumRowLen > f[3] ) {
-          f[3] = customSummer.sumRowLen;
-          update = true;
+        if ( statSums.rowUnitLengthes > reqsMaxMap.get( r).rowLen ) {
+          reqsMaxMap.get(r).rowLen = statSums.rowUnitLengthes;
+          reqsMaxMap.get(r).rowLenDate = cal.getTime();
         }
-        if ( update ) {
-          reqMap.put( req, f );
-          update = false;
-        }
-//        if ( req.startsWith("black"))
-//          System.out.println("Beds needing " + req +
-//                             " this week: " +
-//                             CPSCalculations.roundQuarter( customSummer.sumBeds ));
       }
-      listOfFilters.remove(reqMatcher);
-      listOfFilters.remove( inFieldFilter );
 
 
-      weekNum++;
+      //*************************************//
+      // now ignore requirements and just look at field names for bed usage
+      //*************************************//
+      inFieldMatcher.setRequirement( null );
+      for ( String f : fieldNames ) {
+        inFieldMatcher.setFieldName( f );
+        dataFiltered.setMatcher( inFieldMatcher );
+        bedFlatUsageMap.get( weekNum )
+                       .put( f,
+                             1.0 * CPSCalculations.roundQuarter( statSums.beds ));
+      }
+
     }
 
 
-    labelInfo = new JLabel( "<html>" + labelString + "</html>" );
-    jplBedsCharts = new CPSCardPanel( titles, charts, titles.indexOf( "Beds in use in field" ) );
-    jplFlatsChart = new ChartPanel( chartValues, chartWeeks, "Trays in the Greenhouse" );
+//****************************************************************************//
+//    Done collecting data, now put to together into the charts
+//****************************************************************************//
 
+    List<String> bedChartTitles = new ArrayList<String>();
+    List<JPanel> bedCharts = new ArrayList<JPanel>();
+
+    JPanel ghChart = null;
+
+    List<String> chartsToMake = new ArrayList<String>( fieldNames );
+    chartsToMake.add( "all" );
+    chartsToMake.add( "flats" );
+
+    //*************************************//
+    // Loop over fields to build charts for bed usage (and flats)
+    //*************************************//
+    for ( String f : chartsToMake ) {
+
+      List<String> chartLabels = new ArrayList<String>();
+      List<Double> chartValues = new ArrayList<Double>();
+
+      cal.setTime( dateFirstPlanting );
+      weekNum = cal.get( Calendar.WEEK_OF_YEAR );
+      for (; weekNum <= lastWeekNum; weekNum++ ) {
+
+        cal.set( Calendar.WEEK_OF_YEAR, weekNum );
+        chartLabels.add( CPSDateValidator.format( cal.getTime(),
+                                          CPSDateValidator.DATE_FORMAT_SHORT));
+        chartValues.add( bedFlatUsageMap.get(weekNum).get(f) );
+
+      }
+
+      //*************************************//
+      // Catch special case where we're working with flats
+      //*************************************//
+      if ( f.equals( "flats") ) {
+        ghChart = new ChartPanel( chartValues, chartLabels, "Trays in the Greenhouse" );
+      }
+      else {
+        // and special cases for specific field names
+        if ( f.equals("all") )
+          bedChartTitles.add( "Total beds in use" );
+        else if ( f.equals("") )
+          bedChartTitles.add( "Beds in use in field" );
+        else
+          bedChartTitles.add( "Beds in use: " + f );
+
+        bedCharts.add( new ChartPanel( chartValues, chartLabels, "" ) );
+      }
+    }
+
+
+//****************************************************************************//
+//    Now build all of the displayable components
+//****************************************************************************//
+    JLabel tempLabel;
+
+    //*************************************//
+    // Charts
+    //*************************************//
+    labelInfo = new JLabel( "<html>" + labelString + "</html>" );
+    jplBedsCharts = new CPSCardPanel( bedChartTitles, bedCharts, bedChartTitles.indexOf( "Total beds in use" ) );
+    jplFlatsChart = ghChart;
+
+    //*************************************//
+    // Total and Max Usage of Beds/Requirements
+    //*************************************//
     jplReq = new JPanel( new MigLayout( "",
                                         "[align right, 15%:][align center, 2%:][align right, 15%:]" ));
     jplReq.add( new JLabel( "Requirement" ), "align center" );
@@ -358,13 +365,38 @@ listOfFilters.remove(inGHMatcher);
         jplReq.add( new JSeparator( SwingConstants.VERTICAL ), "growy, spany" );
         firstRow = false;
       }
-      jplReq.add( new JLabel( "" + CPSCalculations.roundQuarter( reqMap.get(req)[0] ) ));
-      jplReq.add( new JLabel( "" + CPSCalculations.roundQuarter( reqMap.get(req)[1] ) ));
-      jplReq.add( new JLabel( reqMap.get(req)[2].toString() ));
-      jplReq.add( new JLabel( reqMap.get(req)[3].toString() ), "wrap" );
+      jplReq.add( new JLabel( "" + CPSCalculations.roundQuarter( reqsTotalMap.get(req).beds ) ));
+      tempLabel = new JLabel( "" + CPSCalculations.roundQuarter( reqsMaxMap.get(req).beds ) );
+      tempLabel.setToolTipText( "on " + CPSDateValidator.format( reqsMaxMap.get(req).bedsDate,
+                                                                 CPSDateValidator.DATE_FORMAT_SHORT ));
+      jplReq.add( tempLabel );
+      jplReq.add( new JLabel( "" + reqsTotalMap.get(req).rowLen ));
+      tempLabel = new JLabel( "" + reqsMaxMap.get(req).rowLen );
+      tempLabel.setToolTipText( "on " + CPSDateValidator.format( reqsMaxMap.get(req).rowLenDate,
+                                                                 CPSDateValidator.DATE_FORMAT_SHORT ));
+      jplReq.add( tempLabel, "wrap" );
     }
+    tempLabel = new JLabel("Total:");
+    tempLabel.setToolTipText( "for all beds in this plan, regardless of 'requirements' needed" );
+    jplReq.add( tempLabel );
+    // still have to add the separator if we're on the first row
+    if ( firstRow )
+      jplReq.add( new JSeparator( SwingConstants.VERTICAL ), "growy, spany" );
+    jplReq.add( new JLabel( "" + CPSCalculations.roundQuarter( reqsTotalMap.get("").beds ) ));
+    tempLabel = new JLabel( "" + CPSCalculations.roundQuarter( reqsMaxMap.get("").beds ) );
+    tempLabel.setToolTipText( "on " + CPSDateValidator.format( reqsMaxMap.get("").bedsDate,
+                                                               CPSDateValidator.DATE_FORMAT_SHORT ));
+    jplReq.add( tempLabel );
+    jplReq.add( new JLabel( "" + reqsTotalMap.get("").rowLen ));
+    tempLabel = new JLabel( "" + reqsMaxMap.get("").rowLen );
+    tempLabel.setToolTipText( "on " + CPSDateValidator.format( reqsMaxMap.get("").rowLenDate,
+                                                               CPSDateValidator.DATE_FORMAT_SHORT ));
+    jplReq.add( tempLabel, "wrap" );
 
 
+    //*************************************//
+    // Total/Max usage of flats
+    //*************************************//
     jplFlats = new JPanel( new MigLayout( "",
                                           "[align right, 15%:][align center, 2%:][align right, 15%:]" ));
     jplFlats.add( new JLabel( "Flat Size" ), "align center" );
@@ -374,19 +406,36 @@ listOfFilters.remove(inGHMatcher);
 
     firstRow = true;
     for ( String flat : flatSizes ) {
+      if ( flat.equals( "" ) )
+        continue;
       jplFlats.add( new JLabel( flat ) );
       if ( firstRow ) {
         jplFlats.add( new JSeparator( SwingConstants.VERTICAL ), "growy, spany" );
         firstRow = false;
       }
-      jplFlats.add( new JLabel( flatMap.get(flat)[0].toString() ));
-      jplFlats.add( new JLabel( "" + CPSCalculations.roundQuarter( flatMap.get(flat)[1] )), "wrap" );
+      jplFlats.add( new JLabel( flatssTotalMap.get(flat).toString() ));
+      tempLabel = new JLabel( "" + CPSCalculations.roundQuarter( flatsMaxMap.get(flat).flats ));
+      tempLabel.setToolTipText( "on " + CPSDateValidator.format( flatsMaxMap.get(flat).flatsDate,
+                                                                 CPSDateValidator.DATE_FORMAT_SHORT ));
+      jplFlats.add( tempLabel, "wrap" );
     }
+    tempLabel = new JLabel("Total:");
+    tempLabel.setToolTipText( "for all flats in this plan, regardless of size" );
+    jplFlats.add( tempLabel );
+    if ( firstRow )
+      jplFlats.add( new JSeparator( SwingConstants.VERTICAL ), "growy, spany" );
+    jplFlats.add( new JLabel( flatssTotalMap.get("").toString() ));
+    tempLabel = new JLabel( "" + CPSCalculations.roundQuarter( flatsMaxMap.get("").flats ));
+    tempLabel.setToolTipText( "on " + CPSDateValidator.format( flatsMaxMap.get("").flatsDate,
+                                                               CPSDateValidator.DATE_FORMAT_SHORT ));
+    jplFlats.add( tempLabel, "wrap" );
 
 
+    //*************************************//
+    // all done
+    //*************************************//
     rebuildContentPanel();
 
-//    progBar.setVisible(false);
     updateButton.setEnabled(true);
     jplContents.setCursor(Cursor.getDefaultCursor());
 
@@ -477,51 +526,70 @@ listOfFilters.remove(inGHMatcher);
    */
   class CPSInTheFieldMatcherEditor extends CPSComplexPlantingFilter {
 
-    private Date plantingInTheField;
+    private Date dateInTheField;
     private String fieldName;
+    private String requirement = null;
 
     @Override
     public boolean matches(CPSPlanting p) {
       boolean m = super.matches(p);
 
-      Calendar c = Calendar.getInstance();
-      c.setTime( p.getDateToHarvest() );
-      c.add( Calendar.WEEK_OF_YEAR, p.getYieldNumWeeks() );
-      c.add( Calendar.DAY_OF_YEAR, 1 );
-      Date endOfHarvestWindow = c.getTime();
+      if ( dateInTheField != null ) {
+        if ( p.isDirectSeeded() )
+          m &= dateInTheField.after( bumpDateByDay( p.getDateToPlant(), -1 )) &&
+               dateInTheField.before( p.getDateHarvestEnd() );
+        else
+          m &= dateInTheField.after( bumpDateByDay( p.getDateToTP(), -1 )) &&
+               dateInTheField.before( p.getDateHarvestEnd() );
+      }
 
-      // if fieldName blank/Null then only match on blank field name only
-      if ( fieldName == null || fieldName.equals("") )
-        m &= p.getLocation().equals("");
-      else
-        m &= p.getLocation().startsWith(fieldName);
+      // if fieldName is null, then match any field name
+      // if it's blank, then match blank
+      // otherwise match that it "starts with"
+      if ( fieldName != null ) {
+        if ( fieldName.equals( "") )
+          m &= p.getLocation().equals( "" );
+        else
+          m &= p.getLocation().startsWith(fieldName);
+      }
 
-      if ( filterMethodTransplant() )
-        m &= plantingInTheField.after( bumpDateByDay( p.getDateToTP(), -1 )) &&
-             plantingInTheField.before( endOfHarvestWindow );
-      else // filterMethodDirectSeed()
-        m &= plantingInTheField.after( bumpDateByDay( p.getDateToPlant(), -1 )) &&
-             plantingInTheField.before( endOfHarvestWindow );
+      if ( requirement != null && ! requirement.equals("") )
+        m &= p.getOtherRequirements().contains( requirement );
 
       return m;
     }
 
-    public void setPlantingInTheFieldOn(Date d) { this.plantingInTheField = d; }
-    public void setFieldName(String s) { this.fieldName = s; }
+    public void setInTheFieldOn(Date d) {
+      dateInTheField = d;
+      fireChanged(this);
+    }
 
+    public void setFieldName(String s) {
+      fieldName = s;
+      fireChanged(this);
+    }
+
+    public void setRequirement( String f ) {
+      requirement = f;
+      fireChanged(this);
+    }
 
   }
 
 
     /**
-   * Given a date (through the {@link setPlantingInTheFieldOn( Date d )} method)
+   * Given a date (through the {@link setSeededInTheGreenhouseOn( Date d )} method)
    * this will match any planting that has been planted before the date and whose
-   * "harvest window" (defined as Harvest Date + Num Weeks of Harvest) has not
-   * passed.
+   * transplant date has not passed.
+   * It will also match on a flat size, if given via {@link setFlatSize( String f )}.
+   * Set either to null stop attempting to match that property.  (ie match any
+   * value of that property)
    */
   class CPSInTheGreenhouseMatcher extends CPSComplexPlantingFilter {
 
-    private Date seededInTheGreenhouse;
+    private Date seededInTheGreenhouse = null;
+    private String flatSize = null;
+
 
     public CPSInTheGreenhouseMatcher() {
       setAsTransplatedFilter();
@@ -531,105 +599,25 @@ listOfFilters.remove(inGHMatcher);
     public boolean matches(CPSPlanting p) {
       boolean m = super.matches(p);
 
-      m &= seededInTheGreenhouse.after( bumpDateByDay( p.getDateToPlant(), -1 )) &&
-           seededInTheGreenhouse.before( p.getDateToTP() );
+      if ( seededInTheGreenhouse != null )
+        m &= seededInTheGreenhouse.after( bumpDateByDay( p.getDateToPlant(), -1 )) &&
+             seededInTheGreenhouse.before( p.getDateToTP() );
+
+      if ( flatSize != null && ! flatSize.equals("") )
+        m &= p.getFlatSize().equals(flatSize);
 
       return m;
     }
 
-    public void setSeededInTheGreenhouseOn(Date d) {
+    public void setInTheGreenhouseOn(Date d) {
       this.seededInTheGreenhouse = d;
       fireChanged(this);
     }
 
-  }
-
-
-
-  @Deprecated
-  class CPSHarvestWindowFilterTooComplicatedDontUse extends CPSComplexPlantingFilter {
-
-    private boolean filterOnHarvestable;
-    private Date harvestableDate;
-
-    private boolean filterOnHarvestableRange;
-    private Date harvestableRangeStart, harvestableRangeEnd;
-
-    @Override
-    public boolean matches(CPSPlanting item) {
-      boolean m = super.matches(item);
-
-      if ( filterOnHarvestableDate() ) {
-
-        Calendar c = Calendar.getInstance();
-        c.setTime( item.getDateToHarvest() );
-        c.add( Calendar.WEEK_OF_YEAR, item.getYieldNumWeeks() );
-        c.add( Calendar.DAY_OF_YEAR, 1 );
-        Date endOfHarvestWindow = c.getTime();
-
-        if ( getHarvestableDate() != null )
-          m &= getHarvestableDate().after( bumpDateByDay( item.getDateToHarvest(), -1 ) ) &&
-               getHarvestableDate().before( endOfHarvestWindow );
-
-      }
-
-      /*
-       * If something is harvestable between Date A and Date B
-       *  - then harvest has to start before B AND end after A
-       *
-       * So if something is harvestable after Date A
-       *  - Date A is the "start of harvestable range"
-       *  - then harvest has to end after A
-       *
-       * And if something is harvestable before Date B
-       *  - Date B is the "end of harvestable range"
-       *  - then harvest has to start before B
-       */
-
-      if ( filterOnHarvestableRange() ) {
-
-        Calendar c = Calendar.getInstance();
-        c.setTime( item.getDateToHarvest() );
-        c.add( Calendar.WEEK_OF_YEAR, item.getYieldNumWeeks() );
-        c.add( Calendar.DAY_OF_YEAR, 1 );
-        Date endOfHarvestWindow = c.getTime();
-
-        if ( getHarvestableRangeEnd() == null )
-          m &= getHarvestableRangeStart().after( bumpDateByDay( endOfHarvestWindow, -1 ));
-        else if ( getHarvestableRangeStart() == null )
-          m &= getHarvestableRangeEnd().before( bumpDateByDay( item.getDateToHarvest(), 1 ));
-
-      }
-
-      return m;
+    public void setFlatSize( String f ) {
+      flatSize = f;
+      fireChanged(this);
     }
-
-    public boolean filterOnHarvestableDate() { return filterOnHarvestable; }
-    public void setFilterOnHarvestable(boolean f) {
-      this.filterOnHarvestable = f;
-    }
-
-    public Date getHarvestableDate() { return harvestableDate; }
-    public void setHarvestableOn(Date h) {
-      this.harvestableDate = h;
-    }
-
-    public boolean filterOnHarvestableRange() { return filterOnHarvestableRange; }
-    public void setFilterOnHarvestableRange(boolean filterOnHarvestableRange) {
-      this.filterOnHarvestableRange = filterOnHarvestableRange;
-    }
-
-    public Date getHarvestableRangeStart() { return harvestableRangeStart; }
-    public void setHarvestableRangeStart(Date harvestableRangeStart) {
-      this.harvestableRangeStart = harvestableRangeStart;
-    }
-
-    public Date getHarvestableRangeEnd() { return harvestableRangeEnd; }
-    public void setHarvestableRangeEnd(Date harvestableRangeEnd) {
-      this.harvestableRangeEnd = harvestableRangeEnd;
-    }
-
-
 
   }
 
@@ -639,71 +627,44 @@ listOfFilters.remove(inGHMatcher);
 //****************************************************************************//
   static final class SumBedsRowftFlats extends AbstractEventListCalculation<Float, CPSPlanting> {
 
-    public float sumBeds, sumRowLen, sumFlats;
+    public float beds, rowUnitLengthes, flats;
 
     public SumBedsRowftFlats(EventList<CPSPlanting> source) {
         super(new Float(0), source);
-        sumBeds = sumRowLen = sumFlats = 0;
+        beds = rowUnitLengthes = flats = 0;
     }
 
     protected void inserted( CPSPlanting p ) {
-      sumBeds   += p.getBedsToPlant();
-      sumRowLen += p.getRowFtToPlant();
-      sumFlats  += p.getFlatsNeeded();
+      beds   += p.getBedsToPlant();
+      rowUnitLengthes += p.getRowFtToPlant();
+      flats  += p.getFlatsNeeded();
     }
 
     protected void deleted(CPSPlanting p) {
-      sumBeds   -= p.getBedsToPlant();
-      sumRowLen -= p.getRowFtToPlant();
-      sumFlats  -= p.getFlatsNeeded();
+      beds   -= p.getBedsToPlant();
+      rowUnitLengthes -= p.getRowFtToPlant();
+      flats  -= p.getFlatsNeeded();
     }
 
     protected void updated( CPSPlanting oldP, CPSPlanting newP ) {
-      sumBeds   = sumBeds   - oldP.getBedsToPlant()  + newP.getBedsToPlant();
-      sumRowLen = sumRowLen - oldP.getRowFtToPlant() + newP.getRowFtToPlant();
-      sumFlats  = sumFlats  - oldP.getFlatsNeeded()  + newP.getFlatsNeeded();
+      beds   = beds   - oldP.getBedsToPlant()  + newP.getBedsToPlant();
+      rowUnitLengthes = rowUnitLengthes - oldP.getRowFtToPlant() + newP.getRowFtToPlant();
+      flats  = flats  - oldP.getFlatsNeeded()  + newP.getFlatsNeeded();
     }
 
   }
 
+//****************************************************************************//
+//  Basic struct to hold max values for each week
+//****************************************************************************//
+  private final class WeeklyMaxStruct {
+    public float beds = 0;
+    public float rowLen = 0;
+    public float flats = 0;
 
-  static final class FlatMatcher extends CPSComplexPlantingFilter {
-
-    String flatSize = "";
-
-    public FlatMatcher() {
-      setViewLimited(true);
-    }
-
-    public void setFlatSize( String f ) { 
-      flatSize = f;
-      fireChanged(this);
-    }
-
-    public boolean matches( CPSPlanting item ) {
-      return super.matches(item) && item.getFlatSize().equals(flatSize);
-    }
-
-
-  }
-
-  static final class RequirementMatcher extends CPSComplexPlantingFilter {
-
-    String req;
-
-    public RequirementMatcher() {
-      setViewLimited(true);
-    }
-
-    public void setRequirement( String f ) {
-      req = f;
-      fireChanged(this);
-    }
-    
-    public boolean matches( CPSPlanting item ) {
-      return super.matches(item) && item.getOtherRequirements().contains( req );
-    }
-
+    public Date bedsDate = null;
+    public Date rowLenDate = null;
+    public Date flatsDate = null;
   }
 
 }

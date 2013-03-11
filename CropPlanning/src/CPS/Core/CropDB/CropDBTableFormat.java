@@ -167,6 +167,8 @@ public class CropDBTableFormat extends CPSAdvancedTableFormat<CPSCrop>
         s = c.formatInt( (Integer) editedValue );
       else if ( editedValue instanceof Float )
         s = c.formatFloat( (Float) editedValue );
+      else
+        s = editedValue.toString();
     }
 
     // do this because this method is called every time a row is unselected
