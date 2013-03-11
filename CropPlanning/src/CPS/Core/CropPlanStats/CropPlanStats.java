@@ -108,66 +108,50 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     
     String labelString = "First planting is " + dataSorted.get(0).getCropName() +
                          " on " + dataSorted.get(0).getDateToPlantString();
-    Date first = dataSorted.get(0).getDateToPlant();
+    Date dateFirstPlanting = dataSorted.get(0).getDateToPlant();
 
     // ... and the last
     // this sorts the list based on harvest date + num of weeks to yield
     dataSorted.setComparator( new Comparator<CPSPlanting>() {
-
-                Calendar compareCal = Calendar.getInstance();
-
                 public int compare( CPSPlanting o1, CPSPlanting o2) {
-                  Date d1 = o1.getDateToHarvest();
-                  Date d2 = o2.getDateToHarvest();
-
-                  compareCal.setTime( d1 );
-                  compareCal.add( Calendar.WEEK_OF_YEAR,
-                                  o1.getYieldNumWeeks() );
-                  d1 = compareCal.getTime();
-
-                  compareCal.setTime( d2 );
-                  compareCal.add( Calendar.WEEK_OF_YEAR,
-                                  o2.getYieldNumWeeks() );
-                  d2 = compareCal.getTime();
-
-                  return d1.compareTo(d2);
+                  return o1.getDateHarvestEnd().compareTo(o2.getDateHarvestEnd());
                 }
               }
             );
-    Date last = dataSorted.get( dataSorted.size()-1 ).getDateToHarvest();
-    cal.setTime( last );
+    Date dateLastHarvest = dataSorted.get( dataSorted.size()-1 ).getDateToHarvest();
+    cal.setTime( dateLastHarvest );
     cal.add( Calendar.WEEK_OF_YEAR, 
              dataSorted.get( dataSorted.size()-1 ).getYieldNumWeeks() );
-    last = cal.getTime();
+    dateLastHarvest = cal.getTime();
     labelString += "<br>Last harvest is " + dataSorted.get( dataSorted.size()-1 ).getCropName() +
-                        " on " + CPSDateValidator.format( last );
+                        " on " + CPSDateValidator.format( dateLastHarvest );
 
 
     int weekNum;
-    cal.setTime( last );
+    cal.setTime( dateLastHarvest );
     int endWeek = cal.get( Calendar.WEEK_OF_YEAR );
 
 //****************************************************************************//
 //    Create the filters depending on how it was planted
 //****************************************************************************//
-    CPSInTheFieldFilter dsFilter = new CPSInTheFieldFilter();
-    dsFilter.setViewLimited(true);
-    dsFilter.setFilterOnPlantingMethod(true);
-    dsFilter.setFilterMethodDirectSeed(true);
+    CPSInTheFieldMatcherEditor dsInFieldMatcher = new CPSInTheFieldMatcherEditor();
+    dsInFieldMatcher.setViewLimited(true);
+    dsInFieldMatcher.setFilterOnPlantingMethod(true);
+    dsInFieldMatcher.setFilterMethodDirectSeed(true);
 
-    CPSInTheFieldFilter tpFilter = new CPSInTheFieldFilter();
-    tpFilter.setViewLimited(true);
-    tpFilter.setFilterOnPlantingMethod(true);
-    tpFilter.setFilterMethodDirectSeed(false);
+    CPSInTheFieldMatcherEditor tpInFieldMatcher = new CPSInTheFieldMatcherEditor();
+    tpInFieldMatcher.setViewLimited(true);
+    tpInFieldMatcher.setFilterOnPlantingMethod(true);
+    tpInFieldMatcher.setFilterMethodDirectSeed(false);
 
     // put them together as an OR matcher
-    BasicEventList<MatcherEditor<CPSPlanting>> dstpFilters =
+    BasicEventList<MatcherEditor<CPSPlanting>> inFieldMatchers =
             new BasicEventList<MatcherEditor<CPSPlanting>>();
-    dstpFilters.add( dsFilter );
-    dstpFilters.add( tpFilter );
-    CompositeMatcherEditor<CPSPlanting> dstpFilter =
-            new CompositeMatcherEditor<CPSPlanting>( dstpFilters );
-    dstpFilter.setMode( CompositeMatcherEditor.OR );
+    inFieldMatchers.add( dsInFieldMatcher );
+    inFieldMatchers.add( tpInFieldMatcher );
+    CompositeMatcherEditor<CPSPlanting> inFieldFilter =
+            new CompositeMatcherEditor<CPSPlanting>( inFieldMatchers );
+    inFieldFilter.setMode( CompositeMatcherEditor.OR );
 
     List<String> chartWeeks;
     List<Double> chartValues;
@@ -181,10 +165,10 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
       chartWeeks = new ArrayList<String>();
       chartValues = new ArrayList<Double>();
 
-      dsFilter.setFieldName( field );
-      tpFilter.setFieldName( field );
+      dsInFieldMatcher.setFieldName( field );
+      tpInFieldMatcher.setFieldName( field );
 
-      cal.setTime( first );
+      cal.setTime( dateFirstPlanting );
       weekNum = cal.get( Calendar.WEEK_OF_YEAR );
 
       //**********************************************************************//
@@ -193,11 +177,11 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
       while ( weekNum <= endWeek ) {
 
         cal.set( Calendar.WEEK_OF_YEAR, weekNum );
-        dsFilter.setPlantingInTheFieldOn( cal.getTime() );
-        tpFilter.setPlantingInTheFieldOn( cal.getTime() );
+        dsInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
+        tpInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
 
         // update the filter? is this needed?
-        dataFiltered.setMatcherEditor(dstpFilter);
+        dataFiltered.setMatcherEditor(inFieldFilter);
 
         double beds = CPSCalculations.roundQuarter( sumOfFloats.getValue() );
 
@@ -221,10 +205,10 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 //    Now work on a chart of flats needed
 //****************************************************************************//
 
-    CPSInTheGreenhouseFilter flatsFilter = new CPSInTheGreenhouseFilter();
+    CPSInTheGreenhouseMatcher inGHMatcher = new CPSInTheGreenhouseMatcher();
     BasicEventList<MatcherEditor<CPSPlanting>> listOfFilters =
             new BasicEventList<MatcherEditor<CPSPlanting>>();
-    listOfFilters.add( flatsFilter );
+    listOfFilters.add( inGHMatcher );
     listOfFilters.add( new AbstractMatcherEditor<CPSPlanting>()
                           {
                             @Override
@@ -234,11 +218,11 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                           } );
     CompositeMatcherEditor<CPSPlanting> andFilter =
             new CompositeMatcherEditor<CPSPlanting>( listOfFilters );
-    dstpFilter.setMode( CompositeMatcherEditor.AND );
+    andFilter.setMode( CompositeMatcherEditor.AND );
 
     SumBedsRowftFlats customSummer = new SumBedsRowftFlats( dataFiltered );
 
-    cal.setTime( first );
+    cal.setTime( dateFirstPlanting );
     weekNum = cal.get( Calendar.WEEK_OF_YEAR );
 
     chartWeeks = new ArrayList<String>();
@@ -271,7 +255,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
       flatMap.put( flat, new Float[] { customSummer.sumFlats, 0f } );
     }
 
-
+listOfFilters.remove(inGHMatcher);
 //****************************************************************************//
 //    Now loop over the weeks to add it all up.
 //****************************************************************************//
@@ -281,8 +265,9 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
       // flats in gh this week
       //**********************************************************************//
       cal.set( Calendar.WEEK_OF_YEAR, weekNum );
-      flatsFilter.setSeededInTheGreenhouseOn( cal.getTime() );
+      inGHMatcher.setSeededInTheGreenhouseOn( cal.getTime() );
 
+      listOfFilters.add( inGHMatcher );
       // update the filter? is this needed?
       dataFiltered.setMatcherEditor( andFilter );
 
@@ -292,12 +277,31 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                                           CPSDateValidator.DATE_FORMAT_SHORT));
       chartValues.add( flats );
 
-
       //**********************************************************************//
       // Max requirements and flats
-      //**********************************************************************//
+      //**********************************************************crop************//
       boolean update = false;
+      listOfFilters.add(flatMatcher);
+      for ( String flat: flatSizes ) {
+        flatMatcher.setFlatSize(flat);
+        Float[] f = flatMap.get(flat);
+        if ( customSummer.sumFlats > f[1] ) {
+          f[1] = customSummer.sumFlats;
+          update = true;
+        }
+        if ( update ) {
+          reqMap.put( flat, f );
+          update = false;
+        }
+      }
+      listOfFilters.remove(flatMatcher);
+      listOfFilters.remove(inGHMatcher);
+
+      dsInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
+      tpInFieldMatcher.setPlantingInTheFieldOn( cal.getTime() );
+      listOfFilters.add( inFieldFilter );
       listOfFilters.add( reqMatcher );
+      dataFiltered.setMatcherEditor( andFilter );
       for ( String req : requirements ) {
         if ( req.equals("") )
           continue;
@@ -321,21 +325,8 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 //                             CPSCalculations.roundQuarter( customSummer.sumBeds ));
       }
       listOfFilters.remove(reqMatcher);
+      listOfFilters.remove( inFieldFilter );
 
-      listOfFilters.add(flatMatcher);
-      for ( String flat: flatSizes ) {
-        flatMatcher.setFlatSize(flat);
-        Float[] f = flatMap.get(flat);
-        if ( customSummer.sumFlats > f[1] ) {
-          f[1] = customSummer.sumFlats;
-          update = true;
-        }
-        if ( update ) {
-          reqMap.put( flat, f );
-          update = false;
-        }
-      }
-      listOfFilters.remove(flatMatcher);
 
       weekNum++;
     }
@@ -484,7 +475,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
    * "harvest window" (defined as Harvest Date + Num Weeks of Harvest) has not
    * passed.
    */
-  class CPSInTheFieldFilter extends CPSComplexPlantingFilter {
+  class CPSInTheFieldMatcherEditor extends CPSComplexPlantingFilter {
 
     private Date plantingInTheField;
     private String fieldName;
@@ -528,11 +519,11 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
    * "harvest window" (defined as Harvest Date + Num Weeks of Harvest) has not
    * passed.
    */
-  class CPSInTheGreenhouseFilter extends CPSComplexPlantingFilter {
+  class CPSInTheGreenhouseMatcher extends CPSComplexPlantingFilter {
 
     private Date seededInTheGreenhouse;
 
-    public CPSInTheGreenhouseFilter() {
+    public CPSInTheGreenhouseMatcher() {
       setAsTransplatedFilter();
     }
 

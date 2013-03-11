@@ -1388,7 +1388,7 @@ public final class CPSPlanting extends CPSRecord {
       CPSDatum d = getDatum( seedsPerDS.getPropertyNum() );
       CPSDatum r = getRowFtToPlantDatum( source_path );
       CPSDatum t = getDatum( seedsPerTP.getPropertyNum() );
-      CPSDatum p = getPlantsNeededDatum( source_path );
+      CPSDatum p = getPlantsToStartDatum( source_path );
       CPSDatum u = getDatum( seedsPerUnit.getPropertyNum() );
 
       Boolean ds = this.isDirectSeeded();
