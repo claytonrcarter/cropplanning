@@ -46,6 +46,7 @@ import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
 import ca.odell.glazedlists.swing.EventTableModel;
 import com.toedter.calendar.JDateChooser;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -102,8 +103,6 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private final String DSC_ALL_PLANTINGS = "Summary of each planting<br>from this list.";
     private final String DSC_SEED_ORDER_WORKSHEET = "Summary of each crop and/or variety<br>in this plan, including amount of seed<br>needed for each variety.";
     private final String DSC_HARVEST_AVAILABILITY = "List of harvest periods for<br>each crop and/or variety.";
-
-
 
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
     PDFExporter pdf = new PDFExporter();
@@ -305,13 +304,18 @@ public class TODOLists extends CPSDisplayableDataUserModule
                 prefix + " - " + new SimpleDateFormat("MMM dd yyyy").format(d) + "." + ext;
     }
 
+
     private void filterAndSortList( List<CPSPlanting> l, CPSComplexPlantingFilter f, int sortProp ) {
+      filterAndSortList( l, f, new CPSPlantingComparator( sortProp ) );
+    }
+    
+    private void filterAndSortList( List<CPSPlanting> l, CPSComplexPlantingFilter f, Comparator comp ) {
 
       if ( l != null )
         data.clear();
 
       dataFiltered.setMatcher( f );
-      dataSorted.setComparator( new CPSPlantingComparator( sortProp ));
+      dataSorted.setComparator( comp );
 
       if ( l != null )
         data.addAll( l );
@@ -361,7 +365,30 @@ public class TODOLists extends CPSDisplayableDataUserModule
         }
 
 
-        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
+        Comparator<CPSPlanting> comp = new Comparator<CPSPlanting>() {
+                  public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+                    if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
+                      return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
+                    else
+                      return o1.getCropName().compareTo( o2.getCropName() );
+                  }
+                };
+
+        filterAndSortList( getDataSource().getCropPlan( planName ), filter, comp );
+
+        AdjacentGroupingList<CPSPlanting> gl =
+                new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
+        for ( Iterator<List<CPSPlanting>> it = gl.iterator(); it.hasNext(); ) {
+          List<CPSPlanting> list = it.next();
+          System.out.print( list.get(0).getDateToPlantPlannedString() + " [ " );
+          for ( CPSPlanting p : list) {
+            System.out.print( p.getCropName() + ", " );
+          }
+          System.out.println( "]" );
+        }
+
+
+
         tableFormat = new GHSeedingTableFormat();
 
         CPSTable jt = new CPSTable();
@@ -376,6 +403,11 @@ public class TODOLists extends CPSDisplayableDataUserModule
                 CPSGlobalSettings.getFarmName(),
                 "GH Seedings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
                 "GH Seedings");
+        pdf.export( gl, new GHSeedingTableFormat(),
+                    filename+"2.pdf", CPSGlobalSettings.getFarmName(),
+                "GH Seedings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
+                "GH Seedings");
+
 
     }
 
@@ -998,6 +1030,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
             return;
           }
 
+          jplTodo.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
           if ( whatToExport.equals( TL_GH_SEEDING ) ) {
             exportGHPlantings( planName, format );
           } else if ( whatToExport.equals( TL_FIELD_PLANTING ) ) {
@@ -1011,6 +1044,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
           } else if ( whatToExport.equals( TL_HARVEST_AVAILABILITY ) ) {
             exportAvailabilityList( planName, format );
           }
+          jplTodo.setCursor(Cursor.getDefaultCursor());
 
         } else if (action.equalsIgnoreCase(btnSelectFile.getText())) {
             int status = filFile.showDialog(jplTodo, "Accept");
