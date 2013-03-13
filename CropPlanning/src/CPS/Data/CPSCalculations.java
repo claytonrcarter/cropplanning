@@ -25,6 +25,9 @@ package CPS.Data;
 
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.calculation.AbstractEventListCalculation;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -260,5 +263,101 @@ public final class CPSCalculations {
    public static float roundThird( float f ) {
        return (float) Math.ceil( f * 3 ) / 3;
    }
-   
+
+
+//****************************************************************************//
+//   Utility Classes
+//****************************************************************************//
+   //****************************************************************************//
+// Advanced Calculation
+//****************************************************************************//
+  public static final class SumBedsRowftFlats extends AbstractEventListCalculation<Float, CPSPlanting> {
+
+    public float beds, rowUnitLengthes, flats;
+
+    public SumBedsRowftFlats(EventList<CPSPlanting> source) {
+        super(new Float(0), source);
+        beds = rowUnitLengthes = flats = 0;
+    }
+
+    protected void inserted( CPSPlanting p ) {
+      beds   += p.getBedsToPlant();
+      rowUnitLengthes += p.getRowFtToPlant();
+      flats  += p.getFlatsNeeded();
+      System.out.println( "adding values for variety: " + p.getVarietyName() + " " + flats );
+    }
+
+    protected void deleted(CPSPlanting p) {
+      beds   -= p.getBedsToPlant();
+      rowUnitLengthes -= p.getRowFtToPlant();
+      flats  -= p.getFlatsNeeded();
+    }
+
+    protected void updated( CPSPlanting oldP, CPSPlanting newP ) {
+      beds   = beds   - oldP.getBedsToPlant()  + newP.getBedsToPlant();
+      rowUnitLengthes = rowUnitLengthes - oldP.getRowFtToPlant() + newP.getRowFtToPlant();
+      flats  = flats  - oldP.getFlatsNeeded()  + newP.getFlatsNeeded();
+    }
+
+  }
+
+  public static final class SumPlantsFlats extends AbstractEventListCalculation<Float, CPSPlanting> {
+
+    public int plantsNeeded, plantsToStart;
+    public float flats;
+
+    public SumPlantsFlats(EventList<CPSPlanting> source) {
+        super(new Float(0), source);
+        plantsNeeded = plantsToStart = 0;
+        flats = 0;
+    }
+
+    protected void inserted( CPSPlanting p ) {
+      plantsNeeded   += p.getPlantsNeeded();
+      plantsToStart += p.getPlantsToStart();
+      flats  += p.getFlatsNeeded();
+    }
+
+    protected void deleted(CPSPlanting p) {
+      plantsNeeded   -= p.getPlantsNeeded();
+      plantsToStart -= p.getPlantsToStart();
+      flats  -= p.getFlatsNeeded();
+    }
+
+    protected void updated( CPSPlanting oldP, CPSPlanting newP ) {
+      plantsNeeded   = plantsNeeded   - oldP.getPlantsNeeded()  + newP.getPlantsNeeded();
+      plantsToStart = plantsToStart - oldP.getPlantsToStart() + newP.getPlantsToStart();
+      flats  = flats  - oldP.getFlatsNeeded()  + newP.getFlatsNeeded();
+    }
+
+
+  }
+
+
+  
+  
+  public static void main( String[] args ) {
+    
+    BasicEventList<CPSPlanting> el = new BasicEventList<CPSPlanting>();
+    
+    SumPlantsFlats sum1 = new SumPlantsFlats( el );
+    SumBedsRowftFlats sum2 = new SumBedsRowftFlats( el );
+    
+    for ( int i = 0; i < 10; i++ ) {
+      CPSPlanting p = new CPSPlanting();
+      p.setVarietyName( "[" + i + "]" );
+      p.setFlatsNeeded( i );
+      el.add( p );
+    }
+
+    System.out.println( "Flats: " + sum1.flats );
+    System.out.println( "Flats: " + sum2.flats );
+
+
+    
+  }
+
+
+
+
 }

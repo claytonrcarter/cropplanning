@@ -23,13 +23,19 @@
 
 package CPS.Core.TODOLists;
 
+import CPS.Data.CPSCalculations;
 import CPS.Data.CPSDateValidator;
+import CPS.Data.CPSPlanting;
 import CPS.Data.CPSRecord;
 import CPS.UI.Swing.CPSTable;
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
 import com.itextpdf.text.ExceptionConverter;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
@@ -40,8 +46,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
-import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -50,24 +56,21 @@ import javax.swing.JTable;
 public class PDFExporter {
 
     private final Font fontHeadFootItal, fontHeadFootReg, fontTableReg, fontTableHead;
-//    private Font fontTableItal
+    private Font fontTableItal;
     private final Font fontPageHeader;
-
-    CPSDateValidator dateValidator;
 
     Document tempDoc = null;
 
   public PDFExporter() {
+    
     fontHeadFootItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 8 );
     fontHeadFootReg = FontFactory.getFont( FontFactory.HELVETICA, 8 );
 
     fontTableReg = FontFactory.getFont( FontFactory.HELVETICA, 10 );
     fontTableHead = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 10 );
-//      fontTableItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 10 );
+    fontTableItal = FontFactory.getFont( FontFactory.HELVETICA_OBLIQUE, 10 );
 
     fontPageHeader = FontFactory.getFont( FontFactory.HELVETICA_BOLD, 14 );
-
-    dateValidator = new CPSDateValidator();
 
   }
 
@@ -82,12 +85,12 @@ public class PDFExporter {
         endExport();
     }
 
-    public void export( List list, CPSExportTableFormat tableFormat,
+    public void exportPlantingList( AdjacentGroupingList<CPSPlanting> list, CPSExportTableFormat<CPSPlanting> tableFormat,
                         String filename, String farmName,
                         String docTitle, String tableTitle ) {
         
         startExport( filename, farmName, docTitle, tableTitle );
-        addTable( convertList( list, tableFormat ), tableTitle );
+        addTable( convertPlantingList( list, tableFormat ), tableTitle );
         endExport();
     }
 
@@ -237,7 +240,9 @@ public class PDFExporter {
         return d;
     }
 
-    public PdfPTable convertList( List list, CPSExportTableFormat tableFormat ) {
+    
+    public PdfPTable convertPlantingList( AdjacentGroupingList<CPSPlanting> plantingList,
+                                        CPSExportTableFormat<CPSPlanting> tableFormat ) {
 
       boolean tableIncludesNotes = false;
        boolean rowHasNotes = false;
@@ -282,43 +287,112 @@ public class PDFExporter {
         table.setHeaderRows( 1 );
 
 
+        BasicEventList<CPSPlanting> calculationList = new BasicEventList<CPSPlanting>();
+        CPSCalculations.SumPlantsFlats summaryStats =
+                    new CPSCalculations.SumPlantsFlats( calculationList );
+
         //********************************************************************//
-        // Iterate over the elements of the list
+        // Iterate over the groups
         //********************************************************************//
-        for ( Iterator it = list.iterator(); it.hasNext(); ) {
+        for ( Iterator<List<CPSPlanting>> it = plantingList.iterator(); it.hasNext(); ) {
 
-          Object o = it.next();
+          List<CPSPlanting> group = it.next();
 
-          if ( o instanceof List ) {
-            //****************************************************************//
-            // If this item is itself a list of multiple items
-            //****************************************************************//
-            if ( ((List) o).size() > 1 ) {
+          //****************************************************************//
+          // If this is a list of multiple items,
+          // Do the summary row
+          //****************************************************************//
+          if ( group.size() > 1 ) {
 
-              rowHasNotes = false;
-              Object p = ((List) o).get(0);
+            rowHasNotes = false;
+            CPSPlanting p = group.get(0);
 
+            calculationList.clear();
+            calculationList.addAll( group );
+
+            for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
+
+              Object cellValue = tableFormat.getColumnValue( p, col );
+
+              if ( tableIncludesNotes && col == notesIndex ) {
+                if ( cellValue == null || cellValue.equals(""))
+                   rowHasNotes = false;
+                else {
+                   rowHasNotes = true;
+                   notesValue = cellValue.toString();
+                }
+                continue;
+              }
+
+
+              if ( ! tableFormat.isSummaryColumn( col ) ) {
+
+                if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_VAR_NAME )
+                  table.addCell( new SummaryTitleCell() );
+                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_PLANTS_NEEDED )
+                  table.addCell( new SummaryCell( "" + summaryStats.plantsNeeded ) );
+                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_PLANTS_START )
+                  table.addCell( new SummaryCell( "" + summaryStats.plantsToStart ) );
+                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_FLATS_NEEDED )
+                  table.addCell( new SummaryCell( CPSRecord.formatFloat( summaryStats.flats, 2 )));
+                else
+                  table.addCell( new SummaryCell("") );
+                continue;
+              }
+
+
+              if ( cellValue == null ) {
+                 if ( ! tableIncludesNotes || col != notesIndex )
+                  table.addCell( new RegCell( "" ) );
+              }
+              else if ( cellValue instanceof Date )
+                  table.addCell( new RegCell( CPSDateValidator.format( (Date) cellValue,
+                                                                       CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK )));
+              else if ( cellValue instanceof Boolean )
+                  if ( ( (Boolean) cellValue ).booleanValue() )
+                      table.addCell( new CenterCell( "X" ) );
+                  else
+                      table.addCell( new RegCell( "" ) );
+              else if ( cellValue instanceof Float )
+                  table.addCell( new RegCell( CPSRecord.formatFloat( ((Float) cellValue).floatValue(), 3) ));
+              else if ( cellValue instanceof Double )
+                  table.addCell( new RegCell( CPSRecord.formatFloat( ((Double) cellValue).floatValue(), 3) ));
+              else
+                  table.addCell( new RegCell( cellValue.toString() ) );
+
+            }
+
+           //*****************************************************//
+           // now deal w/ the Notes data
+           //*****************************************************//
+           SpecialNoteCell c = new SpecialNoteCell();
+           if ( tableIncludesNotes && rowHasNotes ) {
+             Phrase phrase = new Phrase( "Notes: ", fontHeadFootItal);
+             phrase.add( new Phrase( notesValue, fontHeadFootReg ) );
+             c.addElement( phrase );
+           }
+           c.setColspan( 2 );
+           c.setRowspan( group.size() );
+           table.addCell( c );
+
+           //*****************************************************//
+            // now go over and spit out the actual values
+           //*****************************************************//
+            for ( CPSPlanting e : group ) {
 
               for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
 
-                Object q = tableFormat.getColumnValue( p, col);
+                // skip the summary cells
+                if ( tableFormat.isSummaryColumn( col ) ) {
+//                    table.addCell( new EmptyCell() );
+                  continue;
+                }
 
                 if ( tableIncludesNotes && col == notesIndex ) {
-                  if ( q == null || q.equals(""))
-                     rowHasNotes = false;
-                  else {
-                     rowHasNotes = true;
-                     notesValue = q.toString();
-                  }
                   continue;
                 }
 
-
-                if ( ! tableFormat.isSummaryColumn( col ) ) {
-                  table.addCell( new EmptyCell() );
-                  continue;
-                }
-
+                Object q = tableFormat.getColumnValue( e, col);
 
                 if ( q == null ) {
                    if ( ! tableIncludesNotes || col != notesIndex )
@@ -341,117 +415,75 @@ public class PDFExporter {
 
               }
 
-             //*****************************************************//
-             // now deal w/ the Notes data
-             //*****************************************************//
-             if ( tableIncludesNotes && rowHasNotes ) {
-               SpecialNoteCell c = new SpecialNoteCell();
-               c.addElement( new Phrase( notesValue, fontHeadFootReg ) );
-               c.setColspan( 2 );
-               c.setRowspan( ((List) o).size() );
-               table.addCell( c );
-             }
+            }
 
-             //*****************************************************//
-              // now go over and spit out the actual values
-             //*****************************************************//
-              for ( Object e : ((List) o) ) {
+          }
+          else {
+            // list only has one entry
 
-                for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
+             rowHasNotes = false;
+             CPSPlanting p = group.get(0);
 
-                  // skip the summary cells
-                  if ( tableFormat.isSummaryColumn( col ) ) {
-//                    table.addCell( new EmptyCell() );
-                    continue;
-                  }
+             for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
 
-                  if ( tableIncludesNotes && col == notesIndex ) {
-                    continue;
-                  }
-
-                  Object q = tableFormat.getColumnValue( e, col);
+                  Object q = tableFormat.getColumnValue( p, col);
 
                   if ( q == null ) {
                      if ( ! tableIncludesNotes || col != notesIndex )
                       table.addCell( new RegCell( "" ) );
                   }
+
                   else if ( q instanceof Date )
                       table.addCell( new RegCell( CPSDateValidator.format( (Date) q,
                                                                            CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK )));
+
                   else if ( q instanceof Boolean )
                       if ( ( (Boolean) q ).booleanValue() )
                           table.addCell( new CenterCell( "X" ) );
                       else
                           table.addCell( new RegCell( "" ) );
+
                   else if ( q instanceof Float )
                       table.addCell( new RegCell( CPSRecord.formatFloat( ((Float) q).floatValue(), 3) ));
+
                   else if ( q instanceof Double )
                       table.addCell( new RegCell( CPSRecord.formatFloat( ((Double) q).floatValue(), 3) ));
-                  else
-                      table.addCell( new RegCell( q.toString() ) );
 
-                }
+                  else {
 
+                     if ( tableIncludesNotes && col == notesIndex ) {
+                        if ( q == null || q.equals(""))
+                           rowHasNotes = false;
+                        else {
+                           rowHasNotes = true;
+                           notesValue = q.toString();
+                        }
+                     }
+                     else
+                        table.addCell( new RegCell( q.toString() ) );
+                  }
               }
 
-            }
-            else {
-              // list only has one entry
+             // now deal w/ the Notes data
+             if ( tableIncludesNotes && rowHasNotes ) {
+//                  table.addCell( new NoteHeadCell() );
+//                  NoteCell c = new NoteCell( notesValue );
+//                  // reset the font to be smaller
+//                  c.setPhrase( new Phrase( notesValue, fontHeadFootReg ));
+//                  c.setColspan( colCount - 1 );
+//                 table.addCell( c );
 
-               rowHasNotes = false;
-               Object p = ((List) o).get(0);
+//               SpecialNoteCell c = new SpecialNoteCell();
+               NoteCell c = new NoteCell("");
+               Phrase phrase = new Phrase( "Notes: ", fontHeadFootItal);
+               phrase.add( new Phrase( notesValue, fontHeadFootReg ) );
+//               c.addElement( phrase );
+               c.setPhrase( phrase );
+               c.setColspan( colCount );
+               table.addCell( c );
 
-               for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
+             }
 
-                    Object q = tableFormat.getColumnValue( p, col);
-
-                    if ( q == null ) {
-                       if ( ! tableIncludesNotes || col != notesIndex )
-                        table.addCell( new RegCell( "" ) );
-                    }
-
-                    else if ( q instanceof Date )
-                        table.addCell( new RegCell( CPSDateValidator.format( (Date) q,
-                                                                             CPSDateValidator.DATE_FORMAT_SHORT_DAY_OF_WEEK )));
-
-                    else if ( q instanceof Boolean )
-                        if ( ( (Boolean) q ).booleanValue() )
-                            table.addCell( new CenterCell( "X" ) );
-                        else
-                            table.addCell( new RegCell( "" ) );
-
-                    else if ( q instanceof Float )
-                        table.addCell( new RegCell( CPSRecord.formatFloat( ((Float) q).floatValue(), 3) ));
-
-                    else if ( q instanceof Double )
-                        table.addCell( new RegCell( CPSRecord.formatFloat( ((Double) q).floatValue(), 3) ));
-
-                    else {
-
-                       if ( tableIncludesNotes && col == notesIndex ) {
-                          if ( q == null || q.equals(""))
-                             rowHasNotes = false;
-                          else {
-                             rowHasNotes = true;
-                             notesValue = q.toString();
-                          }
-                       }
-                       else
-                          table.addCell( new RegCell( q.toString() ) );
-                    }
-                }
-
-               // now deal w/ the Notes data
-               if ( tableIncludesNotes && rowHasNotes ) {
-                  table.addCell( new NoteHeadCell() );
-                  NoteCell c = new NoteCell( notesValue );
-                  // reset the font to be smaller
-                  c.setPhrase( new Phrase( notesValue, fontHeadFootReg ));
-                  c.setColspan( colCount - 1 );
-                  table.addCell( c );
-               }
-
-            }
           }
 
         }
@@ -623,6 +655,26 @@ public class PDFExporter {
         }
     }
 
+    public class SummaryCell extends PdfPCell {
+
+      public SummaryCell( String s ) {
+        super( new Phrase( s, fontTableItal ) );
+        setBackgroundColor( new BaseColor( 241, 241, 241 ));
+        setHorizontalAlignment( PdfPCell.ALIGN_CENTER );
+        setBorderWidth( .25f );
+      }
+
+    }
+
+    public class SummaryTitleCell extends SummaryCell {
+
+      public SummaryTitleCell() {
+        super( "Summary:" );
+        setHorizontalAlignment( PdfPCell.ALIGN_RIGHT );
+      }
+
+    }
+
     public class CenterCell extends RegCell {
 
         public CenterCell( String s ) {
@@ -643,11 +695,16 @@ public class PDFExporter {
     
     public class NoteHeadCell extends PdfPCell {
        public NoteHeadCell() {
-            super( new Phrase( "Notes:", fontHeadFootItal ));
+         this("Notes:");
+       }
+
+       public NoteHeadCell(String s) {
+            super( new Phrase( s, fontHeadFootItal ));
             setBackgroundColor( BaseColor.WHITE );
             setHorizontalAlignment( PdfPCell.ALIGN_RIGHT );
             disableBorderSide( Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP | Rectangle.BOTTOM );
-            setBorderWidth( .25f );
+//            setBorderWidth( .25f );
+            setMinimumHeight( 20f );
         }
     }
 
@@ -664,8 +721,9 @@ public class PDFExporter {
     public class SpecialNoteCell extends NoteHeadCell {
 
       public SpecialNoteCell() {
-        super();
-        setHorizontalAlignment( PdfPCell.ALIGN_LEFT );
+        super("");
+        setVerticalAlignment( Element.ALIGN_TOP );
+        setHorizontalAlignment( Element.ALIGN_LEFT );
       }
 
     }

@@ -374,39 +374,23 @@ public class TODOLists extends CPSDisplayableDataUserModule
                   }
                 };
 
+        // this is an ugly, obfuscating crutch
         filterAndSortList( getDataSource().getCropPlan( planName ), filter, comp );
 
         AdjacentGroupingList<CPSPlanting> gl =
                 new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
-        for ( Iterator<List<CPSPlanting>> it = gl.iterator(); it.hasNext(); ) {
-          List<CPSPlanting> list = it.next();
-          System.out.print( list.get(0).getDateToPlantPlannedString() + " [ " );
-          for ( CPSPlanting p : list) {
-            System.out.print( p.getCropName() + ", " );
-          }
-          System.out.println( "]" );
-        }
 
+        String docTitle =
+          "GH Seedings for " +
+          new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) +
+          " - " +
+          new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate());
+        if ( ! rdoUncompThisWeek.isSelected() )
+          docTitle += "\n(includes previously uncompleted)";
 
-
-        tableFormat = new GHSeedingTableFormat();
-
-        CPSTable jt = new CPSTable();
-        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ) );
-
-//        TableComparatorChooser.install( jt,
-//                                        dataSorted,
-//                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
-
-
-        pdf.export(jt, filename,
-                CPSGlobalSettings.getFarmName(),
-                "GH Seedings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
-                "GH Seedings");
-        pdf.export( gl, new GHSeedingTableFormat(),
-                    filename+"2.pdf", CPSGlobalSettings.getFarmName(),
-                "GH Seedings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
-                "GH Seedings");
+        pdf.exportPlantingList( gl, new GHSeedingTableFormat(),
+                                filename, CPSGlobalSettings.getFarmName(),
+                                docTitle, "GH Seedings");
 
 
     }
