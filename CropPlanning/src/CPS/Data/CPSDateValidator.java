@@ -25,8 +25,10 @@ package CPS.Data;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 public class CPSDateValidator {
 
@@ -49,7 +51,9 @@ public class CPSDateValidator {
     /** Example: 2013-11-23 */
     final public static String DATE_FORMAT_SQL = "yyyy-MM-dd";
     
-    private ArrayList<String> formatList;
+    private static List<String> formatList = Arrays.asList( DATE_FORMAT_BRIEFYEAR,
+                                                            DATE_FORMAT_SHORT,
+                                                            DATE_FORMAT_FULLYEAR );
     private static String defaultFormat = DATE_FORMAT_FULLYEAR;
     
     public CPSDateValidator() {
@@ -74,7 +78,6 @@ public class CPSDateValidator {
      * Sets the default format used for formatting dates.  The default value
      * is DATE_FORMAT_FULLYEAR.
      * @param f Format to use.
-     * @see Constant Field Values
      */
     public void setDefaultFormat( String f ) {
         defaultFormat = f;
@@ -90,13 +93,24 @@ public class CPSDateValidator {
         else
             return new SimpleDateFormat( format ).format( d );
     }
-    
+
+
     public static Date simpleParse( String s ) {
+      return simpleParse( s, defaultFormat );
+    }
+
+    /**
+     * @param s A String representation of a date to parse.
+     * @param format Date format to parse it against. (Such as the (@link DATE_FORMAT_* } defined in this class.
+     * @return the parsed date.
+     */
+    public static Date simpleParse( String s, String format ) {
+
         if ( s == null || s.equals( "" ))
             return null;
         else
             try {
-                return new SimpleDateFormat( defaultFormat ).parse( s );
+                return new SimpleDateFormat( format ).parse( s );
             }
             catch ( Exception e ) {
                 e.printStackTrace();
@@ -104,7 +118,7 @@ public class CPSDateValidator {
             }
     }
     
-    public Date parse( String s ) {
+    public static Date parse( String s ) {
         if ( s.equals( "" ))
             return null;
         

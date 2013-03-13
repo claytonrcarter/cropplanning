@@ -360,12 +360,20 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
     /* ***************************************************************** */
     /* STATIC factory methods for default "filters"
     /* ***************************************************************** */
+    /**
+     * @return An instance of {@link CPSComplexPlantingFilter} set up to
+     * match all direct seeded plantings ("done" or not)
+     */
     public static CPSComplexPlantingFilter directSeededFilter() {
         CPSComplexPlantingFilter ds = new CPSComplexPlantingFilter();
         ds.setAsDirectSeededFilter();
         return ds;
     }
-    
+
+    /**
+     * @return An instance of {@link CPSComplexPlantingFilter} set up to
+     * match all transplanted plantings ("done" or not)
+     */
     public static CPSComplexPlantingFilter transplantedFilter() {
         CPSComplexPlantingFilter tp = new CPSComplexPlantingFilter();
         tp.setAsTransplatedFilter();
