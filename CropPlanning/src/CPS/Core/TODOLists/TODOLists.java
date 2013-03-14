@@ -328,14 +328,18 @@ public class TODOLists extends CPSDisplayableDataUserModule
       if ( format != TL_FORMAT_PDF )
         throw new UnsupportedOperationException("Not supported yet.");
 
-        // should we explicitly reference the date_plant_plan property, or just rely on the date_plant property?
-        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
-
         String filename = createOutputFileName( filFile.getSelectedFile(),
                                                 "GH Seeding List",
                                                 dtcDateOtherStart.getDate() );
 
 
+        //********************************************************************//
+        // Create the filter
+        //  1. transplanted
+        //  2. not seeded
+        //  3. planting is within the dates specified
+        //  3a. (optional) include last weeks (or all seasons' incomplete ones
+        //********************************************************************//
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
         filter.setViewLimited(true);
 
@@ -359,10 +363,8 @@ public class TODOLists extends CPSDisplayableDataUserModule
             tempCal.setTime(dtcDateOtherStart.getDate());
             tempCal.set(Calendar.WEEK_OF_YEAR, 0);
             filter.setPlantingRangeStart(tempCal.getTime());
-        } else // if ( rdoUncompThistWeek.isSelected() )
-        {
-            filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
-        }
+        } else
+          filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
 
 
         Comparator<CPSPlanting> comp = new Comparator<CPSPlanting>() {

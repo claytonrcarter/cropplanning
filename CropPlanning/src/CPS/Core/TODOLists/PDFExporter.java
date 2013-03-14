@@ -48,17 +48,23 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JTable;
 
 public class PDFExporter {
@@ -282,10 +288,10 @@ public class PDFExporter {
            if ( ! tableIncludesNotes || col != notesIndex ) {
              HeadCell hc = new HeadCell( headName );
 
-             if ( tableFormat.getColumnClass( col ).equals( Boolean.TRUE.getClass() ) ||
-                  tableFormat.getColumnClass( col ).equals( new Integer( 0 ).getClass() ) ||
-                  tableFormat.getColumnClass( col ).equals( new Double( 0 ).getClass() ) ||
-                  tableFormat.getColumnClass( col ).equals( new Float( 0 ).getClass() ) ) {
+             if ( tableFormat.getColumnClass( col ).equals( Boolean.class ) ||
+                  tableFormat.getColumnClass( col ).equals( Integer.class ) ||
+                  tableFormat.getColumnClass( col ).equals( Double.class ) ||
+                  tableFormat.getColumnClass( col ).equals( Float.class ) ) {
                hc.setRotation(90);
                hc.setFixedHeight( 60f );
              }
@@ -295,10 +301,14 @@ public class PDFExporter {
         }
         table.setHeaderRows( 1 );
 
-
+        // unclear why, but we have to add data to the calculation list
+        // if want it to work.  setting the calculation on a filled list
+        // isn't working for us
         BasicEventList<CPSPlanting> calculationList = new BasicEventList<CPSPlanting>();
-        CPSCalculations.SumPlantsFlats summaryStats =
+        CPSCalculations.SumPlantsFlats summaryGH =
                     new CPSCalculations.SumPlantsFlats( calculationList );
+        CPSCalculations.SumBedsRowftFlats summaryField =
+                    new CPSCalculations.SumBedsRowftFlats( calculationList );
 
         //********************************************************************//
         // Iterate over the groups
@@ -323,15 +333,8 @@ public class PDFExporter {
 
               Object cellValue = tableFormat.getColumnValue( p, col );
 
-              if ( tableIncludesNotes && col == notesIndex ) {
-                if ( cellValue == null || cellValue.equals(""))
-                   rowHasNotes = false;
-                else {
-                   rowHasNotes = true;
-                   notesValue = cellValue.toString();
-                }
+              if ( tableIncludesNotes && col == notesIndex )
                 continue;
-              }
 
               RegCell c;
 
@@ -341,12 +344,16 @@ public class PDFExporter {
 
                 if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_VAR_NAME )
                   c = new SummaryTitleCell();
+                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_BEDS_PLANT )
+                  c.setText( "" + summaryField.beds );
+                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_ROWFT_PLANT )
+                  c.setText( "" + summaryField.rowUnitLengthes );
                 else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_PLANTS_NEEDED )
-                  c.setText( "" + summaryStats.plantsNeeded );
+                  c.setText( "" + summaryGH.plantsNeeded );
                 else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_PLANTS_START )
-                  c.setText( "" + summaryStats.plantsToStart );
+                  c.setText( "" + summaryGH.plantsToStart );
                 else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_FLATS_NEEDED )
-                  c.setText( CPSRecord.formatFloat( summaryStats.flats, 2 ));
+                  c.setText( CPSRecord.formatFloat( summaryGH.flats, 2 ));
                 
               } else {
 
@@ -359,24 +366,14 @@ public class PDFExporter {
               table.addCell( c );
             }
 
-           //*****************************************************//
-           // now deal w/ the Notes data
-            // add it even it's empty to make sure it's all spaced right
-           //*****************************************************//
-           SpecialNoteCell groupNotesCell = new SpecialNoteCell();
-           if ( tableIncludesNotes && rowHasNotes ) {
-             Phrase phrase = new Phrase( "Notes: ", fontHeadFootItal);
-             phrase.add( new Phrase( notesValue, fontHeadFootReg ) );
-             groupNotesCell.addElement( phrase );
-           }
-           groupNotesCell.setColspan( 2 );
-           groupNotesCell.setRowspan( group.size() );
-           table.addCell( groupNotesCell );
 
            //*****************************************************//
-            // now go over and spit out the actual list elements
+           // now go over and spit out the actual list elements
            //*****************************************************//
-           int i = 0;
+            ArrayList<RegCell> cellsToAddLater = 
+                    new ArrayList<RegCell>( group.size() * ( colCount - 2 ) );
+            Map<String, List<String>> notesMap = new HashMap<String, List<String>>();
+            int i = 0;
             for ( CPSPlanting e : group ) {
 
               boolean lastRow = false;
@@ -389,8 +386,16 @@ public class PDFExporter {
                 if ( tableFormat.isSummaryColumn( col ) )
                   continue;
 
-                if ( tableIncludesNotes && col == notesIndex )
+                if ( tableIncludesNotes && col == notesIndex ) {
+                  String rowNotes = tableFormat.getColumnValue( e, col).toString();
+                  if ( rowNotes.equals( "" ) )
+                    continue;
+
+                  if ( notesMap.get( rowNotes ) == null )
+                    notesMap.put( rowNotes, new ArrayList<String>() );
+                  notesMap.get( rowNotes ).add( e.getVarietyName() );
                   continue;
+                }
 
                 Object cellValue = tableFormat.getColumnValue( e, col);
 
@@ -400,11 +405,74 @@ public class PDFExporter {
 
                 setContentsOfCell( c, cellValue );
 
-                table.addCell( c );
+//                table.addCell( c );
+                cellsToAddLater.add( c );
 
               }
 
             }
+
+
+           //*****************************************************//
+           // now deal w/ the Notes data
+           // add it even it's empty to make sure it's all spaced right
+           //*****************************************************//
+           SpecialNoteCell groupNotesCell = new SpecialNoteCell();
+           if ( tableIncludesNotes && ! notesMap.isEmpty() ) {
+             Phrase notesPhrase = new Phrase( "Notes: ", fontHeadFootItal);
+             float indextWidth = 3 + ColumnText.getWidth( notesPhrase );
+
+             // all of the notes are the same, or only one entry had a note
+             // TODO this is assuming that all the ntoes were the same
+             // if only entry had a note, the way to handle it would be to
+             // see if the .size() of the only value is == to the .size()
+             // of this group ... maybe later
+             if ( notesMap.keySet().size() == 1 ) {
+               
+               // only one entry, but have to convert
+               notesPhrase.add( new Phrase( new ArrayList<String>( notesMap.keySet() ).get( 0 ),
+                                   fontHeadFootReg ) );
+               groupNotesCell.addElement( notesPhrase );
+
+             } else {
+
+               boolean firstRow = true;
+               for ( Iterator<String> keyIt = notesMap.keySet().iterator(); keyIt.hasNext(); ) {
+                 String key = keyIt.next();
+
+                 String varNames = "";
+                 for ( String varName : notesMap.get( key )) {
+                   varNames += varName + ", ";
+                 }
+                 varNames = varNames.substring( 0, varNames.length() - 2 ) + ": ";
+
+                 if ( firstRow ) {
+                   
+                   notesPhrase.add( new Phrase( varNames + key, fontHeadFootReg) );
+                   groupNotesCell.addElement( notesPhrase );
+                   firstRow = false;
+                   
+                 } else {
+
+                   Paragraph para = new Paragraph( varNames + key, fontHeadFootReg );
+                   para.setIndentationLeft( indextWidth );
+                   groupNotesCell.addElement( para );
+
+                 }
+
+
+               }
+             }
+
+//             groupNotesCell.addElement( notesPhrase );
+           }
+           groupNotesCell.setColspan( 2 );
+           groupNotesCell.setRowspan( group.size() );
+           table.addCell( groupNotesCell );
+
+           
+           for ( RegCell regCell : cellsToAddLater )
+             table.addCell( regCell );
 
           }
           else {
@@ -776,18 +844,34 @@ public class PDFExporter {
     EventList<CPSPlanting> planList = GlazedLists.eventList( dm.getCropPlan( planName ) );
     FilterList<CPSPlanting> fl = new FilterList<CPSPlanting>( planList );
 
-    CPSComplexPlantingFilter planMatcher = CPSComplexPlantingFilter.transplantedFilter();
+    // 1 = GH list, 2 = field seeding list, 3 = TP list
+    int testOption = 1;
+
+    CPSComplexPlantingFilter planMatcher;
+    switch ( testOption ) {
+      case 1: planMatcher = CPSComplexPlantingFilter.transplantedFilter(); break;
+      case 2: planMatcher = CPSComplexPlantingFilter.directSeededFilter(); break;
+      case 3: planMatcher = CPSComplexPlantingFilter.transplantedFilter(); break;
+      default:
+        throw new AssertionError();
+    }
     planMatcher.setFilterOnPlantingDate(true);
     Calendar cal = Calendar.getInstance();
     Date d = CPSDateValidator.parse( "03/01" );
     cal.setTime( d );
     cal.set( Calendar.DAY_OF_MONTH, 1 );
     System.out.print( "Planting range: " + CPSDateValidator.format( cal.getTime() ));
-    planMatcher.setPlantingRangeStart( cal.getTime() );
+    if ( testOption < 3 )
+      planMatcher.setPlantingRangeStart( cal.getTime() );
+    else
+      planMatcher.setTpRangeStart( cal.getTime() );
     cal.add( Calendar.MONTH, 1 );
     cal.add( Calendar.DAY_OF_YEAR, -1 );
     System.out.println( " - " + CPSDateValidator.format( cal.getTime() ));
-    planMatcher.setPlantingRangeEnd( cal.getTime() );
+    if ( testOption < 3 )
+      planMatcher.setPlantingRangeEnd( cal.getTime() );
+    else
+      planMatcher.setTpRangeEnd( cal.getTime() );
 
     fl.setMatcher( planMatcher );
     
@@ -805,9 +889,17 @@ public class PDFExporter {
 
     AdjacentGroupingList<CPSPlanting> agl = new AdjacentGroupingList<CPSPlanting>( sl, comp );
 
-    new PDFExporter().exportPlantingList( agl, new GHSeedingTableFormat(),
-                                               "/Users/crcarter/test.pdf", "Test Farm",
-                                               "Test Doc Title", "Test Table Title" );
+    CPSExportTableFormat tf;
+    switch ( testOption ) {
+      case 1: tf = new GHSeedingTableFormat(); break;
+      case 2: tf = new DSFieldPlantingTableFormat(); break;
+//      case 3: tf = new TPFieldPlantingTableFormat(); break;
+      default:
+        throw new AssertionError();
+    }
+    new PDFExporter().exportPlantingList( agl, tf,
+                                           "/Users/crcarter/test.pdf", "Test Farm",
+                                           "Test Doc Title", "Test Table Title" );
 
   }
 

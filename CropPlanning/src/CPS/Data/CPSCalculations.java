@@ -268,7 +268,7 @@ public final class CPSCalculations {
 //****************************************************************************//
 //   Utility Classes
 //****************************************************************************//
-   //****************************************************************************//
+//****************************************************************************//
 // Advanced Calculation
 //****************************************************************************//
   public static final class SumBedsRowftFlats extends AbstractEventListCalculation<Float, CPSPlanting> {
@@ -284,7 +284,6 @@ public final class CPSCalculations {
       beds   += p.getBedsToPlant();
       rowUnitLengthes += p.getRowFtToPlant();
       flats  += p.getFlatsNeeded();
-      System.out.println( "adding values for variety: " + p.getVarietyName() + " " + flats );
     }
 
     protected void deleted(CPSPlanting p) {
