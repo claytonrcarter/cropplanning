@@ -16,7 +16,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
  *
  * @author kendra
  */
-public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
+public class TPFieldPlantingTableFormat extends CPSExportTableFormat<CPSPlanting> {
 
   public int getColumnCount() { return 10; }
 
@@ -24,9 +24,9 @@ public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
 
       switch ( arg1 ) {
           case 0: return p.getDateToTP();
-          case 1: return p.getDateToPlant();
-          case 2: return p.getCropName();
-          case 3: return p.getVarietyName();
+          case 1: return p.getCropName();
+          case 2: return p.getVarietyName();
+          case 3: return p.getDateToPlant();
           case 4: return p.getLocation();
           case 5: return p.getBedsToPlant();
           case 6: return p.getRowsPerBed();
@@ -36,6 +36,18 @@ public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
           default: return "";
       }
   }
+
+  @Override
+  public String getColumnName( int colNum ) {
+    switch ( colNum ) {
+      case 3: return "Seeded on";
+      default:
+        return super.getColumnName( colNum );
+    }
+
+  }
+
+
 
   @Override
   public CPSPlanting getBlankRecord() {
@@ -52,9 +64,9 @@ public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
 
     switch ( colNum ) {
       case 0: return CPSPlanting.PROP_DATE_TP;
-      case 1: return CPSPlanting.PROP_DATE_PLANT;
-      case 2: return CPSPlanting.PROP_CROP_NAME;
-      case 3: return CPSPlanting.PROP_VAR_NAME;
+      case 1: return CPSPlanting.PROP_CROP_NAME;
+      case 2: return CPSPlanting.PROP_VAR_NAME;
+      case 3: return CPSPlanting.PROP_DATE_PLANT;
       case 4: return CPSPlanting.PROP_LOCATION;
       case 5: return CPSPlanting.PROP_BEDS_PLANT;
       case 6: return CPSPlanting.PROP_ROWS_P_BED;
@@ -69,4 +81,10 @@ public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
   public boolean isDefaultColumn(int colNum) {
     return true;
   }
+
+  @Override
+  public boolean isSummaryColumn( int colNum ) {
+    return colNum == 0 || colNum == 1;
+  }
+
 }

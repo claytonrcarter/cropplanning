@@ -322,7 +322,9 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
     }
 
-
+//****************************************************************************//
+//    Export GH Plantings
+//****************************************************************************//
     private void exportGHPlantings(String planName, int format ) {
 
       if ( format != TL_FORMAT_PDF )
@@ -397,6 +399,10 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
     }
 
+
+//****************************************************************************//
+//    Export ALL weekling planting lists
+//****************************************************************************//
     private void exportAllWeeklyPlantings( String planName, int format ) {
 
       if ( format != TL_FORMAT_PDF )
@@ -542,12 +548,14 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
     }
 
+
+//****************************************************************************//
+//    Export Field Planting List
+//****************************************************************************//
     private void exportFieldPlantings(String planName, int format ) {
 
       if ( format != TL_FORMAT_PDF )
         throw new UnsupportedOperationException("Not supported yet.");
-
-        int sortProp = CPSDataModelConstants.PROP_DATE_PLANT;
 
         String filename = createOutputFileName(filFile.getSelectedFile(),
                 "Field Planting List",
@@ -581,32 +589,40 @@ public class TODOLists extends CPSDisplayableDataUserModule
             tempCal.set(Calendar.WEEK_OF_YEAR, 0);
             filter.setPlantingRangeStart(tempCal.getTime());
         } else // if ( rdoUncompThistWeek.isSelected() )
-        {
-            filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
-        }
+          filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
 
-        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
-        tableFormat = new DSFieldPlantingTableFormat();
 
-        CPSTable jt = new CPSTable();
-        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ));
+        Comparator<CPSPlanting> comp = new Comparator<CPSPlanting>() {
+          public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+            if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
+              return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
+            else
+              return o1.getCropName().compareTo( o2.getCropName() );
+          }
+        };
 
-//        TableComparatorChooser.install( jt,
-//                                        dataSorted,
-//                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
 
-        pdf.startExport(jt, filename,
-                CPSGlobalSettings.getFarmName(),
-                "Field plantings for " + new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) + " - " + new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate()) + (rdoUncompThisWeek.isSelected() ? "" : "\n(includes previously uncompleted)"),
-                "Direct Seeded Field Plantings");
+        filterAndSortList( getDataSource().getCropPlan( planName ), filter, comp );
 
+        AdjacentGroupingList<CPSPlanting> gl =
+                new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
+
+        String docTitle =
+          "Field plantings for " +
+          new SimpleDateFormat("MMM dd").format(dtcDateOtherStart.getDate()) +
+          " - " +
+          new SimpleDateFormat("MMM dd, yyyy").format(dtcDateOtherEnd.getDate());
+        if ( ! rdoUncompThisWeek.isSelected() )
+          docTitle += "\n(includes previously uncompleted)";
+
+        pdf.startExport( filename, CPSGlobalSettings.getFarmName(), docTitle );
+        pdf.addTable( pdf.convertPlantingList( gl, new DSFieldPlantingTableFormat() ),
+                      "Direct Seeded Field Plantings" );
 
         /*
          * Select just uncompleted, transplanted plantings whose TRANSPLANT date
          * is w/i range
          */
-        sortProp = CPSDataModelConstants.PROP_DATE_TP;
-
         // filter out all direct seeded plantings
         filter.setFilterOnPlantingMethod(true);
         filter.setFilterMethodDirectSeed(false);
@@ -635,17 +651,22 @@ public class TODOLists extends CPSDisplayableDataUserModule
             filter.setTpRangeStart(dtcDateOtherStart.getDate());
         }
 
-        filterAndSortList( null, filter, sortProp );
-        tableFormat = new TPFieldPlantingTableFormat();
+        comp = new Comparator<CPSPlanting>() {
+            public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+              if ( o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() ) != 0 )
+                return o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() );
+              else
+                return o1.getCropName().compareTo( o2.getCropName() );
+            }
+          };
 
-        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, tableFormat ));
-//        TableComparatorChooser.install( jt,
-//                                        dataSorted,
-//                                        TableComparatorChooser.SINGLE_COLUMN ).appendComparator( tableFormat.getDefaultSortColumn(), 0, false );
+        gl.dispose();
+        filterAndSortList( null, filter, comp );
 
+        gl = new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
 
-
-        pdf.addPage( jt, "Transplanted Field Plantings");
+        pdf.addTableOnNewPage( pdf.convertPlantingList( gl, new TPFieldPlantingTableFormat() ),
+                               "Transplanted Field Plantings");
         pdf.endExport();
 
     }

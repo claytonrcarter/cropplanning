@@ -104,7 +104,7 @@ public class PDFExporter {
                                   String filename, String farmName,
                                   String docTitle, String tableTitle ) {
         
-        startExport( filename, farmName, docTitle, tableTitle );
+        startExport( filename, farmName, docTitle );
         addTable( convertPlantingList( list, tableFormat ), tableTitle );
         endExport();
     }
@@ -116,7 +116,7 @@ public class PDFExporter {
                                  String docTitle,
                                  String tableTitle ) {
 
-        startExport( filename, farmName, docTitle, tableTitle, PageSize.LETTER.rotate() );
+        startExport( filename, farmName, docTitle, PageSize.LETTER.rotate() );
         addTable( convertJTable( jtable ), tableTitle );
         endExport();
     }
@@ -128,22 +128,20 @@ public class PDFExporter {
                             String docTitle,
                             String tableTitle ) {
 
-        startExport( filename, farmName, docTitle, tableTitle );
+        startExport( filename, farmName, docTitle );
         addTable( convertJTable( jtable ), tableTitle );
 
     }
 
     public void startExport( String filename,
                             String farmName,
-                            String docTitle,
-                            String tableTitle ) {
-        startExport( filename, farmName, docTitle, tableTitle, PageSize.LETTER );
+                            String docTitle ) {
+        startExport( filename, farmName, docTitle, PageSize.LETTER );
     }
     
     public void startExport( String filename,
                             String farmName,
                             String docTitle,
-                            String tableTitle,
                             Rectangle pageSize ) {
         tempDoc = prepareDocument( filename, docTitle, farmName,
                                    "CropPlanning Software - http://cropplanning.googlecode.com",
@@ -165,14 +163,18 @@ public class PDFExporter {
         }
     }
     
-    public void addPage( JTable jtable, String tableTitle ) {
+    public void addTableOnNewPage( PdfPTable pTable, String tableTitle ) {
         try {
             tempDoc.newPage();
-            addTable( convertJTable( jtable ), tableTitle );
+            addTable( pTable, tableTitle );
         }
         catch( Exception e ) {
             e.printStackTrace();
         }
+    }
+
+    public void addPage( JTable jtable, String tableTitle ) {
+        addTableOnNewPage( convertJTable( jtable ), tableTitle );
     }
     
     public void endExport() {
@@ -833,9 +835,12 @@ public class PDFExporter {
 //    main() for testing
 //****************************************************************************//
   public static void main( String[] args ) {
+
+    System.out.println( "Opening DM..." );
     CPSGlobalSettings.setDebug( false );
     ModuleManager mm = new ModuleManager();
     CPSDataModel dm = mm.getDM();
+    System.out.println( "Initing DM..." );
     dm.init();
 
     String planName = dm.getListOfCropPlans().get(0);
@@ -845,7 +850,7 @@ public class PDFExporter {
     FilterList<CPSPlanting> fl = new FilterList<CPSPlanting>( planList );
 
     // 1 = GH list, 2 = field seeding list, 3 = TP list
-    int testOption = 1;
+    int testOption = 3;
 
     CPSComplexPlantingFilter planMatcher;
     switch ( testOption ) {
@@ -855,9 +860,13 @@ public class PDFExporter {
       default:
         throw new AssertionError();
     }
-    planMatcher.setFilterOnPlantingDate(true);
+
+    if ( testOption < 3 )
+      planMatcher.setFilterOnPlantingDate(true);
+    else
+      planMatcher.setFilterOnTPDate(true);
     Calendar cal = Calendar.getInstance();
-    Date d = CPSDateValidator.parse( "03/01" );
+    Date d = CPSDateValidator.parse( "05/01" );
     cal.setTime( d );
     cal.set( Calendar.DAY_OF_MONTH, 1 );
     System.out.print( "Planting range: " + CPSDateValidator.format( cal.getTime() ));
@@ -875,14 +884,26 @@ public class PDFExporter {
 
     fl.setMatcher( planMatcher );
     
-    Comparator<CPSPlanting> comp = new Comparator<CPSPlanting>() {
-          public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-            if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
-              return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
-            else
-              return o1.getCropName().compareTo( o2.getCropName() );
-          }
-        };
+    Comparator<CPSPlanting> comp;
+    if ( testOption < 3 )
+      comp = new Comparator<CPSPlanting>() {
+            public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+              if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
+                return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
+              else
+                return o1.getCropName().compareTo( o2.getCropName() );
+            }
+          };
+    else
+      comp = new Comparator<CPSPlanting>() {
+            public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+              if ( o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() ) != 0 )
+                return o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() );
+              else
+                return o1.getCropName().compareTo( o2.getCropName() );
+            }
+          };
+
     SortedList<CPSPlanting> sl = new SortedList<CPSPlanting>( fl, comp );
 
     System.out.println( "Filtered list contains " + fl.size() + " plantings." );
@@ -893,7 +914,7 @@ public class PDFExporter {
     switch ( testOption ) {
       case 1: tf = new GHSeedingTableFormat(); break;
       case 2: tf = new DSFieldPlantingTableFormat(); break;
-//      case 3: tf = new TPFieldPlantingTableFormat(); break;
+      case 3: tf = new TPFieldPlantingTableFormat(); break;
       default:
         throw new AssertionError();
     }
