@@ -24,6 +24,7 @@
 package CPS.Core.TODOLists;
 
 import CPS.Data.CPSCalculations;
+import CPS.Data.CPSComparators;
 import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSPlanting;
@@ -31,11 +32,13 @@ import CPS.Data.CPSRecord;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import CPS.ModuleManager;
+import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.GroupingList;
 import ca.odell.glazedlists.SortedList;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Rectangle;
@@ -54,11 +57,8 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -99,8 +99,8 @@ public class PDFExporter {
         endExport();
     }
 
-    public void exportPlantingList( AdjacentGroupingList<CPSPlanting> list,
-                                  CPSExportTableFormat<CPSPlanting> tableFormat,
+    public void exportPlantingList( GroupingList<CPSPlanting> list,
+                                  CPSAdvancedTableFormat<CPSPlanting> tableFormat,
                                   String filename, String farmName,
                                   String docTitle, String tableTitle ) {
         
@@ -258,8 +258,8 @@ public class PDFExporter {
     }
 
     
-    public PdfPTable convertPlantingList( AdjacentGroupingList<CPSPlanting> plantingList,
-                                        CPSExportTableFormat<CPSPlanting> tableFormat ) {
+    public PdfPTable convertPlantingList( GroupingList<CPSPlanting> plantingList,
+                                        CPSAdvancedTableFormat<CPSPlanting> tableFormat ) {
 
       boolean tableIncludesNotes = false;
        boolean rowHasNotes = false;
@@ -331,30 +331,31 @@ public class PDFExporter {
             calculationList.clear();
             calculationList.addAll( group );
 
-            for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
+            for ( int colNum = 0; colNum < tableFormat.getColumnCount(); colNum++ ) {
 
-              Object cellValue = tableFormat.getColumnValue( p, col );
+              Object cellValue = tableFormat.getColumnValue( p, colNum );
 
-              if ( tableIncludesNotes && col == notesIndex )
+              if ( tableIncludesNotes && colNum == notesIndex )
                 continue;
 
               RegCell c;
 
-              if ( ! tableFormat.isSummaryColumn( col ) ) {
+              // skip the planting date and crop name
+              if ( colNum > 1 ) {
 
                 c = new SummaryCell("");
 
-                if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_VAR_NAME )
+                if ( tableFormat.getPropNumForColumn( colNum ) == CPSPlanting.PROP_VAR_NAME )
                   c = new SummaryTitleCell();
-                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_BEDS_PLANT )
+                else if ( tableFormat.getPropNumForColumn( colNum ) == CPSPlanting.PROP_BEDS_PLANT )
                   c.setText( "" + summaryField.beds );
-                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_ROWFT_PLANT )
+                else if ( tableFormat.getPropNumForColumn( colNum ) == CPSPlanting.PROP_ROWFT_PLANT )
                   c.setText( "" + summaryField.rowUnitLengthes );
-                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_PLANTS_NEEDED )
+                else if ( tableFormat.getPropNumForColumn( colNum ) == CPSPlanting.PROP_PLANTS_NEEDED )
                   c.setText( "" + summaryGH.plantsNeeded );
-                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_PLANTS_START )
+                else if ( tableFormat.getPropNumForColumn( colNum ) == CPSPlanting.PROP_PLANTS_START )
                   c.setText( "" + summaryGH.plantsToStart );
-                else if ( tableFormat.getPropNumForColumn( col ) == CPSPlanting.PROP_FLATS_NEEDED )
+                else if ( tableFormat.getPropNumForColumn( colNum ) == CPSPlanting.PROP_FLATS_NEEDED )
                   c.setText( CPSRecord.formatFloat( summaryGH.flats, 2 ));
                 
               } else {
@@ -382,14 +383,14 @@ public class PDFExporter {
               if ( ++i == group.size() )
                 lastRow = true;
 
-              for ( int col = 0; col < tableFormat.getColumnCount(); col++ ) {
+              for ( int colNum = 0; colNum < tableFormat.getColumnCount(); colNum++ ) {
 
                 // skip the summary cells
-                if ( tableFormat.isSummaryColumn( col ) )
+                if ( colNum < 2 )
                   continue;
 
-                if ( tableIncludesNotes && col == notesIndex ) {
-                  String rowNotes = tableFormat.getColumnValue( e, col).toString();
+                if ( tableIncludesNotes && colNum == notesIndex ) {
+                  String rowNotes = tableFormat.getColumnValue( e, colNum).toString();
                   if ( rowNotes.equals( "" ) )
                     continue;
 
@@ -399,7 +400,7 @@ public class PDFExporter {
                   continue;
                 }
 
-                Object cellValue = tableFormat.getColumnValue( e, col);
+                Object cellValue = tableFormat.getColumnValue( e, colNum);
 
                 RegCell c = new NoBorderCell("");
                 if ( lastRow )
@@ -853,64 +854,42 @@ public class PDFExporter {
     int testOption = 3;
 
     CPSComplexPlantingFilter planMatcher;
-    switch ( testOption ) {
-      case 1: planMatcher = CPSComplexPlantingFilter.transplantedFilter(); break;
-      case 2: planMatcher = CPSComplexPlantingFilter.directSeededFilter(); break;
-      case 3: planMatcher = CPSComplexPlantingFilter.transplantedFilter(); break;
-      default:
-        throw new AssertionError();
-    }
 
-    if ( testOption < 3 )
-      planMatcher.setFilterOnPlantingDate(true);
-    else
-      planMatcher.setFilterOnTPDate(true);
     Calendar cal = Calendar.getInstance();
-    Date d = CPSDateValidator.parse( "05/01" );
-    cal.setTime( d );
+    cal.setTime( CPSDateValidator.parse( "05/01" ) );
     cal.set( Calendar.DAY_OF_MONTH, 1 );
+    Date dateStart = cal.getTime();
     System.out.print( "Planting range: " + CPSDateValidator.format( cal.getTime() ));
-    if ( testOption < 3 )
-      planMatcher.setPlantingRangeStart( cal.getTime() );
-    else
-      planMatcher.setTpRangeStart( cal.getTime() );
+
     cal.add( Calendar.MONTH, 1 );
     cal.add( Calendar.DAY_OF_YEAR, -1 );
     System.out.println( " - " + CPSDateValidator.format( cal.getTime() ));
-    if ( testOption < 3 )
-      planMatcher.setPlantingRangeEnd( cal.getTime() );
-    else
-      planMatcher.setTpRangeEnd( cal.getTime() );
+    Date dateEnd = cal.getTime();
+
+    switch ( testOption ) {
+      case 1: planMatcher = CPSComplexPlantingFilter.ghSeedingFilter( dateStart, dateEnd ); break;
+      case 2: planMatcher = CPSComplexPlantingFilter.fieldDSFilter( dateStart, dateEnd ); break;
+      case 3: planMatcher = CPSComplexPlantingFilter.fieldTPFilter( dateStart, dateEnd ); break;
+      default:
+        throw new AssertionError();
+    }
 
     fl.setMatcher( planMatcher );
     
     Comparator<CPSPlanting> comp;
     if ( testOption < 3 )
-      comp = new Comparator<CPSPlanting>() {
-            public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-              if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
-                return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
-              else
-                return o1.getCropName().compareTo( o2.getCropName() );
-            }
-          };
+      comp = new CPSComparators.DatePlantCropNameComparator();
     else
-      comp = new Comparator<CPSPlanting>() {
-            public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-              if ( o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() ) != 0 )
-                return o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() );
-              else
-                return o1.getCropName().compareTo( o2.getCropName() );
-            }
-          };
+      comp = new CPSComparators.DateTPCropNameComparator();
 
-    SortedList<CPSPlanting> sl = new SortedList<CPSPlanting>( fl, comp );
+//    SortedList<CPSPlanting> sl = new SortedList<CPSPlanting>( fl, comp );
 
     System.out.println( "Filtered list contains " + fl.size() + " plantings." );
 
-    AdjacentGroupingList<CPSPlanting> agl = new AdjacentGroupingList<CPSPlanting>( sl, comp );
+    GroupingList<CPSPlanting> agl = new GroupingList<CPSPlanting>( fl, comp );
+//    AdjacentGroupingList<CPSPlanting> agl = new AdjacentGroupingList<CPSPlanting>( sl, comp );
 
-    CPSExportTableFormat tf;
+    CPSAdvancedTableFormat<CPSPlanting> tf;
     switch ( testOption ) {
       case 1: tf = new GHSeedingTableFormat(); break;
       case 2: tf = new DSFieldPlantingTableFormat(); break;

@@ -421,5 +421,32 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
        f.setAsThisAndNextWeekFilter();
        return f;
     }
-    
+
+    public static CPSComplexPlantingFilter ghSeedingFilter( Date rangeStart,
+                                                           Date ranageEnd ) {
+      CPSComplexPlantingFilter f = TPNotSeededFilter();
+      f.setFilterOnPlantingDate( true );
+      f.setPlantingRangeStart( rangeStart );
+      f.setPlantingRangeEnd( ranageEnd );
+      return f;
+    }
+
+    public static CPSComplexPlantingFilter fieldDSFilter( Date rangeStart,
+                                                        Date ranageEnd ) {
+      CPSComplexPlantingFilter f = DSNotPlantedFilter();
+      f.setFilterOnPlantingDate( true );
+      f.setPlantingRangeStart( rangeStart );
+      f.setPlantingRangeEnd( ranageEnd );
+      return f;
+    }
+
+    public static CPSComplexPlantingFilter fieldTPFilter( Date rangeStart,
+                                                        Date ranageEnd ) {
+      CPSComplexPlantingFilter f = TPSeededNotPlantedFilter();
+      f.setFilterOnTPDate( true );
+      f.setTpRangeStart( rangeStart );
+      f.setTpRangeEnd( ranageEnd );
+      return f;
+    }
+
 }

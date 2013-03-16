@@ -12,7 +12,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
  *
  * @author kendra
  */
-public class GHSeedingTableFormat extends CPSExportTableFormat<CPSPlanting> {
+public class GHSeedingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
   public int getColumnCount() { return 8; }
 
@@ -61,12 +61,5 @@ public class GHSeedingTableFormat extends CPSExportTableFormat<CPSPlanting> {
   public boolean isDefaultColumn(int colNum) {
     return true;
   }
-
-  @Override
-  public boolean isSummaryColumn( int colNum ) {
-    return colNum == 0 || colNum == 1;
-  }
-
-
 
 }

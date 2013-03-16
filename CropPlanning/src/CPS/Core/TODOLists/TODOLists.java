@@ -23,6 +23,7 @@
 package CPS.Core.TODOLists;
 
 import CPS.CSV.CSV;
+import CPS.Data.CPSComparators;
 import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSDateValidator;
 import CPS.Data.CPSPlanting;
@@ -37,6 +38,7 @@ import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.FunctionList;
+import ca.odell.glazedlists.GroupingList;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.calculation.Calculation;
 import ca.odell.glazedlists.calculation.Calculations;
@@ -334,55 +336,25 @@ public class TODOLists extends CPSDisplayableDataUserModule
                                                 "GH Seeding List",
                                                 dtcDateOtherStart.getDate() );
 
+        tempCal.setTime( dtcDateOtherStart.getDate() );
 
-        //********************************************************************//
-        // Create the filter
-        //  1. transplanted
-        //  2. not seeded
-        //  3. planting is within the dates specified
-        //  3a. (optional) include last weeks (or all seasons' incomplete ones
-        //********************************************************************//
-        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
-        filter.setViewLimited(true);
+        if (rdoUncompLastWeek.isSelected())
+          tempCal.add( Calendar.WEEK_OF_YEAR, -1 );
+        else if (rdoUncompAll.isSelected())
+          tempCal.set( Calendar.WEEK_OF_YEAR, 0 );
 
-        // filter out all direct seeded plantings
-        filter.setFilterOnPlantingMethod(true);
-        filter.setFilterMethodDirectSeed(false);
-
-        // show only uncompleted plantings
-        filter.setFilterOnPlanting(true);
-        filter.setDonePlanting(false);
-
-        // show only plantings in the correct date range
-        filter.setFilterOnPlantingDate(true);
-        filter.setPlantingRangeEnd(dtcDateOtherEnd.getDate());
-
-        if (rdoUncompLastWeek.isSelected()) {
-            tempCal.setTime(dtcDateOtherStart.getDate());
-            tempCal.add(Calendar.WEEK_OF_YEAR, -1);
-            filter.setPlantingRangeStart(tempCal.getTime());
-        } else if (rdoUncompAll.isSelected()) {
-            tempCal.setTime(dtcDateOtherStart.getDate());
-            tempCal.set(Calendar.WEEK_OF_YEAR, 0);
-            filter.setPlantingRangeStart(tempCal.getTime());
-        } else
-          filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
+        CPSComplexPlantingFilter filter = 
+                CPSComplexPlantingFilter.ghSeedingFilter( tempCal.getTime(),
+                                                          dtcDateOtherEnd.getDate() );
 
 
-        Comparator<CPSPlanting> comp = new Comparator<CPSPlanting>() {
-                  public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-                    if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
-                      return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
-                    else
-                      return o1.getCropName().compareTo( o2.getCropName() );
-                  }
-                };
+        Comparator<CPSPlanting> comp = new CPSComparators.DatePlantCropNameComparator();
 
         // this is an ugly, obfuscating crutch
         filterAndSortList( getDataSource().getCropPlan( planName ), filter, comp );
 
-        AdjacentGroupingList<CPSPlanting> gl =
-                new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
+        GroupingList<CPSPlanting> gl =
+                new GroupingList<CPSPlanting>( dataSorted, comp );
 
         String docTitle =
           "GH Seedings for " +
@@ -415,21 +387,15 @@ public class TODOLists extends CPSDisplayableDataUserModule
                                                 "Weekly Seeding Lists (GH)",
                                                 dtcDateOtherStart.getDate() );
 
-        CPSTable jt = new CPSTable();
-        jt.setModel( new EventTableModel<CPSPlanting>( dataSorted, new GHSeedingTableFormat() ) );
-
-
-        pdf.startExport( filename,
-                              CPSGlobalSettings.getFarmName(),
-                              "Weekly Seeding Lists (GH)",
-                              null );
-
-
+        //
+        // Find the first and last planting dates
+        //
         CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
         filter.setViewLimited(false);
 
-        // figure out what start date to use
-        filterAndSortList( getDataSource().getCropPlan( planName ), filter, sortProp );
+        filterAndSortList( getDataSource().getCropPlan( planName ), 
+                           filter,
+                           new CPSComparators.DatePlantCropNameComparator() );
 
         Date startDate = dataSorted.get(0).getDateToPlant();
         Date endDate = dataSorted.get(dataSorted.size()-1).getDateToPlant();
@@ -437,17 +403,24 @@ public class TODOLists extends CPSDisplayableDataUserModule
         System.out.println("First planting happens on " + startDate );
         System.out.println(" Last planting happens on " + endDate );
 
-        // now start filtering the data
-        filter.setViewLimited(true);
 
-        // filter out all direct seeded plantings
-        filter.setFilterOnPlantingMethod(true);
-        filter.setFilterMethodDirectSeed(false);
+        //
+        // Start the export
+        //
+        pdf.startExport( filename,
+                         CPSGlobalSettings.getFarmName(),
+                         "Weekly Seeding Lists (GH)" );
 
 
-        // show only plantings in the correct date range
-        filter.setFilterOnPlantingDate(true);
-
+        // start with the GH seeding lists
+        // this filter will be modified for each iteration, so
+        // the start/end dates aren't that critical here
+        tableFormat = new GHSeedingTableFormat();
+        GroupingList<CPSPlanting> groupedList =
+                new GroupingList<CPSPlanting>( dataFiltered,
+                                               new CPSComparators.DatePlantCropNameComparator() );
+        filter = CPSComplexPlantingFilter.ghSeedingFilter( startDate,
+                                                           endDate );
 
         tempCal.setTime( startDate );
         tempCal.set( Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
@@ -461,12 +434,15 @@ public class TODOLists extends CPSDisplayableDataUserModule
           s += new SimpleDateFormat("MMM dd, yyyy").format( tempCal.getTime() );
           filter.setPlantingRangeEnd( tempCal.getTime() );
 
-
-          // refilter/sort the list
-          filterAndSortList( null, filter, sortProp );
+          // now refilter the data
+          // again, is this necessary?  shouldn't the filter be able to
+          // signal that it's updated?  doesn't it already??
+          dataFiltered.setMatcher( filter );
 
           if ( ! dataFiltered.isEmpty() )
-            pdf.addPage( jt, "GH Seedings for " + s );
+            pdf.addTableOnNewPage( pdf.convertPlantingList( groupedList,
+                                                            tableFormat ),
+                                   "GH Seedings for " + s );
           
           // bump the day by one
           tempCal.add( Calendar.DAY_OF_YEAR, 1 );
@@ -483,61 +459,59 @@ public class TODOLists extends CPSDisplayableDataUserModule
         filename = createOutputFileName( filFile.getSelectedFile(),
                                          "Weekly Planting Lists (Field)",
                                          dtcDateOtherStart.getDate());
-
+        CPSAdvancedTableFormat<CPSPlanting> fieldDSTableFormat =
+                new DSFieldPlantingTableFormat();
+        CPSAdvancedTableFormat<CPSPlanting> fieldTPTableFormat =
+                new TPFieldPlantingTableFormat();
+        Comparator<CPSPlanting> fieldDSComparator =
+                new CPSComparators.DatePlantCropNameComparator();
+        Comparator<CPSPlanting> fieldTPComparator =
+                new CPSComparators.DateTPCropNameComparator();
 
         pdf.startExport( filename,
                          CPSGlobalSettings.getFarmName(),
-                         "Weekly Planting Lists (Field)",
-                         null );
+                         "Weekly Planting Lists (Field)" );
 
 
-        // reset the filter
-        filter = new CPSComplexPlantingFilter();
-        filter.setViewLimited(true);
-        filter.setFilterOnPlantingMethod(true);
-
+        Date weekStartDate, weekEndDate;
         tempCal.setTime( startDate );
         tempCal.set( Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 
         while ( tempCal.getTime().before( endDate ) ) {
 
-          // set the correct date ranges
+          //******************************************************************//
+          // Get the start/end dates for this week
+          //******************************************************************//
           String s = new SimpleDateFormat("MMM dd").format( tempCal.getTime() ) + " - ";
-          filter.setPlantingRangeStart(tempCal.getTime());
-          filter.setTpRangeStart( tempCal.getTime() );
-
+          weekStartDate = tempCal.getTime();
+          
           tempCal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
           s += new SimpleDateFormat("MMM dd, yyyy").format( tempCal.getTime() );
-          filter.setPlantingRangeEnd( tempCal.getTime() );
-          filter.setTpRangeEnd( tempCal.getTime() );
+          weekEndDate = tempCal.getTime();
 
           //******************************************************************//
           // First, direct seeded
           //******************************************************************//
-          filter.setFilterMethodDirectSeed(true);
-          filter.setFilterOnPlantingDate(true);
-          filter.setFilterOnTPDate(false);
+          dataFiltered.setMatcher( CPSComplexPlantingFilter.fieldDSFilter( weekStartDate,
+                                                                           weekEndDate ));
+          groupedList.setComparator( fieldDSComparator );
 
-          filterAndSortList( null, filter, CPSDataModelConstants.PROP_DATE_PLANT );
-
-          if ( ! dataFiltered.isEmpty() ) {
-            ((EventTableModel) jt.getModel()).setTableFormat( new DSFieldPlantingTableFormat() );
-            pdf.addPage( jt, "Direct Seeded Plantings for " + s );
-          }
+          if ( ! dataFiltered.isEmpty() )
+            pdf.addTableOnNewPage( pdf.convertPlantingList( groupedList,
+                                                            fieldDSTableFormat ),
+                                    "Direct Seeded Plantings for " + s );
 
           //******************************************************************//
           // Then, transplanted
           //******************************************************************//
-          filter.setFilterMethodDirectSeed(false);
-          filter.setFilterOnPlantingDate(false);
-          filter.setFilterOnTPDate(true);
+          dataFiltered.setMatcher( CPSComplexPlantingFilter.fieldTPFilter( weekStartDate,
+                                                                           weekEndDate ));
+          groupedList.setComparator( fieldTPComparator );
 
-          filterAndSortList( null, filter, CPSDataModelConstants.PROP_DATE_TP );
-
-          if ( ! dataFiltered.isEmpty() ) {
-            ((EventTableModel) jt.getModel()).setTableFormat( new TPFieldPlantingTableFormat() );
-            pdf.addPage( jt, "Transplanted Field Plantings for " + s );
-          }
+          if ( ! dataFiltered.isEmpty() )
+            pdf.addTableOnNewPage( pdf.convertPlantingList( groupedList,
+                                                            fieldTPTableFormat ),
+                                    "Transplanted Plantings for " + s );
 
           // bump the day by one
           tempCal.add( Calendar.DAY_OF_YEAR, 1 );
@@ -561,51 +535,27 @@ public class TODOLists extends CPSDisplayableDataUserModule
                 "Field Planting List",
                 dtcDateOtherStart.getDate());
 
-        /*
-         * Select just uncompleted, direct seeded plantings whose PLANTING date
-         * is w/i range.
-         */
-        CPSComplexPlantingFilter filter = new CPSComplexPlantingFilter();
-        filter.setViewLimited(true);
+        //********************************************************************//
+        // DS
+        //********************************************************************//
+        tempCal.setTime(dtcDateOtherStart.getDate());
 
-        // filter out all NON direct seeded plantings
-        filter.setFilterOnPlantingMethod(true);
-        filter.setFilterMethodDirectSeed(true);
-
-        // show only uncompleted plantings
-        filter.setFilterOnPlanting(true);
-        filter.setDonePlanting(false);
-
-        // show only plantings in the correct date range
-        filter.setFilterOnPlantingDate(true);
-        filter.setPlantingRangeEnd(dtcDateOtherEnd.getDate());
-
-        if (rdoUncompLastWeek.isSelected()) {
-            tempCal.setTime(dtcDateOtherStart.getDate());
+        if (rdoUncompLastWeek.isSelected())
             tempCal.add(Calendar.WEEK_OF_YEAR, -1);
-            filter.setPlantingRangeStart(tempCal.getTime());
-        } else if (rdoUncompAll.isSelected()) {
-            tempCal.setTime(dtcDateOtherStart.getDate());
+        else if (rdoUncompAll.isSelected())
             tempCal.set(Calendar.WEEK_OF_YEAR, 0);
-            filter.setPlantingRangeStart(tempCal.getTime());
-        } else // if ( rdoUncompThistWeek.isSelected() )
-          filter.setPlantingRangeStart(dtcDateOtherStart.getDate());
 
+        CPSComplexPlantingFilter filter =
+                CPSComplexPlantingFilter.fieldDSFilter( tempCal.getTime(),
+                                                        dtcDateOtherEnd.getDate() );
 
-        Comparator<CPSPlanting> comp = new Comparator<CPSPlanting>() {
-          public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-            if ( o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() ) != 0 )
-              return o1.getDateToPlantPlanned().compareTo( o2.getDateToPlantPlanned() );
-            else
-              return o1.getCropName().compareTo( o2.getCropName() );
-          }
-        };
+        Comparator<CPSPlanting> comp = new CPSComparators.DatePlantCropNameComparator();
 
 
         filterAndSortList( getDataSource().getCropPlan( planName ), filter, comp );
 
-        AdjacentGroupingList<CPSPlanting> gl =
-                new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
+        GroupingList<CPSPlanting> gl =
+                new GroupingList<CPSPlanting>( dataSorted, comp );
 
         String docTitle =
           "Field plantings for " +
@@ -619,51 +569,18 @@ public class TODOLists extends CPSDisplayableDataUserModule
         pdf.addTable( pdf.convertPlantingList( gl, new DSFieldPlantingTableFormat() ),
                       "Direct Seeded Field Plantings" );
 
-        /*
-         * Select just uncompleted, transplanted plantings whose TRANSPLANT date
-         * is w/i range
-         */
-        // filter out all direct seeded plantings
-        filter.setFilterOnPlantingMethod(true);
-        filter.setFilterMethodDirectSeed(false);
+        //********************************************************************//
+        // TP
+        //********************************************************************//
+        filter = CPSComplexPlantingFilter.fieldTPFilter( tempCal.getTime(),
+                                                         dtcDateOtherEnd.getDate() );
 
-        // show only uncompleted transplantings that have been seeded
-        filter.setFilterOnPlanting(true);
-        filter.setDonePlanting(true);
-        filter.setFilterOnTransplanting(true);
-        filter.setDoneTransplanting(false);
-
-        // disable planting date filter, enable transplanting date filter
-        filter.setFilterOnPlantingDate(false);
-        filter.setFilterOnTPDate(true);
-        filter.setTpRangeEnd(dtcDateOtherEnd.getDate());
-
-        if (rdoUncompLastWeek.isSelected()) {
-            tempCal.setTime(dtcDateOtherStart.getDate());
-            tempCal.add(Calendar.WEEK_OF_YEAR, -1);
-            filter.setTpRangeStart(tempCal.getTime());
-        } else if (rdoUncompAll.isSelected()) {
-            tempCal.setTime(dtcDateOtherStart.getDate());
-            tempCal.set(Calendar.WEEK_OF_YEAR, 0);
-            filter.setTpRangeStart(tempCal.getTime());
-        } else // if ( rdoUncompThistWeek.isSelected() )
-        {
-            filter.setTpRangeStart(dtcDateOtherStart.getDate());
-        }
-
-        comp = new Comparator<CPSPlanting>() {
-            public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-              if ( o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() ) != 0 )
-                return o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() );
-              else
-                return o1.getCropName().compareTo( o2.getCropName() );
-            }
-          };
+        comp = new CPSComparators.DateTPCropNameComparator();
 
         gl.dispose();
         filterAndSortList( null, filter, comp );
 
-        gl = new AdjacentGroupingList<CPSPlanting>( dataSorted, comp );
+        gl = new GroupingList<CPSPlanting>( dataSorted, comp );
 
         pdf.addTableOnNewPage( pdf.convertPlantingList( gl, new TPFieldPlantingTableFormat() ),
                                "Transplanted Field Plantings");

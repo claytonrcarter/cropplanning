@@ -104,7 +104,8 @@ public class TabbedUI extends CPSUI implements ActionListener {
 
     public void showUI() {
        
-       fm.getFrame().setTitle( "CropPlanning" );
+       fm.getFrame().setTitle( "CropPlanning" +
+                               ( CPSGlobalSettings.getDebug() ? " - Debug Mode" : "" ));
        
        fm.getFrame().setJMenuBar( buildMenuBar() );
        

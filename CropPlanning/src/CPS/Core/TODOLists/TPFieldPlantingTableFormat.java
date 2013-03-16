@@ -16,7 +16,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
  *
  * @author kendra
  */
-public class TPFieldPlantingTableFormat extends CPSExportTableFormat<CPSPlanting> {
+public class TPFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
   public int getColumnCount() { return 10; }
 
@@ -80,11 +80,6 @@ public class TPFieldPlantingTableFormat extends CPSExportTableFormat<CPSPlanting
   @Override
   public boolean isDefaultColumn(int colNum) {
     return true;
-  }
-
-  @Override
-  public boolean isSummaryColumn( int colNum ) {
-    return colNum == 0 || colNum == 1;
   }
 
 }
