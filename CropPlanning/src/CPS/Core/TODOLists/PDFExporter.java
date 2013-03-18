@@ -23,48 +23,18 @@
 
 package CPS.Core.TODOLists;
 
-import CPS.Data.CPSCalculations;
-import CPS.Data.CPSComparators;
-import CPS.Data.CPSComplexPlantingFilter;
-import CPS.Data.CPSDateValidator;
-import CPS.Data.CPSPlanting;
-import CPS.Data.CPSRecord;
+import CPS.Data.*;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import CPS.ModuleManager;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Swing.CPSTable;
-import ca.odell.glazedlists.BasicEventList;
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.GroupingList;
-import ca.odell.glazedlists.SortedList;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.ExceptionConverter;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfPageEventHelper;
-import com.itextpdf.text.pdf.PdfWriter;
+import ca.odell.glazedlists.*;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JTable;
 
 public class PDFExporter {
