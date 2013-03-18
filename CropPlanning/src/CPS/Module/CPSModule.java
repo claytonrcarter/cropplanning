@@ -99,9 +99,7 @@ public abstract class CPSModule {
    }
    
    public static void debug( String module, String message ) {
-      if ( CPSGlobalSettings.getDebug()
-//              && ! module.equals( "HSQLQuerier" )
-         )
+      if ( CPSGlobalSettings.getDebug() )
          System.out.println( "DEBUG(" + module + "): " + message );
    }
 }

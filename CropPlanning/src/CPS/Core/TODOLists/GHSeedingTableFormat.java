@@ -62,6 +62,4 @@ public class GHSeedingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
     return true;
   }
 
-
-
 }

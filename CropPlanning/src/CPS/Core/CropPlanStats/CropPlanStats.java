@@ -16,15 +16,8 @@ import CPS.UI.Swing.CPSCardPanel;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
-import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.calculation.AbstractEventListCalculation;
-import ca.odell.glazedlists.calculation.Calculation;
-import ca.odell.glazedlists.calculation.Calculations;
-import ca.odell.glazedlists.matchers.AbstractMatcherEditor;
-import ca.odell.glazedlists.matchers.CompositeMatcherEditor;
-import ca.odell.glazedlists.matchers.Matcher;
-import ca.odell.glazedlists.matchers.MatcherEditor;
 import ca.odell.glazedlists.matchers.Matchers;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -81,7 +74,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     dataFiltered = new FilterList<CPSPlanting>( dataList );
     dataSorted = new SortedList<CPSPlanting>( dataFiltered, null );
 
-    SumBedsRowftFlats statSums = new SumBedsRowftFlats( dataFiltered );
+    CPSCalculations.SumBedsRowftFlats statSums = new CPSCalculations.SumBedsRowftFlats( dataFiltered );
 
 
 //****************************************************************************//
@@ -617,39 +610,6 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     public void setFlatSize( String f ) {
       flatSize = f;
       fireChanged(this);
-    }
-
-  }
-
-
-//****************************************************************************//
-// Advanced Calculation
-//****************************************************************************//
-  static final class SumBedsRowftFlats extends AbstractEventListCalculation<Float, CPSPlanting> {
-
-    public float beds, rowUnitLengthes, flats;
-
-    public SumBedsRowftFlats(EventList<CPSPlanting> source) {
-        super(new Float(0), source);
-        beds = rowUnitLengthes = flats = 0;
-    }
-
-    protected void inserted( CPSPlanting p ) {
-      beds   += p.getBedsToPlant();
-      rowUnitLengthes += p.getRowFtToPlant();
-      flats  += p.getFlatsNeeded();
-    }
-
-    protected void deleted(CPSPlanting p) {
-      beds   -= p.getBedsToPlant();
-      rowUnitLengthes -= p.getRowFtToPlant();
-      flats  -= p.getFlatsNeeded();
-    }
-
-    protected void updated( CPSPlanting oldP, CPSPlanting newP ) {
-      beds   = beds   - oldP.getBedsToPlant()  + newP.getBedsToPlant();
-      rowUnitLengthes = rowUnitLengthes - oldP.getRowFtToPlant() + newP.getRowFtToPlant();
-      flats  = flats  - oldP.getFlatsNeeded()  + newP.getFlatsNeeded();
     }
 
   }

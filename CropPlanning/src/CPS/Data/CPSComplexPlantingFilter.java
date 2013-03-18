@@ -360,12 +360,20 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
     /* ***************************************************************** */
     /* STATIC factory methods for default "filters"
     /* ***************************************************************** */
+    /**
+     * @return An instance of {@link CPSComplexPlantingFilter} set up to
+     * match all direct seeded plantings ("done" or not)
+     */
     public static CPSComplexPlantingFilter directSeededFilter() {
         CPSComplexPlantingFilter ds = new CPSComplexPlantingFilter();
         ds.setAsDirectSeededFilter();
         return ds;
     }
-    
+
+    /**
+     * @return An instance of {@link CPSComplexPlantingFilter} set up to
+     * match all transplanted plantings ("done" or not)
+     */
     public static CPSComplexPlantingFilter transplantedFilter() {
         CPSComplexPlantingFilter tp = new CPSComplexPlantingFilter();
         tp.setAsTransplatedFilter();
@@ -413,5 +421,32 @@ public class CPSComplexPlantingFilter extends AbstractMatcherEditor<CPSPlanting>
        f.setAsThisAndNextWeekFilter();
        return f;
     }
-    
+
+    public static CPSComplexPlantingFilter ghSeedingFilter( Date rangeStart,
+                                                           Date ranageEnd ) {
+      CPSComplexPlantingFilter f = TPNotSeededFilter();
+      f.setFilterOnPlantingDate( true );
+      f.setPlantingRangeStart( rangeStart );
+      f.setPlantingRangeEnd( ranageEnd );
+      return f;
+    }
+
+    public static CPSComplexPlantingFilter fieldDSFilter( Date rangeStart,
+                                                        Date ranageEnd ) {
+      CPSComplexPlantingFilter f = DSNotPlantedFilter();
+      f.setFilterOnPlantingDate( true );
+      f.setPlantingRangeStart( rangeStart );
+      f.setPlantingRangeEnd( ranageEnd );
+      return f;
+    }
+
+    public static CPSComplexPlantingFilter fieldTPFilter( Date rangeStart,
+                                                        Date ranageEnd ) {
+      CPSComplexPlantingFilter f = TPSeededNotPlantedFilter();
+      f.setFilterOnTPDate( true );
+      f.setTpRangeStart( rangeStart );
+      f.setTpRangeEnd( ranageEnd );
+      return f;
+    }
+
 }
