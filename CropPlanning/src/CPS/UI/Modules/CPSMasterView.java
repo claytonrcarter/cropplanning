@@ -39,6 +39,7 @@ import ca.odell.glazedlists.matchers.*;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.IntArrayData;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.*;
@@ -120,6 +121,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     public int init() { return 0; }
     protected int saveState() {
+      debug( "Saving visible columns: " + getDisplayedColumnListAsString() );
+      getPrefs().put( KEY_DISPLAYED_COLUMNS, getDisplayedColumnListAsString() );
        if ( getDisplayedTableName() == null )
           getPrefs().remove( KEY_DISPLAYED_TABLE );
        else
@@ -583,6 +586,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
        pupColumnList = new JPopupMenu();
        //  create the empty submenu
        JMenu subMenu = new JMenu( "More ..." );
+
+       List<Integer> savedCols = new ArrayList<Integer>();
+       for ( String s : Arrays.asList( getPrefs().get( KEY_DISPLAYED_COLUMNS, "" )
+                                                         .trim()
+                                                         .split( ", " ) ) )
+         savedCols.add( new Integer( s ) );
        
        // grab the column model and column count
        DefaultTableColumnModel model = (DefaultTableColumnModel) masterTable.getColumnModel();
@@ -591,7 +600,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
        // generate all of the menu entries
        List<ColumnMenuItem> columnListItems = new ArrayList<ColumnMenuItem>( nrColumns );
        for ( int i = 0; i < nrColumns; i++ )
-          columnListItems.add( new ColumnMenuItem( model, i ) );
+          columnListItems.add( new ColumnMenuItem( model,
+                                                   i,
+                                                   savedCols.contains( i ) ) );
 
        // process the entries and add them to the correct menu or submenu
        int j = 0;
@@ -611,6 +622,24 @@ public abstract class CPSMasterView extends CPSDataModelUser
        if ( subMenu.getItemCount() > 0 )
            pupColumnList.add( subMenu );
        
+    }
+
+
+    protected List<Integer> getDisplayedColumnList() {
+      ArrayList<Integer> l = new ArrayList<Integer>();
+      for ( int i = 0; i < masterTable.getColumnCount(); i++ )
+        l.add( masterTable.convertColumnIndexToModel( i ) );
+      return l;
+    }
+
+    protected String getDisplayedColumnListAsString() {
+      StringBuilder s = new StringBuilder();
+      String delim = "";
+      for ( Integer i : getDisplayedColumnList() ) {
+        s.append( delim ).append( i );
+        delim = ", ";
+      }
+      return s.toString();
     }
     
     // This might happen at any time.  So we need to update our view of the data
@@ -880,17 +909,28 @@ public abstract class CPSMasterView extends CPSDataModelUser
       private DefaultTableColumnModel columnModel;
       public final TableColumn column;
       private boolean defaultColumn = true;
+      private int columnIndex;
       
       public ColumnMenuItem( DefaultTableColumnModel columnModel, int columnIndex ) {
+        this( columnModel, columnIndex, null );
+      }
+      public ColumnMenuItem( DefaultTableColumnModel columnModel,
+                              int columnIndex,
+                              Boolean displayed ) {
          // first arg to super: column name
          super( columnModel.getColumn( columnIndex ).getHeaderValue().toString(),
                 true );
          this.columnModel = columnModel;
          this.column = columnModel.getColumn( columnIndex );
+         this.columnIndex = columnIndex;
+
+         if ( displayed == null )
+           displayed = Boolean.FALSE;
 
          // record whether this column should be displayed by default
          if ( getTableFormat() instanceof CPSAdvancedTableFormat ) {
-           defaultColumn = ( (CPSAdvancedTableFormat) getTableFormat() ).isDefaultColumn( columnIndex );
+           defaultColumn = displayed.booleanValue() ||
+                           ( (CPSAdvancedTableFormat) getTableFormat() ).isDefaultColumn( columnIndex );
            this.setSelected(defaultColumn);
          }
          addActionListener( this );

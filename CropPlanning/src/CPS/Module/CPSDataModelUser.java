@@ -40,5 +40,10 @@ public abstract class CPSDataModelUser implements CPSDataUser {
     * method to update and/or refresh the data they are currently using.
     */
    public abstract void dataUpdated();
+
+
+   protected void debug( String message ) {
+      CPSModule.debug( this.getClass().getName(), message );
+   }
    
 }

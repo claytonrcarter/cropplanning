@@ -254,6 +254,8 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          // values which the software isn't taking as changes (blank value, spaces, etc)
          // then redisplay the displayed planting
 
+         debug( "No differences found, not saving." );
+
          // for now, just reset the display w/ the current planting
          displayRecord( displayedPlanting );
          return;
@@ -295,7 +297,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       // make a copy of the displayed planting
        CPSPlanting changes = new CPSPlanting();
        changes.merge( displayedPlanting );
-       System.out.println(changes);
+       debug("Original (prechanges) : " + changes.toString());
 
        changes.setID( displayedPlanting.getID() );
       
@@ -1047,12 +1049,11 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          return;
       }
       
-      CPSPlanting tempPlanting = displayedPlanting;
       
-      tempPlanting.setDirectSeeded( rdoDS.isSelected() );
-
       // save our current or saved state
       boolean initState = displayedPlanting.isDirectSeeded();
+      
+      displayedPlanting.setDirectSeeded( rdoDS.isSelected() );
 
       // set the displayed planting to act like what's been selected
       // and update the display
