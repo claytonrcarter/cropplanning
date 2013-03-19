@@ -39,7 +39,6 @@ import ca.odell.glazedlists.matchers.*;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.IntArrayData;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.*;
