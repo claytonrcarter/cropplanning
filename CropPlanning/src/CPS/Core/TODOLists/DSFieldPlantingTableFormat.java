@@ -18,7 +18,7 @@ import CPS.UI.Modules.CPSAdvancedTableFormat;
  */
 public class DSFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanting> {
 
-  public int getColumnCount() { return 8; }
+  public int getColumnCount() { return 9; }
 
   public Object getColumnValue( CPSPlanting p, int arg1 ) {
 
@@ -30,7 +30,8 @@ public class DSFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
           case 4: return p.getBedsToPlant();
           case 5: return p.getRowsPerBed();
           case 6: return p.getRowFtToPlant();
-          case 7: return p.getPlantingNotesInherited();
+          case 7: return p.getSeedsPer();
+          case 8: return p.getPlantingNotesInherited();
           default: return "";
       }
   }
@@ -58,7 +59,8 @@ public class DSFieldPlantingTableFormat extends CPSAdvancedTableFormat<CPSPlanti
       case 4: return CPSPlanting.PROP_BEDS_PLANT;
       case 5: return CPSPlanting.PROP_ROWS_P_BED;
       case 6: return CPSPlanting.PROP_ROWFT_PLANT;
-      case 7: return CPSPlanting.PROP_PLANTING_NOTES;
+      case 7: return CPSPlanting.PROP_SEEDS_PER_DS;
+      case 8: return CPSPlanting.PROP_PLANTING_NOTES;
       default: return CPSPlanting.PROP_ID;
     }
   }

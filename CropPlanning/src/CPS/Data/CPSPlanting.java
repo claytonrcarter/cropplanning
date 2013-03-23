@@ -261,8 +261,8 @@ public final class CPSPlanting extends CPSRecord {
 
       seedsPerUnit = new CPSDatum<Integer>( "Seeds/Unit", new Integer(-1), PROP_SEEDS_PER_UNIT );
       seedUnit = new CPSDatum<String>( "Units", "", PROP_SEED_UNIT );
-      seedsPerDS = new CPSDatum<Float>( "Seeds/RowFt (DS)", new Float( -1.0 ), PROP_SEEDS_PER_DS );
-      seedsPerTP = new CPSDatum<Float>( "Seeds/Plant (TP)", new Float( -1.0 ), PROP_SEEDS_PER_TP );
+      seedsPerDS = new CPSDatum<Float>( "Seeds/RowFt", new Float( -1.0 ), PROP_SEEDS_PER_DS );
+      seedsPerTP = new CPSDatum<Float>( "Seeds/Cell", new Float( -1.0 ), PROP_SEEDS_PER_TP );
       seedNeeded    = new CPSDatum<Float>( "Seed Units Needed", new Float( -1.0 ), PROP_SEED_NEEDED );
 
       direct_seed = new CPSDatum<Boolean>( "Direct seeded?", Boolean.TRUE, PROP_DIRECT_SEED );
