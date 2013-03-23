@@ -97,7 +97,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    public String getSelectedPlanName() {
      if ( selectedPlan == null &&
           listOfValidCropPlans.size() == 1 ) {
-       cmboPlanList.setSelectedIndex(0);
+       selectedPlan = listOfValidCropPlans.get(0);
        CPSModule.debug( "PlanMan", "Selecting only crop plan: " + selectedPlan + ";" );
      }
       return selectedPlan;

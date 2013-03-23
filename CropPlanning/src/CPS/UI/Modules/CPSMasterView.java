@@ -590,7 +590,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
        for ( String s : Arrays.asList( getPrefs().get( KEY_DISPLAYED_COLUMNS, "" )
                                                          .trim()
                                                          .split( ", " ) ) )
-         savedCols.add( new Integer( s ) );
+         if ( ! s.equals( "" ) )
+           savedCols.add( new Integer( s ) );
        
        // grab the column model and column count
        DefaultTableColumnModel model = (DefaultTableColumnModel) masterTable.getColumnModel();
