@@ -44,7 +44,7 @@ public class CropPlanning implements Runnable {
            in = CropPlanning.class.getClass().getResourceAsStream( "/appinfo.properties" );
            
            if ( in == null ) {
-               System.err.println( "Uh Oh!  appinfo.properties NOT FOUND!  You should copy it into CropPlanning/trunk/build/classes" );
+               System.err.println( "Uh Oh!  appinfo.properties NOT FOUND!" );
                System.exit( -1 );
            }
 
@@ -86,9 +86,7 @@ public class CropPlanning implements Runnable {
 
        System.out.println( "Build number: " + buildnum );
 
-       CropPlanning cps = new CropPlanning();
-
-
+       // Check for updates
        String appcastURL = "http://www.failbetterfarm.com/cps/appcast.xml";
        if ( CPSGlobalSettings.getDebug() )
          appcastURL = "http://www.failbetterfarm.com/cps/appcast-test.xml";
@@ -105,8 +103,12 @@ public class CropPlanning implements Runnable {
                             "/twinkle.properties" );
        }
 
+       // Init the program & modules
+       CropPlanning cps = new CropPlanning();
        // this line just for testing the app cast; show a dummy dialog
 //       new CPSConfirmDialog("Hi").setVisible(true);
+
+       // and finally show the app
        cps.show();
 
     }
