@@ -10,6 +10,7 @@ import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
 import CPS.ModuleManager;
+import CPS.UI.Swing.CPSErrorDialog;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
@@ -62,11 +63,8 @@ public class GoogleCalExporter {
   // their primary calendar.
   private static final String EVENT_FEED_URL_SUFFIX = "/private/full";
 
-  // The URL for the event feed of the specified user's primary calendar.
-  // (e.g. http://www.googe.com/feeds/calendar/jdoe@gmail.com/private/full)
-  private static URL eventFeedUrl = null;
 
-
+  
   private static final String CALENDAR_TITLE_PREFIX = "Crop Plan: ";
 
   // The HEX representation of red, blue and green
@@ -78,6 +76,440 @@ public class GoogleCalExporter {
    * Utility classes should not have a public or default constructor.
    */
   protected GoogleCalExporter() {}
+  
+
+  protected static void exportCropPlan( List<CPSPlanting> plantings,
+                                        String planName,
+                                        boolean changeLogin ) {
+
+
+    //************************************************************************//
+    // Setup the Lists for the crop plan
+    //************************************************************************//
+    EventList<CPSPlanting> planList = GlazedLists.eventList( plantings );
+
+
+
+    CalendarService service = new CalendarService("CropPlanning-GCal-v0.1");
+
+    // load preferences for this class
+    Preferences prefs = Preferences.userNodeForPackage( GoogleCalExporter.class );
+
+    //************************************************************************//
+    // log in the user and get the authenticated username
+    //************************************************************************//
+    String userName = authenticateUser( service,
+                                        prefs.get( "GOOGLE_USERNAME", "" ),
+                                        changeLogin ? null : prefs.get( "GOOGLE_AUTH_TOKEN", null ) );
+
+    if ( userName == null ) {
+      new CPSErrorDialog("Failed authentication with Google").setVisible( true );
+      return;
+    }
+
+    // save the username and auth token for this user
+    prefs.put( "GOOGLE_USERNAME", userName );
+    prefs.put( "GOOGLE_AUTH_TOKEN",
+               ((UserToken) service.getAuthTokenFactory()
+                                   .getAuthToken()).getValue());
+
+
+    //************************************************************************//
+    //
+    //************************************************************************//
+    URL calendarsFeedURL;
+    try {
+      calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
+    } catch ( MalformedURLException e ) {
+      e.printStackTrace();
+      return;
+    }
+
+    // Maps to hold all of our new (and old) feed entries
+    HashMap<String, CalendarEventEntry> planMap = new HashMap<String, CalendarEventEntry>();
+    HashMap<String, CalendarEventEntry> feedMap = new HashMap<String, CalendarEventEntry>();
+
+
+    //************************************************************************//
+    // now start doing the real work
+    //************************************************************************//
+    try {
+
+      // look for this crop plan in the calendars list
+      CalendarEntry cal = findCalendarForCropPlan( service, calendarsFeedURL, planName );
+
+      // if not found, create calendar
+      if ( cal == null ) {
+        cal = createCalendar( service, calendarsFeedURL, planName );
+      } else {
+        System.out.println( "Calendar exists." );
+      }
+
+      // it's been found or created, so find the Calendar ID
+      String[] s = cal.getEditLink().getHref().split( "/" );
+      String calID = s[ s.length - 1 ].replaceAll( "%40", "@" );
+
+      // Create URL for cropplan calendar and
+      URL eventFeedUrl = new URL( METAFEED_URL_BASE + calID + EVENT_FEED_URL_SUFFIX );
+
+
+//****************************************************************************//
+//    Iterate over all of the seeding days
+//****************************************************************************//
+      GroupingList<CPSPlanting> groupList =
+            new GroupingList<CPSPlanting>( planList,
+                                           new CPSComparators.DatePlantComparator() );
+      for ( Iterator<List<CPSPlanting>> it = groupList.iterator(); it.hasNext(); ) {
+        // get the list of plantings that happen on the next date
+        List<CPSPlanting> dateGroup = it.next();
+
+        // start the entries for this date
+        StringBuilder dsTitle = new StringBuilder( "Seed in Field: " );
+        StringBuilder tpTitle = new StringBuilder( "Seed in GH: " );
+        String dsDelim = "";
+        String tpDelim = "";
+        String dsContent = "";
+        String tpContent = "";
+        // they're all on the same date
+        Date d = dateGroup.get(0).getDateToPlant();
+
+        // now group these plantings by crop name ...
+        GroupingList<CPSPlanting> cropGroupList =
+                new GroupingList<CPSPlanting>( GlazedLists.eventList( dateGroup ),
+                                               new CPSComparators.CropNameComparator() );
+        // ... and iterate over the grouped crops
+        for ( Iterator<List<CPSPlanting>> it2 = cropGroupList.iterator(); it2.
+                hasNext(); ) {
+          List<CPSPlanting> cropGroup = it2.next();
+
+          // we assume that each group will be all DS or all TP
+          if ( cropGroup.get(0).isDirectSeeded() ) {
+
+            // append this crop name to the list of crops happening today
+            dsTitle.append( dsDelim ).append( cropGroup.get(0).getCropName() );
+            dsDelim = ", ";
+
+            // and for each planting, add some info about it to the
+            // description for this event
+            for ( CPSPlanting p : cropGroup ) {
+              dsContent += p.getCropName() + ": " +
+                           p.getVarietyName() + " - " +
+                           p.getBedsToPlantString() + " beds\n";
+            }
+
+          } else {
+            // ... ditto
+
+            tpTitle.append( tpDelim ).append(cropGroup.get(0).getCropName());
+            tpDelim = ", ";
+
+            for ( CPSPlanting p : cropGroup ) {
+              tpContent += p.getCropName() + ": " +
+                           p.getVarietyName() + " - " +
+                           p.getFlatsNeededString() + " x " +
+                           p.getFlatSize() + "\n";
+            }
+
+          }
+
+        }
+
+
+        // if there are DS plantings (we check to see if there is any content
+        // created for this event) then we create an entry and add it to our map
+        if ( ! dsContent.equals( "" ) ) {
+          CalendarEventEntry dsee = createEvent( dsTitle.toString(), dsContent, d );
+          planMap.put( "ds"+d.getTime(), dsee );
+        }
+
+        // ... ditto
+        if ( ! tpContent.equals( "" ) ) {
+          CalendarEventEntry tpee = createEvent( tpTitle.toString(), tpContent, d );
+          planMap.put( "gh"+d.getTime(), tpee);
+        }
+
+      }
+
+
+//****************************************************************************//
+//    Now do the same but for transplanted plantings and transplant dates
+//****************************************************************************//
+
+      // whittle it down to just TP plantings, then group by TP date
+      FilterList<CPSPlanting> fl = new FilterList<CPSPlanting>( planList );
+      fl.setMatcher( CPSComplexPlantingFilter.transplantedFilter() );
+      groupList = new GroupingList<CPSPlanting>( fl,
+                                                 new CPSComparators.DateTPComparator() );
+      // iterate over TP dates
+      for ( Iterator<List<CPSPlanting>> it = groupList.iterator(); it.hasNext(); ) {
+        List<CPSPlanting> dateGroup = it.next();
+
+        StringBuilder tpTitle = new StringBuilder( "TP in Field: " );
+        String tpDelim = "";
+        String tpContent = "";
+        Date d = dateGroup.get(0).getDateToTP();
+
+        GroupingList<CPSPlanting> cropGroupList =
+                new GroupingList<CPSPlanting>( GlazedLists.eventList( dateGroup ),
+                                               new CPSComparators.CropNameComparator() );
+
+        // iterate over the grouped crops
+        for ( Iterator<List<CPSPlanting>> it2 = cropGroupList.iterator(); it2.
+                hasNext(); ) {
+          List<CPSPlanting> cropGroup = it2.next();
+
+          // we assume that each group will be all DS or all TP
+          String c = "";
+
+          // now iterate over the actual plantings
+          for ( CPSPlanting p : cropGroup ) {
+            c += p.getCropName() + ": " +
+                 p.getVarietyName() + " - " +
+                 p.getBedsToPlantString() + " beds\n";
+          }
+
+          tpTitle.append( tpDelim ).append(cropGroup.get(0).getCropName());
+          tpDelim = ", ";
+          tpContent += c;
+
+        }
+
+        CalendarEventEntry tpee = createEvent( tpTitle.toString(), tpContent, d );
+        planMap.put( "tp"+d.getTime(), tpee );
+
+      }
+
+
+//****************************************************************************//
+//    done loading all local event, now load all remote events (if any)
+//****************************************************************************//
+      CalendarEventFeed planCalFeed;
+      Link batchLink = null;
+
+      Link nextLink = new Link();
+      nextLink.setHref( eventFeedUrl.toString() );
+
+      // build a map for the entries which have already been uploaded
+      // the feed is paginated, so we have to iterate w/ the getNextLink()
+      while( nextLink != null ) {
+
+        planCalFeed = service.getFeed( new URL( nextLink.getHref() ),
+                                       CalendarEventFeed.class );
+
+        if ( batchLink == null )
+          batchLink = planCalFeed.getLink( Link.Rel.FEED_BATCH, Link.Type.ATOM );
+
+        for ( CalendarEventEntry entry : planCalFeed.getEntries()) {
+
+          List<ExtendedProperty> props = entry.getExtendedProperty();
+          ExtendedProperty eventID = null;
+          for ( ExtendedProperty extendedProperty : props ) {
+            if ( extendedProperty.getName().equals( "cpsEventID" ) ) {
+              eventID = extendedProperty;
+              break;
+            }
+          }
+
+          if ( eventID != null )
+            feedMap.put( eventID.getValue(), entry );
+
+        }
+
+        nextLink = planCalFeed.getNextLink();
+
+     }
+
+      System.out.println( "PlanMap contains " + planMap.keySet().size() + " keys" );
+      System.out.println( "FeedMap contains " + feedMap.keySet().size() + " keys" );
+
+
+//****************************************************************************//
+//      Local and remote entries created, now match them up and batch upload
+//****************************************************************************//
+      CalendarEventFeed batchRequest = new CalendarEventFeed();
+
+      int updates, inserts, deletes;
+      updates = inserts = deletes = 0;
+
+      // iterate over all local keys looking for matching remote keys
+      for ( String key : planMap.keySet() ) {
+
+        CalendarEventEntry cee = planMap.get( key );
+
+        // UPDATE existing entries
+        if ( feedMap.containsKey( key ) ) {
+
+          updates++;
+
+          CalendarEventEntry fee = feedMap.get( key );
+          fee.setTitle( cee.getTitle() );
+          fee.setContent( cee.getContent() );
+
+          BatchUtils.setBatchId( fee, key );
+          BatchUtils.setBatchOperationType( fee, BatchOperationType.UPDATE );
+          batchRequest.getEntries().add( fee );
+
+          feedMap.remove( key );
+
+
+        } else {
+          // INSERT new entries
+
+          inserts++;
+
+          ExtendedProperty ep = new ExtendedProperty();
+          ep.setName( "cpsEventID" );
+          ep.setValue( key );
+          cee.addExtendedProperty( ep );
+
+          BatchUtils.setBatchId( cee, key );
+          BatchUtils.setBatchOperationType( cee, BatchOperationType.INSERT );
+          batchRequest.getEntries().add( cee );
+        }
+
+      }
+
+      // DELETE entries no longer relevant
+      for ( String key : feedMap.keySet() ) {
+
+        deletes++;
+
+        CalendarEventEntry fee = feedMap.get( key );
+
+        BatchUtils.setBatchId( fee, key );
+        BatchUtils.setBatchOperationType( fee, BatchOperationType.DELETE );
+        batchRequest.getEntries().add( fee );
+
+      }
+
+//****************************************************************************//
+// do the batch POST
+//****************************************************************************//
+      CalendarEventFeed batchResponse = service.batch( new URL(batchLink.getHref()),
+                                                       batchRequest );
+
+//****************************************************************************//
+// Ensure that all the operations were successful.
+//****************************************************************************//
+      boolean isSuccess = true;
+      for (CalendarEventEntry entry : batchResponse.getEntries()) {
+        String batchId = BatchUtils.getBatchId(entry);
+        if (!BatchUtils.isSuccess(entry)) {
+          isSuccess = false;
+          BatchStatus status = BatchUtils.getBatchStatus(entry);
+          System.out.println("\n" + batchId + " failed (" + status.getReason() + ") " + status.getContent());
+        }
+      }
+      if (isSuccess) {
+        System.out.println( "Updated  " + updates + " entries" );
+        System.out.println( "Inserted " + inserts + " entries" );
+        System.out.println( "Deleted  " + deletes + " entries" );
+      }
+
+
+    } catch (MalformedURLException e) {
+      // Bad URL
+      System.err.println("Uh oh - you've got an invalid URL.");
+      e.printStackTrace();
+    } catch (IOException e) {
+      // Communications error
+      System.err.println("There was a problem communicating with the service.");
+      e.printStackTrace();
+    } catch (ServiceException e) {
+      // Server side error
+      System.err.println("The server had a problem handling your request.");
+      e.printStackTrace();
+    }
+
+  }
+
+
+  private static String authenticateUser( CalendarService service,
+                                         String userName,
+                                         String authToken ) {
+
+    // attempt to authenticate w/ stored auth token
+    System.out.println( "Logging in with auth token for account " + userName );
+    service.setUserToken( authToken );
+
+    URL calendarsFeedURL;
+    try {
+      calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
+    } catch ( MalformedURLException e ) {
+      e.printStackTrace();
+      return null;
+    }
+
+    while ( ! isAuthenticated( service, calendarsFeedURL ) ) {
+
+      System.out.println( "Logging in with user credentials" );
+      GoogleCalLoginDialog loginDia = new GoogleCalLoginDialog( userName );
+      loginDia.setVisible( true );
+
+      System.out.println( "Entered " + loginDia.getEmail() + " : " + new String( loginDia.getPassword() ) );
+
+      // bail
+      if ( loginDia.isCancelled() ) {
+        return null;
+      }
+
+
+      // if they enter a different username, then rebuild the feed URL
+      if ( ! userName.equalsIgnoreCase( loginDia.getEmail() ) ) {
+        userName = loginDia.getEmail();
+        try {
+          calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
+        } catch ( MalformedURLException e ) {
+          e.printStackTrace();
+        }
+      }
+
+
+      // login w/ user name and password
+      char[] p = loginDia.getPassword();
+      try {
+        service.setUserCredentials( userName, new String( p ) );
+      } catch ( CaptchaRequiredException captchaException ) {
+
+        // we have to handle a captcha
+        System.err.println( "Captcha error: " + captchaException.getMessage() );
+
+        GoogleCaptchaDialog captchaDialog = new GoogleCaptchaDialog();
+
+        try {
+          captchaDialog.setCaptchaUrl( new URL( captchaException.getCaptchaUrl() ));
+          captchaDialog.setVisible( true );
+        } catch ( MalformedURLException f ) {
+          System.err.println( "WTF?! Why did Google give us a bad CAPTCHA URL?" );
+          System.err.println( f.getMessage() );
+        }
+
+        if ( ! captchaDialog.getCaptchaAnswer().equals( "" ) ) {
+          try {
+            service.setUserCredentials( userName,
+                                        new String( p ),
+                                        captchaException.getCaptchaToken(),
+                                        captchaDialog.getCaptchaAnswer() );
+          } catch ( AuthenticationException g ) {
+            System.err.println( "Invalid credentials: " + g.getMessage() );
+          }
+        }
+
+      } catch (AuthenticationException e ) {
+
+        System.err.println( "Invalid credentials: " + e.getMessage() );
+
+      }
+
+      // clear out the password array for safety
+      Arrays.fill( p, '0' );
+
+    }
+
+    return userName;
+    
+  }
+
 
   /**
    * Creates a new secondary calendar using the owncalendars feed.
@@ -200,401 +632,8 @@ public class GoogleCalExporter {
 
     String planName = dm.getListOfCropPlans().get(0);
     System.out.println( "Getting crop plan: " + planName );
-    EventList<CPSPlanting> planList = GlazedLists.eventList( dm.getCropPlan( planName ) );
-
-    GroupingList<CPSPlanting> groupList =
-            new GroupingList<CPSPlanting>( planList,
-                                           new CPSComparators.DatePlantComparator() );
-
-
-
-    Preferences prefs = Preferences.userNodeForPackage( GoogleCalExporter.class );
-    String userName = prefs.get( "GOOGLE_USERNAME", "" );
-
-
-    URL calendarsFeedURL = null;
     
-    try {
-      calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
-    } catch ( MalformedURLException e ) {
-      e.printStackTrace();
-    }
-
-
-    // Create CalendarService
-    CalendarService service = new CalendarService("CropPlanning-GCal-v0.1");
-
-    // attempt to authenticate w/ stored auth token
-    System.out.println( "Logging in with auth token for account " + userName );
-    service.setUserToken( prefs.get( "GOOGLE_AUTH_TOKEN", null ));
-
-
-    while ( ! isAuthenticated( service, calendarsFeedURL ) ) {
-
-      System.out.println( "Logging in with user credentials" );
-      GoogleCalLoginDialog dia = new GoogleCalLoginDialog(  );
-      dia.setVisible( true );
-
-      System.out.println( "Entered " + dia.getEmail() + " : " + new String( dia.getPassword() ) );
-
-      // bail
-      if ( dia.isCancelled() ) {
-        System.exit( 0 );
-        return;
-      }
-
-
-      // if they enter a different username, then rebuild the feed URL
-      if ( ! userName.equalsIgnoreCase( dia.getEmail() ) ) {
-        userName = dia.getEmail();
-        try {
-          calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
-        } catch ( MalformedURLException e ) {
-          e.printStackTrace();
-        }
-      }
-
-
-      char[] p = dia.getPassword();
-
-
-      // login w/ user name and password
-      try {
-        service.setUserCredentials( userName, new String( p ) );
-      } catch ( CaptchaRequiredException captchaException ) {
-
-        // no support for captcha now
-        System.err.println( "Captcha error: " + captchaException.getMessage() );
-
-        GoogleCaptchaDialog captchaDialog = new GoogleCaptchaDialog();
-
-        try {
-          captchaDialog.setCaptchaUrl( new URL( captchaException.getCaptchaUrl() ));
-          captchaDialog.setVisible( true );
-        } catch ( MalformedURLException f ) {
-          System.err.println( "WTF?! Why did Google give us a bad CAPTCHA URL?" );
-          System.err.println( f.getMessage() );
-        }
-
-        if ( ! captchaDialog.getCaptchaAnswer().equals( "" ) ) {
-          try {
-            service.setUserCredentials( userName,
-                                        new String( p ),
-                                        captchaException.getCaptchaToken(),
-                                        captchaDialog.getCaptchaAnswer() );
-          } catch ( AuthenticationException g ) {
-            System.err.println( "Invalid credentials: " + g.getMessage() );
-          }
-        }
-
-      } catch (AuthenticationException e ) {
-
-        System.err.println( "Invalid credentials: " + e.getMessage() );
-        
-      }
-
-      // clear out the password array for safety
-      Arrays.fill( p, '0' );
-
-    }
-
-    
-    prefs.put( "GOOGLE_USERNAME", userName );
-    prefs.put( "GOOGLE_AUTH_TOKEN",
-               ((UserToken) service.getAuthTokenFactory()
-                                   .getAuthToken()).getValue());
-
-
-    HashMap<String, CalendarEventEntry> planMap = new HashMap<String, CalendarEventEntry>();
-    HashMap<String, CalendarEventEntry> feedMap = new HashMap<String, CalendarEventEntry>();
-
-
-    try {
-
-      // look for calendar
-      CalendarEntry cal = findCalendarForCropPlan( service, calendarsFeedURL, planName );
-
-      // if not found, create calendar
-      if ( cal == null ) {
-        cal = createCalendar( service, calendarsFeedURL, planName );
-      } else {
-        System.out.println( "Calendar exists." );
-      }
-
-      // if found, get ID/href/etc
-      String[] s = cal.getEditLink().getHref().split( "/" );
-      String calID = s[ s.length - 1 ].replaceAll( "%40", "@" );
-
-      // Create URL for cropplan calendar
-      eventFeedUrl = new URL( METAFEED_URL_BASE + calID + EVENT_FEED_URL_SUFFIX );
-      
-
-      CalendarEventFeed batchRequest = new CalendarEventFeed();
-
-//****************************************************************************//
-//      Planting Events
-//****************************************************************************//
-      for ( Iterator<List<CPSPlanting>> it = groupList.iterator(); it.hasNext(); ) {
-        List<CPSPlanting> dateGroup = it.next();
-
-        StringBuilder dsTitle = new StringBuilder( "Seed in Field: " );
-        StringBuilder tpTitle = new StringBuilder( "Seed in GH: " );
-        String dsDelim = "";
-        String tpDelim = "";
-        String dsContent = "";
-        String tpContent = "";
-        Date d = dateGroup.get(0).getDateToPlant();
-
-        GroupingList<CPSPlanting> cropGroupList =
-                new GroupingList<CPSPlanting>( GlazedLists.eventList( dateGroup ),
-                                               new CPSComparators.CropNameComparator() );
-
-        // iterate over the grouped crops
-        for ( Iterator<List<CPSPlanting>> it2 = cropGroupList.iterator(); it2.
-                hasNext(); ) {
-          List<CPSPlanting> cropGroup = it2.next();
-
-          // we assume that each group will be all DS or all TP
-          if ( cropGroup.get(0).isDirectSeeded() ) {
-
-            dsTitle.append( dsDelim ).append(cropGroup.get(0).getCropName());
-            dsDelim = ", ";
-
-            for ( CPSPlanting p : cropGroup ) {
-              dsContent += p.getCropName() + ": " +
-                           p.getVarietyName() + " - " +
-                           p.getBedsToPlantString() + " beds\n";
-            }
-
-          } else {
-
-            tpTitle.append( tpDelim ).append(cropGroup.get(0).getCropName());
-            tpDelim = ", ";
-
-            for ( CPSPlanting p : cropGroup ) {
-              tpContent += p.getCropName() + ": " +
-                           p.getVarietyName() + " - " +
-                           p.getFlatsNeededString() + " x " +
-                           p.getFlatSize() + "\n";
-            }
-
-          }
-
-        }
-
-
-        CalendarEventEntry dsee = null;
-        CalendarEventEntry tpee = null;
-        if ( ! dsContent.equals( "" ) ) {
-          dsee = createEvent( dsTitle.toString(), dsContent, d );
-          planMap.put( "ds"+d.getTime(), dsee );
-
-//          BatchUtils.setBatchId( dsee, "ds"+d.getTime() ); // use the time as batch id
-//          BatchUtils.setBatchOperationType( dsee, BatchOperationType.INSERT);
-//          batchRequest.getEntries().add( dsee );
-        }
-        if ( ! tpContent.equals( "" ) ) {
-          tpee = createEvent( tpTitle.toString(), tpContent, d );
-          planMap.put( "gh"+d.getTime(), tpee);
-          
-//          BatchUtils.setBatchId( tpee, "gh"+d.getTime() ); // use the time as batch id
-//          BatchUtils.setBatchOperationType( tpee, BatchOperationType.INSERT);
-//          batchRequest.getEntries().add( tpee );
-        }
-
-      }
-
-
-//****************************************************************************//
-//      Transplant Events
-//****************************************************************************//
-
-      // whittle it down to just TP plantings, then group by TP date
-      FilterList<CPSPlanting> fl = new FilterList<CPSPlanting>( planList );
-      fl.setMatcher( CPSComplexPlantingFilter.transplantedFilter() );
-      groupList = new GroupingList<CPSPlanting>( fl,
-                                                 new CPSComparators.DateTPComparator() );
-      // iterate over TP dates
-      for ( Iterator<List<CPSPlanting>> it = groupList.iterator(); it.hasNext(); ) {
-        List<CPSPlanting> dateGroup = it.next();
-
-        StringBuilder tpTitle = new StringBuilder( "TP in Field: " );
-        String tpDelim = "";
-        String tpContent = "";
-        Date d = dateGroup.get(0).getDateToTP();
-
-        GroupingList<CPSPlanting> cropGroupList =
-                new GroupingList<CPSPlanting>( GlazedLists.eventList( dateGroup ),
-                                               new CPSComparators.CropNameComparator() );
-
-        // iterate over the grouped crops
-        for ( Iterator<List<CPSPlanting>> it2 = cropGroupList.iterator(); it2.
-                hasNext(); ) {
-          List<CPSPlanting> cropGroup = it2.next();
-
-          // we assume that each group will be all DS or all TP
-          String c = "";
-
-          // now iterate over the actual plantings
-          for ( CPSPlanting p : cropGroup ) {
-            c += p.getCropName() + ": " +
-                 p.getVarietyName() + " - " +
-                 p.getBedsToPlantString() + " beds\n";
-          }
-
-          tpTitle.append( tpDelim ).append(cropGroup.get(0).getCropName());
-          tpDelim = ", ";
-          tpContent += c;
-          
-        }
-
-        CalendarEventEntry tpee = null;
-        tpee = createEvent( tpTitle.toString(), tpContent, d );
-        planMap.put( "tp"+d.getTime(), tpee );
-        
-//        BatchUtils.setBatchId( tpee, "tp"+d.getTime() ); // use the time as batch id
-//        BatchUtils.setBatchOperationType( tpee, BatchOperationType.INSERT);
-//        batchRequest.getEntries().add( tpee );
-
-      }
-
-
-      // load the feed for this calendar
-      CalendarEventFeed planCalFeed;
-      Link batchLink = null;
-
-      Link nextLink = new Link();
-      nextLink.setHref( eventFeedUrl.toString() );
-
-      // build a map for the entries which have already been uploaded
-      // the feed is paginated, so we have to iterate w/ the getNextLink()
-      while( nextLink != null ) {
-
-        planCalFeed = service.getFeed( new URL( nextLink.getHref() ),
-                                       CalendarEventFeed.class );
-
-        if ( batchLink == null )
-          batchLink = planCalFeed.getLink( Link.Rel.FEED_BATCH, Link.Type.ATOM );
-
-        for ( CalendarEventEntry entry : planCalFeed.getEntries()) {
-
-          List<ExtendedProperty> props = entry.getExtendedProperty();
-          ExtendedProperty eventID = null;
-          for ( ExtendedProperty extendedProperty : props ) {
-            if ( extendedProperty.getName().equals( "cpsEventID" ) ) {
-              eventID = extendedProperty;
-              break;
-            }
-          }
-
-          if ( eventID != null )
-            feedMap.put( eventID.getValue(), entry );
-
-        }
-
-        nextLink = planCalFeed.getNextLink();
-
-     }
-
-
-
-
-      System.out.println( "PlanMap contains " + planMap.keySet().size() + " keys" );
-      System.out.println( "FeedMap contains " + feedMap.keySet().size() + " keys" );
-
-
-      int updates, inserts, deletes;
-      updates = inserts = deletes = 0;
-
-
-      for ( String key : planMap.keySet() ) {
-
-        CalendarEventEntry cee = planMap.get( key );
-
-        // UPDATE existing entries
-        if ( feedMap.containsKey( key ) ) {
-
-          updates++;
-
-          CalendarEventEntry fee = feedMap.get( key );
-          fee.setTitle( cee.getTitle() );
-          fee.setContent( cee.getContent() );
-
-          BatchUtils.setBatchId( fee, key );
-          BatchUtils.setBatchOperationType( fee, BatchOperationType.UPDATE );
-          batchRequest.getEntries().add( fee );
-
-          feedMap.remove( key );
-
-
-        } else {
-          // INSERT new entries
-
-          inserts++;
-
-          ExtendedProperty ep = new ExtendedProperty();
-          ep.setName( "cpsEventID" );
-          ep.setValue( key );
-          cee.addExtendedProperty( ep );
-
-          BatchUtils.setBatchId( cee, key );
-          BatchUtils.setBatchOperationType( cee, BatchOperationType.INSERT );
-          batchRequest.getEntries().add( cee );
-        }
-
-      }
-
-      // DELETE entries no longer relevant
-      for ( String key : feedMap.keySet() ) {
-
-        deletes++;
-
-        CalendarEventEntry fee = feedMap.get( key );
-
-        BatchUtils.setBatchId( fee, key );
-        BatchUtils.setBatchOperationType( fee, BatchOperationType.DELETE );
-        batchRequest.getEntries().add( fee );
-
-      }
-
-
-
-
-
-      
-      // do the batch post
-      CalendarEventFeed batchResponse = service.batch(new URL(batchLink.getHref()), batchRequest);
-
-      // Ensure that all the operations were successful.
-      boolean isSuccess = true;
-      for (CalendarEventEntry entry : batchResponse.getEntries()) {
-        String batchId = BatchUtils.getBatchId(entry);
-        if (!BatchUtils.isSuccess(entry)) {
-          isSuccess = false;
-          BatchStatus status = BatchUtils.getBatchStatus(entry);
-          System.out.println("\n" + batchId + " failed (" + status.getReason() + ") " + status.getContent());
-        }
-      }
-      if (isSuccess) {
-        System.out.println( "Updated  " + updates + " entries" );
-        System.out.println( "Inserted " + inserts + " entries" );
-        System.out.println( "Deleted  " + deletes + " entries" );
-      }
-
-
-    } catch (MalformedURLException e) {
-      // Bad URL
-      System.err.println("Uh oh - you've got an invalid URL.");
-      e.printStackTrace();
-    } catch (IOException e) {
-      // Communications error
-      System.err.println("There was a problem communicating with the service.");
-      e.printStackTrace();
-    } catch (ServiceException e) {
-      // Server side error
-      System.err.println("The server had a problem handling your request.");
-      e.printStackTrace();
-    }
+    exportCropPlan( dm.getCropPlan( planName ), planName, false );
 
     System.exit( 0 );
   }
