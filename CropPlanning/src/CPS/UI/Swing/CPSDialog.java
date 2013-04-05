@@ -39,7 +39,7 @@ public abstract class CPSDialog extends JDialog {
     protected JXTitledPanel header;
     private JPanel jplMain;
     protected JPanel jplContents;
-    private JPanel jplButtons;
+    protected JPanel jplButtons;
 
     protected boolean contentsPanelBuilt = false;
     
@@ -108,7 +108,6 @@ public abstract class CPSDialog extends JDialog {
     protected void initContentsPanel() {
         
         jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px"));
-        jplContents.setLayout( new BoxLayout( jplContents, BoxLayout.PAGE_AXIS ));
         
     }
     protected abstract void buildContentsPanel();
