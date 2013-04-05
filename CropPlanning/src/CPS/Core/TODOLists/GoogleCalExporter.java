@@ -62,11 +62,6 @@ public class GoogleCalExporter {
   // their primary calendar.
   private static final String EVENT_FEED_URL_SUFFIX = "/private/full";
 
-
-  // The URL for the owncalendars feed of the specified user.
-  // (e.g. http://www.googe.com/feeds/calendar/jdoe@gmail.com/owncalendars/full)
-  private static URL owncalendarsFeedUrl = null;
-
   // The URL for the event feed of the specified user's primary calendar.
   // (e.g. http://www.googe.com/feeds/calendar/jdoe@gmail.com/private/full)
   private static URL eventFeedUrl = null;
@@ -94,6 +89,7 @@ public class GoogleCalExporter {
    * @throws ServiceException If the service is unable to handle the request.
    */
   private static CalendarEntry createCalendar( CalendarService service,
+                                              URL calendarFeed,
                                               String cropPlan )
       throws IOException, ServiceException {
 
@@ -109,16 +105,17 @@ public class GoogleCalExporter {
     calendar.setColor( new ColorProperty( GREEN ) );
     
     // Insert the calendar
-    return service.insert(owncalendarsFeedUrl, calendar);
+    return service.insert(calendarFeed, calendar);
 
   }
 
 
   private static CalendarEntry findCalendarForCropPlan( CalendarService service,
+                                                       URL calendarFeed,
                                                        String cropPlan )
       throws IOException, ServiceException {
 
-    CalendarFeed resultFeed = service.getFeed( owncalendarsFeedUrl,
+    CalendarFeed resultFeed = service.getFeed( calendarFeed,
                                                CalendarFeed.class);
 
     for ( CalendarEntry entry : resultFeed.getEntries() ) {
@@ -215,8 +212,10 @@ public class GoogleCalExporter {
     String userName = prefs.get( "GOOGLE_USERNAME", "" );
 
 
+    URL calendarsFeedURL = null;
+    
     try {
-      owncalendarsFeedUrl = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
+      calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
     } catch ( MalformedURLException e ) {
       e.printStackTrace();
     }
@@ -230,7 +229,7 @@ public class GoogleCalExporter {
     service.setUserToken( prefs.get( "GOOGLE_AUTH_TOKEN", null ));
 
 
-    while ( ! isAuthenticated( service, owncalendarsFeedUrl ) ) {
+    while ( ! isAuthenticated( service, calendarsFeedURL ) ) {
 
       System.out.println( "Logging in with user credentials" );
       GoogleCalLoginDialog dia = new GoogleCalLoginDialog(  );
@@ -249,7 +248,7 @@ public class GoogleCalExporter {
       if ( ! userName.equalsIgnoreCase( dia.getEmail() ) ) {
         userName = dia.getEmail();
         try {
-          owncalendarsFeedUrl = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
+          calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
         } catch ( MalformedURLException e ) {
           e.printStackTrace();
         }
@@ -262,16 +261,31 @@ public class GoogleCalExporter {
       // login w/ user name and password
       try {
         service.setUserCredentials( userName, new String( p ) );
-      } catch ( CaptchaRequiredException e ) {
+      } catch ( CaptchaRequiredException captchaException ) {
 
         // no support for captcha now
-        System.err.println( "Captcha error: " + e.getMessage() );
+        System.err.println( "Captcha error: " + captchaException.getMessage() );
 
-  //      System.out.println("Please visit " + e.getCaptchaUrl());
-  //      System.out.print("Answer to the challenge? ");
-  //      BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-  //      String answer = in.readLine();
-  //      service.setUserCredentials(email, password, e.getCaptchaToken(), answer);
+        GoogleCaptchaDialog captchaDialog = new GoogleCaptchaDialog();
+
+        try {
+          captchaDialog.setCaptchaUrl( new URL( captchaException.getCaptchaUrl() ));
+          captchaDialog.setVisible( true );
+        } catch ( MalformedURLException f ) {
+          System.err.println( "WTF?! Why did Google give us a bad CAPTCHA URL?" );
+          System.err.println( f.getMessage() );
+        }
+
+        if ( ! captchaDialog.getCaptchaAnswer().equals( "" ) ) {
+          try {
+            service.setUserCredentials( userName,
+                                        new String( p ),
+                                        captchaException.getCaptchaToken(),
+                                        captchaDialog.getCaptchaAnswer() );
+          } catch ( AuthenticationException g ) {
+            System.err.println( "Invalid credentials: " + g.getMessage() );
+          }
+        }
 
       } catch (AuthenticationException e ) {
 
@@ -298,11 +312,11 @@ public class GoogleCalExporter {
     try {
 
       // look for calendar
-      CalendarEntry cal = findCalendarForCropPlan( service, planName );
+      CalendarEntry cal = findCalendarForCropPlan( service, calendarsFeedURL, planName );
 
       // if not found, create calendar
       if ( cal == null ) {
-        cal = createCalendar( service, planName );
+        cal = createCalendar( service, calendarsFeedURL, planName );
       } else {
         System.out.println( "Calendar exists." );
       }
