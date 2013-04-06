@@ -452,13 +452,17 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
          condExp += " AND " + tm.getColumnNameForMethod( "getVarietyName" ) + " = " + varName;
 
       String selectSQL = tm.getSelectWhereSql() + condExp;
-      
-      CPSCrop c = p.read( CPSCrop.class, selectSQL );
-      if ( c == null ) {
+
+      List<CPSCrop> l = p.readList( CPSCrop.class, selectSQL );
+      CPSCrop c;
+      if ( l.isEmpty() ) {
           c = new CPSCrop();
+      } else {
+        if ( l.size() > 1 )
+          System.err.println( "ERROR: found more than one entry matching: " + condExp );
+        c = l.get(0);
+        performInheritanceForCropVar( c );
       }
-      else
-         performInheritanceForCropVar( c );
 
       return c;
    }
