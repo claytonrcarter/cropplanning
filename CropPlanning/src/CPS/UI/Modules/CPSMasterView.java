@@ -661,8 +661,6 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     // retrieve fresh data and display it
     protected void updateMasterList() {
-        if ( !isDataAvailable() )
-            return;
 
         CPSModule.debug( "CPSMasterView", "Removing items from masterList: " + masterList.size() );
 
@@ -684,9 +682,9 @@ public abstract class CPSMasterView extends CPSDataModelUser
         uiManager.setStatus(s);
     }
     
-    /// Abstract method to retrieve new data and then hand it off to the
-    // JTable to display.  Overriding class should do the fancy work of
-    // figuring out which table to query, etc.  Returns a TableModel.
+    /**
+     * @return A List of records to be displayed.  The list could be empty.
+     */
     protected abstract List getMasterListData();
     protected abstract CPSAdvancedTableFormat getTableFormat();
     protected abstract TextFilterator<CPSRecord> getTextFilterator();
@@ -818,11 +816,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
         
     }
     
-   @Override
-   public void dataUpdated() {
+    @Override
+    public void dataUpdated() {
       updateMasterList();
       updateDetailView();
-   }
+    }
 
 
    // for addListEventListener

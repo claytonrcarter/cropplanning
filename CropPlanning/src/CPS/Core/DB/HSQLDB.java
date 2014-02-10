@@ -357,11 +357,19 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
      for ( CPSPlanting pl : plan ) {
        if ( pl.getID() % 20 == 0 )
+          // TODO what is this all about?
          System.out.println( "\n" + pl + "\n" );
        p.update( planName, pl );
      }
 
    }
+
+  @Override
+  public boolean cropPlanExists( String planName ) {
+    return HSQLConnect.tableExists( p.getConnection(), planName );
+  }
+
+
 
 
 

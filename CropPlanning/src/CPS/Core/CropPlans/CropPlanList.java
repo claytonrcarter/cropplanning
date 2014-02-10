@@ -199,7 +199,8 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
 
     protected List getMasterListData() {
-        if ( !isDataAvailable() )
+        if ( ! isDataAvailable() ||
+             ! getDataSource().cropPlanExists( getDisplayedTableName() ))
             return new ArrayList<CPSPlanting>();
 
         String selectedPlan = getDisplayedTableName();
