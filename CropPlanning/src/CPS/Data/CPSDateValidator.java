@@ -23,6 +23,7 @@
 
 package CPS.Data;
 
+import CPS.Module.CPSGlobalSettings;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,44 +34,99 @@ import java.util.List;
 public class CPSDateValidator {
 
     /** Example: 11/23 */
-    final public static String DATE_FORMAT_SHORT = "MM/dd";
+    final public static int DATE_FORMAT_SHORT = 1;
     /** Example: Mon 11/23 */
-    final public static String DATE_FORMAT_SHORT_DAY_OF_WEEK = "EEE MM/dd";
+    final public static int DATE_FORMAT_SHORT_DAY_OF_WEEK = 2;
     /** Example: 11/23/13 */
-    final public static String DATE_FORMAT_BRIEFYEAR = "MM/dd/yy";
+    final public static int DATE_FORMAT_BRIEFYEAR = 3;
     /** Example: 11/23/2013 */
-    final public static String DATE_FORMAT_FULLYEAR = "MM/dd/yyyy";
+    final public static int DATE_FORMAT_FULLYEAR = 4;
     /** Example: Mon 11/23/2013 */
-    final public static String DATE_FORMAT_FULLYEAR_DAY_OF_WEEK = "EEE MM/dd/yyyy";
+    final public static int DATE_FORMAT_FULLYEAR_DAY_OF_WEEK = 5;
     /** Example: Nov 23 */
-    final public static String DATE_FORMAT_MON_DAY = "MMM dd";
+    final public static int DATE_FORMAT_MON_DAY = 6;
     /** Example: Nov 23, 2013 */
-    final public static String DATE_FORMAT_MON_DAY_YEAR = "MMM dd, yyyy";
+    final public static int DATE_FORMAT_MON_DAY_YEAR = 7;
     /** Example: November */
-    final public static String DATE_FORMAT_JUSTMONTH = "MMMM";
+    final public static int DATE_FORMAT_JUSTMONTH = 8;
     /** Example: 2013-11-23 */
-    final public static String DATE_FORMAT_SQL = "yyyy-MM-dd";
-    
-    private static List<String> formatList = Arrays.asList( DATE_FORMAT_BRIEFYEAR,
-                                                            DATE_FORMAT_SHORT,
-                                                            DATE_FORMAT_FULLYEAR );
-    private static String defaultFormat = DATE_FORMAT_FULLYEAR;
+    final public static int DATE_FORMAT_SQL = 9;
+
+
+    private static List<Integer> formatList;
+    private static int defaultFormat;
     
     public CPSDateValidator() {
-        formatList = new ArrayList<String>();
-        formatList.add( DATE_FORMAT_BRIEFYEAR );
-        formatList.add( DATE_FORMAT_SHORT );
+
+      formatList = new ArrayList<Integer>();
+      formatList.addAll( Arrays.asList( DATE_FORMAT_BRIEFYEAR,
+                                        DATE_FORMAT_SHORT,
+                                        DATE_FORMAT_FULLYEAR ));
         
-        defaultFormat = DATE_FORMAT_FULLYEAR;
+      defaultFormat = DATE_FORMAT_FULLYEAR;
         
     }
     
+    /**
+     * @param formatNum - DATE_FORMAT_SHORT, DATE_FORMAT_SHORT_DAY_OF_WEEK, etc
+     * @return a string format suitable for passing to format(Date,String)
+     */
+    public static String getFormat( int formatNum ) {
+
+      switch ( formatNum ) {
+
+        case DATE_FORMAT_SHORT_DAY_OF_WEEK:
+          if ( CPSGlobalSettings.useUSDates() )
+            return "EEE MM/dd";
+          else
+            return "EEE dd/MM";
+
+        case DATE_FORMAT_BRIEFYEAR:
+          if ( CPSGlobalSettings.useUSDates() )
+            return "MM/dd/yy";
+          else
+            return "dd/MM/yy";
+
+        case DATE_FORMAT_FULLYEAR:
+          if ( CPSGlobalSettings.useUSDates() )
+            return "MM/dd/yyyy";
+          else
+            return "dd/MM/yyyy";
+
+        case DATE_FORMAT_FULLYEAR_DAY_OF_WEEK:
+          if ( CPSGlobalSettings.useUSDates() )
+            return "EEE MM/dd/yyyy";
+          else
+            return "EEE dd/MM/yyyy";
+
+        case DATE_FORMAT_MON_DAY:
+          return "MMM dd";
+
+        case DATE_FORMAT_MON_DAY_YEAR:
+          return "MMM dd, yyyy";
+
+        case DATE_FORMAT_JUSTMONTH:
+          return "MMMM";
+
+        case DATE_FORMAT_SQL:
+          return "yyyy-MM-dd";
+
+        case DATE_FORMAT_SHORT:
+        default:
+          if ( CPSGlobalSettings.useUSDates() )
+            return "MM/dd";
+          else
+            return "dd/MM";
+      }
+
+    }
+
     /**
      * Add a date format.
      * @param f a format string for SimpleDateFormat
      * @see java.text.SimpleDateFormat
      */
-    public void addFormat( String f ) {
+    public void addFormat( Integer f ) {
         formatList.add(f);
     }
     
@@ -79,14 +135,17 @@ public class CPSDateValidator {
      * is DATE_FORMAT_FULLYEAR.
      * @param f Format to use.
      */
-    public void setDefaultFormat( String f ) {
+    public void setDefaultFormat( Integer f ) {
         defaultFormat = f;
     }
     
     public static String format( Date d ) {
-       return format( d, defaultFormat );
+       return format( d, getFormat( defaultFormat ));
     }
     
+    public static String format( Date d, Integer f ) {
+      return format( d, getFormat( f ));
+    }
     public static String format( Date d, String format ) {
         if ( d == null || d.getTime() == 0 )
             return "";
@@ -96,7 +155,7 @@ public class CPSDateValidator {
 
 
     public static Date simpleParse( String s ) {
-      return simpleParse( s, defaultFormat );
+      return simpleParse( s, getFormat( defaultFormat ));
     }
 
     /**
@@ -172,7 +231,8 @@ public class CPSDateValidator {
         }
         
         
-        for ( String format : formatList ) {
+        for ( Integer f : formatList ) {
+          String format = getFormat(f);
             sdf.applyPattern( format );
             try {
                 // if the date parses, then break the for loop
