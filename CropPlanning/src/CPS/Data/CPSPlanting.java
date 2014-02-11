@@ -1029,7 +1029,7 @@ public final class CPSPlanting extends CPSRecord {
       
       source_path.add( b.propertyNum );
 
-      if ( ! source_path.contains( PROP_ROWS_P_BED )) {
+      if ( ! source_path.contains( PROP_ROWFT_PLANT )) {
 
         CPSDatum rpb = getDatum( PROP_ROWS_P_BED );
         CPSDatum r = getRowFtToPlantDatum( source_path );
@@ -1132,13 +1132,14 @@ public final class CPSPlanting extends CPSRecord {
            r.setCalculated( true );
         }
       }
-      else if ( ! source_path.contains( PROP_PLANTS_NEEDED )) {
+      
+      if ( r.isNull() && ! source_path.contains( PROP_PLANTS_NEEDED )) {
 
           CPSDatum p = getPlantsNeededDatum( source_path );
           CPSDatum ps = getDatum( PROP_INROW_SPACE );
 
           if ( ! r.isConcrete() &&
-                    p.isNotNull() && ps.isNotNull() ) {
+                 p.isNotNull() && ps.isNotNull() ) {
             int l;
             if ( CPSGlobalSettings.useMetric() )
               l = (int) ( p.getValueAsInt() * ps.getValueAsInt() / 100.0 );
@@ -1148,13 +1149,14 @@ public final class CPSPlanting extends CPSRecord {
              r.setCalculated( true );
           }
       }
-      else if ( ! source_path.contains( PROP_TOTAL_YIELD )) {
+      
+      if ( r.isNull() && ! source_path.contains( PROP_TOTAL_YIELD )) {
 
         CPSDatum yf = getDatum( PROP_YIELD_P_FOOT );
         CPSDatum ty = getTotalYieldDatum( source_path );
 
         if ( ! r.isConcrete() &&
-                  ty.isNotNull() && yf.isNotNull() ) {
+             ty.isNotNull() && yf.isNotNull() ) {
            set( r, CPSCalculations.calcRowFtToPlantFromTotalYield( ty.getValueAsFloat(),
                                                                        yf.getValueAsFloat() ));
            r.setCalculated( true );
@@ -1587,5 +1589,22 @@ public final class CPSPlanting extends CPSRecord {
        else
            return CPSDateValidator.format( d );
    }
+
+   // for testing
+   public static void main( String[] args ) {
+    CPSPlanting p = new CPSPlanting();
+    p.setMaturityDays( 100 );
+    p.setRowsPerBed( 2 );
+    p.setInRowSpacing( 12 );
+    p.setFlatSize( "128" );
+    p.setYieldPerFoot( 1f );
+    p.setTotalYield( 200f );
+//    p.setFlatsNeeded( 2f );
+
+    System.out.println( "Beds to plant: " + p.getBedsToPlantString() );
+    System.out.println( p );
+
+  }
+
 
 }

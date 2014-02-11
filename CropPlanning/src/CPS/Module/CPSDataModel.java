@@ -65,6 +65,7 @@ public abstract class CPSDataModel extends CPSModule {
    public abstract int getCropPlanYear( String planName );
    public abstract String getCropPlanDescription( String planName );
    public abstract void finalizeCropPlan( String planName );
+   public abstract boolean cropPlanExists( String planName );
    
    /* Planting methods */
    /* retrieval */

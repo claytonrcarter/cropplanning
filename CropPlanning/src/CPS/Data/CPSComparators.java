@@ -56,8 +56,8 @@ public class CPSComparators {
      */
     public static class DateTPCropNameComparator implements Comparator<CPSPlanting> {
       public int compare( CPSPlanting o1, CPSPlanting o2 ) {
-        if ( o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() ) != 0 )
-          return o1.getDateToTPPlanned().compareTo( o2.getDateToTPPlanned() );
+        if ( o1.getDateToTP().compareTo( o2.getDateToTP() ) != 0 )
+          return o1.getDateToTP().compareTo( o2.getDateToTP() );
         else
           return o1.getCropName().compareTo( o2.getCropName() );
       }

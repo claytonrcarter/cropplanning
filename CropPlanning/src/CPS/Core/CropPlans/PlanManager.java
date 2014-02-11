@@ -370,6 +370,9 @@ public class PlanManager extends CPSDialog implements ActionListener {
             btnSelect.setEnabled(true);
          }
          else {
+            spnYear.setValue( new Date() );
+            tfldDesc.setText( "" );
+
             // the current selection isn't a valid plan
             btnNew.setEnabled(true);
             btnSave.setEnabled(false);

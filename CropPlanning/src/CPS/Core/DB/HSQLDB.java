@@ -357,11 +357,19 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
 
      for ( CPSPlanting pl : plan ) {
        if ( pl.getID() % 20 == 0 )
+          // TODO what is this all about?
          System.out.println( "\n" + pl + "\n" );
        p.update( planName, pl );
      }
 
    }
+
+  @Override
+  public boolean cropPlanExists( String planName ) {
+    return HSQLConnect.tableExists( p.getConnection(), planName );
+  }
+
+
 
 
 
@@ -452,13 +460,17 @@ public class HSQLDB extends CPSDataModelSQL implements CPSConfigurable {
          condExp += " AND " + tm.getColumnNameForMethod( "getVarietyName" ) + " = " + varName;
 
       String selectSQL = tm.getSelectWhereSql() + condExp;
-      
-      CPSCrop c = p.read( CPSCrop.class, selectSQL );
-      if ( c == null ) {
+
+      List<CPSCrop> l = p.readList( CPSCrop.class, selectSQL );
+      CPSCrop c;
+      if ( l.isEmpty() ) {
           c = new CPSCrop();
+      } else {
+        if ( l.size() > 1 )
+          System.err.println( "ERROR: found more than one entry matching: " + condExp );
+        c = l.get(0);
+        performInheritanceForCropVar( c );
       }
-      else
-         performInheritanceForCropVar( c );
 
       return c;
    }

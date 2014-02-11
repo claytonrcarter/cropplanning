@@ -14,10 +14,8 @@ import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Swing.CPSCardPanel;
 import ca.odell.glazedlists.BasicEventList;
-import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.SortedList;
-import ca.odell.glazedlists.calculation.AbstractEventListCalculation;
 import ca.odell.glazedlists.matchers.Matchers;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -121,9 +119,15 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                         " on " + CPSDateValidator.format( dateLastHarvest );
 
 
-    int weekNum;
-    cal.setTime( dateLastHarvest );
-    int lastWeekNum = cal.get( Calendar.WEEK_OF_YEAR );
+
+    Calendar tempCal = Calendar.getInstance();
+    tempCal.setTime( dateLastHarvest );
+    cal.setTime( dateFirstPlanting );
+    int numWeeks = 0;
+    while ( cal.getTime().before( tempCal.getTime() ) ) {
+      cal.add( Calendar.WEEK_OF_YEAR, 1 );
+      numWeeks++;
+    }
 
 
 //****************************************************************************//
@@ -189,15 +193,13 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 // Loop over the weeks
 //**********************************************************************//
     cal.setTime( dateFirstPlanting );
-    weekNum = cal.get( Calendar.WEEK_OF_YEAR );
+    int weekNum = cal.get( Calendar.WEEK_OF_YEAR );
 
-    for (; weekNum <= lastWeekNum; weekNum++ ) {
+    while ( cal.getTime().before( dateLastHarvest ) ) {
 
       // init this weeks' usage Map
       bedFlatUsageMap.put( weekNum, new HashMap<String, Double> () );
 
-      // set the calendar to this week
-      cal.set( Calendar.WEEK_OF_YEAR, weekNum );
 
       //*************************************//
       // Check total trays in GH this week
@@ -266,6 +268,11 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                              1.0 * CPSCalculations.roundQuarter( statSums.beds ));
       }
 
+
+      // now bump the week for the calendar and the weekNum
+      cal.add( Calendar.WEEK_OF_YEAR, 1 );
+      weekNum++;
+
     }
 
 
@@ -292,12 +299,18 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 
       cal.setTime( dateFirstPlanting );
       weekNum = cal.get( Calendar.WEEK_OF_YEAR );
-      for (; weekNum <= lastWeekNum; weekNum++ ) {
 
-        cal.set( Calendar.WEEK_OF_YEAR, weekNum );
+      while ( cal.getTime().before( dateLastHarvest ) ) {
+
         chartLabels.add( CPSDateValidator.format( cal.getTime(),
                                           CPSDateValidator.DATE_FORMAT_SHORT));
         chartValues.add( bedFlatUsageMap.get(weekNum).get(f) );
+
+        // now bump the week for the calendar and the weekNum
+        cal.add( Calendar.WEEK_OF_YEAR, 1 );
+        weekNum++;
+
+
 
       }
 
