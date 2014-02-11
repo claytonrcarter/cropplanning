@@ -60,8 +60,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public static final String PREF_ROWS = "Rows";
     public static final String PREF_IMPERIAL = "Imperial (ft/in)";
     public static final String PREF_SI = "Metric (m/cm)";
-    public static final String PREF_DATE_US = "US (mm/dd/yy)";
-    public static final String PREF_DATE_UK = "UK (dd/mm/yy)";
+    public static final String PREF_DATE_MD = "mm/dd/yy";
+    public static final String PREF_DATE_DM = "dd/mm/yy";
        
     private static final Class thisClass = CPSGlobalSettings.class;
    
@@ -85,8 +85,8 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private static final String KEY_DATE_FORMAT = "DATE_FORMAT";
     private JComboBox cmbxPrefDateFormat;
     private final List<String> prefDateFormatOptions =
-        new ArrayList<String>( Arrays.asList( PREF_DATE_US, PREF_DATE_UK ) );
-    private static final String prefDateFormatDefault = PREF_DATE_US;
+        new ArrayList<String>( Arrays.asList( PREF_DATE_MD, PREF_DATE_DM ) );
+    private static final String prefDateFormatDefault = PREF_DATE_MD;
 
     private static final String KEY_HIGHLIGHTFIELDS = "HIGHLIGHT_FIELDS";
     private JCheckBox ckbxPrefHighlight;
@@ -191,7 +191,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     }
 
     public static boolean useUSDates() {
-      return getDateFormat().equals( PREF_DATE_US );
+      return getDateFormat().equals( PREF_DATE_MD );
     }
 
 
