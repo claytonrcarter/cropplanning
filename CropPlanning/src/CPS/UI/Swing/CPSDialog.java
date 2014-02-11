@@ -31,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.jdesktop.swingx.JXTitledPanel;
 
@@ -39,13 +40,20 @@ public abstract class CPSDialog extends JDialog {
     protected JXTitledPanel header;
     private JPanel jplMain;
     protected JPanel jplContents;
-    private JPanel jplButtons;
+    protected JPanel jplButtons;
 
     protected boolean contentsPanelBuilt = false;
     
     public CPSDialog ( String title ) {
-        
-        super( (JFrame) null, true );
+      this( new JPanel(), title );
+    }
+
+    public CPSDialog ( JPanel parent, String title ) {
+
+      super( (JFrame) SwingUtilities.getWindowAncestor(parent), true );
+
+      setLocationRelativeTo( parent );
+      
         header = new JXTitledPanel();
         header.setBorder(BorderFactory.createEmptyBorder());
         setTitle( title );
@@ -87,8 +95,16 @@ public abstract class CPSDialog extends JDialog {
     @Override
     public void setTitle( String s ) {
         super.setTitle(s);
-        header.setTitle(s); 
+        setHeaderTitle( s );
     }
+
+    public void setHeaderTitle( String s ) {
+      header.setTitle(s);
+    }
+
+    /**
+     * @param s Text to be displayed.  This will be treated as HTML.
+     */
     public void setDescription( String s ) {
       JPanel jpl = new JPanel( new MigLayout( "insets n n 0px n, fillx") );
       jpl.add( new JLabel( "<html>" + s + "</html>" ), "wrap" );
@@ -108,7 +124,6 @@ public abstract class CPSDialog extends JDialog {
     protected void initContentsPanel() {
         
         jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px"));
-        jplContents.setLayout( new BoxLayout( jplContents, BoxLayout.PAGE_AXIS ));
         
     }
     protected abstract void buildContentsPanel();
