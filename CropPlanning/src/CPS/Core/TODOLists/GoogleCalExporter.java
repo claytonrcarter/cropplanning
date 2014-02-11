@@ -9,6 +9,7 @@ import CPS.Data.CPSComplexPlantingFilter;
 import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSGlobalSettings;
+import CPS.Module.CPSModule;
 import CPS.ModuleManager;
 import CPS.UI.Swing.CPSErrorDialog;
 import ca.odell.glazedlists.EventList;
@@ -121,6 +122,9 @@ public class GoogleCalExporter {
     try {
       calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
     } catch ( MalformedURLException e ) {
+      new CPSErrorDialog( "There is a problem communicating with Google<br>" +
+                          "Please verify that your username (email) is entered<br>" +
+                          "correctly.  If it is, please email us for help.", "Bogus URL").setVisible( true );
       e.printStackTrace();
       return;
     }
@@ -442,17 +446,14 @@ public class GoogleCalExporter {
 
     while ( ! isAuthenticated( service, calendarsFeedURL ) ) {
 
-      System.out.println( "Logging in with user credentials" );
+      CPSModule.debug("GCal", "Logging in with user credentials" );
       GoogleCalLoginDialog loginDia = new GoogleCalLoginDialog( userName );
       loginDia.setVisible( true );
 
-      System.out.println( "Entered " + loginDia.getEmail() + " : " + new String( loginDia.getPassword() ) );
-
-      // bail
+      // bail if cancelled
       if ( loginDia.isCancelled() ) {
         return null;
       }
-
 
       // if they enter a different username, then rebuild the feed URL
       if ( ! userName.equalsIgnoreCase( loginDia.getEmail() ) ) {
@@ -472,7 +473,7 @@ public class GoogleCalExporter {
       } catch ( CaptchaRequiredException captchaException ) {
 
         // we have to handle a captcha
-        System.err.println( "Captcha error: " + captchaException.getMessage() );
+        CPSModule.debug("GCal", "Captcha error: " + captchaException.getMessage() );
 
         GoogleCaptchaDialog captchaDialog = new GoogleCaptchaDialog();
 
@@ -480,8 +481,8 @@ public class GoogleCalExporter {
           captchaDialog.setCaptchaUrl( new URL( captchaException.getCaptchaUrl() ));
           captchaDialog.setVisible( true );
         } catch ( MalformedURLException f ) {
-          System.err.println( "WTF?! Why did Google give us a bad CAPTCHA URL?" );
-          System.err.println( f.getMessage() );
+          CPSModule.debug("GCal", "WTF?! Why did Google give us a bad CAPTCHA URL?" );
+          CPSModule.debug("GCal", f.getMessage() );
         }
 
         if ( ! captchaDialog.getCaptchaAnswer().equals( "" ) ) {
@@ -491,17 +492,31 @@ public class GoogleCalExporter {
                                         captchaException.getCaptchaToken(),
                                         captchaDialog.getCaptchaAnswer() );
           } catch ( AuthenticationException g ) {
-            System.err.println( "Invalid credentials: " + g.getMessage() );
+
+            CPSErrorDialog ed = new CPSErrorDialog();
+            ed.setHeaderTitle( "Invalid Credentials" );
+            ed.setDescription( "Google said that you entered invalid credentials.<br>" +
+                               "This could mean that the email address and/or the<br>" +
+                               "password you entered were incorrect. Please try again." );
+            ed.setVisible( true );
+            
           }
         }
 
       } catch (AuthenticationException e ) {
 
-        System.err.println( "Invalid credentials: " + e.getMessage() );
+        CPSErrorDialog ed = new CPSErrorDialog();
+        ed.setHeaderTitle( "Invalid Credentials" );
+        ed.setDescription( "Google said that you entered invalid credentials.<br>" +
+                           "This could mean that the email address and/or the<br>" +
+                           "password you entered were incorrect. Please try again." );
+        ed.setVisible( true );
 
       }
 
       // clear out the password array for safety
+      // I believe that this also clears out the password that was saved in
+      // the dialog ... which is what we want
       Arrays.fill( p, '0' );
 
     }

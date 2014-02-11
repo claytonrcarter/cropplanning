@@ -87,8 +87,16 @@ public abstract class CPSDialog extends JDialog {
     @Override
     public void setTitle( String s ) {
         super.setTitle(s);
-        header.setTitle(s); 
+        setHeaderTitle( s );
     }
+
+    public void setHeaderTitle( String s ) {
+      header.setTitle(s);
+    }
+
+    /**
+     * @param s Text to be displayed.  This will be treated as HTML.
+     */
     public void setDescription( String s ) {
       JPanel jpl = new JPanel( new MigLayout( "insets n n 0px n, fillx") );
       jpl.add( new JLabel( "<html>" + s + "</html>" ), "wrap" );

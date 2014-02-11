@@ -42,6 +42,11 @@ public class CPSErrorDialog extends CPSDialog
       setDescription( "Sorry, but we encountered a problem:<br>"+problem );
   }
 
+  public CPSErrorDialog( String problem, String header ) {
+    this( problem );
+    setHeaderTitle( header );
+  }
+
   @Override
   protected void buildContentsPanel() {
     contentsPanelBuilt = true;

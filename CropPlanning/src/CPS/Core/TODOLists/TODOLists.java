@@ -34,6 +34,8 @@ import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Swing.CPSComplexFilterDialog;
+import CPS.UI.Swing.CPSConfirmDialog;
+import CPS.UI.Swing.CPSErrorDialog;
 import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.FilterList;
@@ -59,6 +61,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
@@ -106,7 +109,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private final String DSC_ALL_PLANTINGS = "Summary of each planting<br>from this list.";
     private final String DSC_SEED_ORDER_WORKSHEET = "Summary of each crop and/or variety<br>in this plan, including amount of seed<br>needed for each variety.";
     private final String DSC_HARVEST_AVAILABILITY = "List of harvest periods for<br>each crop and/or variety.";
-    private final String DSC_GOOGLE_CAL = "Export complete list of seedings<br>and plantings for selected plan<br>to a Google Calendar. <i>Requires log in.</i>";
+    private final String DSC_GOOGLE_CAL = "<i>EXPERIMENTAL:</i> Export selected<br>crop plan to a Google Calendar.<br><i>Requires a Google account.</i>";
 
     CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
     PDFExporter pdf = new PDFExporter();
@@ -954,8 +957,9 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
         String planName = (String) cmbPlanName.getSelectedItem();
         if ( planName == null ) {
-            debug( "ERROR: must select a crop plan" );
-            return;
+          new CPSErrorDialog( "Please select a crop plan and try again.",
+                              "No Plan Selected" ).setVisible( true );
+          return;
         }
 
         if ( action.equalsIgnoreCase(btnFormatPDF.getText()) ||
@@ -990,8 +994,35 @@ public class TODOLists extends CPSDisplayableDataUserModule
           } else if ( whatToExport.equals( TL_HARVEST_AVAILABILITY ) ) {
             exportAvailabilityList( planName, format );
           } else if ( whatToExport.equals( TL_GOOGLE_CAL ) ) {
-            exportToGoogleCal( planName,
-                               action.equalsIgnoreCase(btnFormatCSV.getText()) );
+
+            // if we haven't warned them about GCal, then do so
+            if ( ! Preferences.userNodeForPackage(GoogleCalExporter.class)
+                              .getBoolean( "GOOGLE_CAL_WARNING", false ) ) {
+              CPSConfirmDialog cd = new CPSConfirmDialog( "" );
+              cd.setDescription( "<center>This is an <em>EXPERIMENTAL</em> feature.  It works<br>" +
+                                 "in our limited testing and we hope that it will<br>" +
+                                 "work for you. To proceed, you must agree to send us<br>" +
+                                 "feedback (by email) on how it works and what else you<br>" +
+                                 "would like it to do.<br>" +
+                                 "There is not much risk that this feature will break your<br>" +
+                                 "crop plan or mess up your Google Calendar, but we cannot<br>" +
+                                 "be held responsible if it does.<br>" +
+                                 "<b>Are you sure you want to proceed?"
+                      );
+              cd.setVisible( true );
+
+              // if they said, yes, then consider them warned
+              if ( cd.didConfirm() )
+                Preferences.userNodeForPackage(GoogleCalExporter.class)
+                           .putBoolean( "GOOGLE_CAL_WARNING", true );
+            }
+
+            // only proceed if they've been warned and agreed to proceed
+            if ( Preferences.userNodeForPackage(GoogleCalExporter.class)
+                            .getBoolean( "GOOGLE_CAL_WARNING", false )) {
+              exportToGoogleCal( planName,
+                                 action.equalsIgnoreCase(btnFormatCSV.getText()) );
+            }
           }
           jplTodo.setCursor(Cursor.getDefaultCursor());
 
