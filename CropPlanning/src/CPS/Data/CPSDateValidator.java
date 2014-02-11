@@ -138,14 +138,32 @@ public class CPSDateValidator {
     public void setDefaultFormat( Integer f ) {
         defaultFormat = f;
     }
-    
+
+    /**
+     * Takes a Date and returns a formated String. Uses the default format.
+     * @param d Date to format
+     * @return Formatted string
+     */
     public static String format( Date d ) {
        return format( d, getFormat( defaultFormat ));
     }
     
+    /**
+     * Takes a Date and returns a formated String.
+     * @param d Date to format
+     * @param f One of DATE_FORMAT_SHORT, etc
+     * @return Formatted string
+     */
     public static String format( Date d, Integer f ) {
       return format( d, getFormat( f ));
     }
+
+    /**
+     * Takes a Date and returns a formated String.
+     * @param d Date to format
+     * @param format String format to squish the Date into.
+     * @return Formatted string
+     */
     public static String format( Date d, String format ) {
         if ( d == null || d.getTime() == 0 )
             return "";
