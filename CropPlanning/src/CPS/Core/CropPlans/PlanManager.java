@@ -27,6 +27,7 @@ import CPS.Data.CPSPlanting;
 import CPS.Module.CPSDataModel;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSDialog;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -64,18 +65,13 @@ public class PlanManager extends CPSDialog implements ActionListener {
    private List<String> listOfValidCropPlans;
    static CPSDataModel dm = null;
    
-   
-   public PlanManager() {
-      super( "Manage and Select Crop Plans" );
+
+   public PlanManager( Component parent ) {
+      super( parent, "Manage and Select Crop Plans" );
       setDescription( "Manage crop plans: create, delete, alter properties<br>and select for editting." );
       
       tempCal = new GregorianCalendar();
       listOfValidCropPlans = new ArrayList<String>();
-   }
-   
-   public PlanManager( CPSDataModel dm ) {
-      this();
-      setDataModel( dm );
    }
    
    
@@ -139,9 +135,9 @@ public class PlanManager extends CPSDialog implements ActionListener {
    }
    
    private void createPlan() {
-//    if ( dm == null ) return;
 
-    CPSBasedOnDialog dia = new CPSBasedOnDialog( getCurrentSelection(),
+    CPSBasedOnDialog dia = new CPSBasedOnDialog( jplContents,
+                                                 getCurrentSelection(),
                                                  listOfValidCropPlans,
                                                  dm );
     dia.setVisible(true);
@@ -401,10 +397,11 @@ public class PlanManager extends CPSDialog implements ActionListener {
 
      CPSDataModel dm = null;
 
-    public CPSBasedOnDialog( String newPlan,
+    public CPSBasedOnDialog( Component parent,
+                             String newPlan,
                              List<String> oldPlans,
                              CPSDataModel dm ) {
-      super("Create New Plan");
+      super( parent, "Create New Plan");
       setDescription("What kind of plan do you want<br>to create?");
 
       this.newPlan = newPlan;
@@ -547,7 +544,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    // For testing.
    public static void main( String[] args ) {
-      new PlanManager().setVisible( true );
+      new PlanManager( new JPanel() ).setVisible( true );
       System.exit( 0 );
    }
     

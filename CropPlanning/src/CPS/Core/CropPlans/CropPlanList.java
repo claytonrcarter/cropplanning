@@ -84,9 +84,8 @@ class CropPlanList extends CPSMasterView implements ActionListener,
         super(mdm);
         plantingFilter = new CPSComplexPlantingFilter();
         addFilter( plantingFilter );
-        dlgFilter = new CPSComplexFilterDialog();
-//        loadPrefs();
-        planMan = new PlanManager();
+        dlgFilter = new CPSComplexFilterDialog( getAboveListPanel() );
+        planMan = new PlanManager( getAboveListPanel() );
     }
     
     

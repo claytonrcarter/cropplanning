@@ -21,6 +21,7 @@
  */
 package CPS.UI.Swing;
 
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,7 +35,11 @@ public class CPSConfirmDialog extends CPSDialog
   boolean confirmed = false;
 
   public CPSConfirmDialog(String action) {
-    super("Are you sure?");
+    this( new JPanel(), action );
+  }
+
+  public CPSConfirmDialog( Component parent, String action) {
+    super( parent, "Are you sure?" );
     setDescription( "You really want to " + action + "?" );
   }
 

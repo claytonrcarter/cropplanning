@@ -79,9 +79,9 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
     CPSDateValidator dateValidator;
     
     
-    public CPSComplexFilterDialog() {
+    public CPSComplexFilterDialog( Component parent ) {
     
-        super( "Set View Limit" );
+        super( parent, "Set View Limit" );
         
         setDescription( "Use these controls to define a<br>" +
                         "default view filter.  View filters are<br>" +
@@ -343,7 +343,7 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         btnPlantDateRange = new JButton( "Set" );
         btnPlantDateRange.setActionCommand( btnPlantDateRange.getText() + "-Plant" );
         btnPlantDateRange.addActionListener(this);
-        dlgPlantRange = new DateRangeDialog( "Planting date range" );
+        dlgPlantRange = new DateRangeDialog( btnPlantDateRange, "Planting date range" );
 
         jplDates.add( new JLabel( "Planting date:" ) );
         jplDates.add( lblPlantDateRange );
@@ -353,7 +353,7 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         btnTPDateRange = new JButton( "Set" );
         btnTPDateRange.setActionCommand( btnTPDateRange.getText() + "-TP" );
         btnTPDateRange.addActionListener(this);
-        dlgTPRange = new DateRangeDialog( "TP date range" );
+        dlgTPRange = new DateRangeDialog( btnTPDateRange, "TP date range" );
 
         jplDates.add( new JLabel( "Transplant date:" ) );
         jplDates.add( lblTPDateRange );
@@ -363,7 +363,7 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         btnHarvestDateRange = new JButton( "Set" );
         btnHarvestDateRange.setActionCommand( btnHarvestDateRange.getText() + "-Harvest" );
         btnHarvestDateRange.addActionListener(this);
-        dlgHarvestRange = new DateRangeDialog( "Harvest date range" );
+        dlgHarvestRange = new DateRangeDialog( btnHarvestDateRange, "Harvest date range" );
 
         jplDates.add( new JLabel( "Harvest date:" ) );
         jplDates.add( lblHarvestDateRange );
@@ -374,11 +374,8 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         add( rdoNoLimit );
         rdoLimit.setAlignmentX(Component.LEFT_ALIGNMENT);
         add( rdoLimit );
-        jplMethod.setAlignmentX( Component.LEFT_ALIGNMENT );
         add( jplMethod );
-        jplStatus.setAlignmentX(Component.LEFT_ALIGNMENT);
         add( jplStatus );
-        jplDates.setAlignmentX(Component.LEFT_ALIGNMENT);
         add( jplDates );
 
 
@@ -495,15 +492,12 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
         private JDateChooser startDateChooser, endDateChooser;
         private JButton btnSetRange, btnCancel;
         
-        public DateRangeDialog( String title ) {
+        public DateRangeDialog( Component parent, String title ) {
             
-            super( title );
+            super( parent, title );
             
             setDateRangeSet( false );
-            
-            // rdoAllDates.doClick();
-//            rdoAllDates.setSelected(true);
-            
+                        
         }
 
         
@@ -603,7 +597,7 @@ public class CPSComplexFilterDialog extends CPSDialog implements ItemListener,
     
     // For testing.
     public static void main(String[] args) {        
-        new CPSComplexFilterDialog().setVisible(true);
+        new CPSComplexFilterDialog( new JPanel() ).setVisible(true);
        System.exit( 0 );
     }
     

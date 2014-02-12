@@ -106,7 +106,6 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private final String DSC_SEED_ORDER_WORKSHEET = "Summary of each crop and/or variety<br>in this plan, including amount of seed<br>needed for each variety.";
     private final String DSC_HARVEST_AVAILABILITY = "List of harvest periods for<br>each crop and/or variety.";
 
-    CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
     PDFExporter pdf = new PDFExporter();
 
     public TODOLists() {

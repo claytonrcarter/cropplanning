@@ -42,17 +42,20 @@ public abstract class CPSDialog extends JDialog {
     protected JPanel jplContents;
     protected JPanel jplButtons;
 
+    private Component parent;
+//    private JFrame parentFrame;
+
     protected boolean contentsPanelBuilt = false;
     
     public CPSDialog ( String title ) {
       this( new JPanel(), title );
     }
 
-    public CPSDialog ( JPanel parent, String title ) {
+    public CPSDialog ( Component parent, String title ) {
 
       super( (JFrame) SwingUtilities.getWindowAncestor(parent), true );
 
-      setLocationRelativeTo( parent );
+      this.parent = parent;
       
         header = new JXTitledPanel();
         header.setBorder(BorderFactory.createEmptyBorder());
@@ -70,7 +73,8 @@ public abstract class CPSDialog extends JDialog {
     }
 
     
-    @Override public Component add( Component arg0 ) {
+    @Override
+    public Component add( Component arg0 ) {
         if ( ! ( arg0 instanceof JPanel )) {
             JPanel jp = new JPanel( new MigLayout("wrap 1, align left, gapy 0px!, insets 2px") );
             jp.setBorder( BorderFactory.createEmptyBorder(0, 10, 0, 10));
@@ -88,6 +92,9 @@ public abstract class CPSDialog extends JDialog {
         if ( show ) {
           pack();
           setResizable(false);
+          // should we be setting position relative to parent component or
+          // parent frame?
+          setLocationRelativeTo( parent );
         }
         super.setVisible( show );
     }
@@ -123,7 +130,7 @@ public abstract class CPSDialog extends JDialog {
     
     protected void initContentsPanel() {
         
-        jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px"));
+        jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px, wrap 1"));
         
     }
     protected abstract void buildContentsPanel();

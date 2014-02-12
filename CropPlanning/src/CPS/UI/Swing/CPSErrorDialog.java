@@ -30,18 +30,7 @@ public class CPSErrorDialog extends CPSDialog
                            implements ActionListener {
 
   JButton btnOK;
-  
-  public CPSErrorDialog() {
-    this("");
-  }
 
-  public CPSErrorDialog(String problem) {
-    this( new JPanel(), problem );
-  }
-
-  public CPSErrorDialog( String problem, String header ) {
-    this( new JPanel(), problem, header );
-  }
   public CPSErrorDialog( JPanel parent, String problem, String header ) {
     this( parent, problem );
     setHeaderTitle( header );
@@ -73,7 +62,7 @@ public class CPSErrorDialog extends CPSDialog
   }
 
   public static void main(String[] args) {
-    new CPSErrorDialog("fart").setVisible(true);
+    new CPSErrorDialog( new JPanel(), "fart").setVisible(true);
     System.exit(0);
   }
 
