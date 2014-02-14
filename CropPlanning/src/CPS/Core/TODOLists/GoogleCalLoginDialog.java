@@ -5,6 +5,7 @@
 package CPS.Core.TODOLists;
 
 import CPS.UI.Swing.CPSDialog;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -26,17 +27,14 @@ public class GoogleCalLoginDialog extends CPSDialog
   JTextField emailField;
   JPasswordField passwordField;
 
-  public GoogleCalLoginDialog( String email ) {
-    super("You need to log in to Google Calendar" );
+  public GoogleCalLoginDialog( Component parent, String email ) {
+    super( parent, "You need to log in to Google Calendar" );
 
     emailField = new JTextField(20);
     passwordField = new JPasswordField(20);
 
     emailField.setText( email );
 
-  }
-  public GoogleCalLoginDialog() {
-    this( "" );
   }
 
 
@@ -58,17 +56,16 @@ public class GoogleCalLoginDialog extends CPSDialog
   @Override
   protected void buildContentsPanel() {
 
-
     jplContents.add( new JLabel( "<html><font size=\"-2\">" +
                                  "Please enter the email address and password for the<br> " +
                                  "Google account you want to export your crop plan to. " +
                                  "" ),
                      "align center, spanx 2, wrap" );
 
-    jplContents.add( new JLabel("Email Address:"), "align right" );
+    jplContents.add( new JLabel("Email Address:"), "align right, split 2" );
     jplContents.add( emailField, "wrap" );
 
-    jplContents.add( new JLabel("Password:"), "align right" );
+    jplContents.add( new JLabel("Password:"), "align right, split 2" );
     jplContents.add( passwordField, "wrap" );
 
     contentsPanelBuilt = true;
@@ -100,7 +97,7 @@ public class GoogleCalLoginDialog extends CPSDialog
   }
 
   public static void main(String[] args) {
-    new GoogleCalLoginDialog().setVisible(true);
+    new GoogleCalLoginDialog( new JLabel(), "" ).setVisible(true);
     System.exit(0);
   }
 }

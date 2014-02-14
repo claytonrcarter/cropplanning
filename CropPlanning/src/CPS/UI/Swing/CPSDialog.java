@@ -25,12 +25,12 @@ package CPS.UI.Swing;
 
 import java.awt.Component;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.jdesktop.swingx.JXTitledPanel;
 
@@ -41,11 +41,21 @@ public abstract class CPSDialog extends JDialog {
     protected JPanel jplContents;
     protected JPanel jplButtons;
 
+    private Component parent;
+//    private JFrame parentFrame;
+
     protected boolean contentsPanelBuilt = false;
     
     public CPSDialog ( String title ) {
-        
-        super( (JFrame) null, true );
+      this( new JPanel(), title );
+    }
+
+    public CPSDialog ( Component parent, String title ) {
+
+      super( (JFrame) SwingUtilities.getWindowAncestor(parent), true );
+
+      this.parent = parent;
+      
         header = new JXTitledPanel();
         header.setBorder(BorderFactory.createEmptyBorder());
         setTitle( title );
@@ -62,7 +72,8 @@ public abstract class CPSDialog extends JDialog {
     }
 
     
-    @Override public Component add( Component arg0 ) {
+    @Override
+    public Component add( Component arg0 ) {
         if ( ! ( arg0 instanceof JPanel )) {
             JPanel jp = new JPanel( new MigLayout("wrap 1, align left, gapy 0px!, insets 2px") );
             jp.setBorder( BorderFactory.createEmptyBorder(0, 10, 0, 10));
@@ -80,6 +91,9 @@ public abstract class CPSDialog extends JDialog {
         if ( show ) {
           pack();
           setResizable(false);
+          // should we be setting position relative to parent component or
+          // parent frame?
+          setLocationRelativeTo( parent );
         }
         super.setVisible( show );
     }
@@ -115,7 +129,7 @@ public abstract class CPSDialog extends JDialog {
     
     protected void initContentsPanel() {
         
-        jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px"));
+        jplContents = new JPanel(new MigLayout("gapy 0px!, insets 2px, wrap 1"));
         
     }
     protected abstract void buildContentsPanel();

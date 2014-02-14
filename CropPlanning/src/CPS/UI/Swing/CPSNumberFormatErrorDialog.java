@@ -1,6 +1,5 @@
-/* CPSCpnfirmDialog.java
- * Copyright (C) 2013 Clayton Carter
- *
+/* CPSNumberFormatErrorDialog.java - created: Feb 13, 2014
+/*
  * This file is part of the project "Crop Planning Software".  For more
  * information:
  *    website: http://cropplanning.googlecode.com
@@ -19,27 +18,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package CPS.UI.Swing;
 
-import java.awt.Component;
-import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-public class CPSErrorDialog extends CPSInfoDialog {
+/**
+ *
+ * @author crcarter
+ */
+public class CPSNumberFormatErrorDialog extends CPSErrorDialog {
 
-
-  public CPSErrorDialog( Component parent, String problem ) {
-    this( parent, "Error", problem );
+  public CPSNumberFormatErrorDialog( JPanel parent ) {
+    super( parent,
+           "Cannot Save Changes",
+           "<center>Couldn't understand one of the numbers<br>" +
+           "you entered. Numbers should be entered<br>" +
+           "without units. (eg 12 instead of 12in or 12\")<br> " +
+           "<b>No changes are being saved."  );
   }
-  
-  public CPSErrorDialog( Component parent, String header, String problem ) {
-    super( parent, header,
-           "Sorry, but we encountered a problem" +
-           ( problem.equals( "" ) ? "." : ":<br>" + problem ));
-  }
 
-  public static void main(String[] args) {
-    new CPSErrorDialog( new JLabel(), "fart").setVisible(true);
-    System.exit(0);
-  }
+
 
 }

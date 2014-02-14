@@ -165,7 +165,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
     }
    
    
-   public CPSCrop asCrop() {
+   private CPSCrop asCrop() {
       
       CPSCrop changes = new CPSCrop();
       changes.merge( displayedCrop );
@@ -185,31 +185,40 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       if ( tfldCropName.hasChanged() ) changes.setCropName( tfldCropName.getText() );
       if ( tfldVarName.hasChanged() ) changes.setVarietyName( tfldVarName.getText() );
       if ( tfldFamName.hasChanged() ) changes.setFamilyName( tfldFamName.getText() );
-      if ( tfldMatDays.hasChanged() ) changes.setMaturityDays( tfldMatDays.getText() );
 
-      if ( tfldDSMatAdjust.hasChanged() ) changes.setDSMaturityAdjust( tfldDSMatAdjust.getText() );
-      if ( tfldDSRowsPerBed.hasChanged() ) changes.setDSRowsPerBed( tfldDSRowsPerBed.getText() );
-      if ( tfldDSSpaceBetRows.hasChanged() ) changes.setDSSpaceBetweenRow( tfldDSSpaceBetRows.getText() );
-      if ( tfldDSPlantNotes.hasChanged() ) changes.setDSPlantNotes( tfldDSPlantNotes.getText() );
-      
-      if ( tfldTPMatAdjust.hasChanged() ) changes.setTPMaturityAdjust( tfldTPMatAdjust.getText() );
-      if ( tfldTPRowsPerBed.hasChanged() ) changes.setTPRowsPerBed( tfldTPRowsPerBed.getText() );
-      if ( tfldTPSpaceInRow.hasChanged() ) changes.setTPSpaceInRow( tfldTPSpaceInRow.getText() );
-      if ( tfldTPSpaceBetRows.hasChanged() ) changes.setTPSpaceBetweenRow( tfldTPSpaceBetRows.getText() );
-      if ( tfldTPFlatSize.hasChanged() ) changes.setTPFlatSize( tfldTPFlatSize.getText() );
-      if ( tfldTPWeeksToTP.hasChanged() ) changes.setTPTimeInGH( tfldTPWeeksToTP.getText() );
-      if ( tfldTPPlantNotes.hasChanged() ) changes.setTPPlantNotes( tfldTPPlantNotes.getText() );
+      try {
 
-      if ( tfldYieldPerWeek.hasChanged() ) changes.setYieldPerWeek( tfldYieldPerWeek.getText() );
-      if ( tfldYieldWeeks.hasChanged() ) changes.setYieldNumWeeks( tfldYieldWeeks.getText() );
-      if ( tfldYieldPerFoot.hasChanged() ) changes.setYieldPerFoot( tfldYieldPerFoot.getText() );
-      if ( tfldYieldUnits.hasChanged() ) changes.setCropYieldUnit( tfldYieldUnits.getText() );
-      if ( tfldYieldUnitValue.hasChanged() ) changes.setCropUnitValue( tfldYieldUnitValue.getText() );
+        if ( tfldMatDays.hasChanged() ) changes.setMaturityDays( tfldMatDays.getText() );
 
-      if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
-      if ( cmbSeedUnit.hasChanged()     ) changes.setSeedUnit( cmbSeedUnit.getSelectedItem() );
-      if ( tfldSeedsPerDS.hasChanged()   ) changes.setSeedsPerDS( tfldSeedsPerDS.getText() );
-      if ( tfldSeedsPerTP.hasChanged()   ) changes.setSeedsPerTP( tfldSeedsPerTP.getText() );
+        if ( tfldDSMatAdjust.hasChanged() ) changes.setDSMaturityAdjust( tfldDSMatAdjust.getText() );
+        if ( tfldDSRowsPerBed.hasChanged() ) changes.setDSRowsPerBed( tfldDSRowsPerBed.getText() );
+        if ( tfldDSSpaceBetRows.hasChanged() ) changes.setDSSpaceBetweenRow( tfldDSSpaceBetRows.getText() );
+        if ( tfldDSPlantNotes.hasChanged() ) changes.setDSPlantNotes( tfldDSPlantNotes.getText() );
+
+        if ( tfldTPMatAdjust.hasChanged() ) changes.setTPMaturityAdjust( tfldTPMatAdjust.getText() );
+        if ( tfldTPRowsPerBed.hasChanged() ) changes.setTPRowsPerBed( tfldTPRowsPerBed.getText() );
+        if ( tfldTPSpaceInRow.hasChanged() ) changes.setTPSpaceInRow( tfldTPSpaceInRow.getText() );
+        if ( tfldTPSpaceBetRows.hasChanged() ) changes.setTPSpaceBetweenRow( tfldTPSpaceBetRows.getText() );
+        if ( tfldTPFlatSize.hasChanged() ) changes.setTPFlatSize( tfldTPFlatSize.getText() );
+        if ( tfldTPWeeksToTP.hasChanged() ) changes.setTPTimeInGH( tfldTPWeeksToTP.getText() );
+        if ( tfldTPPlantNotes.hasChanged() ) changes.setTPPlantNotes( tfldTPPlantNotes.getText() );
+
+        if ( tfldYieldPerWeek.hasChanged() ) changes.setYieldPerWeek( tfldYieldPerWeek.getText() );
+        if ( tfldYieldWeeks.hasChanged() ) changes.setYieldNumWeeks( tfldYieldWeeks.getText() );
+        if ( tfldYieldPerFoot.hasChanged() ) changes.setYieldPerFoot( tfldYieldPerFoot.getText() );
+        if ( tfldYieldUnits.hasChanged() ) changes.setCropYieldUnit( tfldYieldUnits.getText() );
+        if ( tfldYieldUnitValue.hasChanged() ) changes.setCropUnitValue( tfldYieldUnitValue.getText() );
+
+        if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
+        if ( cmbSeedUnit.hasChanged()     ) changes.setSeedUnit( cmbSeedUnit.getSelectedItem() );
+        if ( tfldSeedsPerDS.hasChanged()   ) changes.setSeedsPerDS( tfldSeedsPerDS.getText() );
+        if ( tfldSeedsPerTP.hasChanged()   ) changes.setSeedsPerTP( tfldSeedsPerTP.getText() );
+        
+      } catch ( NumberFormatException e ) {
+        
+        return null;
+
+      }
 
       if ( tareDesc.hasChanged() ) changes.setCropDescription( tareDesc.getText() );
       if ( tareGroups.hasChanged() ) changes.setGroups( tareGroups.getText() );
@@ -628,6 +637,16 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
     protected void saveChangesToRecord() {
 
        CPSCrop currentlyDisplayed = this.asCrop();
+
+       if ( currentlyDisplayed == null ) {
+
+         // currently the only reason asCrop returns null is for a
+         // NumberFormatException
+         new CPSNumberFormatErrorDialog( this.getMainPanel() ).setVisible( true );
+
+         return;
+       }
+
        CPSCrop diff = (CPSCrop) displayedCrop.diff( currentlyDisplayed );
 
        if ( diff.getID() == -1 ) {

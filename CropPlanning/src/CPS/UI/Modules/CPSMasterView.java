@@ -30,6 +30,7 @@ import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
 import CPS.UI.Swing.CPSConfirmDialog;
+import CPS.UI.Swing.CPSErrorDialog;
 import CPS.UI.Swing.CPSSearchField;
 import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.*;
@@ -770,7 +771,11 @@ public abstract class CPSMasterView extends CPSDataModelUser
             } else if ( selectModel.getSelected().size() != 1 ) {
               
                // TODO, support mupltiple row duplication
-               System.err.println("ERROR: at present, can only duplicate single rows");
+                new CPSErrorDialog( this.getMainPanel(),
+                   "Cannot Duplicate Entries",
+                   "<center>We can only duplicate<br> " +
+                   "records one at a time." ).setVisible( true );
+
                return;
             }
 
@@ -794,7 +799,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
             int[] is = new int[selectModel.getSelected().size()];
 
             CPSConfirmDialog dia =
-                    new CPSConfirmDialog( "delete " + is.length + " record" +
+                    new CPSConfirmDialog( getMainPanel(),
+                                          "delete " + is.length + " record" +
                                           ( ( is.length > 1 ) ? "s" : "" ));
             dia.setVisible(true);
 

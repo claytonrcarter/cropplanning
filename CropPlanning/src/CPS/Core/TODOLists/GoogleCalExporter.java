@@ -12,6 +12,7 @@ import CPS.Module.CPSGlobalSettings;
 import CPS.Module.CPSModule;
 import CPS.ModuleManager;
 import CPS.UI.Swing.CPSErrorDialog;
+import CPS.UI.Swing.CPSInfoDialog;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.GlazedLists;
@@ -36,6 +37,7 @@ import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.When;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
+import java.awt.Component;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.prefs.Preferences;
+import javax.swing.JPanel;
 
 /**
  *
@@ -79,7 +82,8 @@ public class GoogleCalExporter {
   protected GoogleCalExporter() {}
   
 
-  protected static void exportCropPlan( List<CPSPlanting> plantings,
+  protected static void exportCropPlan( Component parent,
+                                        List<CPSPlanting> plantings,
                                         String planName,
                                         boolean changeLogin ) {
 
@@ -99,12 +103,13 @@ public class GoogleCalExporter {
     //************************************************************************//
     // log in the user and get the authenticated username
     //************************************************************************//
-    String userName = authenticateUser( service,
+    String userName = authenticateUser( parent,
+                                        service,
                                         prefs.get( "GOOGLE_USERNAME", "" ),
                                         changeLogin ? null : prefs.get( "GOOGLE_AUTH_TOKEN", null ) );
 
     if ( userName == null ) {
-      new CPSErrorDialog("Failed authentication with Google").setVisible( true );
+      new CPSErrorDialog( parent, "<center>Failed to login to with Google").setVisible( true );
       return;
     }
 
@@ -122,9 +127,10 @@ public class GoogleCalExporter {
     try {
       calendarsFeedURL = new URL(METAFEED_URL_BASE + userName + OWNCALENDARS_FEED_URL_SUFFIX );
     } catch ( MalformedURLException e ) {
-      new CPSErrorDialog( "There is a problem communicating with Google<br>" +
+      new CPSErrorDialog( parent, "Error 801",
+                          "There is a problem communicating with Google<br>" +
                           "Please verify that your username (email) is entered<br>" +
-                          "correctly.  If it is, please email us for help.", "Bogus URL").setVisible( true );
+                          "correctly.  If it is, please email us for help." ).setVisible( true );
       e.printStackTrace();
       return;
     }
@@ -145,9 +151,7 @@ public class GoogleCalExporter {
       // if not found, create calendar
       if ( cal == null ) {
         cal = createCalendar( service, calendarsFeedURL, planName );
-      } else {
-        System.out.println( "Calendar exists." );
-      }
+      } 
 
       // it's been found or created, so find the Calendar ID
       String[] s = cal.getEditLink().getHref().split( "/" );
@@ -323,10 +327,7 @@ public class GoogleCalExporter {
 
      }
 
-      System.out.println( "PlanMap contains " + planMap.keySet().size() + " keys" );
-      System.out.println( "FeedMap contains " + feedMap.keySet().size() + " keys" );
-
-
+      
 //****************************************************************************//
 //      Local and remote entries created, now match them up and batch upload
 //****************************************************************************//
@@ -401,39 +402,48 @@ public class GoogleCalExporter {
         if (!BatchUtils.isSuccess(entry)) {
           isSuccess = false;
           BatchStatus status = BatchUtils.getBatchStatus(entry);
-          System.out.println("\n" + batchId + " failed (" + status.getReason() + ") " + status.getContent());
+          CPSModule.debug("GCal", "\n" + batchId + " failed (" + status.getReason() + ") " + status.getContent());
         }
       }
       if (isSuccess) {
-        System.out.println( "Updated  " + updates + " entries" );
-        System.out.println( "Inserted " + inserts + " entries" );
-        System.out.println( "Deleted  " + deletes + " entries" );
+        new CPSInfoDialog( parent, "Success!",
+                           "<center>Your plan has been synced<br>with Google Calendar.<br>" +
+                           "Created: " + inserts + "<br>" +
+                           "Updated:  " + updates + "<br>" +
+                           "Deleted:  " + deletes + "" ).setVisible( true );
       }
 
 
     } catch (MalformedURLException e) {
       // Bad URL
-      System.err.println("Uh oh - you've got an invalid URL.");
+      new CPSErrorDialog( parent, "Error 803",
+                          "There is a problem communicating with Google<br>" +
+                          "Please email us for help." ).setVisible( true );
       e.printStackTrace();
     } catch (IOException e) {
       // Communications error
-      System.err.println("There was a problem communicating with the service.");
+      new CPSErrorDialog( parent, "Error 804",
+                          "There is a problem communicating with Google<br>" +
+                          "Please email us for help." ).setVisible( true );
       e.printStackTrace();
     } catch (ServiceException e) {
       // Server side error
-      System.err.println("The server had a problem handling your request.");
+      new CPSErrorDialog( parent, "Error 805",
+                          "There is a problem communicating with Google<br>" +
+                          "Please email us for help." ).setVisible( true );
       e.printStackTrace();
     }
 
   }
 
 
-  private static String authenticateUser( CalendarService service,
+  private static String authenticateUser( Component parent,
+                                         CalendarService service,
                                          String userName,
                                          String authToken ) {
 
     // attempt to authenticate w/ stored auth token
-    System.out.println( "Logging in with auth token for account " + userName );
+    CPSModule.debug("GCal", "Logging in with auth token for account " + userName );
     service.setUserToken( authToken );
 
     URL calendarsFeedURL;
@@ -447,7 +457,7 @@ public class GoogleCalExporter {
     while ( ! isAuthenticated( service, calendarsFeedURL ) ) {
 
       CPSModule.debug("GCal", "Logging in with user credentials" );
-      GoogleCalLoginDialog loginDia = new GoogleCalLoginDialog( userName );
+      GoogleCalLoginDialog loginDia = new GoogleCalLoginDialog( parent, userName );
       loginDia.setVisible( true );
 
       // bail if cancelled
@@ -493,11 +503,11 @@ public class GoogleCalExporter {
                                         captchaDialog.getCaptchaAnswer() );
           } catch ( AuthenticationException g ) {
 
-            CPSErrorDialog ed = new CPSErrorDialog();
-            ed.setHeaderTitle( "Invalid Credentials" );
-            ed.setDescription( "Google said that you entered invalid credentials.<br>" +
-                               "This could mean that the email address and/or the<br>" +
-                               "password you entered were incorrect. Please try again." );
+            CPSErrorDialog ed = new CPSErrorDialog( parent,
+                                                    "Invalid Credentials",
+                                                    "<center>Google said that you entered invalid credentials.<br>" +
+                                                    "This could mean that the email address and/or the<br>" +
+                                                    "password you entered were incorrect. Please try again." );
             ed.setVisible( true );
             
           }
@@ -505,11 +515,11 @@ public class GoogleCalExporter {
 
       } catch (AuthenticationException e ) {
 
-        CPSErrorDialog ed = new CPSErrorDialog();
-        ed.setHeaderTitle( "Invalid Credentials" );
-        ed.setDescription( "Google said that you entered invalid credentials.<br>" +
-                           "This could mean that the email address and/or the<br>" +
-                           "password you entered were incorrect. Please try again." );
+        CPSErrorDialog ed = new CPSErrorDialog( parent,
+                                                "Invalid Credentials",
+                                                "<center>Google said that you entered invalid credentials.<br>" +
+                                                "This could mean that the email address and/or the<br>" +
+                                                "password you entered were incorrect. Please try again." );
         ed.setVisible( true );
 
       }
@@ -540,7 +550,7 @@ public class GoogleCalExporter {
                                               String cropPlan )
       throws IOException, ServiceException {
 
-    System.out.println( "Creating calendar: " + CALENDAR_TITLE_PREFIX + cropPlan );
+    CPSModule.debug( "GCal", "Creating calendar: " + CALENDAR_TITLE_PREFIX + cropPlan );
 
     // Create the calendar
     CalendarEntry calendar = new CalendarEntry();
@@ -627,7 +637,7 @@ public class GoogleCalExporter {
       service.getFeed( feedURL, CalendarFeed.class );
       return true;
     } catch ( Exception e ) {
-      System.err.println( "Authentication failed with message: " + e.getMessage() );
+      CPSModule.debug("GCal", "Authentication failed with message: " + e.getMessage() );
       return false;
     }
 
@@ -648,7 +658,7 @@ public class GoogleCalExporter {
     String planName = dm.getListOfCropPlans().get(0);
     System.out.println( "Getting crop plan: " + planName );
     
-    exportCropPlan( dm.getCropPlan( planName ), planName, false );
+    exportCropPlan( new JPanel(), dm.getCropPlan( planName ), planName, false );
 
     System.exit( 0 );
   }

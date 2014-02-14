@@ -111,7 +111,6 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private final String DSC_HARVEST_AVAILABILITY = "List of harvest periods for<br>each crop and/or variety.";
     private final String DSC_GOOGLE_CAL = "<i>EXPERIMENTAL:</i> Export selected<br>crop plan to a Google Calendar.<br><i>Requires a Google account.</i>";
 
-    CPSComplexFilterDialog cfd = new CPSComplexFilterDialog();
     PDFExporter pdf = new PDFExporter();
 
     public TODOLists() {
@@ -768,7 +767,8 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private void exportToGoogleCal( String planName,
                                     boolean changeLogin ) {
 
-      GoogleCalExporter.exportCropPlan( getDataSource().getCropPlan( planName ),
+      GoogleCalExporter.exportCropPlan( jplTodo,
+                                        getDataSource().getCropPlan( planName ),
                                         planName,
                                         changeLogin );
 
@@ -957,7 +957,8 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
         String planName = (String) cmbPlanName.getSelectedItem();
         if ( planName == null ) {
-          new CPSErrorDialog( "Please select a crop plan and try again.",
+          new CPSErrorDialog( jplTodo,
+                              "Please select a crop plan and try again.",
                               "No Plan Selected" ).setVisible( true );
           return;
         }
