@@ -524,8 +524,8 @@ public class TabbedUI extends CPSUI implements ActionListener {
           e.printStackTrace();
         }
 
-        p.add( new JLabel( "Crop Planning Software" ), "align center");
-        p.add( new JLabel( "Version: " + CPSGlobalSettings.getVersion() ), "align center");
+        p.add( new JLabel( "Crop Planning Software" ) );
+        p.add( new JLabel( "Version: " + CPSGlobalSettings.getVersion() ) );
 
         JTextField t1 = new JTextField("http://cropplanning.googlecode.com" );
         t1.setEditable(false);
