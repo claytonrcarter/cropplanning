@@ -642,12 +642,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
          // currently the only reason asCrop returns null is for a
          // NumberFormatException
-         new CPSErrorDialog( this.getMainPanel(),
-                             "Couldn't understand one of the numbers<br>" +
-                             "you entered. Numbers should be entered<br>" +
-                             "without units. (eg '12' instead of '12in')<br> " +
-                             "No changes are being saved.",
-                             "Cannot Save Changes" ).setVisible( true );
+         new CPSNumberFormatErrorDialog( this.getMainPanel() ).setVisible( true );
 
          return;
        }

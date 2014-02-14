@@ -246,6 +246,15 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
        String selectedPlan = getDisplayedTableName();
 
        CPSPlanting currentlyDisplayed = this.asPlanting();
+
+       if ( currentlyDisplayed == null ) {
+         // currently the only reason asPlanting returns null is for a
+         // NumberFormatException
+         new CPSNumberFormatErrorDialog( this.getMainPanel() ).setVisible( true );
+
+         return;
+       }
+
        CPSPlanting diff = (CPSPlanting) displayedPlanting.diff( currentlyDisplayed );
 
        if ( diff.getID() == -1 ) {
@@ -292,7 +301,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
     * @return a CPSPlanting object populated to represent the planting which is
     * currently displayed
     */
-    public CPSPlanting asPlanting() {
+    private CPSPlanting asPlanting() {
 
       // make a copy of the displayed planting
        CPSPlanting changes = new CPSPlanting();
@@ -346,33 +355,37 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
 
        if ( rdoDS.hasChanged() || rdoTP.hasChanged() ) changes.setDirectSeeded( rdoDS.isSelected() );
 //       changes.setDirectSeeded( rdoDS.isSelected() );
-       
-       if ( tfldMatAdjust.hasChanged() ) changes.setMatAdjust( tfldMatAdjust.getText() );
-       if ( tfldTimeToTP.hasChanged() ) changes.setTimeToTP( tfldTimeToTP.getText() );
-       if ( tfldRowsPerBed.hasChanged() ) changes.setRowsPerBed( tfldRowsPerBed.getText() );
-       if ( tfldInRowSpace.hasChanged() ) changes.setInRowSpacing( tfldInRowSpace.getText() );
-       if ( tfldBetRowSpace.hasChanged() ) changes.setRowSpacing( tfldBetRowSpace.getText() );
-       if ( tfldFlatSize.hasChanged() ) changes.setFlatSize( tfldFlatSize.getText() );
-       if ( tarePlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tarePlantingNotesCrop.getText() );
-       if ( tarePlantingNotes.hasChanged() ) changes.setPlantingNotes( tarePlantingNotes.getText() );
 
-       if ( tfldBedsToPlant.hasChanged() ) changes.setBedsToPlant( tfldBedsToPlant.getText() );
-       if ( tfldRowFtToPlant.hasChanged() ) changes.setRowFtToPlant( tfldRowFtToPlant.getText() );
-       if ( tfldPlantsNeeded.hasChanged() ) changes.setPlantsNeeded( tfldPlantsNeeded.getText() );
-       if ( tfldPlantsToStart.hasChanged() ) changes.setPlantsToStart( tfldPlantsToStart.getText() );
-       if ( tfldFlatsNeeded.hasChanged() ) changes.setFlatsNeeded( tfldFlatsNeeded.getText() );
-       if ( tfldYieldPerFt.hasChanged() ) changes.setYieldPerFoot( tfldYieldPerFt.getText() );
-       if ( tfldTotalYield.hasChanged() ) changes.setTotalYield( tfldTotalYield.getText() );
-       
-       if ( tfldYieldNumWeeks.hasChanged() ) changes.setYieldNumWeeks( tfldYieldNumWeeks.getText() );
-       if ( tfldYieldPerWeek.hasChanged() ) changes.setYieldPerWeek( tfldYieldPerWeek.getText() );
-       if ( tfldCropYieldUnit.hasChanged() ) changes.setCropYieldUnit( tfldCropYieldUnit.getText() );
-       if ( tfldCropYieldUnitValue.hasChanged() ) changes.setCropYieldUnitValue( tfldCropYieldUnitValue.getText() );
+       try {
+         if ( tfldMatAdjust.hasChanged() ) changes.setMatAdjust( tfldMatAdjust.getText() );
+         if ( tfldTimeToTP.hasChanged() ) changes.setTimeToTP( tfldTimeToTP.getText() );
+         if ( tfldRowsPerBed.hasChanged() ) changes.setRowsPerBed( tfldRowsPerBed.getText() );
+         if ( tfldInRowSpace.hasChanged() ) changes.setInRowSpacing( tfldInRowSpace.getText() );
+         if ( tfldBetRowSpace.hasChanged() ) changes.setRowSpacing( tfldBetRowSpace.getText() );
+         if ( tfldFlatSize.hasChanged() ) changes.setFlatSize( tfldFlatSize.getText() );
+         if ( tarePlantingNotesCrop.hasChanged() ) changes.setPlantingNotesInherited( tarePlantingNotesCrop.getText() );
+         if ( tarePlantingNotes.hasChanged() ) changes.setPlantingNotes( tarePlantingNotes.getText() );
 
-       if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
-       if ( cmbSeedUnit.hasChanged() ) changes.setSeedUnit( cmbSeedUnit.getSelectedItem() );
-       if ( tfldSeedsPer.hasChanged() ) changes.setSeedsPer( tfldSeedsPer.getText() );
-       if ( tfldSeedNeeded.hasChanged() ) changes.setSeedNeeded( tfldSeedNeeded.getText() );
+         if ( tfldBedsToPlant.hasChanged() ) changes.setBedsToPlant( tfldBedsToPlant.getText() );
+         if ( tfldRowFtToPlant.hasChanged() ) changes.setRowFtToPlant( tfldRowFtToPlant.getText() );
+         if ( tfldPlantsNeeded.hasChanged() ) changes.setPlantsNeeded( tfldPlantsNeeded.getText() );
+         if ( tfldPlantsToStart.hasChanged() ) changes.setPlantsToStart( tfldPlantsToStart.getText() );
+         if ( tfldFlatsNeeded.hasChanged() ) changes.setFlatsNeeded( tfldFlatsNeeded.getText() );
+         if ( tfldYieldPerFt.hasChanged() ) changes.setYieldPerFoot( tfldYieldPerFt.getText() );
+         if ( tfldTotalYield.hasChanged() ) changes.setTotalYield( tfldTotalYield.getText() );
+
+         if ( tfldYieldNumWeeks.hasChanged() ) changes.setYieldNumWeeks( tfldYieldNumWeeks.getText() );
+         if ( tfldYieldPerWeek.hasChanged() ) changes.setYieldPerWeek( tfldYieldPerWeek.getText() );
+         if ( tfldCropYieldUnit.hasChanged() ) changes.setCropYieldUnit( tfldCropYieldUnit.getText() );
+         if ( tfldCropYieldUnitValue.hasChanged() ) changes.setCropYieldUnitValue( tfldCropYieldUnitValue.getText() );
+
+         if ( tfldSeedsPerUnit.hasChanged() ) changes.setSeedsPerUnit( tfldSeedsPerUnit.getText() );
+         if ( cmbSeedUnit.hasChanged() ) changes.setSeedUnit( cmbSeedUnit.getSelectedItem() );
+         if ( tfldSeedsPer.hasChanged() ) changes.setSeedsPer( tfldSeedsPer.getText() );
+         if ( tfldSeedNeeded.hasChanged() ) changes.setSeedNeeded( tfldSeedNeeded.getText() );
+       } catch ( NumberFormatException e ) {
+         return null;
+       }
 
        if ( tareGroups.hasChanged() ) changes.setGroups( tareGroups.getText() );
        if ( tareOtherReq.hasChanged() ) changes.setOtherRequirements( tareOtherReq.getText() );

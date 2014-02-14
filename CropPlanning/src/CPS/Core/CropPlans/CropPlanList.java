@@ -28,6 +28,7 @@ import CPS.Module.*;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Swing.CPSComplexFilterDialog;
+import CPS.UI.Swing.CPSErrorDialog;
 import CPS.UI.Swing.CPSTable.CPSComboBoxCellEditor;
 import CPS.UI.Swing.autocomplete.*;
 import ca.odell.glazedlists.FunctionList;
@@ -346,7 +347,11 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     @Override
     protected CPSPlanting createNewRecord( CPSRecord r ) {
        if ( getDisplayedTableName().equals("") ) {
-          System.err.println("ERROR cannot create record unless a crop plan is selected");
+        new CPSErrorDialog( this.getMainPanel(),
+                   "Cannot Create Entry",
+                   "<center>We can only create new planting entries<br>" +
+                   "after you have selected a crop plan.<br>" +
+                   "<b>No record created." ).setVisible( true );
           return null;
        }
        CPSPlanting p = getDataSource().createPlanting( getDisplayedTableName(), (CPSPlanting) r );

@@ -31,7 +31,7 @@ public class CPSErrorDialog extends CPSDialog
 
   JButton btnOK;
 
-  public CPSErrorDialog( JPanel parent, String problem, String header ) {
+  public CPSErrorDialog( JPanel parent, String header, String problem ) {
     this( parent, problem );
     setHeaderTitle( header );
   }
