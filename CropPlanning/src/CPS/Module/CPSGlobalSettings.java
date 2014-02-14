@@ -60,29 +60,37 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public static final String PREF_ROWS = "Rows";
     public static final String PREF_IMPERIAL = "Imperial (ft/in)";
     public static final String PREF_SI = "Metric (m/cm)";
+    public static final String PREF_DATE_MD = "mm/dd/yy";
+    public static final String PREF_DATE_DM = "dd/mm/yy";
        
-    private static Class thisClass = CPSGlobalSettings.class;
+    private static final Class thisClass = CPSGlobalSettings.class;
    
     protected static Preferences globalPrefs = null;
    
     private static final String KEY_ROWSORBEDS = "ROWS_OR_BEDS";
     private JComboBox cmbxPrefRowOrBed;
-    private String[] prefRowOrBedOptions = new String[]{ PREF_BEDS, PREF_ROWS };
-    private static String prefRowOrBedDefault = PREF_BEDS;
+    private final String[] prefRowOrBedOptions = new String[]{ PREF_BEDS, PREF_ROWS };
+    private static final String prefRowOrBedDefault = PREF_BEDS;
     
     private static final String KEY_ROWBEDLENGTH = "BED_LENGTH";
     private JTextField tfldRowOrBedLength;
-    private static int prefRowOrBedLengthDefault = 100;
+    private static final int prefRowOrBedLengthDefault = 100;
 
     private static final String KEY_MEASUREMENT_SYSTEM = "MEASUREMENT_SYSTEM";
     private JComboBox cmbxPrefMeasurementSystem;
-    private List<String> prefMeasurementSystemOptions =
+    private final List<String> prefMeasurementSystemOptions =
         new ArrayList<String>( Arrays.asList( PREF_IMPERIAL, PREF_SI ) );
-    private static String prefMeasurementSystemDefault = PREF_IMPERIAL;
+    private static final String prefMeasurementSystemDefault = PREF_IMPERIAL;
  
+    private static final String KEY_DATE_FORMAT = "DATE_FORMAT";
+    private JComboBox cmbxPrefDateFormat;
+    private final List<String> prefDateFormatOptions =
+        new ArrayList<String>( Arrays.asList( PREF_DATE_MD, PREF_DATE_DM ) );
+    private static final String prefDateFormatDefault = PREF_DATE_MD;
+
     private static final String KEY_HIGHLIGHTFIELDS = "HIGHLIGHT_FIELDS";
     private JCheckBox ckbxPrefHighlight;
-    private static boolean prefHightlightDefault = true;
+    private static final boolean prefHightlightDefault = true;
     
     private static final String KEY_FARMNAME = "FARM_NAME";
     private JTextField tfldFarmName;
@@ -108,20 +116,20 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     private static final String KEY_FUDGE_HIGH = KEY_FUDGE;
     private static final String KEY_FUDGE_LOW = KEY_FUDGE;
     private JTextField tfldFudge, tfldFudgeHigh, tfldFudgeLow;
-    private static float prefFudgeDefault = .20f;
-    private static float prefFudgeHighDefault = prefFudgeDefault;
-    private static float prefFudgeLowDefault = prefFudgeDefault;
+    private static final float prefFudgeDefault = .20f;
+    private static final float prefFudgeHighDefault = prefFudgeDefault;
+    private static final float prefFudgeLowDefault = prefFudgeDefault;
 
     private static final String KEY_CHECK_UPDATES = "CHECK_UPDATES";
     private JCheckBox chkCheckUpdates;
 
     private static final String KEY_DEBUG = "DEBUG";
     private JCheckBox chkDebug;
-    private static boolean prefDebugDefault = false;
+    private static final boolean prefDebugDefault = false;
 
     private static final String KEY_VERSION = "VERSION";
     private static final String cpsMainVersionDefault = "0.0.0";
-    private static String cpsMainVersion = cpsMainVersionDefault;
+    private static final String cpsMainVersion = cpsMainVersionDefault;
 
     
     public CPSGlobalSettings() {
@@ -169,6 +177,24 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
     public static boolean useMetric() {
       return getMeasurementUnit().equals( PREF_SI );
     }
+
+    
+    /**
+     * @return one of either CPSGlobalSettings.PREF_DATE_US or PREF_DATE_UK
+     */
+    public static String getDateFormat() {
+      return getGlobalPreferences().get( KEY_DATE_FORMAT, prefDateFormatDefault );
+    }
+    protected void setDateFormat( String format ) {
+      if ( prefDateFormatOptions.contains( format ))
+        getGlobalPreferences().put( KEY_DATE_FORMAT, format );
+    }
+
+    public static boolean useUSDates() {
+      return getDateFormat().equals( PREF_DATE_MD );
+    }
+
+
 
     public static String getDocumentOutputDir() {
         return getOutputDir();
@@ -324,6 +350,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         cmbxPrefRowOrBed.setSelectedItem( getRowsOrBeds() );
         tfldRowOrBedLength.setText( "" + getBedLength() );
         cmbxPrefMeasurementSystem.setSelectedItem( getMeasurementUnit() );
+        cmbxPrefDateFormat.setSelectedItem( getDateFormat() );
         ckbxPrefHighlight.setSelected( getHighlightFields() );
         lblPrefOutputDir.setText( getOutputDir() );
         tfldFarmName.setText( getFarmName() );
@@ -341,6 +368,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         cmbxPrefRowOrBed.setSelectedItem( prefRowOrBedDefault );
         tfldRowOrBedLength.setText( "" + prefRowOrBedLengthDefault );
         cmbxPrefMeasurementSystem.setSelectedItem( prefMeasurementSystemDefault );
+        cmbxPrefDateFormat.setSelectedItem( prefDateFormatDefault );
         ckbxPrefHighlight.setSelected( prefHightlightDefault );
         lblPrefOutputDir = new JLabel( flchPrefOutputDir.getFileSystemView().getDefaultDirectory().getAbsolutePath() );
         tfldFarmName.setText( "" );
@@ -358,6 +386,7 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
         // TODO check this for improper input
         setBedLength( Integer.parseInt( tfldRowOrBedLength.getText() ) );
         getGlobalPreferences().put( KEY_MEASUREMENT_SYSTEM, cmbxPrefMeasurementSystem.getSelectedItem().toString() );
+        getGlobalPreferences().put( KEY_DATE_FORMAT, cmbxPrefDateFormat.getSelectedItem().toString() );
         getGlobalPreferences().putBoolean( KEY_HIGHLIGHTFIELDS, ckbxPrefHighlight.isSelected() );
         setOutputDir( lblPrefOutputDir.getText() );
         setFarmName( tfldFarmName.getText() );
@@ -381,6 +410,9 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
     cmbxPrefMeasurementSystem =
         new JComboBox( prefMeasurementSystemOptions.toArray( new String[] {} ));
+
+    cmbxPrefDateFormat =
+        new JComboBox( prefDateFormatOptions.toArray( new String[] {} ));
 
     ckbxPrefHighlight = new JCheckBox();
 
@@ -422,6 +454,9 @@ public class CPSGlobalSettings extends CPSModuleSettings implements CPSConfigura
 
        configPanel.add( new JLabel( "Measurement Units:" ) );
        configPanel.add( cmbxPrefMeasurementSystem, "wrap" );
+
+       configPanel.add( new JLabel( "Date Format" ));
+       configPanel.add( cmbxPrefDateFormat, "wrap" );
        
        tfldFudge.setToolTipText( "Percetage value (0-100) to add to some calculations to provide a \"margin of error\"." );
        configPanel.add( new JLabel( "Fudge factor (%)" ));
