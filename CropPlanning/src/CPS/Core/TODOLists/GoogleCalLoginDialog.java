@@ -57,8 +57,9 @@ public class GoogleCalLoginDialog extends CPSDialog
   protected void buildContentsPanel() {
 
     jplContents.add( new JLabel( "<html><font size=\"-2\">" +
-                                 "Please enter the email address and password for the<br> " +
-                                 "Google account you want to export your crop plan to. " +
+                                 "Please enter the email address and password for the<br>" +
+                                 "Google account you want to export your crop plan to.<br>" +
+                                 "We use a secure connection and don't save your password." +
                                  "" ),
                      "align center, spanx 2, wrap" );
 
