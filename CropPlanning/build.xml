@@ -112,6 +112,7 @@
     <copy file="appinfo.properties" todir="${build.classes.dir}"/>
     <copy file="log4j.properties" todir="${build.classes.dir}"/>
     <copy file="twinkle.properties" todir="${build.classes.dir}"/>
+    <copy file="wheelhoe-for-twinkle.png" todir="${build.classes.dir}"/>
 
   </target>
 
