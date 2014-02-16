@@ -6,7 +6,7 @@ CropPlanning is free, open source software to help small farmers plan and manage
 To download the code yourself simply
 
     git clone https://github.com/claytonrcarter/cropplanning.git
-    
+
 or of course fork it into your own github account.
 
 You will need:
