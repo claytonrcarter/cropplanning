@@ -45,7 +45,10 @@ import java.awt.Insets;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -456,8 +459,16 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
        // setup the text filtering mechanism
        textFilter = new CPSTextFilter<CPSRecord>( tfldFilter, getTextFilterator() );
-       // TODO add call to textFilter.setFields( .... ) to enable advanced field matching
-
+       Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> s = getFilterFields();
+       Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> t = new HashSet<SearchEngineTextMatcherEditor.Field<CPSRecord>>();
+       for ( SearchEngineTextMatcherEditor.Field<CPSRecord> field : s ) {
+         t.add( field );
+         for ( int i = 1; i < field.getName().length(); i++ )
+           t.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( field.getName().substring( 0, i ),
+                  field.getTextFilterator() ));
+       }
+       textFilter.setFields( t );
+       
        // setup the list of filters and add an "all" matcher
        filterList = new BasicEventList<MatcherEditor<CPSRecord>>();
        filterList.add( new AbstractMatcherEditor<CPSRecord>()
@@ -689,7 +700,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected abstract List getMasterListData();
     protected abstract CPSAdvancedTableFormat getTableFormat();
     protected abstract TextFilterator<CPSRecord> getTextFilterator();
-
+    protected abstract Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> getFilterFields();
 
     protected void addFilter( MatcherEditor me ) {
        filterList.add(me);

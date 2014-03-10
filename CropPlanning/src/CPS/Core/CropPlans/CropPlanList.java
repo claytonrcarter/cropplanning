@@ -36,6 +36,7 @@ import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.calculation.Calculation;
 import ca.odell.glazedlists.calculation.Calculations;
 import ca.odell.glazedlists.event.ListEvent;
+import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -43,6 +44,8 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.*;
 
 // package access
@@ -222,7 +225,35 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     protected TextFilterator getTextFilterator() {
         return new CropPlanFilterator();
     }
-       
+
+
+    protected Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> getFilterFields() {
+
+      Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> s = new HashSet<SearchEngineTextMatcherEditor.Field<CPSRecord>>();
+
+      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "name",
+              new TextFilterator<CPSRecord>() {
+                public void getFilterStrings( List<String> list, CPSRecord e ) {
+                  list.add( ((CPSPlanting) e).getCropName() );
+                }
+              }));
+      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "variety",
+              new TextFilterator<CPSRecord>() {
+                public void getFilterStrings( List<String> list, CPSRecord e ) {
+                  list.add( ((CPSPlanting) e).getVarietyName());
+                }
+              }));
+      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "location",
+              new TextFilterator<CPSRecord>() {
+                public void getFilterStrings( List<String> list, CPSRecord e ) {
+                  list.add( ((CPSPlanting) e).getLocation());
+                }
+              }));
+
+    return s;
+
+  }
+
     
     protected String getDisplayedTableName() { return planMan.getSelectedPlanName(); }
 

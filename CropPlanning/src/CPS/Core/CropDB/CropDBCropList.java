@@ -25,13 +25,19 @@ package CPS.Core.CropDB;
 import CPS.Data.CPSRecord;
 import CPS.Module.*;
 import CPS.Data.CPSCrop;
+import CPS.Data.CPSPlanting;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Modules.CPSMasterView;
 import ca.odell.glazedlists.TextFilterator;
+import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;
 import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.*;
 
 // package access
@@ -115,6 +121,28 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     protected TextFilterator getTextFilterator() {
         return new CropDBFilterator();
     }
+
+  
+  protected Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> getFilterFields() {
+    
+    Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> s = new HashSet<SearchEngineTextMatcherEditor.Field<CPSRecord>>();
+    
+    s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "name",
+            new TextFilterator<CPSRecord>() {
+              public void getFilterStrings( List<String> list, CPSRecord e ) {
+                list.add( ((CPSPlanting) e).getCropName() );
+              }
+            }));
+    s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "variety",
+            new TextFilterator<CPSRecord>() {
+              public void getFilterStrings( List<String> list, CPSRecord e ) {
+                list.add( ((CPSPlanting) e).getVarietyName());
+              }
+            }));
+    
+    return s;
+    
+  }
 
     
     // Pertinent method for ItemListener

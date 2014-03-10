@@ -92,9 +92,9 @@ public class ModuleManager implements CPSModuleMediator {
       
       for ( CPSModule mod : coreMods ) {
           CPSModule.debug( "ModuleManager", "Examining module: " + mod.getModuleName() );
-          if ( mod.getModuleName().equals( "CropPlans" )) {
+          if ( mod.getModuleName().equals( "Crop Plans" )) {
               cropPlansModule = (CPSMasterDetailModule) mod;
-              CPSModule.debug( "ModuleManager", "Found what we're looking for: CropPlans" ); 
+              CPSModule.debug( "ModuleManager", "Found what we're looking for: Crop Plans" );
           }
       }
 

@@ -413,10 +413,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          names = getDataSource().getCropNameList();
 
 
-      tfldCropName = new CPSTextField( FIELD_LEN_LONG, names, CPSTextField.MATCH_STRICT );
-      tfldVarName = new CPSTextField( FIELD_LEN_LONG );
+      tfldCropName = new CPSTextField( FIELD_LEN_WAY_LONG, names, CPSTextField.MATCH_STRICT );
+      tfldVarName = new CPSTextField( FIELD_LEN_WAY_LONG );
       tfldMatDays = new CPSTextField( FIELD_LEN_SHORT );
-      tfldLocation = new CPSTextField( FIELD_LEN_LONG );
+      tfldLocation = new CPSTextField( FIELD_LEN_WAY_LONG );
 
       cmbDates = new JComboBox( new String[] { DATE_EFFECTIVE, DATE_ACTUAL, DATE_PLANNED } );
       cmbDates.addActionListener( this );

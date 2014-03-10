@@ -62,7 +62,7 @@ public class CPSSearchField extends JTextField {
     private boolean armed = false;
 
     public CPSSearchField(String placeholderText) {
-        super(10);
+        super(15);
         addFocusListener(new PlaceholderText(placeholderText));
         initBorder();
         initKeyListener();
