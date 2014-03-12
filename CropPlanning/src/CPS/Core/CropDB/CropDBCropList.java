@@ -23,7 +23,6 @@
 package CPS.Core.CropDB;
 
 import CPS.Data.CPSRecord;
-import CPS.Module.*;
 import CPS.Data.CPSCrop;
 import CPS.Data.CPSPlanting;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
@@ -34,9 +33,7 @@ import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;
 import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.*;
 
@@ -127,7 +124,7 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     
     Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> s = new HashSet<SearchEngineTextMatcherEditor.Field<CPSRecord>>();
     
-    s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "name",
+    s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "crop",
             new TextFilterator<CPSRecord>() {
               public void getFilterStrings( List<String> list, CPSRecord e ) {
                 list.add( ((CPSPlanting) e).getCropName() );
@@ -137,6 +134,18 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
             new TextFilterator<CPSRecord>() {
               public void getFilterStrings( List<String> list, CPSRecord e ) {
                 list.add( ((CPSPlanting) e).getVarietyName());
+              }
+            }));
+    s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "groups",
+            new TextFilterator<CPSRecord>() {
+              public void getFilterStrings( List<String> list, CPSRecord e ) {
+                list.add( ((CPSPlanting) e).getGroups());
+              }
+            }));
+    s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "keywords",
+            new TextFilterator<CPSRecord>() {
+              public void getFilterStrings( List<String> list, CPSRecord e ) {
+                list.add( ((CPSPlanting) e).getKeywords());
               }
             }));
     

@@ -80,6 +80,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
     private List<String> listOfValidCrops, listOfFields;
 
     private Calculation<Integer> summaryPlantings = null;
+    private Calculation<Integer> summaryPlants = null;
     private Calculation<Integer> summaryRowFt = null;
     private Calculation<Float> summaryBeds = null, summaryFlats = null;
 
@@ -123,6 +124,13 @@ class CropPlanList extends CPSMasterView implements ActionListener,
                                                         return ( (CPSPlanting) p ).getBedsToPlant();
                                                      }} );
 
+      FunctionList<CPSRecord, Integer> plantsList =
+              new FunctionList<CPSRecord, Integer>( masterListFiltered,
+                                                  new FunctionList.Function<CPSRecord, Integer>() {
+                                                     public Integer evaluate( CPSRecord p ) {
+                                                        return ( (CPSPlanting) p ).getPlantsNeeded();
+                                                     }} );
+
       FunctionList<CPSRecord, Float> flatsList =
               new FunctionList<CPSRecord, Float>( masterListFiltered,
                                                   new FunctionList.Function<CPSRecord, Float>() {
@@ -139,6 +147,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
       summaryPlantings = Calculations.count( masterListFiltered );
       summaryBeds = Calculations.sumFloats( bedsList );
+      summaryPlants = Calculations.sumIntegers( plantsList );
       summaryFlats = Calculations.sumFloats( flatsList );
       summaryRowFt = Calculations.sumIntegers( rftList );
 
@@ -231,7 +240,7 @@ class CropPlanList extends CPSMasterView implements ActionListener,
 
       Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> s = new HashSet<SearchEngineTextMatcherEditor.Field<CPSRecord>>();
 
-      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "name",
+      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "crop",
               new TextFilterator<CPSRecord>() {
                 public void getFilterStrings( List<String> list, CPSRecord e ) {
                   list.add( ((CPSPlanting) e).getCropName() );
@@ -247,6 +256,18 @@ class CropPlanList extends CPSMasterView implements ActionListener,
               new TextFilterator<CPSRecord>() {
                 public void getFilterStrings( List<String> list, CPSRecord e ) {
                   list.add( ((CPSPlanting) e).getLocation());
+                }
+              }));
+      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "groups",
+              new TextFilterator<CPSRecord>() {
+                public void getFilterStrings( List<String> list, CPSRecord e ) {
+                  list.add( ((CPSPlanting) e).getGroups());
+                }
+              }));
+      s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "keyword",
+              new TextFilterator<CPSRecord>() {
+                public void getFilterStrings( List<String> list, CPSRecord e ) {
+                  list.add( ((CPSPlanting) e).getKeywords());
                 }
               }));
 
@@ -422,7 +443,11 @@ class CropPlanList extends CPSMasterView implements ActionListener,
            String t = "" + CPSCalculations.precision3( summaryBeds.getValue() + .001f );
            if ( ! t.equals("") ) 
                s += "/Beds:" + t;
-           
+
+           t = summaryPlants.getValue().toString();
+           if ( ! t.equals( "" ) )
+             s += "/Plants:" + t;
+
            t = summaryRowFt.getValue().toString();
            if ( ! t.equals("") ) {
              if ( CPSGlobalSettings.useMetric() )
@@ -430,7 +455,6 @@ class CropPlanList extends CPSMasterView implements ActionListener,
              else
                s += "/RowFeet:" + t;
            }
-//       s += "/Plants:" + p.getPlantsNeededString();
            
            t = summaryFlats.getValue().toString();
            if ( ! t.equals("") )

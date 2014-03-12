@@ -169,7 +169,11 @@ public final class CPSCalculations {
 //****************************************************************************//
    public static int calcPlantsToStart( int plantsNeeded ) {
        float fudgeFactor = CPSGlobalSettings.getFudgeFactor();
-      return (int) ( plantsNeeded * ( 1 + fudgeFactor ) );
+       int i = (int) ( plantsNeeded * ( 1 + fudgeFactor ) );
+       // make sure we always fudge by at least 1
+       if ( fudgeFactor > 0 && i == plantsNeeded )
+         i++;
+       return i;
    }
 
    public static int calcPlantsToStart( float flatsToStart, int flatCapacity ) {
