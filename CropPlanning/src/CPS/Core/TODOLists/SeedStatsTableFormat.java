@@ -23,7 +23,7 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
       if ( outputFormat == TODOLists.TL_FORMAT_PDF )
         return 15;
       else
-        return 16;
+        return 18;
     }
 
     public String getColumnName( int col ) {
@@ -53,8 +53,12 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
               else if ( col == 12 + csvOffset )
                 return p.getDatum( CPSPlanting.PROP_SEED_NEEDED ).getName() + " (US)";
               else if ( col == 13 + csvOffset )
-                return p.getDatum( CPSPlanting.PROP_SEED_NEEDED ).getName() + " (Metric)";
+                return p.getDatum( CPSPlanting.PROP_SEED_UNIT ).getName() + " (US)";
               else if ( col == 14 + csvOffset )
+                return p.getDatum( CPSPlanting.PROP_SEED_NEEDED ).getName() + " (Metric)";
+              else if ( col == 15 + csvOffset )
+                return p.getDatum( CPSPlanting.PROP_SEED_UNIT ).getName() + " (Metric)";
+              else if ( col == 16 + csvOffset )
                 return "Seeds Needed (count)";
               else
                 return "";
@@ -102,14 +106,28 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
                   s = p.getSeedNeededString();
                 else if ( t.equals( "g" ) ) {
                   s = p.formatFloat( p.getSeedNeeded() / 28.349f, 2 );
-                  t = "oz";
+//                  t = "oz";
                 }
                 else { // t.equals( "kg" )
                   s = p.formatFloat( p.getSeedNeeded() * 2.204f, 2 );
+//                  t = "lb";
+                }
+                t = "";
+              }
+              else if ( col == 13 + csvOffset ) {
+                // seed needed (US)
+                s = "";
+                t = p.getSeedUnit();
+                if ( t.equals( "oz" ) || t.equals( "lb" ) ||
+                     t.equals( "ea" ) || t.startsWith( "M" ) ) {}
+                else if ( t.equals( "g" ) ) {
+                  t = "oz";
+                }
+                else { // t.equals( "kg" )
                   t = "lb";
                 }
               }
-              else if ( col == 13 + csvOffset ) {
+              else if ( col == 14 + csvOffset ) {
                 // seed needed (metric)
                 t = p.getSeedUnit();
                 if ( t.equals( "g" ) || t.equals( "kg" ) ||
@@ -117,14 +135,27 @@ public class SeedStatsTableFormat implements TableFormat<CPSPlanting> {
                   s = p.getSeedNeededString();
                 else if ( t.equals( "oz" ) ) {
                   s = p.formatFloat( p.getSeedNeeded() * 28.349f, 2 );
-                  t = "g";
+//                  t = "g";
                 }
                 else { // u.equals( "lb" )
                   s = p.formatFloat( p.getSeedNeeded() / 2.204f, 2 );
+//                  t = "kg";
+                }
+                t = "";
+              }
+              else if ( col == 15 + csvOffset ) {
+                // seed needed (metric)
+                t = p.getSeedUnit();
+                if ( t.equals( "g" ) || t.equals( "kg" ) ||
+                     t.equals( "ea" ) || t.startsWith( "M" ) ) {}
+                else if ( t.equals( "oz" ) ) {
+                  t = "g";
+                }
+                else { // u.equals( "lb" )
                   t = "kg";
                 }
               }
-              else if ( col == 14 + csvOffset ) {
+              else if ( col == 16 + csvOffset ) {
                 // seeds needed (by count)
                 s = "" + Math.ceil( p.getSeedNeeded() * p.getSeedsPerUnit() );
               }

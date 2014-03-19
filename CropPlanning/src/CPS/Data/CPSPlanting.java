@@ -799,7 +799,6 @@ public final class CPSPlanting extends CPSRecord {
          setDonePlanting( false );
    }
    public void setDonePlanting( Boolean b ) { set( done_plant, b ); }
-   public void setDonePlanting( boolean b ) { set( done_plant, new Boolean( b ) ); }
 
    public Boolean getDoneTP() { return get( PROP_DONE_TP ); }
    public CPSDatumState getDoneTPState() { return getStateOf( PROP_DONE_TP  ); }
@@ -810,7 +809,6 @@ public final class CPSPlanting extends CPSRecord {
          setDoneTP( false );
    }
    public void setDoneTP( Boolean b ) { set( done_tp, b ); }
-   public void setDoneTP( boolean b ) { set( done_tp, new Boolean( b ) ); }
 
    public Boolean getDoneHarvest() { return get( PROP_DONE_HARVEST ); }
    public CPSDatumState getDoneHarvestState() { return getStateOf( PROP_DONE_HARVEST  ); }
@@ -821,7 +819,6 @@ public final class CPSPlanting extends CPSRecord {
          setDoneHarvest( false );
    }
    public void setDoneHarvest( Boolean b ) { set( done_harvest, b ); }
-   public void setDoneHarvest( boolean b ) { set( done_harvest, new Boolean( b ) ); }
 
    public Boolean getIgnore() { return get( PROP_IGNORE ); }
    public CPSDatumState getIgnoreState() { return getStateOf( PROP_IGNORE  ); }
@@ -832,7 +829,6 @@ public final class CPSPlanting extends CPSRecord {
          setIgnore( false );
    }
    public void setIgnore( Boolean b ) { set( ignore, b ); }
-   public void setIgnore( boolean b ) { set( ignore, new Boolean( b ) ); }
 
 
    /* *********************************************************************************************/
@@ -1454,8 +1450,7 @@ public final class CPSPlanting extends CPSRecord {
          setDirectSeeded( (Boolean) ! b.booleanValue() );
    }
    public void setDirectSeeded( Boolean b ) { set( direct_seed, b ); }
-   public void setDirectSeeded( boolean b ) { setDirectSeeded( new Boolean( b )); }
-
+   
    public Boolean isFrostHardy() { return getBoolean( PROP_FROST_HARDY ); }
    public Boolean isFrostTender() { return ! isFrostHardy().booleanValue(); }
    public CPSDatumState getFrostHardyState() { return getStateOf( PROP_FROST_HARDY ); }
@@ -1466,7 +1461,6 @@ public final class CPSPlanting extends CPSRecord {
          setFrostHardy( Boolean.FALSE );
    }
    public void setFrostHardy( Boolean b ) { set( frost_hardy, b ); }
-   public void setFrostHardy( boolean b ) { setFrostHardy( new Boolean( b )); }
 
    public String getGroups() { return get( PROP_GROUPS ); }
    public CPSDatumState getGroupsState() { return getStateOf( PROP_GROUPS ); }

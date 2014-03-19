@@ -24,7 +24,7 @@ package CPS.Core.CropDB;
 
 import CPS.Data.CPSRecord;
 import CPS.Data.CPSCrop;
-import CPS.Data.CPSPlanting;
+import CPS.Module.CPSDataModelConstants;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Modules.CPSMasterDetailModule;
 import CPS.UI.Modules.CPSMasterView;
@@ -127,25 +127,25 @@ class CropDBCropList extends CPSMasterView implements ItemListener {
     s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "crop",
             new TextFilterator<CPSRecord>() {
               public void getFilterStrings( List<String> list, CPSRecord e ) {
-                list.add( ((CPSPlanting) e).getCropName() );
+                list.add( ((CPSCrop) e).getCropName() );
               }
             }));
     s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "variety",
             new TextFilterator<CPSRecord>() {
               public void getFilterStrings( List<String> list, CPSRecord e ) {
-                list.add( ((CPSPlanting) e).getVarietyName());
+                list.add( ((CPSCrop) e).getVarietyName());
               }
             }));
     s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "groups",
             new TextFilterator<CPSRecord>() {
               public void getFilterStrings( List<String> list, CPSRecord e ) {
-                list.add( ((CPSPlanting) e).getGroups());
+                list.add( ((CPSCrop) e).getGroups());
               }
             }));
     s.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( "keywords",
             new TextFilterator<CPSRecord>() {
               public void getFilterStrings( List<String> list, CPSRecord e ) {
-                list.add( ((CPSPlanting) e).getKeywords());
+                list.add( ((CPSCrop) e).getKeywords());
               }
             }));
     
