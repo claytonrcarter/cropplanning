@@ -51,6 +51,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 public class PlanManager extends CPSDialog implements ActionListener {
@@ -136,7 +137,7 @@ public class PlanManager extends CPSDialog implements ActionListener {
    
    private void createPlan() {
 
-    CPSBasedOnDialog dia = new CPSBasedOnDialog( jplContents,
+    CPSBasedOnDialog dia = new CPSBasedOnDialog( SwingUtilities.getWindowAncestor(this),
                                                  getCurrentSelection(),
                                                  listOfValidCropPlans,
                                                  dm );
