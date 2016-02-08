@@ -13,7 +13,6 @@ but do expect some bumps along the way.  **Back up your data files frequently!**
 
 ### Enhancements
 
-* Crop plans can now be exported to a Google Calendar. (*experimental, but fun*)
 * Support for DD/MM/YYYY style dates. 🇬🇧 🇦🇺
 * searching and filtering can now be done by specific field
   * eg, filtering for `name:winter` will just show crops with "Winter" in their name (like "Winter Squash"), while `var:winter` will just show varieties with "winter" in their name (like "Wintebor")

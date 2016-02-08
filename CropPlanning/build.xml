@@ -198,9 +198,9 @@
         <title>]]>${program.DESCRIPTION} Version ${program.VERSION}<![CDATA[</title>
         <pubDate>]]>${current.date}<![CDATA[</pubDate>
         <sparkle:releaseNotesLink>]]>http://www.failbetterfarm.com/cps/ReleaseNotes${program.VERSION}.html<![CDATA[</sparkle:releaseNotesLink>
-        <enclosure]]> url="http://cropplanning.googlecode.com/files/${dmg.file}"     sparkle:os="mac" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${dmg.length}"     type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${dmg.checksum}"     <![CDATA[/>
-        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.win.file}" sparkle:os="win" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.win.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.win.checksum}" <![CDATA[/>
-        <enclosure]]> url="http://cropplanning.googlecode.com/files/${zip.file}"     sparkle:os="all" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}"     type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}"     <![CDATA[/>
+        <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${dmg.file}"     sparkle:os="mac" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${dmg.length}"     type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${dmg.checksum}"     <![CDATA[/>
+        <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${zip.win.file}" sparkle:os="win" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.win.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.win.checksum}" <![CDATA[/>
+        <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${zip.file}"     sparkle:os="all" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}"     type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}"     <![CDATA[/>
       </item>]]>
     </echo>
 

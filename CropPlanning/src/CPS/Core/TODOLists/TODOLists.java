@@ -206,7 +206,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
         cmbWhatToExport.addItem( TL_ALL_PLANTINGS );
         cmbWhatToExport.addItem( TL_SEED_ORDER_WORKSHEET );
         cmbWhatToExport.addItem( TL_HARVEST_AVAILABILITY );
-        cmbWhatToExport.addItem( TL_GOOGLE_CAL );
+//        cmbWhatToExport.addItem( TL_GOOGLE_CAL );
         cmbWhatToExport.addItemListener(this);
 
         lblExportDesc = new JLabel( DSC_START + DSC_GH_SEEDING + DSC_END );
