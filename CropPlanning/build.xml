@@ -177,15 +177,18 @@
 
     <loadproperties srcfile="appinfo.properties" />
 
-    <property name="dmg.file" value="${application.title}-${version.prop}-Mac.dmg" />
+    <!--<property name="dmg.file" value="${application.title}-${version.prop}-Mac.dmg" />-->
+    <property name="zip.mac.file" value="${application.title}-${version.prop}-Mac.zip" />
     <property name="zip.win.file" value="${application.title}-${version.prop}-Win.zip" />
     <property name="zip.file" value="${application.title}-${version.prop}.zip" />
 
-    <checksum property="dmg.checksum" file="${dist.dir}/${dmg.file}" />
+    <!--<checksum property="dmg.checksum" file="${dist.dir}/${dmg.file}" />-->
+    <checksum property="zip.mac.checksum" file="${dist.dir}/${zip.mac.file}" />
     <checksum property="zip.win.checksum" file="${dist.dir}/${zip.win.file}" />
     <checksum property="zip.checksum" file="${dist.dir}/${zip.file}" />
 
-    <length property="dmg.length" file="${dist.dir}/${dmg.file}" />
+    <!--<length property="dmg.length" file="${dist.dir}/${dmg.file}" />-->
+    <length property="zip.mac.length" file="${dist.dir}/${zip.mac.file}" />
     <length property="zip.win.length" file="${dist.dir}/${zip.win.file}" />
     <length property="zip.length" file="${dist.dir}/${zip.file}" />
 
@@ -198,7 +201,7 @@
         <title>]]>${program.DESCRIPTION} Version ${program.VERSION}<![CDATA[</title>
         <pubDate>]]>${current.date}<![CDATA[</pubDate>
         <sparkle:releaseNotesLink>]]>http://www.failbetterfarm.com/cps/ReleaseNotes${program.VERSION}.html<![CDATA[</sparkle:releaseNotesLink>
-        <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${dmg.file}"     sparkle:os="mac" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${dmg.length}"     type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${dmg.checksum}"     <![CDATA[/>
+        <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${zip.mac.file}" sparkle:os="mac" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.mac.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.mac.checksum}"     <![CDATA[/>
         <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${zip.win.file}" sparkle:os="win" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.win.length}" type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.win.checksum}" <![CDATA[/>
         <enclosure]]> url="https://github.com/claytonrcarter/cropplanning/releases/download/v${version.prop}/${zip.file}"     sparkle:os="all" sparkle:version="${program.BUILDNUM}" sparkle:shortVersionString="${program.VERSION}" length="${zip.length}"     type="application/octet-stream" sparkle:dsaSignature="" sparkle:md5Sum="${zip.checksum}"     <![CDATA[/>
       </item>]]>
@@ -261,13 +264,9 @@
 
     <echo>Zip task START</echo>
 
+    <delete dir="${local.stage.dir}" verbose="true" />
     <mkdir dir="${local.stage.dir}" />
-    <delete includeemptydirs="true">
-      <fileset dir="${local.stage.dir}" >
-        <include name="*" />
-      </fileset>
-    </delete>
-
+    
     <echo>Copying files to staging area.</echo>
 
     <copy file="${dist.dir}/${application.title}-${version.prop}.jar" todir="${local.stage.dir}" />
@@ -295,17 +294,9 @@
 
     <echo>JarBundler task START</echo>
 
+    <delete dir="${local.stage.dir}" verbose="true" />
+    <delete dir="${stage.dir}" verbose="true" />
     <mkdir dir="${stage.dir}" />
-    <delete includeemptydirs="true" failonerror="false">
-      <fileset dir="${local.stage.dir}" >
-        <include name="*" />
-      </fileset>
-    </delete>
-    <delete includeemptydirs="true">
-      <fileset dir="${stage.dir}" >
-        <include name="*" />
-      </fileset>
-    </delete>
 
     <echo>Creating application bundle for Mac.</echo>
 
@@ -329,10 +320,30 @@
 
     <echo>Creating disk image.</echo>
 
-    <exec dir="." os="Mac OS X" executable="/bin/sh">
+<!--    <exec dir="." os="Mac OS X" executable="/bin/sh">
 	   <arg value="-c"/>
 	   <arg value="./scripts/mkdmg.sh . ${stage.dir} ${dist.dir} ${application.title}-${version.prop}-Mac" />
+    </exec>-->
+
+    <echo>Creating zip archive.</echo>
+
+    <delete dir="${local.stage.dir}" verbose="true" />
+    <mkdir dir="${local.stage.dir}" />
+
+    <echo>Copying files to staging area.</echo>
+
+    <copy file="${stage.dir}/gpl-3.0.txt" todir="${local.stage.dir}" />
+    <copy file="${stage.dir}/Release Notes.txt" todir="${local.stage.dir}" failonerror="false" />
+    <!-- We have to call out to `cp` because <copy> does't support resource forks and leads to broken app bundles. :( -->
+    <exec dir="." executable="cp">
+      <arg value="-R" />
+      <arg value="${stage.dir}/${application.title}.app" />
+      <arg value="${local.stage.dir}" />
     </exec>
+
+    <zip destfile="${dist.dir}/${application.title}-${version.prop}-Mac.zip"
+         basedir="${local.stage.dir}"
+         level="9" />
 
     <echo>JarBundler task DONE</echo>
 
@@ -349,14 +360,9 @@
 
     <echo>Launch4J task START</echo>
 
-    <property name="local.stage.dir" value="${stage.dir}/${application.title}-${version.prop}" />
+    <delete dir="${local.stage.dir}" verbose="true" />
     <mkdir dir="${local.stage.dir}" />
-    <delete includeemptydirs="true">
-      <fileset dir="${local.stage.dir}" >
-        <include name="*" />
-      </fileset>
-    </delete>
-
+    
     <echo>Copying files to staging area.</echo>
 
     <copy file="./gpl-3.0.txt" todir="${local.stage.dir}" />

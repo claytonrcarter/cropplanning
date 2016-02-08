@@ -1,19 +1,18 @@
 # CropPlanning
----
 
 **Crop Planning Software** for small farmers and serious gardeners.
 Plan for and manage the myriad crops, varieties and plantings required to keep a modern, intensive market garden producing throughout the growing season. This is a cross-platform (Windows, Mac, Unix, etc) desktop application that allows small farmers and gardeners to: Create, duplicate and delete crops and plantings; inherit data from other plantings and crops; key in a few data and let the program calculate the rest for you; sort and filter your plantings. These are all possible and new features are being added all the time. The software has been released as **open source, free software** and therefore is and will always be available **free of charge**. Those who [**donate**](Donate), however, will be thanked profusely.
-
-[Download for Windows]()
-
-[Download for Mac]()
-(for MacOS 10.8: [read this](MacGatekeeper))
 
 ### Latest Version
 Version: **0.7.0** <br>
 Released: **Feb 8, 2017** <br>
 [Release Notes](ReleaseNotes070) <br>
 [Installation Instructions](SetupAndInstallation) <br>
+
+[Download for Windows](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0-Win.zip)  <br>
+[Download for Mac](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0-Mac.zip)
+(for MacOS 10.8+: [read this](MacGatekeeper))  <br>
+[Download for Linux](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0.zip)
 
 ## Start Here
 
