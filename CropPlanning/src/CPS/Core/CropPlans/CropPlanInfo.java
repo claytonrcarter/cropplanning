@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,7 +50,7 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
    private CPSCheckBox chkDonePlant, chkDoneTP, chkDoneHarvest, chkIgnore, chkFrostHardy;
    private CPSRadioButton rdoDS, rdoTP;
    private JLabel lblDateTP, lblTimeToTP, lblFlatSize, lblFlatsNeeded, lblPlantsToStart,
-                  lblInRowSpace, lblPlantsNeeded;
+                  lblInRowSpace, lblPlantsNeeded, lblBedsToPlant, lblRowFtToPlant;
    private CPSTextField tfldMatAdjust, tfldTimeToTP, tfldRowsPerBed, tfldInRowSpace, tfldBetRowSpace,
                         tfldFlatSize;
    private CPSTextField tfldBedsToPlant, tfldRowFtToPlant, tfldPlantsNeeded,
@@ -413,10 +413,10 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
          names = getDataSource().getCropNameList();
 
 
-      tfldCropName = new CPSTextField( FIELD_LEN_LONG, names, CPSTextField.MATCH_STRICT );
-      tfldVarName = new CPSTextField( FIELD_LEN_LONG );
+      tfldCropName = new CPSTextField( FIELD_LEN_WAY_LONG, names, CPSTextField.MATCH_STRICT );
+      tfldVarName = new CPSTextField( FIELD_LEN_WAY_LONG );
       tfldMatDays = new CPSTextField( FIELD_LEN_SHORT );
-      tfldLocation = new CPSTextField( FIELD_LEN_LONG );
+      tfldLocation = new CPSTextField( FIELD_LEN_WAY_LONG );
 
       cmbDates = new JComboBox( new String[] { DATE_EFFECTIVE, DATE_ACTUAL, DATE_PLANNED } );
       cmbDates.addActionListener( this );
@@ -610,31 +610,42 @@ public class CropPlanInfo extends CPSDetailView implements ActionListener, ItemL
       JPanel jplAmount = new JPanel( new MigLayout( migPanelDefaults ));
       jplAmount.setBorder( BorderFactory.createTitledBorder( "How Much" ) );
 
-      tempLabel = new JLabel( "Beds to Plant" );
-      jplAmount.add( tempLabel, "align right" );
+      lblBedsToPlant = new JLabel( "Beds to Plant" );
+      lblBedsToPlant.setDisplayedMnemonic( 'b' );
+      lblBedsToPlant.setLabelFor( tfldBedsToPlant );
+      jplAmount.add( lblBedsToPlant, "align right" );
       jplAmount.add( tfldBedsToPlant, "wrap" );
-      anonLabels.add( tempLabel );
+      anonLabels.add( lblBedsToPlant );
 
       if ( CPSGlobalSettings.useMetric() )
-        tempLabel = new JLabel( "Row Meters to Plant" );
+        lblRowFtToPlant = new JLabel( "Row Meters to Plant" );
       else
-        tempLabel = new JLabel( "Row Ft to Plant" );
-      jplAmount.add( tempLabel, "align right" );
+        lblRowFtToPlant = new JLabel( "Row Ft to Plant" );
+      lblRowFtToPlant.setDisplayedMnemonic( 'r' );
+      lblRowFtToPlant.setLabelFor( tfldRowFtToPlant );
+      jplAmount.add( lblRowFtToPlant, "align right" );
       jplAmount.add( tfldRowFtToPlant, "wrap" );
-      anonLabels.add( tempLabel );
+      anonLabels.add( lblRowFtToPlant );
       
       lblPlantsNeeded = new JLabel( "Plants Needed" );
+      lblPlantsNeeded.setDisplayedMnemonic( 'p' );
+      lblPlantsNeeded.setLabelFor( tfldPlantsNeeded );
       jplAmount.add( lblPlantsNeeded, "align right" );
       jplAmount.add( tfldPlantsNeeded, "wrap" );
       anonLabels.add( lblPlantsNeeded );
       
       lblPlantsToStart = new JLabel( "Plants to Start" );
       lblPlantsToStart.setToolTipText("Plants needed plus fudge factor");
+      lblPlantsToStart.setDisplayedMnemonic( 's' );
+      lblPlantsToStart.setDisplayedMnemonicIndex( 10 );
+      lblPlantsToStart.setLabelFor( tfldPlantsToStart );
       jplAmount.add( lblPlantsToStart, "align right" );
       jplAmount.add( tfldPlantsToStart, "wrap" );
       anonLabels.add( lblPlantsToStart );
       
       lblFlatsNeeded = new JLabel( "Flats to Start" );
+      lblFlatsNeeded.setDisplayedMnemonic( 'f' );
+      lblFlatsNeeded.setLabelFor( tfldFlatsNeeded );
       jplAmount.add( lblFlatsNeeded, "align right" );
       jplAmount.add( tfldFlatsNeeded, "wrap" );
       anonLabels.add( lblFlatsNeeded );

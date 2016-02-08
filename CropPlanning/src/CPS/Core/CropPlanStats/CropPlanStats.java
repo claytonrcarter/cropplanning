@@ -49,8 +49,10 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
   private SortedList<CPSPlanting> dataSorted;
   private FilterList<CPSPlanting> dataFiltered;
 
+  private Date dateFirstPlanting, dateLastHarvest;
+
   public CropPlanStats() {
-    setModuleName("PlanStats");
+    setModuleName("Stats & Charts");
     setModuleType("Core");
     setModuleVersion( CPSGlobalSettings.getVersion() );
   }
@@ -104,7 +106,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
     dataSorted.setComparator( new CPSPlantingComparator( CPSDataModelConstants.PROP_DATE_PLANT ));
     String labelString = "First planting is " + dataSorted.get(0).getCropName() +
                          " on " + dataSorted.get(0).getDateToPlantString();
-    Date dateFirstPlanting = dataSorted.get(0).getDateToPlant();
+    dateFirstPlanting = dataSorted.get(0).getDateToPlant();
 
     // ... and the last
     // this sorts the list based on harvest date + num of weeks to yield
@@ -114,7 +116,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
                 }
               }
             );
-    Date dateLastHarvest = dataSorted.get( dataSorted.size()-1 ).getDateHarvestEnd();
+    dateLastHarvest = dataSorted.get( dataSorted.size()-1 ).getDateHarvestEnd();
     labelString += "<br>Last harvest is " + dataSorted.get( dataSorted.size()-1 ).getCropName() +
                         " on " + CPSDateValidator.format( dateLastHarvest );
 
@@ -538,7 +540,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 
     @Override
     public boolean matches(CPSPlanting p) {
-      boolean m = super.matches(p);
+      boolean m = true;
 
       if ( dateInTheField != null ) {
         if ( p.isDirectSeeded() )
@@ -603,7 +605,7 @@ public class CropPlanStats extends CPSDisplayableDataUserModule implements Actio
 
     @Override
     public boolean matches(CPSPlanting p) {
-      boolean m = super.matches(p);
+      boolean m = true;
 
       if ( seededInTheGreenhouse != null )
         m &= seededInTheGreenhouse.after( bumpDateByDay( p.getDateToPlant(), -1 )) &&

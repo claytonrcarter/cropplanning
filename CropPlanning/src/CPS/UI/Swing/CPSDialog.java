@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@ package CPS.UI.Swing;
 
 import java.awt.Component;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;

@@ -13,6 +13,33 @@ import java.util.Comparator;
 public class CPSComparators {
 
     /**
+     * A Comparator to sort CPSPlantings by effective planting date.
+     */
+    public static class DatePlantComparator implements Comparator<CPSPlanting> {
+      public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+        return o1.getDateToPlant().compareTo( o2.getDateToPlant() );
+      }
+    }
+
+    /**
+     * A Comparator to sort CPSPlantings by effective TP date.
+     */
+    public static class DateTPComparator implements Comparator<CPSPlanting> {
+      public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+        return o1.getDateToTP().compareTo( o2.getDateToTP() );
+      }
+    }
+
+    /**
+     * A Comparator to sort CPSPlantings by crop name.
+     */
+    public static class CropNameComparator implements Comparator<CPSPlanting> {
+      public int compare( CPSPlanting o1, CPSPlanting o2 ) {
+        return o1.getCropName().compareTo( o2.getCropName() );
+      }
+    }
+
+    /**
      * A Comparator to sort CPSPlantings first by planned planting date, then crop name.
      */
     public static class DatePlantCropNameComparator implements Comparator<CPSPlanting> {

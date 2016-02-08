@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 
 package CPS.Core.UI;
 
+import CPS.CropPlanning;
 import CPS.Module.CPSConfigurable;
 import CPS.Module.CPSDataModelUser;
 import CPS.Module.CPSDisplayableDataUserModule;
@@ -34,15 +35,19 @@ import CPS.Module.CPSModule;
 import CPS.Module.CPSUI;
 
 import CPS.Module.CPSWizardPage;
+import java.awt.Component;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.*;
+import net.miginfocom.swing.MigLayout;
 
 
 public class TabbedUI extends CPSUI implements ActionListener {
 
     private final String MENU_ITEM_SETTINGS = "Settings...";
+    private final String MENU_ITEM_ABOUT = "About CropPlanning...";
     private final String MENU_ITEM_EXIT = "Exit";
 
     // The preferred size of the demo
@@ -280,10 +285,16 @@ public class TabbedUI extends CPSUI implements ActionListener {
        fileMenu.add( importMenu );
        fileMenu.add( new JSeparator() );
        fileMenu.add( exitItem );
-    
+
+       JMenu aboutMenu = new JMenu( "About" );
+       JMenuItem aboutItem = new JMenuItem( MENU_ITEM_ABOUT );
+       aboutItem.addActionListener( this );
+       aboutMenu.add(aboutItem);
+
+
        menuBar.add( fileMenu );
-       // menuBar.add( Horizontal spacer )
-       // menuBar.add( aboutItem );
+       menuBar.add( Box.createHorizontalGlue() );
+       menuBar.add( aboutMenu );
        
        return menuBar;
     }
@@ -391,12 +402,6 @@ public class TabbedUI extends CPSUI implements ActionListener {
       this.modulesUpdated = modulesUpdated;
    }
    
-//   public void revalidate() {
-//      tabbedpane.setPreferredSize( tabbedpane.getSize() );
-//      fm.revalidate();   
-//   }
-   
-   
    public void actionPerformed( ActionEvent ae ) {
       String action = ae.getActionCommand();
 
@@ -463,6 +468,9 @@ public class TabbedUI extends CPSUI implements ActionListener {
          settings.setVisible(true);
          dataChanged();
       }
+      else if ( action.equalsIgnoreCase( MENU_ITEM_ABOUT )) {
+         new AboutDialog( menuBar ).setVisible(true);
+      }
       else if ( action.equalsIgnoreCase( MENU_ITEM_EXIT )) {
          // TODO, save data, settings, etc
          Runtime.getRuntime().exit(0);
@@ -497,7 +505,59 @@ public class TabbedUI extends CPSUI implements ActionListener {
     public int shutdown() {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
-    
-   
+
+
+
+    class AboutDialog extends JDialog {
+
+      public AboutDialog( Component parent ) {
+
+        super( (JFrame) SwingUtilities.getWindowAncestor(parent) );
+
+        JPanel p = new JPanel(new MigLayout("insets 20px, wrap 1", "align center"));
+
+        try {
+          JLabel picLabel = new JLabel(new ImageIcon( CropPlanning.class.getResource( "/wheelhoe-for-twinkle.png" )));
+          p.add( picLabel, "align center" );
+        } catch ( Exception e ) {
+          debug( "Couldn't load icon: " + new File("wheelhoe-for-twingle.png").getPath() );
+          e.printStackTrace();
+        }
+
+        p.add( new JLabel( "Crop Planning Software" ) );
+        p.add( new JLabel( "Version: " + CPSGlobalSettings.getVersion() ) );
+
+        JTextField t1 = new JTextField("https://github.com/claytonrcarter/cropplanning" );
+        t1.setEditable(false);
+        t1.setBackground(null);
+        t1.setBorder(null);
+        p.add( t1 );
+
+        JTextField t2 = new JTextField( "cropplanning@gmail.com" );
+        t2.setEditable(false);
+        t2.setBackground(null);
+        t2.setBorder(null);
+        p.add( t2 );
+
+
+
+        JButton ok = new JButton("OK");
+        ok.addActionListener( new ActionListener() {
+                                public void actionPerformed( ActionEvent e ) {
+                                  setVisible( false );
+                                }
+                              } );
+
+        p.add(ok );
+
+        add(p);
+
+        pack();
+        setLocationRelativeTo( parent );
+        
+      }
+
+    }
+
 }
 

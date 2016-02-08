@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  *
  * This program is free software: you can redistribute it and/or modify
@@ -45,7 +45,10 @@ import java.awt.Insets;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -69,6 +72,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
 
     protected static final String KEY_DISPLAYED_COLUMNS = "DISPLAYED_COLUMNS";
     protected static final String KEY_DISPLAYED_TABLE = "DISPLAYED_TABLE";
+    protected static final String KEY_LAST_FILTER_TEXT = "LAST_FILTER_TEXT";
 
     protected static final String STATUS_NO_PLAN_SELECTED = "No plan selected.  Select a plan to display or use \"New Plan\" button to create a new one.";
     protected static final String STATUS_NEW_RECORD = "Editing new record; save changes to add to list.";
@@ -121,6 +125,12 @@ public abstract class CPSMasterView extends CPSDataModelUser
     
     public int init() { return 0; }
     protected int saveState() {
+      
+      if ( tfldFilter.getText().equals( "" ) )
+        getPrefs().remove( KEY_LAST_FILTER_TEXT );
+      else
+        getPrefs().put(  KEY_LAST_FILTER_TEXT, tfldFilter.getText() );
+
       debug( "Saving visible columns: " + getDisplayedColumnListAsString() );
       getPrefs().put( KEY_DISPLAYED_COLUMNS, getDisplayedColumnListAsString() );
        if ( getDisplayedTableName() == null )
@@ -453,11 +463,34 @@ public abstract class CPSMasterView extends CPSDataModelUser
        tfldFilter = new CPSSearchField( "Filter" );
        tfldFilter.setToolTipText( "Only show records matching ALL of these terms.  Leave blank to show everything." );
        tfldFilter.setMaximumSize( tfldFilter.getPreferredSize() );
+       tfldFilter.addKeyListener( new KeyAdapter() {
+                       @Override
+                       public void keyReleased( KeyEvent e ) {
+                         if ( tfldFilter.getText().equals( "" ) )
+                           btnNewRecord.setEnabled( true );
+                         else
+                           btnNewRecord.setEnabled( false );
+                         super.keyPressed( e );
+                       }
+                    });
+//       TODO: make this work
+//       String st = getPrefs().get( KEY_LAST_FILTER_TEXT, "" );
+//       if ( ! st.equals( "" )) {
+//         tfldFilter.setText( st );
+//       }
 
        // setup the text filtering mechanism
        textFilter = new CPSTextFilter<CPSRecord>( tfldFilter, getTextFilterator() );
-       // TODO add call to textFilter.setFields( .... ) to enable advanced field matching
-
+       Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> s = getFilterFields();
+       Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> t = new HashSet<SearchEngineTextMatcherEditor.Field<CPSRecord>>();
+       for ( SearchEngineTextMatcherEditor.Field<CPSRecord> field : s ) {
+         t.add( field );
+         for ( int i = 1; i < field.getName().length(); i++ )
+           t.add( new SearchEngineTextMatcherEditor.Field<CPSRecord>( field.getName().substring( 0, i ),
+                  field.getTextFilterator() ));
+       }
+       textFilter.setFields( t );
+       
        // setup the list of filters and add an "all" matcher
        filterList = new BasicEventList<MatcherEditor<CPSRecord>>();
        filterList.add( new AbstractMatcherEditor<CPSRecord>()
@@ -689,7 +722,7 @@ public abstract class CPSMasterView extends CPSDataModelUser
     protected abstract List getMasterListData();
     protected abstract CPSAdvancedTableFormat getTableFormat();
     protected abstract TextFilterator<CPSRecord> getTextFilterator();
-
+    protected abstract Set<SearchEngineTextMatcherEditor.Field<CPSRecord>> getFilterFields();
 
     protected void addFilter( MatcherEditor me ) {
        filterList.add(me);
@@ -769,21 +802,36 @@ public abstract class CPSMasterView extends CPSDataModelUser
                 return;
 
             } else if ( selectModel.getSelected().size() != 1 ) {
-              
-               // TODO, support mupltiple row duplication
-                new CPSErrorDialog( this.getMainPanel(),
-                   "Cannot Duplicate Entries",
-                   "<center>Sorry, but we can only duplicate<br> " +
-                   "records one at a time." ).setVisible( true );
 
-               return;
+              int[] ids = new int[selectModel.getSelected().size()];
+      
+              CPSConfirmDialog dia =
+                    new CPSConfirmDialog( getMainPanel(),
+                                          "duplicate " + ids.length + " record" +
+                                          ( ( ids.length > 1 ) ? "s" : "" ));
+              dia.setVisible(true);
+
+              if ( dia.didConfirm() ) {
+
+                 masterList.getReadWriteLock().writeLock().lock();
+                int i = 0;
+                for ( CPSRecord r : selectModel.getSelected() )
+                  ids[i++] = r.getID();
+                for ( i = 0; i < ids.length; i++ )
+                  duplicateRecord( ids[i] );
+                masterList.getReadWriteLock().writeLock().unlock();
+                
+              }
+               
+            } else {
+
+              CPSRecord newRecord = duplicateRecord( selectModel.getSelected().get(0) );
+              int newID = newRecord.getID();
+              uiManager.displayDetail( newRecord );
+              uiManager.setDetailViewForEditting();
+              setSelection( newID );
+
             }
-
-            CPSRecord newRecord = duplicateRecord( selectModel.getSelected().get(0) );
-            int newID = newRecord.getID();
-            uiManager.displayDetail( newRecord );
-            uiManager.setDetailViewForEditting();
-            setSelection( newID );
 
         }
 //****************************************************************************//
@@ -799,7 +847,8 @@ public abstract class CPSMasterView extends CPSDataModelUser
             int[] is = new int[selectModel.getSelected().size()];
 
             CPSConfirmDialog dia =
-                    new CPSConfirmDialog( "delete " + is.length + " record" +
+                    new CPSConfirmDialog( getMainPanel(),
+                                          "delete " + is.length + " record" +
                                           ( ( is.length > 1 ) ? "s" : "" ));
             dia.setVisible(true);
 

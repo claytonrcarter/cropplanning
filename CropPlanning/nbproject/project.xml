@@ -20,14 +20,6 @@
                 <id>jar</id>
             </reference>
             <reference>
-                <foreign-project>TableUtil</foreign-project>
-                <artifact-type>jar</artifact-type>
-                <script>build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-            <reference>
                 <foreign-project>Twinkle</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>

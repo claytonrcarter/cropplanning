@@ -1,6 +1,5 @@
-/* CPSCpnfirmDialog.java
- * Copyright (C) 2013 Clayton Carter
- *
+/* CPSInfoDialog.java - created: Feb 13, 2014
+*
  * This file is part of the project "Crop Planning Software".  For more
  * information:
  *    website: https://github.com/claytonrcarter/cropplanning
@@ -22,63 +21,44 @@
 package CPS.UI.Swing;
 
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-public class CPSConfirmDialog extends CPSDialog
-                              implements ActionListener {
+public class CPSInfoDialog extends CPSDialog
+                           implements ActionListener {
 
-  JButton btnYes, btnNo;
-  boolean confirmed = false;
+  JButton btnOK;
 
-  public CPSConfirmDialog(String action) {
-    this( new JPanel(), action );
+  public CPSInfoDialog( Component parent, String header, String message ) {
+    super( parent, header );
+    setDescription( message );
   }
 
-  public CPSConfirmDialog( Component parent, String action) {
-    super( parent, "Are you sure?" );
-    setDescription( "You really want to " + action + "?" );
+  public CPSInfoDialog( Component parent, String message) {
+    this( parent, "Attention", message );
   }
 
-  public boolean didConfirm() {
-    return confirmed;
-  }
 
   @Override
   protected void buildContentsPanel() {
-
-    btnYes = new JButton( "Yes, I'm Sure" );
-    btnNo = new JButton( "No, Cancel That" );
-
-    btnYes.addActionListener(this);
-    btnNo.addActionListener(this);
-
-    JPanel jplFoo = new JPanel();
-    jplFoo.setLayout( new FlowLayout( FlowLayout.TRAILING ));
-    jplFoo.add(btnYes);
-    jplFoo.add(btnNo);
-    add(jplFoo);
-    
     contentsPanelBuilt = true;
   }
 
   @Override
-  protected void fillButtonPanel() {}
+  protected void fillButtonPanel() {
+    btnOK = new JButton("OK");
+    btnOK.addActionListener( this );
+    jplButtons.add(btnOK);
+  }
 
   public void actionPerformed(ActionEvent e) {
-    Object source = e.getSource();
-
-    if ( source == btnYes )
-      confirmed = true;
-
     setVisible(false);
   }
 
   public static void main(String[] args) {
-    new CPSConfirmDialog("fart").setVisible(true);
+    new CPSInfoDialog( new JPanel(), "fart").setVisible(true);
     System.exit(0);
   }
 

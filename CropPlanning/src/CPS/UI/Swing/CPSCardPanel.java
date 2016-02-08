@@ -3,7 +3,7 @@
  *
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -97,7 +97,7 @@ public class CPSCardPanel extends JPanel implements ItemListener {
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
-    cb.setEnabled(enabled);
+//    cb.setEnabled(enabled);
     JPanel jp = (JPanel) cards.getComponent( cb.getSelectedIndex() );
     for (int i = 0; i < jp.getComponentCount(); i++) {
       jp.getComponent(i).setEnabled(enabled);

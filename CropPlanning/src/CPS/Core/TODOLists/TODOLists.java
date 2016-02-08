@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -34,6 +34,8 @@ import CPS.Module.CPSDisplayableDataUserModule;
 import CPS.Module.CPSGlobalSettings;
 import CPS.UI.Modules.CPSAdvancedTableFormat;
 import CPS.UI.Swing.CPSComplexFilterDialog;
+import CPS.UI.Swing.CPSConfirmDialog;
+import CPS.UI.Swing.CPSErrorDialog;
 import CPS.UI.Swing.CPSTable;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.FilterList;
@@ -59,6 +61,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
@@ -93,6 +96,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private final String TL_ALL_PLANTINGS = "Complete Crop Plan";
     private final String TL_SEED_ORDER_WORKSHEET = "Seed Order Worksheet";
     private final String TL_HARVEST_AVAILABILITY = "Harvest Availabilities";
+    private final String TL_GOOGLE_CAL = "Google Calendar";
 
     protected static final int TL_FORMAT_PDF = 1;
     protected static final int TL_FORMAT_CSV = 2;
@@ -105,6 +109,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
     private final String DSC_ALL_PLANTINGS = "Summary of each planting<br>from this list.";
     private final String DSC_SEED_ORDER_WORKSHEET = "Summary of each crop and/or variety<br>in this plan, including amount of seed<br>needed for each variety.";
     private final String DSC_HARVEST_AVAILABILITY = "List of harvest periods for<br>each crop and/or variety.";
+    private final String DSC_GOOGLE_CAL = "<i>EXPERIMENTAL:</i> Export selected<br>crop plan to a Google Calendar.<br><i>Requires a Google account.</i>";
 
     PDFExporter pdf = new PDFExporter();
 
@@ -201,6 +206,7 @@ public class TODOLists extends CPSDisplayableDataUserModule
         cmbWhatToExport.addItem( TL_ALL_PLANTINGS );
         cmbWhatToExport.addItem( TL_SEED_ORDER_WORKSHEET );
         cmbWhatToExport.addItem( TL_HARVEST_AVAILABILITY );
+        cmbWhatToExport.addItem( TL_GOOGLE_CAL );
         cmbWhatToExport.addItemListener(this);
 
         lblExportDesc = new JLabel( DSC_START + DSC_GH_SEEDING + DSC_END );
@@ -263,6 +269,15 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
     }
 
+    protected void setExportButtonsForGCal( boolean b ) {
+      if ( b ) {
+        btnFormatPDF.setText( "To the Cloud!" );
+        btnFormatCSV.setText( "Change Login" );
+      } else {
+        btnFormatPDF.setText( "Export as PDF" );
+        btnFormatCSV.setText( "Export as CSV" );
+      }
+    }
 
 
     protected void updateListOfPlans() {
@@ -749,6 +764,17 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
     }
 
+    private void exportToGoogleCal( String planName,
+                                    boolean changeLogin ) {
+
+      GoogleCalExporter.exportCropPlan( jplTodo,
+                                        getDataSource().getCropPlan( planName ),
+                                        planName,
+                                        changeLogin );
+
+    }
+
+
     private void exportSeedOrderLists( String planName, int format ) {
 
         String filename = createOutputFileName( filFile.getSelectedFile(),
@@ -931,8 +957,10 @@ public class TODOLists extends CPSDisplayableDataUserModule
 
         String planName = (String) cmbPlanName.getSelectedItem();
         if ( planName == null ) {
-            debug( "ERROR: must select a crop plan" );
-            return;
+          new CPSErrorDialog( jplTodo,
+                              "Please select a crop plan and try again.",
+                              "No Plan Selected" ).setVisible( true );
+          return;
         }
 
         if ( action.equalsIgnoreCase(btnFormatPDF.getText()) ||
@@ -966,6 +994,36 @@ public class TODOLists extends CPSDisplayableDataUserModule
             exportSeedOrderLists( planName, format );
           } else if ( whatToExport.equals( TL_HARVEST_AVAILABILITY ) ) {
             exportAvailabilityList( planName, format );
+          } else if ( whatToExport.equals( TL_GOOGLE_CAL ) ) {
+
+            // if we haven't warned them about GCal, then do so
+            if ( ! Preferences.userNodeForPackage(GoogleCalExporter.class)
+                              .getBoolean( "GOOGLE_CAL_WARNING", false ) ) {
+              CPSConfirmDialog cd = new CPSConfirmDialog( "" );
+              cd.setDescription( "<center>This is an <em>EXPERIMENTAL</em> feature.  It works<br>" +
+                                 "in our limited testing and we hope that it will<br>" +
+                                 "work for you. To proceed, you must agree to send us<br>" +
+                                 "feedback (by email) on how it works and what else you<br>" +
+                                 "would like it to do.<br>" +
+                                 "There is not much risk that this feature will break your<br>" +
+                                 "crop plan or mess up your Google Calendar, but we cannot<br>" +
+                                 "be held responsible if it does.<br>" +
+                                 "<b>Are you sure you want to proceed?"
+                      );
+              cd.setVisible( true );
+
+              // if they said, yes, then consider them warned
+              if ( cd.didConfirm() )
+                Preferences.userNodeForPackage(GoogleCalExporter.class)
+                           .putBoolean( "GOOGLE_CAL_WARNING", true );
+            }
+
+            // only proceed if they've been warned and agreed to proceed
+            if ( Preferences.userNodeForPackage(GoogleCalExporter.class)
+                            .getBoolean( "GOOGLE_CAL_WARNING", false )) {
+              exportToGoogleCal( planName,
+                                 action.equalsIgnoreCase(btnFormatCSV.getText()) );
+            }
           }
           jplTodo.setCursor(Cursor.getDefaultCursor());
 
@@ -1026,9 +1084,14 @@ public class TODOLists extends CPSDisplayableDataUserModule
             t = DSC_SEED_ORDER_WORKSHEET;
           else if ( s.equals( TL_HARVEST_AVAILABILITY ) )
             t = DSC_HARVEST_AVAILABILITY;
+          else if ( s.equals( TL_GOOGLE_CAL ) )
+            t = DSC_GOOGLE_CAL;
 
-          setDateComponentsEnabled( t.equals( DSC_GH_SEEDING ) ||
-                                    t.equals( DSC_FIELD_PLANTING ) );
+          // OR together a list of things which should have date components enabled
+          setDateComponentsEnabled( s.equals( TL_GH_SEEDING ) ||
+                                    s.equals( TL_FIELD_PLANTING ) );
+
+          setExportButtonsForGCal( s.equals( TL_GOOGLE_CAL ) );
 
           lblExportDesc.setText( DSC_START + t + DSC_END );
 

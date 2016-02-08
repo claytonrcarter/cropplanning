@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -35,13 +35,9 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
 
 /**
  * A text field for search/filter interfaces. The extra functionality includes
@@ -60,10 +56,12 @@ public class CPSSearchField extends JTextField {
     private boolean sendsNotificationForEachKeystroke = true;
     private boolean showingPlaceholderText = false;
     private boolean armed = false;
+    private PlaceholderText pt;
 
     public CPSSearchField(String placeholderText) {
-        super(10);
-        addFocusListener(new PlaceholderText(placeholderText));
+        super(15);
+        pt = new PlaceholderText(placeholderText);
+        addFocusListener(pt);
         initBorder();
         initKeyListener();
     }
@@ -79,8 +77,16 @@ public class CPSSearchField extends JTextField {
         }
         return super.getText();
     }
-    
-    
+
+//    @Override
+//    public void setText( String t ) {
+//      if ( showingPlaceholderText ) {
+//        pt.focusGained( null );
+//      }
+//      super.setText( t );
+//      pt.focusLost( null );
+//      postActionEvent();
+//    }
     
     private void initBorder() {
         setBorder(new CompoundBorder(getBorder(), CANCEL_BORDER));
@@ -103,7 +109,7 @@ public class CPSSearchField extends JTextField {
     }
     
     private void cancel() {
-        setText("");
+        super.setText("");
         postActionEvent();
     }
     
@@ -207,7 +213,7 @@ public class CPSSearchField extends JTextField {
 
         public void focusGained(FocusEvent e) {
             setForeground(previousColor);
-            setText(previousText);
+            CPSSearchField.super.setText(previousText);
             showingPlaceholderText = false;
         }
 
@@ -218,7 +224,7 @@ public class CPSSearchField extends JTextField {
             if (previousText.length() == 0) {
                showingPlaceholderText = true;
                setForeground( Color.GRAY );
-               setText( placeholderText );
+               CPSSearchField.super.setText( placeholderText );
            }
 
         }

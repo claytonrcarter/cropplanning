@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  *
  * This program is free software: you can redistribute it and/or modify
@@ -92,9 +92,9 @@ public class ModuleManager implements CPSModuleMediator {
       
       for ( CPSModule mod : coreMods ) {
           CPSModule.debug( "ModuleManager", "Examining module: " + mod.getModuleName() );
-          if ( mod.getModuleName().equals( "CropPlans" )) {
+          if ( mod.getModuleName().equals( "Crop Plans" )) {
               cropPlansModule = (CPSMasterDetailModule) mod;
-              CPSModule.debug( "ModuleManager", "Found what we're looking for: CropPlans" ); 
+              CPSModule.debug( "ModuleManager", "Found what we're looking for: Crop Plans" );
           }
       }
 

@@ -112,6 +112,7 @@
     <copy file="appinfo.properties" todir="${build.classes.dir}"/>
     <copy file="log4j.properties" todir="${build.classes.dir}"/>
     <copy file="twinkle.properties" todir="${build.classes.dir}"/>
+    <copy file="wheelhoe-for-twinkle.png" todir="${build.classes.dir}"/>
 
   </target>
 
@@ -313,6 +314,8 @@
                 mainclass="com.simontuffs.onejar.Boot"
                 jvmversion="1.5+"
                 version="${version.prop}"
+                stubfile="./universalJavaApplicationStub"
+                useJavaXKey="true"
                 icon="./cps-icon-nobkg.icns">
 
       <jarfileset dir="${dist.dir}">

@@ -1,76 +1,67 @@
-
-CropPlanning Software
-http://cropplanning.googlecode.com
+# Crop Planning Software
+https://github.com/claytonrcarter/cropplanning  
 cropplanning@gmail.com
-Dec 13, 2008
+Feb 8, 2016
 
-Release Notes for the first Beta of Version 1.0
+Release Notes for Version 0.7.0
 
-See the last section for list of changes and improvements since last version.
+### WARNING
 
-===[ WARNING ]===
+This software is still in a "beta" state.  This means that
+the software may be finicky or unpredictable.  Please use this program,
+but do expect some bumps along the way.  **Back up your data files frequently!**
 
-This software is being released in a "beta" state.  This means that 
-the software MAY be unstable or unpredictable.  Please use this version
-for testing and tinkering ONLY.
+### Enhancements
 
-Our use and testing shows that the software is stable enough to be useful, doesn't corrupt or lose data, and performs pretty much as promised.  But there are still numerous small problems and bugs that need to be fixed before we can give a more general stamp of approval.
-
-Until then, this software is FOR TESTING ONLY.
-
-
-===[ Installation ]===
-
-Please follow installation instructions at:
-
-http://code.google.com/p/cropplanning/wiki/SetupAndInstallation
-
-Briefly: 1) Make sure Java 1.5 or greater is installed, 2) Open the archive (which you had to do to read this), 3) Copy the enclosed files to your hard drive, 4) double click on the  program file (On Mac: CropPlanning, on Windows: CropPlanning.exe)
-
-
-===[ Using the Program ]===
-
-There is a brief introduction to the program available at
-
-http://code.google.com/p/cropplanning/wiki/ProgramUsageIntroduction
-
-
-===[ How To Help ]===
-
-Communicate!  Send all of your ideas, suggestions, bugs, etc to cropplanning@gmail.com.  Also, just take a look at our "HelpWanted" page to see if you can help out any other way:
-
-    http://code.google.com/p/cropplanning/wiki/HelpWanted
+* Crop plans can now be exported to a Google Calendar. (*experimental, but fun*)
+* Support for DD/MM/YYYY style dates. 🇬🇧 🇦🇺
+* searching and filtering can now be done by specific field
+  * eg, filtering for `name:winter` will just show crops with "Winter" in their name (like "Winter Squash"), while `var:winter` will just show varieties with "winter" in their name (like "Wintebor")
+  * this works in the CropDB tab for these fields: crop, variety, groups, keywords
+  * and in the CropPlan tab for these fields: crop, variety, location, groups, keywords
+* a fancy, new About dialog
+* number of plants is now included in the stats summarized under the planting list
+* multiple records can be duplicated together (instead of one at a time)
+* added keyboard shortcuts to certain fields:
+  * in Crop Plans:
+    * `Control + Option + b`: jump to "Beds to Plant"
+    * `Control + Option + r`: jump to "Rowft to Plant"
+    * `Control + Option + p`: jump to "Plants Needed"
+    * `Control + Option + s`: jump to "Plants to Start"
+    * `Control + Option + f`: jump to "Flats to Start"
+  * in CropDB
+    * `Control + Option + m`: jump to "Maturity Days"
+    * `Control + Option + k`: jump to "Keywords"
+  * these are obviously for a Mac, on Windows you'll have to play around to find what works, but it's probably `Control + Alt + b`, etc
 
 
-===[ Changes and Improvements ]===
+### Bugs Fixed
 
-This update includes too many fixes, tweaks, corrections and refinements to list, but here's a few of the highlights:
-
-  * It's much easier for new users to get started.  They are stepped through a couple of introductory questions and settings before the program creates their first crop plan for them.
-
-  * For crops and varieties which can be both direct seeded (DS) and transplanted (TP), you can now enter different information for either case.
-
-  * Plantings (individual entries in a crop plan) are now explicitly marked as being either DS or TP.  If the crop or variety has different information for DS vs TP (see previous point), the appropriate info is displayed and used in calculations.
-  
-  * There is a completely new, much easier to understand mechanism for creating, selecting and deleting crop plans.  Additionally, crop plans can now have years and descriptions attached to them, making it very easy to manage different crop plans which you might create.
-  
-  * Plantings now have "actual" dates, as well as "planned" dates.  Recording the actual date on which you planted, transplanted or picked something is better for record keeping and it allows the program to better represent the reality of what's happening on the farm and in the greenhouse.
- 
-  * Plantings can now be marked as having been planted, transplanted or picked ... "completed", in other words.  These work even if you don't use the "actual" date mechanism mentioned above.
-  
-  * Plantings can be marked as "ignored" or skipped.  They're not deleted, but they won't show up in most of the lists or in the print outs.  This is useful for when a planting is just too late to be worth it, or maybe something just doesn't make sense anymore.
-
-  * The program is better at remembering what you were doing the last time you used the program; what plan you were working on, which columns you were viewing, which -- if any -- of the predefined filters you had in place, to name a few.
-
-  * Crops, Varieties and Plantings now track more data fields.
- 
-  * Added preliminary support for importing CSV data for crop plans and the CropDB,  (Thanks to volunteer contributor: sm_zl_kimi)
- 
-  * We've added a number of settings to let you better customize the program.
-
-  * Crop plans can now have spaces and punctuation in their names.
-
-  * You can now enter your own farm name, which is used in the PDF output.
+* "Total Yield" can be used for planting calculations (eg "I need 300 cabbages on July 15th, when should I plant them?")
+* If the program finds multiple crops or varieties with the same name, it won't croak anymore.
+* fixed an issue where the field planting lists weren't sorting correctly in some situations
+* stats and charts should work better when plans span multiple years
+* if a number is entered with a unit (eg `18"`), the program will ask you to correct it
+* the fudge factor has been improved for very small plantings
+* prettied things up a bit
+* plus, a bunch of other more esoteric issues have been fixed
 
 
-  
+### Installation
+
+Please follow installation instructions at: [SetupAndInstallation](SetupAndInstallation)
+
+Briefly: 1) Make sure Java 1.6 or greater is installed, 2) Open the archive or disk image, 3) Copy the enclosed files to your hard drive, 4) double click on the  program file (On Mac: CropPlanning, on Windows: CropPlanning.exe)
+
+### Using the Program
+
+There is a brief introduction to the program available at [ProgramUsageIntroduction](ProgramUsageIntroduction)
+
+#### How To Help
+
+* Like us on [Facebook!](http://www.facebook.com/CropPlanningSoftware)
+* Communicate!  Send all of your ideas, suggestions, bugs, etc to cropplanning@gmail.com.  If you feel comfortable, submit "issues" (ie, bugs, feature requests, etc) directly through the website at [https://github.com/claytonrcarter/cropplanning/issues](https://github.com/claytonrcarter/cropplanning/issues)
+* [Donate!](Donations) 💰🍺🍕:heart:
+* Last, take a look at our [HelpWanted](HelpWanted) page to see if you can help out any other way.
+
+**Thank you!**

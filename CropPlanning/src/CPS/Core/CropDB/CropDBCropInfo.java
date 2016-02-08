@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
 
    private CPSTextField tfldCropName, tfldVarName, tfldFamName, tfldMatDays;
    private CPSCheckBox chkDS, chkTP;
-   private JLabel lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes;
+   private JLabel lblMatDays, lblDSMat, lblDSRowsPB, lblDSSpace, lblDSNotes, lblKeywords;
    private CPSTextField tfldDSMatAdjust, tfldDSRowsPerBed, tfldDSSpaceBetRows;
    private JLabel lblTPMat, lblTPRows, lblTPSpace, lblTPSpaceRow, lblTPFlat, lblTPWeeks, lblTPNotes;
    private CPSTextField tfldTPMatAdjust, tfldTPRowsPerBed, tfldTPSpaceInRow, tfldTPSpaceBetRows;
@@ -322,8 +322,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       JPanel jplPlanting = new JPanel( new MigLayout( migPanelDefaults ) );
       jplPlanting.setBorder( BorderFactory.createTitledBorder( "Planting Info" ) );
       
-      tempLabel = new JLabel( "Maturity Days:" );
-      jplPlanting.add( tempLabel, "align center, split 2, span 5 " );
+      lblMatDays = new JLabel( "Maturity Days:" );
+      lblMatDays.setDisplayedMnemonic( 'm' );
+      lblMatDays.setLabelFor( tfldMatDays );
+      jplPlanting.add( lblMatDays, "align center, split 2, span 5 " );
       jplPlanting.add( tfldMatDays, "wrap" );
       anonLabels.add( tempLabel );
       
@@ -453,8 +455,10 @@ public class CropDBCropInfo extends CPSDetailView implements ItemListener {
       jplMisc.add( tempLabel, "align right top" );
       jplMisc.add( new JScrollPane( tareOtherReq ), "wrap" );
 
-      tempLabel = new JLabel( "Keywords:" );
-      jplMisc.add( tempLabel, "align right top" );
+      lblKeywords = new JLabel( "Keywords:" );
+      lblKeywords.setDisplayedMnemonic( 'k' );
+      lblKeywords.setLabelFor( tareKeywords );
+      jplMisc.add( lblKeywords, "align right top" );
       jplMisc.add( new JScrollPane( tareKeywords ), "wrap" );
 
 

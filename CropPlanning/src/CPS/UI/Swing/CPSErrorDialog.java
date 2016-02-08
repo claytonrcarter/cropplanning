@@ -3,7 +3,7 @@
  *
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,48 +21,24 @@
  */
 package CPS.UI.Swing;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import java.awt.Component;
+import javax.swing.JLabel;
 
-public class CPSErrorDialog extends CPSDialog
-                           implements ActionListener {
+public class CPSErrorDialog extends CPSInfoDialog {
 
-  JButton btnOK;
 
-  public CPSErrorDialog( JPanel parent, String header, String problem ) {
-    this( parent, problem );
-    setHeaderTitle( header );
+  public CPSErrorDialog( Component parent, String problem ) {
+    this( parent, "Error", problem );
   }
-
-  public CPSErrorDialog( JPanel parent, String problem) {
-    super(parent,"Error");
-    if ( problem.equals( "" ) )
-      setDescription( "Sorry, but we encountered a problem." );
-    else
-      setDescription( "Sorry, but we encountered a problem:<br>"+problem );
-  }
-
-
-  @Override
-  protected void buildContentsPanel() {
-    contentsPanelBuilt = true;
-  }
-
-  @Override
-  protected void fillButtonPanel() {
-    btnOK = new JButton("OK");
-    btnOK.addActionListener( this );
-    jplButtons.add(btnOK);
-  }
-
-  public void actionPerformed(ActionEvent e) {
-    setVisible(false);
+  
+  public CPSErrorDialog( Component parent, String header, String problem ) {
+    super( parent, header,
+           "Sorry, but we encountered a problem" +
+           ( problem.equals( "" ) ? "." : ":<br>" + problem ));
   }
 
   public static void main(String[] args) {
-    new CPSErrorDialog( new JPanel(), "fart").setVisible(true);
+    new CPSErrorDialog( new JLabel(), "fart").setVisible(true);
     System.exit(0);
   }
 
