@@ -6,19 +6,19 @@ Plan for and manage the myriad crops, varieties and plantings required to keep a
 ### Latest Version
 Version: **0.7.0** <br>
 Released: **Feb 8, 2017** <br>
-[Release Notes](ReleaseNotes070) <br>
-[Installation Instructions](SetupAndInstallation) <br>
+[Release Notes](https://github.com/claytonrcarter/cropplanning/wiki/ReleaseNotes070) <br>
+[Installation Instructions](https://github.com/claytonrcarter/cropplanning/wiki/SetupAndInstallation) <br>
 
 [Download for Windows](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0-Win.zip)  <br>
 [Download for Mac](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0-Mac.zip)
-(for MacOS 10.8+: [read this](MacGatekeeper))  <br>
+(for MacOS 10.8+: [read this](https://github.com/claytonrcarter/cropplanning/wiki/MacGatekeeper))  <br>
 [Download for Linux](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0.zip)
 
 ## Start Here
 
-* [Download]() the software.
+* Download the software. [Windows](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0-Win.zip) [Mac](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0-Mac.zip) [Linux and everyone else](https://github.com/claytonrcarter/cropplanning/releases/download/v0.7.0/CropPlanning-0.7.0.zip)
 * See the program in action, including weekly planting lists and screencasts (New!).
-* [Learn how to use the program](ExamplesAndScreenShots), including it's advanced features.
+* [Learn how to use the program](https://github.com/claytonrcarter/cropplanning/wiki/ExamplesAndScreenShots), including it's advanced features.
 * Contact us at [cropplanning@gmail.com](mailto:cropplanning@gmail.com) with questions, concerns, suggestions, and such.
 * Help us! Right now, the best way to help us is to try out the software and [tell us](mailto:cropplanning@gmail.com) what you think about it.
 
