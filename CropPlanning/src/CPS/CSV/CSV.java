@@ -3,7 +3,7 @@
  *
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -182,7 +182,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
        try {
            // write comment about date, time, etc
            csvOut.writeComment( " Created by CropPlanning Software" );
-           csvOut.writeComment( " Available at http://cropplanning.googlecode.com" );
+           csvOut.writeComment( " Available at https://github.com/claytonrcarter/cropplanning" );
            csvOut.writeComment( " Records exported: " + recordTypeDesc );
            csvOut.writeComment( " Exported: " + new Date().toString() );
 
@@ -288,7 +288,7 @@ public class CSV extends CPSModule implements CPSExporter, CPSImporter {
     try {
       // write comment about date, time, etc
       csvOut.writeComment( " Created by CropPlanning Software" );
-      csvOut.writeComment( " Available at http://cropplanning.googlecode.com" );
+      csvOut.writeComment( " Available at https://github.com/claytonrcarter/cropplanning" );
       csvOut.writeComment( " Records exported: " + title );
       csvOut.writeComment( " Exported: " + new Date().toString() );
 

@@ -3,7 +3,7 @@
  * 
  * This file is part of the project "Crop Planning Software".  For more
  * information:
- *    website: http://cropplanning.googlecode.com
+ *    website: https://github.com/claytonrcarter/cropplanning
  *    email:   cropplanning@gmail.com 
  *
  * This program is free software: you can redistribute it and/or modify
@@ -527,7 +527,7 @@ public class TabbedUI extends CPSUI implements ActionListener {
         p.add( new JLabel( "Crop Planning Software" ) );
         p.add( new JLabel( "Version: " + CPSGlobalSettings.getVersion() ) );
 
-        JTextField t1 = new JTextField("http://cropplanning.googlecode.com" );
+        JTextField t1 = new JTextField("https://github.com/claytonrcarter/cropplanning" );
         t1.setEditable(false);
         t1.setBackground(null);
         t1.setBorder(null);
