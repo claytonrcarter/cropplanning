@@ -314,6 +314,8 @@
                 mainclass="com.simontuffs.onejar.Boot"
                 jvmversion="1.5+"
                 version="${version.prop}"
+                stubfile="./universalJavaApplicationStub"
+                useJavaXKey="true"
                 icon="./cps-icon-nobkg.icns">
 
       <jarfileset dir="${dist.dir}">
