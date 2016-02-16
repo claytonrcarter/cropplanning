@@ -5,7 +5,7 @@ Plan for and manage the myriad crops, varieties and plantings required to keep a
 
 ### Latest Version
 Version: **0.7.0** <br>
-Released: **Feb 8, 2017** <br>
+Released: **Feb 8, 2016** <br>
 [Release Notes](https://github.com/claytonrcarter/cropplanning/wiki/ReleaseNotes070) <br>
 [Installation Instructions](https://github.com/claytonrcarter/cropplanning/wiki/SetupAndInstallation) <br>
 
