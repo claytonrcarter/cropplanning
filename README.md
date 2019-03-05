@@ -1,3 +1,11 @@
+# NO LONGER MAINTAINED / MAINTAINER WANTED
+
+It was great while it lasted, folks, but I no longer use this software and
+don't have the time to maintain and support it. For the most part, it still
+works fine and many people still use it on a regular basis.
+
+If you are interested in taking over the maintenance and support of this project, please get in touch with me.
+
 # CropPlanning
 
 **Crop Planning Software** for small farmers and serious gardeners.
